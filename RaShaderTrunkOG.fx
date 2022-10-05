@@ -1,0 +1,109 @@
+#include "shaders/RaCommon.fx"
+
+Light Lights[1];
+float4 OverGrowthAmbient;
+float4 ObjectSpaceCamPos;
+float4 PosUnpack;
+
+texture DiffuseMap;
+sampler DiffuseMapSampler = sampler_state
+{
+	Texture = (DiffuseMap);
+	MipFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+string GlobalParameters[] =
+{
+	"GlobalTime",
+	"FogRange",
+	"FogColor",
+};
+
+string TemplateParameters[] =
+{
+	"PosUnpack",
+	"DiffuseMap",
+};
+
+string InstanceParameters[] =
+{
+	"WorldViewProjection",
+	"Lights",
+	"ObjectSpaceCamPos",
+	"OverGrowthAmbient",
+	"Transparency",
+};
+
+// INPUTS TO THE VERTEX SHADER FROM THE APP
+string reqVertexElement[] =
+{
+	"Position",
+	"Normal",
+	"TBase2D"
+};
+
+struct APP2VS
+{
+	float4 Pos : POSITION0;
+	float3 Normal : NORMAL;
+	float2 Tex0 : TEXCOORD0;
+};
+
+struct VS2PS
+{
+	float4 Pos : POSITION0;
+	float3 P_Tex0_Fog : TEXCOORD0; // .xy = Tex0; .z = Fog;
+	float4 P_Normals_ScaleLN : TEXCOORD1; // .xyz = Normals; .w = ScaleLN;
+};
+
+VS2PS TrunkOG_VS(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
+
+	Output.Pos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
+
+	Output.P_Tex0_Fog.xy = Input.Tex0 / 32767.0;
+	Output.P_Tex0_Fog.z = GetFogValue(Input.Pos.xyz * PosUnpack.xyz, ObjectSpaceCamPos.xyz);
+
+	Output.P_Normals_ScaleLN.xyz = normalize(Input.Normal * 2.0 - 1.0);
+	Output.P_Normals_ScaleLN.w = Input.Pos.w / 32767.0;
+
+	return Output;
+}
+
+// There will be small differences between this lighting and the one produced by the static mesh shader,
+// not enough to worry about, ambient is added here and lerped in the static mesh, etc
+// NOTE: could be an issue at some point.
+float4 TrunkOG_PS(VS2PS Input) : COLOR
+{
+	float3 Normals = normalize(Input.P_Normals_ScaleLN.xyz);
+	float Diffuse = GetDiffuseValue(Normals.xyz, -Lights[0].dir);
+
+	float ScaleLN = Input.P_Normals_ScaleLN.w;
+	float3 Color = Lights[0].color * Diffuse * ScaleLN * ScaleLN;
+	Color += OverGrowthAmbient.rgb * ScaleLN;
+
+	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.P_Tex0_Fog.xy);
+	Color = (DiffuseMap.rgb * Color.rgb) * 2.0;
+	float4 FinalColor = float4(Color, Transparency.a);
+
+	FinalColor.rgb = ApplyFog(FinalColor.rgb, Input.P_Tex0_Fog.z);
+	return FinalColor;
+};
+
+technique defaultTechnique
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 TrunkOG_VS();
+		PixelShader = compile ps_3_0 TrunkOG_PS();
+
+		#if defined(ENABLE_WIREFRAME)
+			FillMode = WireFrame;
+		#endif
+	}
+}

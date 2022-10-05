@@ -1,0 +1,270 @@
+//
+/// StaticMesh MetaFx - for PerPixel
+//
+
+//
+// This array specifies what the shaderPermutator should build
+// in the case below it will first look for reqVertexElement + "Base"
+// and get the common members of that array. And will then complement
+// that array for each permutation based on the requirements of each individual LITERAL
+//
+string GenerateStructs[] =
+{
+	"reqVertexElement",
+	"GlobalParameters",
+	"TemplateParameters",
+	"InstanceParameters"
+};
+
+
+//
+// this is the common vertexElement members
+//
+string reqVertexElementBase[] = 
+{
+ 	"PositionPacked",
+ 	"NormalPacked8",
+ 	"TangentSpacePacked8",	
+	"TBasePacked2D"
+};
+
+//
+// this is the common global parameters
+//
+string GlobalParametersBase[] = 
+{
+	"StaticSkyColor",
+	"StaticSpecularColor",
+	"FogRange",
+	"FogColor", 
+	"StaticGloss"
+};
+
+//
+// this is the common template parameters (none for this shader)
+//
+string TemplateParametersBase[] = 
+{
+	"DiffuseMap",
+	"PosUnpack",
+	"TexUnpack",
+	"NormalUnpack"
+};
+
+
+//
+// this is the common instance parameters
+//
+string InstanceParametersBase[] = 
+{
+	"WorldViewProjection",
+	"Transparency",
+	"ObjectSpaceCamPos",
+	"Lights",
+	"AlphaTest"
+};
+
+
+//
+// Literals, and their requirements
+//
+
+// 
+// It is of uttermost importance that the usage indexes of the generated shader permutations match the vertex declaration
+// the order for static meshes texcoords should be (they can be omitted though...ie we dont need to have crack to gave lightmap and so on.
+//
+// TDetail2D
+// TDirt2D
+// TCrack2D
+// TLightMap2D
+// TangentSpace
+
+const dword _base_	: LITERAL
+<
+>;
+
+const dword _nbase_			: LITERAL
+<
+	// this is actually a duplicate...should be removed
+	string reqVertexElement[] = 
+	{
+		"TBasePacked2D"
+	};
+	string TemplateParameters[] = 
+	{
+		"NormalMap"
+	};
+>;
+
+
+
+const dword _detail_			: LITERAL
+<
+	string reqVertexElement[] =
+	{
+		"TDetailPacked2D"
+	};
+	string TemplateParameters[] = 
+	{
+		"DetailMap"
+	};
+>;
+const dword _ndetail_		: LITERAL
+<
+	// this is actually a duplicate...should be removed
+	string reqVertexElement[] = 
+	{
+		"TDetailPacked2D"		
+	};
+	string TemplateParameters[] = 
+	{
+		"NormalMap"
+	};
+>;
+
+
+
+const dword _dirt_			: LITERAL
+<
+	string reqVertexElement[] =
+	{
+		"TDirtPacked2D"
+	};
+	string TemplateParameters[] = 
+	{
+		"DirtMap"
+	};
+>;
+
+const dword _crack_			: LITERAL
+<
+	string reqVertexElement[] =
+	{
+		"TCrackPacked2D"
+	};
+	string TemplateParameters[] = 
+	{
+		"CrackMap"
+	};
+>;
+const dword _ncrack_			: LITERAL
+<
+	// this is actually a duplicate...should be removed
+	string reqVertexElement[] = 
+	{
+		"TCrackPacked2D"
+	};
+	string TemplateParameters[] = 
+	{
+		"CrackNormalMap"
+	};
+>;
+
+
+const dword _parallaxdetail_		: LITERAL
+<
+	string TemplateParameters[] = 
+	{
+		"DetailMap",
+		"NormalMap",
+		"ParallaxScaleBias"
+	};
+	string reqVertexElement[] =
+	{
+		"TDetailPacked2D"
+	};
+>;
+
+
+const dword _lightmap_		: LITERAL
+<
+	string reqVertexElement[] = {
+		"TLightMapPacked2D"
+	};
+	
+	string GlobalParameters[] = {
+		"SinglePointColor"
+	};
+	string InstanceParameters[] = 
+	{
+		"LightMapOffset",
+		"LightMap"
+	};
+>;
+
+
+const dword _shadow_		: LITERAL
+<
+	string GlobalParameters[] = 
+	{
+		"ShadowMap"
+	};
+	string InstanceParameters[] = 
+	{
+		"ShadowProjMat",
+		"ShadowTrapMat"
+	};
+
+>;
+
+const dword _alphatest_		: LITERAL;
+const dword _dirlight_		: LITERAL;
+const dword _pointlight_	: LITERAL;
+
+
+//
+// This is the array of the shader permutations to generate.
+// the resulting shadername is the name of this file + the permutationname - "_"
+// ie. RaShaderSTMBaseDetail etc
+//
+string GenerateShaderPermutations[] =
+{
+	"_base_",
+	"_base_|_nbase_",
+	"_base_|_detail_",
+	"_base_|_detail_|_ndetail_",
+	"_base_|_detail_|_dirt_",
+	"_base_|_detail_|_dirt_|_ndetail_",
+	"_base_|_detail_|_crack_|_ndetail_|_ncrack_",
+	"_base_|_detail_|_dirt_|_crack_|_ndetail_|_ncrack_",
+	"_base_|_ndetail_",
+	"_base_|_detail_|_crack_",
+	"_base_|_parallaxdetail_",
+	"_base_|_detail_|_parallaxdetail_",
+	"_base_|_detail_|_ndetail_|_parallaxdetail_",
+	"_base_|_detail_|_dirt_|_parallaxdetail_",
+	"_base_|_detail_|_dirt_|_crack_",
+	"_base_|_detail_|_dirt_|_ndetail_|_parallaxdetail_",
+	"_base_|_detail_|_crack_|_ndetail_|_ncrack_|_parallaxdetail_",
+	"_base_|_detail_|_dirt_|_crack_|_ndetail_|_ncrack_|_parallaxdetail_",
+	"_base_|_ndetail_|_parallaxdetail_"
+};
+
+//
+// for each shader in the permutation array, the following variants will be generated
+//
+string GenerateShaderModifiers[] =
+{
+	"_alphatest_",
+	"_alphatest_|_lightmap_",
+	"_alphatest_|_shadow_",
+	"_alphatest_|_pointlight_",
+	"_alphatest_|_lightmap_|_shadow_",
+
+	"_lightmap_",
+	"_shadow_",
+	"_pointlight_",
+	"_lightmap_|_shadow_"
+};
+
+//
+// How should we handle fallbacks
+//
+string DeprecationList[] =
+{
+	{"parallaxdetail", ""},
+	{"crack", "ncrack", ""},
+	{"nbase", "ndetail", "dirt", ""},
+	{"shadow",""},
+};
+
