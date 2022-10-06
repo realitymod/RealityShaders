@@ -47,11 +47,12 @@ struct Hi_VS2PS_FullDetail
 	float4 Pos : POSITION;
 	float4 Tex0 : TEXCOORD0;
 	float4 Tex1 : TEXCOORD1;
-	float4 BlendValueAndFade : TEXCOORD2; // tl: texcoord because we don't want clamping
-	float4 Tex3 : TEXCOORD3;
-	float2 Tex5 : TEXCOORD4;
-	float2 Tex6 : TEXCOORD5;
-	float4 FogAndFade2 : COLOR0;
+	float4 Tex3 : TEXCOORD2;
+	float2 Tex5 : TEXCOORD3;
+	float2 Tex6 : TEXCOORD4;
+	float4 P_VertexPos_Fade : TEXCOORD5; // .xyz = VertexPos; .w = Fade;
+
+	float4 BlendValueAndFade : COLOR0; // tl: Don't clamp
 };
 
 Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
@@ -60,7 +61,7 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
-	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy);// + _ScaleTransY.zw;
+	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy); // + _ScaleTransY.zw;
 
 	#if DEBUGTERRAIN
 		Output.Pos = mul(WorldPos, _ViewProj);
@@ -69,7 +70,7 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
 		Output.BlendValueAndFade = float4(0.0);
 		Output.Tex3 = float4(0.0);
 		Output.Tex5.xy = float2(0.0);
-		Output.FogAndFade2 = float4(0.0);
+		Output.P_VertexPos_Fade = float4(0.0);
 		return Output;
 	#endif
 
@@ -90,11 +91,9 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
 		float2 ZPlaneTexCoord = Tex.zy;
 	#endif
 
- 	Output.Tex0.xy = (YPlaneTexCoord*_ColorLightTex.x) + _ColorLightTex.y;
- 	Output.Tex6 = (YPlaneTexCoord*_DetailTex.x) + _DetailTex.y;
-
+ 	Output.Tex0.xy = (YPlaneTexCoord * _ColorLightTex.x) + _ColorLightTex.y;
+ 	Output.Tex6 = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
 	Output.Tex3.xy = YPlaneTexCoord.xy * _NearTexTiling.z;
-
  	Output.Tex5.xy = YPlaneTexCoord * _FarTexTiling.z;
 
 	#if HIGHTERRAIN
@@ -104,15 +103,14 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
 		Output.Tex3.z += _FarTexTiling.w;
 	#endif
 
-	Output.FogAndFade2.x = GetFogValue(WorldPos.xyz, _CameraPos.xyz);
-	Output.FogAndFade2.yzw = saturate(0.5 + InterpVal * 0.5);
+	Output.P_VertexPos_Fade.xyz = WorldPos.xyz;
+	Output.P_VertexPos_Fade.w = saturate(0.5 + InterpVal * 0.5);
 
 	#if HIGHTERRAIN
 		Output.BlendValueAndFade.w = InterpVal;
 	#elif MIDTERRAIN
 		// tl: optimized so we can do more advanced lerp in same number of instructions
 		//     factors are 2c and (2-2c) which equals a lerp()*2
-		//     Don't use w, it's harder to access from ps1.4
 		Output.BlendValueAndFade.xz = InterpVal * float2(2.0, -2.0) + float2(0.0, 2.0);
 	#endif
 
@@ -121,14 +119,8 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
 		Output.BlendValueAndFade.xyz /= dot(1.0, Output.BlendValueAndFade.xyz);
 	#elif MIDTERRAIN
 		// tl: use squared yNormal as blend val. pre-multiply with fade value.
-		Output.BlendValueAndFade.yw = pow(Input.Normal.y, 8.0) /* Input.Normal.y*/ * Output.FogAndFade2.y;
-
-		// tl: pre calculate half-lerp against constant, result is 2 ps instruction lerp distributed
-		//     to 1 vs MAD and 1 ps MAD
-		Output.FogAndFade2.z = Output.BlendValueAndFade.y * -0.5 + 0.5;
+		Output.BlendValueAndFade.yw = pow(Input.Normal.y, 8.0) /* Input.Normal.y */ * Output.P_VertexPos_Fade.w;
 	#endif
-
-	Output.FogAndFade2 = saturate(Output.FogAndFade2);
 
 	Output.Tex1 = ProjToLighting(Output.Pos);
 
@@ -180,12 +172,11 @@ float4 Hi_FullDetail_PS(Hi_VS2PS_FullDetail Input) : COLOR
 			float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex5.xy);
 			float4 XPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex3.xy);
 			float4 ZPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex0.wz);
-			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x*Input.FogAndFade2.y);
+			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x * Input.P_VertexPos_Fade.w);
 		#else
 			float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex5.xy);
 
 			// tl: do lerp in 1 MAD by precalculating constant factor in vShader
-			// float LowDetailMap = YPlaneLowDetailmap.z * Input.BlendValueAndFade.y + Input.FogAndFade2.z;
 			float LowDetailMap = lerp(YPlaneLowDetailmap.x, YPlaneLowDetailmap.z, Input.BlendValueAndFade.y);
 		#endif
 
@@ -201,7 +192,7 @@ float4 Hi_FullDetail_PS(Hi_VS2PS_FullDetail Input) : COLOR
 			float3 DetailOut = LowDetailMap*Input.BlendValueAndFade.x + DetailMap*Input.BlendValueAndFade.z;
 		#endif
 		float3 OutColor = DetailOut * ColorMap * Light * 2.0;
-		float3 FogOutColor = ApplyFog(OutColor, Input.FogAndFade2.x);
+		float3 FogOutColor = ApplyFog(OutColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
 		return float4(ChartContrib * FogOutColor, ChartContrib);
 	#endif
 }
@@ -214,14 +205,15 @@ struct VS2PS_Hi_FullDetail_Mounten
 	float4 Pos : POSITION;
 	float4 Tex0 : TEXCOORD0;
 	float4 Tex1 : TEXCOORD1;
-	float4 BlendValueAndFade : TEXCOORD2; // tl: texcoord because we don't want clamping
 	#if HIGHTERRAIN
-		float4 Tex3 : TEXCOORD6;
+		float4 Tex3 : TEXCOORD2;
 	#endif
-	float2 Tex5 : TEXCOORD5;
-	float4 Tex6 : TEXCOORD3;
-	float2 Tex7 : TEXCOORD4;
-	float4 FogAndFade2 : COLOR0;
+	float2 Tex5 : TEXCOORD3;
+	float4 Tex6 : TEXCOORD4;
+	float2 Tex7 : TEXCOORD5;
+	float4 P_VertexPos_Fade : TEXCOORD6; // .xyz = VertexPos; .w = Fade;
+
+	float4 BlendValueAndFade : COLOR1; // tl: Don't clamp
 };
 
 VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input)
@@ -241,7 +233,7 @@ VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input
 		Output.Tex3 = float4(0.0);
 		Output.Tex5.xy = float2(0.0);
 		Output.Tex6 = float4(0.0);
-		Output.FogAndFade2 = float4(0.0);
+		Output.P_VertexPos_Fade = float4(0.0);
 		return Output;
 	#endif
 
@@ -260,8 +252,8 @@ VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input
 	float2 YPlaneTexCoord = Tex.zx;
 	float2 ZPlaneTexCoord = Tex.zy;
 
-	Output.Tex0.xy = (YPlaneTexCoord*_ColorLightTex.x) + _ColorLightTex.y;
-	Output.Tex7 = (YPlaneTexCoord*_DetailTex.x) + _DetailTex.y;
+	Output.Tex0.xy = (YPlaneTexCoord * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Tex7 = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
 
 	Output.Tex6.xy = YPlaneTexCoord.xy * _NearTexTiling.z;
 	Output.Tex0.wz = XPlaneTexCoord.xy * _NearTexTiling.xy;
@@ -271,8 +263,8 @@ VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input
 
 	Output.Tex5.xy = YPlaneTexCoord * _FarTexTiling.z;
 
-	Output.FogAndFade2.x = GetFogValue(WorldPos.xyz, _CameraPos.xyz);
-	Output.FogAndFade2.yzw = saturate(0.5 + InterpVal * 0.5);
+	Output.P_VertexPos_Fade.xyz = WorldPos.xyz;
+	Output.P_VertexPos_Fade.w = saturate(0.5 + InterpVal * 0.5);
 
 	#if HIGHTERRAIN
 		Output.Tex3.xy = XPlaneTexCoord.xy * _FarTexTiling.xy;
@@ -295,15 +287,8 @@ VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input
 		Output.BlendValueAndFade.xyz /= dot(1.0, Output.BlendValueAndFade.xyz);
 	#else
 		// tl: use squared yNormal as blend val. pre-multiply with fade value.
-		// Output.BlendValueAndFade.yw = Input.Normal.y * Input.Normal.y * Output.FogAndFade2.y;
 		Output.BlendValueAndFade.yw = pow(Input.Normal.y, 8.0);
-
-		// tl: pre calculate half-lerp against constant, result is 2 ps instruction lerp distributed
-		//     to 1 vs MAD and 1 ps MAD
-		//     Output.FogAndFade2.z = Output.BlendValueAndFade.y*-0.5 + 0.5;
 	#endif
-
-	Output.FogAndFade2 = saturate(Output.FogAndFade2);
 
 	Output.Tex1 = ProjToLighting(Output.Pos);
 
@@ -356,7 +341,7 @@ float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 								(YPlaneDetailmap * Input.BlendValueAndFade.y) +
 								(ZPlaneDetailmap * Input.BlendValueAndFade.z);
 
-			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x*Input.FogAndFade2.y);
+			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x * Input.P_VertexPos_Fade.w);
 			float Mounten = (XPlaneLowDetailmap.y * Input.BlendValueAndFade.x) +
 							(YPlaneLowDetailmap.x * Input.BlendValueAndFade.y) +
 							(ZPlaneLowDetailmap.y * Input.BlendValueAndFade.z);
@@ -374,7 +359,7 @@ float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 			// float3 DetailOut = LowDetailMap * 2.0;
 		#endif
 		float3 OutColor = DetailOut * ColorMap * Light * 2.0;
-		float3 FogOutColor = ApplyFog(OutColor, Input.FogAndFade2.x);
+		float3 FogOutColor = ApplyFog(OutColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
 		return float4(ChartContrib * FogOutColor, ChartContrib);
 	#endif
 }
@@ -391,8 +376,9 @@ struct Hi_VS2PS_FullDetail_EnvMap
 	float3 Tex5 : TEXCOORD3;
 	float2 Tex6 : TEXCOORD4;
 	float3 EnvMap : TEXCOORD5;
+	float4 P_VertexPos_Fade : TEXCOORD6; // .xyz = VertexPos; .w = Fade;
+
 	float4 BlendValueAndFade : COLOR0;
-	float4 FogAndFade2 : COLOR1;
 };
 
 Hi_VS2PS_FullDetail_EnvMap Hi_FullDetail_EnvMap_VS(APP2VS_Shared_Default Input)
@@ -411,7 +397,7 @@ Hi_VS2PS_FullDetail_EnvMap Hi_FullDetail_EnvMap_VS(APP2VS_Shared_Default Input)
 		Output.Tex3 = float4(0.0);
 		Output.Tex5.xy = float2(0.0);
 		Output.EnvMap = float3(0.0);
-		Output.FogAndFade2 = float4(0.0);
+		Output.P_VertexPos_Fade = float4(0.0);
 		return Output;
 	#endif
 
@@ -447,8 +433,8 @@ Hi_VS2PS_FullDetail_EnvMap Hi_FullDetail_EnvMap_VS(APP2VS_Shared_Default Input)
 		Output.Tex3.z += _FarTexTiling.w;
 	#endif
 
-	Output.FogAndFade2.x = GetFogValue(WorldPos.xyz, _CameraPos.xyz);
-	Output.FogAndFade2.yzw = saturate(0.5 + InterpVal * 0.5);
+	Output.P_VertexPos_Fade.xyz = WorldPos.xyz;
+	Output.P_VertexPos_Fade.w = saturate(0.5 + InterpVal * 0.5);
 
 	#if HIGHTERRAIN
 		Output.BlendValueAndFade.w = InterpVal;
@@ -464,14 +450,11 @@ Hi_VS2PS_FullDetail_EnvMap Hi_FullDetail_EnvMap_VS(APP2VS_Shared_Default Input)
 		Output.BlendValueAndFade.xyz /= dot(1.0, Output.BlendValueAndFade.xyz);
 	#elif MIDTERRAIN
 		// tl: use squared yNormal as blend val. pre-multiply with fade value.
-		Output.BlendValueAndFade.yw = Input.Normal.y * Input.Normal.y * Output.FogAndFade2.y;
-
-		Output.FogAndFade2.y = InterpVal;
-		Output.FogAndFade2.z = Output.BlendValueAndFade.y * -0.5 + 0.5;
+		Output.BlendValueAndFade.yw = Input.Normal.y * Input.Normal.y * Output.P_VertexPos_Fade.w;
+		Output.P_VertexPos_Fade.w = InterpVal;
 	#endif
 
 	Output.BlendValueAndFade = saturate(Output.BlendValueAndFade);
-	Output.FogAndFade2 = saturate(Output.FogAndFade2);
 
 	Output.Tex1 = ProjToLighting(Output.Pos);
 
@@ -500,7 +483,6 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 
 		float4 AccumLights = tex2Dproj(Sampler_1_Clamp, Input.Tex1);
 
-		// tl: 2* moved later in shader to avoid clamping at -+2.0 in ps1.4
 		float3 Light;
 		float3 ColorMap;
 		if (FogColor.r < 0.01)
@@ -525,12 +507,10 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 			float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex5.xy);
 			float4 XPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex3.xy);
 			float4 ZPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex0.wz);
-			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x*Input.FogAndFade2.y);
+			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x * Input.P_VertexPos_Fade.w);
 		#else
 			float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex5.xy);
-
-			// tl: do lerp in 1 MAD by precalculating constant factor in vShader
-			float LowDetailMap = 2.0 * YPlaneLowDetailmap.z * Input.BlendValueAndFade.y + Input.FogAndFade2.z;
+			float LowDetailMap = 2.0 * YPlaneLowDetailmap.z * Input.BlendValueAndFade.y + (Input.P_VertexPos_Fade.w * -0.5 + 0.5);
 		#endif
 
 		#if HIGHTERRAIN
@@ -542,7 +522,7 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 			float3 DetailOut = lerp(2.0 * BothDetailmap, LowDetailMap, Input.BlendValueAndFade.w);
 		#else
 			// tl: lerp optimized to handle 2*c*low + (2-2c)*detail, factors sent from vs
-			float3 DetailOut = LowDetailMap*Input.BlendValueAndFade.x + 2*DetailMap*Input.BlendValueAndFade.z;
+			float3 DetailOut = LowDetailMap * Input.BlendValueAndFade.x + 2.0 * DetailMap * Input.BlendValueAndFade.z;
 		#endif
 
 		float3 OutColor = DetailOut * ColorMap * Light;
@@ -551,10 +531,10 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 		#if HIGHTERRAIN
 			OutColor = lerp(OutColor, EnvMapColor, DetailMap.w * (1.0 - Input.BlendValueAndFade.w)) * 2.0;
 		#else
-			OutColor = lerp(OutColor, EnvMapColor, DetailMap.w * (1.0 - Input.FogAndFade2.y)) * 2.0;
+			OutColor = lerp(OutColor, EnvMapColor, DetailMap.w * (1.0 - Input.P_VertexPos_Fade.w)) * 2.0;
 		#endif
 
-		OutColor = ApplyFog(OutColor, Input.FogAndFade2.x);
+		OutColor = ApplyFog(OutColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
 		return float4(ChartContrib * OutColor, ChartContrib);
 	#endif
 }

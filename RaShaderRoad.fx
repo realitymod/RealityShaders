@@ -85,8 +85,7 @@ struct VS2PS
 	float4 Pos : POSITION0;
 	float2 Tex0 : TEXCOORD0;
 	float4 LightTex : TEXCOORD2;
-	float ZFade : COLOR;
-	float Fog : FOG;
+	float4 P_VertexPos_ZFade : TEXCOORD3; // .xyz = VertexPos; .w = ZFade;
 };
 
 VS2PS Road_VS(APP2VS Input)
@@ -105,9 +104,8 @@ VS2PS Road_VS(APP2VS Input)
 	Output.LightTex.xy = Output.LightTex.xy * Output.Pos.w;
 	Output.LightTex.zw = Output.Pos.zw;
 
-	Output.ZFade = 1.0 - saturate((distance(WorldPos.xyz, WorldSpaceCamPos.xyz) * RoadFadeOut.x) - RoadFadeOut.y);
-
-	Output.Fog = GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz);
+	Output.P_VertexPos_ZFade.xyz = WorldPos.xyz;
+	Output.P_VertexPos_ZFade.w = 1.0 - saturate((distance(WorldPos.xyz, WorldSpaceCamPos.xyz) * RoadFadeOut.x) - RoadFadeOut.y);
 
 	return Output;
 }
@@ -132,10 +130,10 @@ float4 Road_PS(VS2PS Input) : COLOR
 		Color.rgb *= Light.xyz;
 	}
 
-	Color.a *= Input.ZFade;
+	Color.a *= Input.P_VertexPos_ZFade.w;
 
     // Fog
-    Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+    Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.P_VertexPos_ZFade.xyz, WorldSpaceCamPos.xyz));
 
 	return Color;
 };

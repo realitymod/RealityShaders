@@ -55,10 +55,11 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float2 Texture0 : TEXCOORD0;
-	float3 Color : TEXCOORD1;
-	float3 WorldNormal : TEXCOORD2;
-	float4 Alpha : COLOR0;
-	float Fog : FOG;
+	float3 WorldNormal : TEXCOORD1;
+	float3 VertexPos : TEXCOORD2;
+
+	float3 Color : COLOR0;
+	float4 Alpha : COLOR1;
 };
 
 struct Decals_Common_Data
@@ -70,7 +71,7 @@ struct Decals_Common_Data
 	float4 Alpha;
 	float3 Color;
 	float2 Texture0;
-	float Fog;
+	float3 VertexPos;
 };
 
 Decals_Common_Data Decals_Common(APP2VS Input)
@@ -86,10 +87,10 @@ Decals_Common_Data Decals_Common(APP2VS Input)
 	Output.Alpha = 1.0f - saturate((Output.HPos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
 	Output.Alpha *= Input.TexCoordsInstanceIndexAndAlpha.w;
 	Output.Alpha = saturate(Output.Alpha);
-	Output.Color = Input.Color;
+	Output.Color = saturate(Input.Color);
 
 	Output.Texture0 = Input.TexCoordsInstanceIndexAndAlpha.xy;
-	Output.Fog = GetFogValue(Output.HPos.xyz, 0.0);
+	Output.VertexPos = Output.HPos.xyz;
 	return Output;
 }
 
@@ -102,7 +103,7 @@ VS2PS Decals_VS(APP2VS Input)
 	Output.Color = Data.Color;
 	Output.WorldNormal = Data.WorldNormal;
 	Output.Alpha = Data.Alpha;
-	Output.Fog = Data.Fog;
+	Output.VertexPos = Data.VertexPos;
 	return Output;
 }
 
@@ -116,7 +117,7 @@ float4 Decals_PS(VS2PS Input) : COLOR
 	OutColor.rgb *= Input.Color * Lighting;
 	OutColor.a *= Input.Alpha;
 
-	OutColor.rgb = ApplyFog(OutColor.rgb, Input.Fog);
+	OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutColor;
 }
 
@@ -126,10 +127,11 @@ struct VS2PS_Decal_Shadowed
 	float2 Texture0 : TEXCOORD0;
 	float4 TexShadow : TEXCOORD1;
 	float4 ViewPortMap : TEXCOORD2;
-	float3 Color : TEXCOORD3;
-	float3 WorldNormal : TEXCOORD4;
-	float4 Alpha : COLOR0;
-	float Fog : FOG;
+	float3 WorldNormal : TEXCOORD3;
+	float3 VertexPos : TEXCOORD4;
+
+	float3 Color : COLOR0;
+	float4 Alpha : COLOR1;
 };
 
 VS2PS_Decal_Shadowed Decals_Shadowed_VS(APP2VS Input)
@@ -137,10 +139,14 @@ VS2PS_Decal_Shadowed Decals_Shadowed_VS(APP2VS Input)
 	VS2PS_Decal_Shadowed Output;
 	Decals_Common_Data Data = Decals_Common(Input);
 
-	Output.WorldNormal = Data.WorldNormal;
-	Output.ViewPortMap = _ShadowViewPortMaps[Data.Index];
+	Output.Texture0 = Data.Texture0;
 	Output.TexShadow = mul(float4(Data.Pos, 1.0), _ShadowTransformations[Data.Index]);
 	Output.TexShadow.z -= 0.007;
+
+	Output.ViewPortMap = _ShadowViewPortMaps[Data.Index];
+	Output.WorldNormal = Data.WorldNormal;
+	Output.VertexPos = Data.VertexPos;
+
 	return Output;
 }
 
@@ -165,13 +171,13 @@ float4 Decals_Shadowed_PS(VS2PS_Decal_Shadowed Input) : COLOR
 	float DirShadow = 1.0;
 
 	float4 OutColor = tex2D(Sampler_0, Input.Texture0);
-	OutColor.rgb *=  Input.Color;
+	OutColor.rgb *= Input.Color;
 	OutColor.a *= Input.Alpha;
 
 	float3 Lighting = _AmbientColor.rgb + Diffuse * DirShadow;
 	OutColor.rgb *= Lighting;
 
-	OutColor.rgb = ApplyFog(OutColor.rgb, Input.Fog);
+	OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutColor;
 }
 

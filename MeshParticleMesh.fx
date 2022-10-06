@@ -34,9 +34,10 @@ struct VS2PS_Diffuse
 	float4 HPos : POSITION;
 	float4 DiffuseMap_GroundUV : TEXCOORD0; // .xy = DiffuseMap; .zw = GroundUV
 	float3 Lerp_LMapIntOffset: TEXCOORD1;
+	float3 VertexPos : TEXCOORD2;
+
 	float4 Color : COLOR0;
 	float4 LightFactor : COLOR1;
-	float Fog : FOG;
 };
 
 VS2PS_Diffuse Diffuse_VS(APP2VS Input)
@@ -50,7 +51,7 @@ VS2PS_Diffuse Diffuse_VS(APP2VS Input)
 	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
 
 	Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProj);
-	Output.Fog = GetFogValue(Output.HPos, 0.0);
+	Output.VertexPos = Output.HPos.xyz;
 
 	// Compute Cubic polynomial factors.
 	float Age = _AgeAndAlphaArray[IndexArray[0]][0];
@@ -81,7 +82,7 @@ float4 Diffuse_PS(VS2PS_Diffuse Input) : COLOR
 	float4 TLUT = tex2D(LUT_Sampler, Input.DiffuseMap_GroundUV.zw); // Hemi map
 	Diffuse.rgb *= GetParticleLighting(TLUT.a, Input.Lerp_LMapIntOffset, Input.LightFactor.a);
 
-	Diffuse.rgb = ApplyFog(Diffuse.rgb, Input.Fog);
+	Diffuse.rgb = ApplyFog(Diffuse.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return Diffuse;
 }
 
@@ -129,7 +130,7 @@ float4 Additive_PS(VS2PS_Diffuse Input) : COLOR
 	Diffuse.rgb = (_EffectSunColor.bbb < -0.1) ? float3(1.0, 0.0, 0.0) : Diffuse.rgb;
 	Diffuse.rgb *= Diffuse.a; // Mask with alpha since were doing an add
 
-	Diffuse.rgb *= Input.Fog;
+	Diffuse.rgb *= GetFogValue(Input.VertexPos, 0.0);
 	return Diffuse;
 }
 

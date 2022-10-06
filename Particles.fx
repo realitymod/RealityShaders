@@ -36,9 +36,10 @@ struct VS2PS_Particle
 	float4 Color : TEXCOORD0;
 	float4 DiffuseCoords : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
 	float2 HemiLUTCoord : TEXCOORD2;
+	float3 VertexPos : TEXCOORD3;
+
 	float4 LightFactorAndAlphaBlend	: COLOR0;
 	float4 AnimBFactorAndLMapIntOffset : COLOR1;
-	float Fog : FOG;
 };
 
 VS2PS_Particle Particle_VS(APP2VS Input)
@@ -92,7 +93,7 @@ VS2PS_Particle Particle_VS(APP2VS Input)
 	Output.HemiLUTCoord.xy = ((Input.Pos + (_HemiMapInfo.z / 2.0)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
 	Output.HemiLUTCoord.y = 1.0 - Output.HemiLUTCoord.y;
 
-	Output.Fog = GetFogValue(Pos.xyz, 0.0);
+	Output.VertexPos = Pos.xyz;
 
 	return Output;
 }
@@ -107,7 +108,7 @@ float4 Particle_Low_PS(VS2PS_Particle Input) : COLOR
 	Color.rgb *= Input.Color.rgb * _EffectSunColor; // M
 	Color.a *= Input.LightFactorAndAlphaBlend.b;
 
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return Color;
 }
 
@@ -120,7 +121,7 @@ float4 Particle_Medium_PS(VS2PS_Particle Input) : COLOR
 	Color.rgb *= Input.Color.rgb;
 	Color.a *= Input.LightFactorAndAlphaBlend.b;
 
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return Color;
 }
 
@@ -134,7 +135,7 @@ float4 Particle_High_PS(VS2PS_Particle Input) : COLOR
 	Color.rgb *= Input.Color.rgb;
 	Color.a *= Input.LightFactorAndAlphaBlend.b;
 
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return Color;
 }
 
@@ -195,7 +196,7 @@ float4 Particle_Show_Fill_PS(VS2PS_Particle Input) : COLOR
 {
 	float4 OutColor = _EffectSunColor.rrrr;
 
-	OutColor.rgb *= Input.Fog;
+	OutColor.rgb *= GetFogValue(Input.VertexPos, 0.0);
 	return OutColor;
 }
 
@@ -207,7 +208,7 @@ float4 Particle_Additive_Low_PS(VS2PS_Particle Input) : COLOR
 	// Mask with alpha since were doing an add
 	Color.rgb *= Color.a * Input.LightFactorAndAlphaBlend.b;
 
-	Color.rgb *= Input.Fog;
+	Color.rgb *= GetFogValue(Input.VertexPos, 0.0);
 	return Color;
 }
 
@@ -221,7 +222,7 @@ float4 Particle_Additive_High_PS(VS2PS_Particle Input) : COLOR
 	// Mask with alpha since were doing an add
 	Color.rgb *= Color.a * Input.LightFactorAndAlphaBlend.b;
 
-	Color.rgb *= Input.Fog;
+	Color.rgb *= GetFogValue(Input.VertexPos, 0.0);
 	return Color;
 }
 

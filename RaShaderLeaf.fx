@@ -97,9 +97,10 @@ struct APP2VS
 struct VS2PS
 {
 	float4 Pos : POSITION0;
-	float3 P_Tex0_Fog : TEXCOORD0; // .xy = Tex0; .z = Fog;
+	float2 Tex0 : TEXCOORD0;
+	float3 VertexPos : TEXCOORD1;
 	#if _HASSHADOW_
-		float4 TexShadow : TEXCOORD1;
+		float4 TexShadow : TEXCOORD2;
 	#endif
 	float4 Color : COLOR0;
 };
@@ -123,15 +124,15 @@ VS2PS Leaf_VS(APP2VS Input)
 		float3 LocalPos = Input.Pos.xyz * PosUnpack.xyz;
 	#endif
 
-	Output.P_Tex0_Fog.xy = Input.Tex0;
-	Output.P_Tex0_Fog.z = GetFogValue(LocalPos.xyz, ObjectSpaceCamPos.xyz);
+	Output.Tex0.xy = Input.Tex0;
+	Output.VertexPos = LocalPos.xyz;
 
 	#if defined(OVERGROWTH)
 		Input.Normal = normalize(Input.Normal * 2.0 - 1.0);
-		Output.P_Tex0_Fog.xy /= 32767.0;
+		Output.Tex0.xy /= 32767.0;
 	#else
 		Input.Normal = normalize(Input.Normal * NormalUnpack.x + NormalUnpack.y);
-		Output.P_Tex0_Fog.xy *= TexUnpack;
+		Output.Tex0.xy *= TexUnpack;
 	#endif
 
 	float ScaleLN = Input.Pos.w / 32767.0;
@@ -171,7 +172,7 @@ float4 Leaf_PS(VS2PS Input) : COLOR
 {
 	float4 OutColor = 0.0;
 
-	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.P_Tex0_Fog.xy);
+	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.Tex0.xy);
 	float4 VertexColor = Input.Color;
 
 	#if _HASSHADOW_
@@ -191,7 +192,7 @@ float4 Leaf_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if !defined(_POINTLIGHT_)
-		OutColor.rgb = ApplyFog(OutColor.rgb, Input.P_Tex0_Fog.z);
+		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	#endif
 
 	return OutColor;

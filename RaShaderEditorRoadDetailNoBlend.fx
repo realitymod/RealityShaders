@@ -93,8 +93,8 @@ struct APP2VS
 struct VS2PS
 {
 	float4 Pos : POSITION0;
-	float3 P_Tex0_ZFade	: TEXCOORD0;
-	float3 P_Tex1_Fog : TEXCOORD1;
+	float4 P_Tex0_Tex1 : TEXCOORD0;
+	float4 P_VertexPos_ZFade : TEXCOORD1; // .xyz = VertexPos; .w = ZFade;
 	float4 LightTex : TEXCOORD2;
 };
 
@@ -105,17 +105,17 @@ VS2PS Editor_Road_Detail_NoBlend_VS(APP2VS Input)
 	float4 WorldPos = mul(Input.Pos * PosUnpack, World);
 	WorldPos.y += 0.01;
 
- 	Output.Pos = mul(WorldPos, ViewProjection);
-	Output.P_Tex0_ZFade.xy = Input.Tex0 * TexUnpack;
-	Output.P_Tex1_Fog.xy = Input.Tex1 * TexUnpack;
+	Output.Pos	= mul(WorldPos, ViewProjection);
+	Output.P_Tex0_Tex1.xy = Input.Tex0 * TexUnpack;
+	Output.P_Tex0_Tex1.zw = Input.Tex1 * TexUnpack;
 
 	Output.LightTex.xy = Output.Pos.xy / Output.Pos.w;
- 	Output.LightTex.xy = Output.LightTex.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
- 	Output.LightTex.xy = Output.LightTex.xy * Output.Pos.w;
+	Output.LightTex.xy = Output.LightTex.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
+	Output.LightTex.xy = Output.LightTex.xy * Output.Pos.w;
 	Output.LightTex.zw = Output.Pos.zw;
 
-	Output.P_Tex0_ZFade.z = 1.0 - saturate((distance(WorldPos.xyz, WorldSpaceCamPos.xyz) * RoadFadeOut.x) - RoadFadeOut.y);
-	Output.P_Tex1_Fog.z = GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz);
+	Output.P_VertexPos_ZFade.xyz = WorldPos.xyz;
+	Output.P_VertexPos_ZFade.w = 1.0 - saturate((distance(WorldPos.xyz, WorldSpaceCamPos.xyz) * RoadFadeOut.x) - RoadFadeOut.y);
 
 	return Output;
 }
@@ -123,11 +123,11 @@ VS2PS Editor_Road_Detail_NoBlend_VS(APP2VS Input)
 
 float4 Editor_Road_Detail_NoBlend_PS(VS2PS Input) : COLOR
 {
-	float4 Color = tex2D(DiffuseMapSampler, Input.P_Tex0_ZFade.xy);
-	Color *= tex2D(DetailMapSampler, Input.P_Tex1_Fog.xy);
+	float4 Color = tex2D(DiffuseMapSampler, Input.P_Tex0_Tex1.xy);
+	Color *= tex2D(DetailMapSampler, Input.P_Tex0_Tex1.zw);
 
-	Color.rgb = ApplyFog(Color.rgb, Input.P_Tex1_Fog.z);
-	Color.a *= Input.P_Tex0_ZFade.z;
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.P_VertexPos_ZFade.xyz, WorldSpaceCamPos.xyz));
+	Color.a *= Input.P_VertexPos_ZFade.w;
 	return Color;
 };
 

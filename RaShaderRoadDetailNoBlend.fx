@@ -98,11 +98,9 @@ struct APP2VS
 struct VS2PS
 {
 	float4 Pos : POSITION0;
-	float2 Tex0 : TEXCOORD0;
-	float2 Tex1 : TEXCOORD1;
+	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1;
+	float4 P_VertexPos_ZFade : TEXCOORD1; // .xyz = VertexPos; .w = ZFade;
 	float4 LightTex : TEXCOORD2;
-	float ZFade : COLOR;
-	float Fog : FOG;
 };
 
 VS2PS Road_DetailNoBlend_VS(APP2VS Input)
@@ -113,8 +111,8 @@ VS2PS Road_DetailNoBlend_VS(APP2VS Input)
 	WorldPos.y += 0.01;
 
 	Output.Pos = mul(WorldPos, ViewProjection);
-	Output.Tex0 = Input.Tex0 * TexUnpack;
-	Output.Tex1 = Input.Tex1 * TexUnpack;
+	Output.P_Tex0_Tex1.xy = Input.Tex0 * TexUnpack;
+	Output.P_Tex0_Tex1.zw = Input.Tex1 * TexUnpack;
 
 	Output.LightTex.xy = Output.Pos.xy / Output.Pos.w;
 	Output.LightTex.xy = Output.LightTex.xy * 0.5 + 0.5;
@@ -122,9 +120,8 @@ VS2PS Road_DetailNoBlend_VS(APP2VS Input)
 	Output.LightTex.xy = Output.LightTex.xy * Output.Pos.w;
 	Output.LightTex.zw = Output.Pos.zw;
 
-	Output.ZFade = 1.0 - saturate((distance(WorldPos.xyz, WorldSpaceCamPos.xyz) * RoadFadeOut.x) - RoadFadeOut.y);
-
-	Output.Fog = GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz);
+	Output.P_VertexPos_ZFade.xyz = WorldPos.xyz;
+	Output.P_VertexPos_ZFade.w = 1.0 - saturate((distance(WorldPos.xyz, WorldSpaceCamPos.xyz) * RoadFadeOut.x) - RoadFadeOut.y);
 
 	return Output;
 }
@@ -133,8 +130,8 @@ float4 Road_DetailNoBlend_PS(VS2PS Input) : COLOR
 {
 	float4 Light = 0.0;
 	float4 AccumLights = tex2Dproj(LightMapSampler, Input.LightTex);
-	float4 Color = tex2D(DiffuseMapSampler, Input.Tex0);
-	Color.rgb *= tex2D(DetailMapSampler, Input.Tex1).rgb;
+	float4 Color = tex2D(DiffuseMapSampler, Input.P_Tex0_Tex1.xy);
+	Color.rgb *= tex2D(DetailMapSampler, Input.P_Tex0_Tex1.zw).rgb;
 	float4 TerrainColor = float4(TerrainSunColor, 1.0);
 
 	if (FogColor.r < 0.01)
@@ -156,10 +153,10 @@ float4 Road_DetailNoBlend_PS(VS2PS Input) : COLOR
 	}
 	else
 	{
-		Color.a = Input.ZFade;
+		Color.a = Input.P_VertexPos_ZFade.w;
 	}
 
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.P_VertexPos_ZFade.xyz, WorldSpaceCamPos.xyz));
 
 	return Color;
 };

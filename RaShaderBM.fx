@@ -150,14 +150,14 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float4 P_Normals_Fog : TEXCOORD0; // .xyz = Normals; .w = Fog;
+	float4 Normals : TEXCOORD0;
 	float4 P_Tex0_GroundUV : TEXCOORD1; // .xy = Tex0; .zw = GroundUV;
+	float4 P_LightVec_HemiLerp : TEXCOORD2;
+	float3 EyeVec : TEXCOORD3;
+	float3 VertexPos : TEXCOORD4;
 
-	float4 ShadowTex : TEXCOORD2;
-	float4 OccShadowTex : TEXCOORD3;
-
-	float4 P_LightVec_HemiLerp : TEXCOORD4;
-	float3 EyeVec : TEXCOORD5;
+	float4 ShadowTex : TEXCOORD5;
+	float4 OccShadowTex : TEXCOORD6;
 };
 
 VS2PS Bump_VS(APP2VS Input)
@@ -183,7 +183,7 @@ VS2PS Bump_VS(APP2VS Input)
 	#else // Do world space non-bumped pixel lighting
 		Output.P_LightVec_HemiLerp.xyz = GetLightVec(Input);
 		Output.EyeVec = WorldEyeVec;
-		Output.P_Normals_Fog.xyz = WorldNormal.xyz;
+		Output.Normals.xyz = WorldNormal.xyz;
 	#endif
 
 	#if _HASUVANIMATION_
@@ -205,7 +205,7 @@ VS2PS Bump_VS(APP2VS Input)
 		Output.OccShadowTex = GetShadowProjection(WorldPos, -0.003, true);
 	#endif
 
-	Output.P_Normals_Fog.w = GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz);
+	Output.VertexPos = WorldPos.xyz;
 
 	return Output;
 }
@@ -231,7 +231,7 @@ float4 Bump_PS(VS2PS Input) : COLOR
 		TangentNormal.xyz = normalize(TangentNormal.xyz * 2.0 - 1.0);
 		Normal = TangentNormal;
 	#else
-		Normal = normalize(Input.P_Normals_Fog.xyz);
+		Normal = normalize(Input.Normals.xyz);
 	#endif
 
 	#if defined(NORMAL_CHANNEL)
@@ -351,7 +351,7 @@ float4 Bump_PS(VS2PS Input) : COLOR
 
 	#if _POINTLIGHT_
 		OutputColor *= Attenuation;
-		OutputColor.a *= Input.P_Normals_Fog.w;
+		OutputColor.a *= GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz);
 	#endif
 
 	OutputColor.a *= Transparency.a;
@@ -384,7 +384,7 @@ float4 Bump_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if !_POINTLIGHT_
-		OutputColor.rgb = ApplyFog(OutputColor.rgb, Input.P_Normals_Fog.w);
+		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
 	#endif
 
 	return OutputColor;

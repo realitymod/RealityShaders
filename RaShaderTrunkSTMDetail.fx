@@ -95,9 +95,10 @@ struct VS2PS
 {
 	float4 Pos : POSITION0;
 	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
-	float4 P_Normals_Fog : TEXCOORD1; // .xyz = Normals; .w = Fog;
+	float3 Normals : TEXCOORD1;
+	float3 VertexPos : TEXCOORD2;
 	#if _HASSHADOW_
-		float4 TexShadow : TEXCOORD2;
+		float4 TexShadow : TEXCOORD3;
 	#endif
 };
 
@@ -114,8 +115,8 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 		Output.P_Tex0_Tex1.zw = Input.Tex1 * TexUnpack;
 	#endif
 
-	Output.P_Normals_Fog.xyz = normalize(Input.Normal * NormalUnpack.x + NormalUnpack.y);
-	Output.P_Normals_Fog.w = GetFogValue(Input.Pos.xyz, ObjectSpaceCamPos.xyz);
+	Output.Normals.xyz = normalize(Input.Normal * NormalUnpack.x + NormalUnpack.y);
+	Output.VertexPos = Input.Pos.xyz;
 
 	#if _HASSHADOW_
 		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
@@ -126,7 +127,7 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 
 float4 TrunkSTMDetail_PS(VS2PS Input) : COLOR
 {
-	float3 Normals = normalize(Input.P_Normals_Fog.xyz);
+	float3 Normals = normalize(Input.Normals.xyz);
 	float3 DiffuseColor = GetDiffuseValue(Normals.xyz, -Lights[0].dir) * Lights[0].color;
 
 	#if !_HASSHADOW_
@@ -147,7 +148,7 @@ float4 TrunkSTMDetail_PS(VS2PS Input) : COLOR
 
 	float4 FinalColor = float4((DiffuseColor.rgb * DiffuseMap.rgb) * 4.0, Transparency.r * 2.0);
 
-	FinalColor.rgb = ApplyFog(FinalColor.rgb, Input.P_Normals_Fog.w);
+	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	return FinalColor;
 };
 

@@ -34,9 +34,10 @@ struct VS2PS
 	float4 Color : TEXCOORD0;
 	float4 DiffuseCoords : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
 	float2 HemiLUTCoord : TEXCOORD2; // Hemi look-up table coordinates
+	float3 VertexPos : TEXCOORD3;
+
 	float4 AnimBFactor : COLOR0;
 	float4 LMapIntOffsetAndLFactor : COLOR1;
-	float Fog : FOG;
 };
 
 VS2PS Particle_VS(APP2VS Input)
@@ -96,7 +97,7 @@ VS2PS Particle_VS(APP2VS Input)
  	Output.HemiLUTCoord.xy = ((Input.Pos + (_HemiMapInfo.z/2)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
  	Output.HemiLUTCoord.y = 1.0 - Output.HemiLUTCoord.y;
 
-	Output.Fog = GetFogValue(Pos.xyz, 0.0);
+	Output.VertexPos = Pos.xyz;
 
 	return Output;
 }
@@ -121,7 +122,7 @@ VS2PS Particle_VS(APP2VS Input)
 float4 Particle_Show_Fill_PS(VS2PS Input) : COLOR
 {
 	float4 OutColor = _EffectSunColor.rrrr;
-	OutColor.rgb = ApplyFog(OutColor.rgb, Input.Fog);
+	OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutColor;
 }
 
@@ -154,7 +155,7 @@ float4 Particle_Low_PS(VS2PS Input) : COLOR
 	float4 Color = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
 	Color.rgb *= Input.Color.rgb;
 	Color.a *= Input.AnimBFactor.a;
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return Color;
 }
 
@@ -190,7 +191,7 @@ float4 Particle_Medium_PS(VS2PS Input) : COLOR
 	Color.rgb *= Input.Color.rgb;
 	Color.rgb *= GetParticleLighting(1.0, Input.LMapIntOffsetAndLFactor.a, Input.LMapIntOffsetAndLFactor.b);
 	Color.a *= Input.AnimBFactor.a;
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return Color;
 }
 
@@ -228,7 +229,7 @@ float4 Particle_High_PS(VS2PS Input) : COLOR
 	Color.rgb *= Input.Color.rgb;
 	Color.rgb *= GetParticleLighting(TLut.a, Input.LMapIntOffsetAndLFactor.a, Input.LMapIntOffsetAndLFactor.b);
 	Color.a *= Input.AnimBFactor.a;
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return Color;
 }
 

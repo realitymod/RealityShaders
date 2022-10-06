@@ -36,15 +36,14 @@ struct VS2PS_Trail
 	float4 Color : TEXCOORD0;
 	float4 DiffuseCoords : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
 	float2 HemiLUTCoord : TEXCOORD2;
-	// float3 AnimBFactorAndLMapIntOffset : TEXCOORD3;
+	float3 VertexPos : TEXCOORD3;
+
 	float3 AnimBFactorAndLMapIntOffset : COLOR0;
 	float4 LightFactorAndAlpha : COLOR1;
-	float Fog : FOG;
 };
 
 VS2PS_Trail Trail_VS(APP2VS Input)
 {
-
 	VS2PS_Trail Output = (VS2PS_Trail)0;
 
 	// Compute Cubic polynomial factors.
@@ -116,7 +115,7 @@ VS2PS_Trail Trail_VS(APP2VS Input)
  	Output.HemiLUTCoord.xy = ((Input.Pos + (_HemiMapInfo.z / 2.0)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
  	Output.HemiLUTCoord.y = 1.0 - Output.HemiLUTCoord.y;
 	
-	Output.Fog = GetFogValue(Input.Pos.xyz, _EyePos.xyz);
+	Output.VertexPos = Input.Pos.xyz;
 	return Output;
 }
 
@@ -141,7 +140,7 @@ float4 Trail_Low_PS(VS2PS_Trail Input) : COLOR
 	Color.rgb *= Input.Color.rgb;
 	Color.a *= Input.LightFactorAndAlpha.b;
 
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
 	return Color;
 }
 
@@ -179,7 +178,7 @@ float4 Trail_Medium_PS(VS2PS_Trail Input) : COLOR
 	Color.rgb *= GetParticleLighting(1, Input.AnimBFactorAndLMapIntOffset.z, Input.LightFactorAndAlpha.a);
 	Color.a *= Input.LightFactorAndAlpha.b;
 
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
 	return Color;
 }
 
@@ -218,7 +217,7 @@ float4 Trail_High_PS(VS2PS_Trail Input) : COLOR
 	Color.rgb *= GetParticleLighting(TLUT.a, Input.AnimBFactorAndLMapIntOffset.z, Input.LightFactorAndAlpha.a);
 	Color.a *= Input.LightFactorAndAlpha.b;
 
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
 	return Color;
 }
 
@@ -250,7 +249,7 @@ float4 Trail_Show_Fill_PS(VS2PS_Trail Input) : COLOR
 {
 	float4 Color = _EffectSunColor.rrrr;
 
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
 	return Color;
 }
 

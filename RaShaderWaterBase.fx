@@ -166,9 +166,10 @@ struct VS2PS
 	#if !defined(NO_LIGHTMAP)
 		float2 LightMapTex : TEXCOORD1;
 	#endif
-	float4 P_Position_Fog : TEXCOORD2; // .xyz = WorldPos.xyz; .w = Fog
+	float3 VertexPos : TEXCOORD2;
+	float3 EyeVec : TEXCOORD3;
 	#if defined(USE_SHADOWS)
-		float4 TexShadow : TEXCOORD3;
+		float4 TexShadow : TEXCOORD4;
 	#endif
 };
 
@@ -180,13 +181,9 @@ VS2PS Water_VS(APP2VS Input)
 
 	Output.Pos = mul(WorldPos, ViewProjection);
 
-	#if defined(PIXEL_CAMSPACE)
-		Output.P_Position_Fog.xyz = WorldPos.xyz;
-	#else
-		Output.P_Position_Fog.xyz = -(WorldSpaceCamPos.xyz - WorldPos.xyz) * 0.02;
-	#endif
+	Output.EyeVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
-	Output.P_Position_Fog.w = GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz);
+	Output.VertexPos = WorldPos.xyz;
 
 	#if defined(USE_3DTEXTURE)
 		float3 Tex;
@@ -243,13 +240,9 @@ float4 Water_PS(in VS2PS Input) : COLOR
 		#endif
 	#endif
 
-	#if defined(PIXEL_CAMSPACE)
-		float3 Lookup = -(WorldSpaceCamPos.xyz - Input.P_Position_Fog.xyz);
-	#else
-		float3 Lookup = Input.P_Position_Fog.xyz;
-	#endif
+	float3 EyeVec = normalize(Input.EyeVec);
 
-	float3 Reflection = reflect(Lookup, TN);
+	float3 Reflection = reflect(-EyeVec, TN);
 	float3 EnvColor = texCUBE(CubeMapSampler, Reflection);
 
 	#if defined(USE_SPECULAR)
@@ -272,7 +265,7 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	#endif
 
 	#if defined(USE_FRESNEL)
-		float Fresnel = BASE_TRANSPARENCY - pow(dot(normalize(Lookup), TN2.xyz), POW_TRANSPARENCY);
+		float Fresnel = BASE_TRANSPARENCY - pow(dot(EyeVec, TN2.xyz), POW_TRANSPARENCY);
 		FinalColor.a = LightMap.r * Fresnel + _WaterColor.w;
 	#else
 		FinalColor.a = LightMap.r + _WaterColor.w;
@@ -283,7 +276,7 @@ float4 Water_PS(in VS2PS Input) : COLOR
 		FinalColor.rgb = float3(lerp(0.3, 0.1, TN.r), 1.0, 0.0);
 	}
 
-	FinalColor.rgb = ApplyFog(FinalColor.rgb, Input.P_Position_Fog.w);
+	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
 
 	return FinalColor;
 }

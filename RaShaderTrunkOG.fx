@@ -56,8 +56,9 @@ struct APP2VS
 struct VS2PS
 {
 	float4 Pos : POSITION0;
-	float3 P_Tex0_Fog : TEXCOORD0; // .xy = Tex0; .z = Fog;
+	float2 Tex0 : TEXCOORD0;
 	float4 P_Normals_ScaleLN : TEXCOORD1; // .xyz = Normals; .w = ScaleLN;
+	float3 VertexPos : TEXCOORD2;
 };
 
 VS2PS TrunkOG_VS(APP2VS Input)
@@ -66,11 +67,12 @@ VS2PS TrunkOG_VS(APP2VS Input)
 
 	Output.Pos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 
-	Output.P_Tex0_Fog.xy = Input.Tex0 / 32767.0;
-	Output.P_Tex0_Fog.z = GetFogValue(Input.Pos.xyz * PosUnpack.xyz, ObjectSpaceCamPos.xyz);
+	Output.Tex0.xy = Input.Tex0 / 32767.0;
 
 	Output.P_Normals_ScaleLN.xyz = normalize(Input.Normal * 2.0 - 1.0);
 	Output.P_Normals_ScaleLN.w = Input.Pos.w / 32767.0;
+
+	Output.VertexPos = Input.Pos.xyz * PosUnpack.xyz;
 
 	return Output;
 }
@@ -87,11 +89,11 @@ float4 TrunkOG_PS(VS2PS Input) : COLOR
 	float3 Color = Lights[0].color * Diffuse * ScaleLN * ScaleLN;
 	Color += OverGrowthAmbient.rgb * ScaleLN;
 
-	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.P_Tex0_Fog.xy);
+	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.Tex0.xy);
 	Color = (DiffuseMap.rgb * Color.rgb) * 2.0;
 	float4 FinalColor = float4(Color, Transparency.a);
 
-	FinalColor.rgb = ApplyFog(FinalColor.rgb, Input.P_Tex0_Fog.z);
+	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	return FinalColor;
 };
 

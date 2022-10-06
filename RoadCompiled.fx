@@ -62,8 +62,8 @@ struct VS2PS
     float4 Pos : POSITION;
     float4 Tex_0_1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1
     float4 PosTex : TEXCOORD1;
+	float3 VertexPos : TEXCOORD2;
     float ZFade : COLOR0;
-    float Fog : FOG;
 };
 
 float4 Proj_To_Lighting(float4 HPos)
@@ -102,7 +102,7 @@ VS2PS RoadCompiled_VS(APP2VS Input)
 	Output.ZFade = 1.0 - saturate((CameraDist * _FadeoutValues.x) - _FadeoutValues.y);
 	Output.ZFade = saturate(Output.ZFade * Input.Alpha);
 
-	Output.Fog = GetFogValue(Input.Pos.xyz, _LocalEyePos.xyz);
+	Output.VertexPos = Input.Pos.xyz;
 
 	return Output;
 }
@@ -132,7 +132,7 @@ float4 RoadCompiled_PS(VS2PS Input) : COLOR
         Color.rgb *= Light.xyz;
     }
 
-	Color.rgb = ApplyFog(Color.rgb, Input.Fog);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, _LocalEyePos.xyz));
 	return Color;
 }
 
@@ -141,7 +141,6 @@ struct VS2PS_Dx9
     float4 Pos : POSITION;
     float4 Tex_0_1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1
     float ZFade : COLOR0;
-    float Fog : FOG;
 };
 
 VS2PS_Dx9 RoadCompiled_Dx9_VS(APP2VS Input)
@@ -150,7 +149,6 @@ VS2PS_Dx9 RoadCompiled_Dx9_VS(APP2VS Input)
 	Output.Pos = mul(Input.Pos, _WorldViewProj);
 	Output.Tex_0_1 = float4(Input.Tex0, Input.Tex1);
 	Output.ZFade = 1.0 - saturate((distance(Input.Pos.xyz, _LocalEyePos.xyz) - _FadeoutValues.x) * _FadeoutValues.y);
-	Output.Fog = GetFogValue(Input.Pos.xyz, _LocalEyePos.xyz);
 	return Output;
 }
 

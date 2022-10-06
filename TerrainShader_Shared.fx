@@ -168,8 +168,9 @@ struct VS2PS_Shared_LowDetail
 		float2 Tex2b : TEXCOORD4;
 		float2 Tex3 : TEXCOORD5;
 	#endif
+	float3 VertexPos : TEXCOORD6;
+
 	float4 BlendValueAndWater : COLOR0;
-	float Fog : FOG;
 };
 
 VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
@@ -191,7 +192,7 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
 		Output.Tex2b = 0.0;
 	#endif
 		Output.BlendValueAndWater = 0.0;
-		Output.Fog = 1.0;
+		Output.VertexPos = 1.0;
 		return Output;
 	#endif
 
@@ -241,7 +242,7 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
 
 	Output.Tex1 = ProjToLighting(Output.Pos);
 
-	Output.Fog = GetFogValue(WorldPos.xyz, _CameraPos.xyz);
+	Output.VertexPos = WorldPos.xyz;
 
 	// Output.Tex1 = InterpVal;
 	// Output.Tex1 = float4(_MorphDeltaAdder[Input.Pos0.z*256], 1) * 256.0 * 256.0;
@@ -277,7 +278,7 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 		#endif
 	}
 	#if LIGHTONLY
-		Light.rgb = ApplyFog(OutColor.rgb, Input.Fog);
+		Light.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 		return Light;
 	#endif
 
@@ -293,7 +294,7 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 		OutColor = lerp(OutColor * 4.0, _TerrainWaterColor, Input.BlendValueAndWater.w);
 
 		// Fog
-		OutColor.rgb = ApplyFog(OutColor.rgb, Input.Fog);
+		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 		return OutColor;
 	#else
 		float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex0b);
@@ -302,7 +303,7 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 		OutColor = lerp(OutColor * 2.0, _TerrainWaterColor, Input.BlendValueAndWater.w);
 
 		// Fog
-		OutColor.rgb = ApplyFog(OutColor.rgb, Input.Fog);
+		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 		return float4(OutColor, 1.0);
 	#endif
 }
@@ -394,7 +395,7 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 struct VS2PS_Shared_UnderWater
 {
 	float4 Pos : POSITION;
-	float4 WaterAndFog : COLOR0;
+	float4 P_VertexPos_Water : TEXCOORD0; // .xyz = VertexPos; .w = Water;
 };
 
 VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared_Default Input)
@@ -408,7 +409,7 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared_Default Input)
 
 	#if DEBUGTERRAIN
 		Output.Pos = mul(WorldPos, _ViewProj);
-		Output.WaterAndFog = float4(0,0,0,0);
+		Output.WaterAndFog = float4(0.0);
 		return Output;
 	#endif
 
@@ -421,10 +422,10 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared_Default Input)
 
 	// tl: changed a few things with this factor:
 	// - by pre-multiplying the _WaterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
-	Output.WaterAndFog.x = saturate((WorldPos.y / -3.0) + _WaterHeight);
-	// 	Output.WaterAndFog.x = saturate((_WaterHeight * 3.0 - WorldPos.y) / 3.0f);
+	Output.P_VertexPos_Water.w = saturate((WorldPos.y / -3.0) + _WaterHeight);
+	// Output.WaterAndFog.x = saturate((_WaterHeight * 3.0 - WorldPos.y) / 3.0f);
 
-	Output.WaterAndFog.yzw = GetFogValue(WorldPos.xyz, _CameraPos.xyz);
+	Output.P_VertexPos_Water.xyz = WorldPos.xyz;
 
 	return Output;
 }
@@ -435,7 +436,7 @@ float4 Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input) : COLOR
 		return float4(1.0, 1.0, 0.0, 1.0);
 	#endif
 	// tl: use color interpolator instead of texcoord, it makes this shader much shorter!
-	return float4(ApplyFog(_TerrainWaterColor.rgb, Input.WaterAndFog.y), Input.WaterAndFog.x);
+	return float4(ApplyFog(_TerrainWaterColor.rgb, GetFogValue(Input.P_VertexPos_Water.xyz, _CameraPos.xyz)), Input.P_VertexPos_Water.w);
 }
 
 
@@ -462,7 +463,7 @@ struct VS2PS_Shared_ST_Normal
 	float2 Tex1 : TEXCOORD3;
 	float2 Tex2 : TEXCOORD4;
 	float2 Tex3 : TEXCOORD5;
-	float Fog : FOG;
+	float3 VertexPos : TEXCOORD6;
 };
 
 VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
@@ -482,7 +483,6 @@ VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 	float2 ZPlaneTexCoord = Tex.zy;
 
 	Output.Pos = mul(WorldPos, _ViewProj);
-	Output.Fog = GetFogValue(WorldPos.xyz, _CameraPos.xyz);
 
 	Output.Tex1 = YPlaneTexCoord * _STFarTexTiling.z;
 	Output.Tex2.xy = XPlaneTexCoord.xy * _STFarTexTiling.xy;
@@ -492,6 +492,8 @@ VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 
 	Output.BlendValue = saturate(abs(Input.Normal) - _BlendMod);
 	Output.BlendValue /= dot(1.0, Output.BlendValue);
+
+	Output.VertexPos = WorldPos.xyz;
 
 	return Output;
 }
@@ -524,7 +526,7 @@ float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 
 	if (_GIColor.r < 0.01) OutColor.rb = 0; // M (temporary fix)
 
-	OutColor.rgb = ApplyFog(OutColor.rgb, Input.Fog);
+	OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 
 	return OutColor;
 }

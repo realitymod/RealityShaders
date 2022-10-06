@@ -79,8 +79,9 @@ struct APP2VS
 struct VS2PS
 {
 	float4 Pos : POSITION0;
-	float4 P_Tex0_ZFade_Fog : TEXCOORD0; // .xy = Tex0; .z = ZFade; .w = Fog;
+	float4 P_Tex0_ZFade : TEXCOORD0; // .xy = Tex0; .z = ZFade;
 	float4 LightTex : TEXCOORD1;
+	float3 VertexPos : TEXCOORD2;
 };
 
 VS2PS Editor_Road_VS(APP2VS Input)
@@ -91,24 +92,24 @@ VS2PS Editor_Road_VS(APP2VS Input)
 	WorldPos.y += 0.01;
 
 	Output.Pos = mul(WorldPos, ViewProjection);
-	Output.P_Tex0_ZFade_Fog.xy = Input.Tex0 * TexUnpack;
+	Output.P_Tex0_ZFade.xy = Input.Tex0 * TexUnpack;
+	Output.P_Tex0_ZFade.z = 1.0 - saturate((distance(WorldPos.xyz, WorldSpaceCamPos.xyz) * RoadFadeOut.x) - RoadFadeOut.y);
 
 	Output.LightTex.xy = Output.Pos.xy / Output.Pos.w;
 	Output.LightTex.xy = Output.LightTex.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
 	Output.LightTex.xy = Output.LightTex.xy * Output.Pos.w;
 	Output.LightTex.zw = Output.Pos.zw;
 
-	Output.P_Tex0_ZFade_Fog.z = 1.0 - saturate((distance(WorldPos.xyz, WorldSpaceCamPos.xyz) * RoadFadeOut.x) - RoadFadeOut.y);
-	Output.P_Tex0_ZFade_Fog.w = GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz);
+	Output.VertexPos = WorldPos.xyz;
 
 	return Output;
 }
 
 float4 Editor_Road_PS(VS2PS Input) : COLOR
 {
-	float4 Color = tex2D(DiffuseMapSampler, Input.P_Tex0_ZFade_Fog.xy);
-	Color.rgb = ApplyFog(Color.rgb, Input.P_Tex0_ZFade_Fog.w);
-	Color.a *= Input.P_Tex0_ZFade_Fog.z;
+	float4 Color = tex2D(DiffuseMapSampler, Input.P_Tex0_ZFade.xy);
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
+	Color.a *= Input.P_Tex0_ZFade.z;
 	return Color;
 };
 

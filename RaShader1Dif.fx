@@ -50,8 +50,7 @@ struct VS2PS
 {
 	float4 Pos : POSITION0;
 	float2 Tex0 : TEXCOORD0;
-	float2 Tex1 : TEXCOORD1;
-	float Fog : FOG;
+	float3 VertexPos : TEXCOORD1;
 };
 
 VS2PS Diffuse_VS(APP2VS Input)
@@ -59,7 +58,7 @@ VS2PS Diffuse_VS(APP2VS Input)
 	VS2PS Output = (VS2PS)0;
 
 	Output.Pos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
-	Output.Fog = GetFogValue(Input.Pos.xyz, ObjectSpaceCamPos.xyz);
+	Output.VertexPos = Input.Pos.xyz;
 	Output.Tex0 = Input.Tex0;
 
 	return Output;
@@ -68,7 +67,7 @@ VS2PS Diffuse_VS(APP2VS Input)
 float4 Diffuse_PS(VS2PS Input) : COLOR
 {
 	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.Tex0);
-	DiffuseMap.rgb = ApplyFog(DiffuseMap.rgb, Input.Fog);
+	DiffuseMap.rgb = ApplyFog(DiffuseMap.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	return DiffuseMap;
 };
 
