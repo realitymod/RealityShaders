@@ -293,7 +293,6 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 		float4 OutColor = ColorMap * Light * 2.0 * lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x) * lerp(0.5, Mounten, LowComponent.z);
 		OutColor = lerp(OutColor * 4.0, _TerrainWaterColor, Input.BlendValueAndWater.w);
 
-		// Fog
 		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 		return OutColor;
 	#else
@@ -302,7 +301,6 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 		OutColor = OutColor * lerp(YPlaneLowDetailmap.x, YPlaneLowDetailmap.z, Input.BlendValueAndWater.y);
 		OutColor = lerp(OutColor * 2.0, _TerrainWaterColor, Input.BlendValueAndWater.w);
 
-		// Fog
 		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 		return float4(OutColor, 1.0);
 	#endif

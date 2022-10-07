@@ -149,11 +149,10 @@ struct VS2PS
 {
 	float4 Pos : POSITION;
 	float4 P_Tex0_GroundUV : TEXCOORD0; // .xy = Tex0; .zw = GroundUV;
-	float3 P_Fog_HemiLerp_OccShadow : TEXCOORD1; // .x = Fog; .y = HemiLerp; .z = OccShadow;
-
-	float3 LightVec : TEXCOORD2;
-	float3 EyeVec : TEXCOORD3;
-	float3 NormalVec : TEXCOORD4;
+	float4 P_LightVec_OccShadow : TEXCOORD1; // .xyz = LightVec; .w = OccShadow;
+	float4 P_EyeVec_HemiLerp : TEXCOORD2; // .xyz = EyeVec; .w = HemiLerp;
+	float3 NormalVec : TEXCOORD3;
+	float3 VertexPos : TEXCOORD4;
 
 	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
 		float4 ShadowMat : TEXCOORD5;
@@ -173,61 +172,31 @@ VS2PS Skin_VS(APP2VS Input)
 	Output.Pos = mul(ObjSpacePosition, WorldViewProjection);
 	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 
-	Output.P_Fog_HemiLerp_OccShadow.x = GetFogValue(ObjSpacePosition.xyz, ObjectSpaceCamPos.xyz);
+	Output.P_LightVec_OccShadow.xyz = SkinLightVec(Input, GetLightVec(Input));
+	Output.P_EyeVec_HemiLerp.xyz = SkinLightVec(Input, ObjSpaceEyeVec);
 
 	#if (_USEHEMIMAP_)
 		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, WorldNormal);
-		Output.P_Fog_HemiLerp_OccShadow.y = GetHemiLerp(WorldPos, WorldNormal);
+		Output.P_EyeVec_HemiLerp.w = GetHemiLerp(WorldPos, WorldNormal);
 	#endif
 
-	Output.LightVec = SkinLightVec(Input, GetLightVec(Input));
-	Output.EyeVec = SkinLightVec(Input, ObjSpaceEyeVec);
+	#if _HASSHADOWOCCLUSION_
+		Output.P_LightVec_OccShadow.w = GetShadowProjection(WorldPos, -0.003, true).z;
+	#endif
+
 	Output.NormalVec = normalize(Input.Normal);
 
 	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
 		Output.ShadowMat = GetShadowProjection(WorldPos);
 	#endif
 
-	#if _HASSHADOWOCCLUSION_
-		Output.P_Fog_HemiLerp_OccShadow.z = GetShadowProjection(WorldPos, -0.003, true).z;
-	#endif
+	Output.VertexPos = ObjSpacePosition.xyz;
 
 	return Output;
 }
 
 float4 Skin_PS(VS2PS Input) : COLOR
 {
-	float3 NormalVec = normalize(Input.NormalVec);
-	float3 HalfVec = normalize(normalize(Input.LightVec) + normalize(Input.EyeVec));
-
-	#if _HASNORMALMAP_
-		float4 Normal = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
-		Normal.xyz = normalize(Normal.xyz * 2.0 - 1.0);
-
-		#if defined(NORMAL_CHANNEL)
-			return float4(Normal.xyz * 0.5 + 0.5, 1.0);
-		#endif
-
-		float Gloss = Normal.a;
-
-		float3 LightVec = Input.LightVec;
-
-		#if _POINTLIGHT_
-			float Attenuation = GetRadialAttenuation(LightVec, Lights[0].attenuation);
-		#else
-			const float Attenuation = 1.0;
-		#endif
-
-		LightVec = normalize(LightVec);
-
-		float Diffuse = GetDiffuseValue(Normal.xyz, LightVec);
-		float Specular = GetSpecularValue(Normal.xyz, HalfVec, SpecularPower);
-		Specular *= Gloss;
-
-		Diffuse *= Attenuation;
-		Specular *= Attenuation;
-	#endif
-
 	#if _HASSHADOW_
 		float ShadowDir = GetShadowFactor(ShadowMapSampler, Input.ShadowMat);
 	#else
@@ -236,7 +205,7 @@ float4 Skin_PS(VS2PS Input) : COLOR
 
 	#if _HASSHADOWOCCLUSION_
 		float4 ShadowOccMat = Input.ShadowMat;
-		ShadowOccMat.z = Input.P_Fog_HemiLerp_OccShadow.z;
+		ShadowOccMat.z = Input.P_LightVec_OccShadow.w;
 		float OccShadowDir = GetShadowFactor(ShadowOccluderMapSampler, ShadowOccMat);
 		ShadowDir *= OccShadowDir;
 	#endif
@@ -244,58 +213,50 @@ float4 Skin_PS(VS2PS Input) : COLOR
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
 		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
-		float3 HemiColor = lerp(GroundColor, HemiMapSkyColor, Input.P_Fog_HemiLerp_OccShadow.y);
+		float3 HemiColor = lerp(GroundColor, HemiMapSkyColor, Input.P_EyeVec_HemiLerp.w);
 	#else
 		// "old" -- expose a per-level "static hemi" value (ambient mod)
 		const float3 HemiColor = float3(0.425, 0.425, 0.4);
 		float4 GroundColor = 1.0;
 	#endif
 
-	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
-
-	#if defined(DIFFUSE_CHANNEL)
-		return DiffuseTex;
+	#if _HASNORMALMAP_
+		float4 NormalVec = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
+		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
+	#else
+		float4 NormalVec = float4(normalize(Input.NormalVec), 0.15);
 	#endif
+
+	float Gloss = NormalVec.a;
+	float3 LightVec = normalize(Input.P_LightVec_OccShadow.xyz);
+	float3 EyeVec = normalize(Input.P_EyeVec_HemiLerp.xyz);
+	float3 HalfVec = normalize(LightVec + EyeVec);
+
+	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
+	float3 DiffuseColor = GetDiffuseValue(NormalVec.xyz, LightVec) * Lights[0].color;
+	float3 SpecularColor = GetSpecularValue(NormalVec.xyz, HalfVec, SpecularPower);
+
+	#if _POINTLIGHT_
+		float Attenuation = GetRadialAttenuation(Input.P_EyeVec_HemiLerp.xyz, Lights[0].attenuation);
+		SpecularColor *= Lights[0].color;
+	#else
+		const float Attenuation = 1.0;
+		SpecularColor *= Lights[0].specularColor;
+	#endif
+	
+	DiffuseColor = DiffuseColor * ShadowDir;
+	SpecularColor = (SpecularColor * Attenuation * Gloss) * ShadowDir;
 
 	float4 OutColor = 0.0;
 
-	#if _HASNORMALMAP_
-		Diffuse *= ShadowDir;
-		Specular *= ShadowDir;
-
-		#if _POINTLIGHT_
-			OutColor.rgb = Diffuse * Lights[0].color;
-		#else
-			OutColor.rgb = (Diffuse * Lights[0].color) + HemiColor;
-		#endif
-
-		#if defined(SHADOW_CHANNEL)
-			return float4(OutColor.rgb, 1.0);
-		#endif
-
-		OutColor.rgb *= DiffuseTex.rgb;
-
-		#if _POINTLIGHT_
-			OutColor.rgb += Specular * Lights[0].color;
-		#else
-			OutColor.rgb += Specular * Lights[0].specularColor;
-		#endif
+	#if _POINTLIGHT_
+		OutColor.rgb = DiffuseColor;
 	#else
-		float3 RegularDiffuse = GetDiffuseValue(normalize(Input.LightVec), NormalVec) * Lights[0].color;
-		float3 RegularSpecular = GetSpecularValue(NormalVec, HalfVec, SpecularPower) * 0.15;
-
-		#if _POINTLIGHT_
-			OutColor.rgb = RegularDiffuse;
-			RegularSpecular = RegularSpecular * Lights[0].color;
-		#else
-			OutColor.rgb = RegularDiffuse * ShadowDir + HemiColor;
-			RegularSpecular = RegularSpecular * Lights[0].specularColor;
-		#endif
-
-		OutColor.rgb *= DiffuseTex.rgb;
-		OutColor.rgb += RegularSpecular * ShadowDir;
+		OutColor.rgb = DiffuseColor + HemiColor;
 	#endif
-
+	
+	OutColor.rgb *= DiffuseTex.rgb;
+	OutColor.rgb += SpecularColor;
 	OutColor.a = DiffuseTex.a * Transparency.a;
 
 	if (FogColor.r < 0.01)
@@ -310,7 +271,7 @@ float4 Skin_PS(VS2PS Input) : COLOR
 	}
 
 	#if !_POINTLIGHT_
-		OutColor.rgb = ApplyFog(OutColor.rgb, Input.P_Fog_HemiLerp_OccShadow.x);
+		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	#endif
 
 	return OutColor;

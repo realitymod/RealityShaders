@@ -26,7 +26,7 @@
 #endif
 
 #if (_NBASE_ || _NDETAIL_ || _NCRACK_ || _PARALLAXDETAIL_)
-	#define DETAILED
+	#define USE_DETAIL
 #else
 	#define _CRACK_ 0 // We do not allow Crack if we run on the non detailed path.
 #endif
@@ -211,7 +211,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float3 LightVec = normalize(Input.LightVec.xyz);
 	float3 HalfVec = normalize(LightVec + EyeVec);
 
-	#if defined(DETAILED)
+	#if defined(USE_DETAIL)
 		float3 Normals = normalize(GetCompositeNormals(Input, EyeVec));
 	#else
 		float3 Normals = normalize(Input.P_Normals_Fog.xyz);
@@ -221,7 +221,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float4 FinalColor = GetCompositeDiffuse(Input, EyeVec, Gloss);
 
 	#if _POINTLIGHT_
-		#if !defined(DETAILED)
+		#if !defined(USE_DETAIL)
 			Normals = float3(0.0, 0.0, 1.0);
 		#endif
 
@@ -246,7 +246,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			Lightmap.g *= GetShadowFactor(ShadowMapSampler, Input.ShadowTex);
 		#endif
 
-		#if defined(DETAILED)
+		#if defined(USE_DETAIL)
 			float3 Diffuse = GetDiffuseValue(Normals, LightVec) * Lights[0].color;
 			// Pre-calc: Lightmap.b *= invDot
 			float3 BumpedSky = Lightmap.b * dot(Normals, skyNormal) * StaticSkyColor;
