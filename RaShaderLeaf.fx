@@ -1,4 +1,6 @@
 
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 // [Debug data]
@@ -96,7 +98,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION0;
+	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
 	float3 VertexPos : TEXCOORD1;
 	#if _HASSHADOW_
@@ -116,7 +118,7 @@ VS2PS Leaf_VS(APP2VS Input)
 		Input.Pos.xyz += sin((GlobalTime / ObjRadii) * WindSpeed) * ObjRadii * ObjRadii / LEAF_MOVEMENT;
 	#endif
 
-	Output.Pos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 
 	#if !defined(OVERGROWTH)
 		float3 LocalPos = Input.Pos.xyz;
@@ -138,9 +140,9 @@ VS2PS Leaf_VS(APP2VS Input)
 	float ScaleLN = Input.Pos.w / 32767.0;
 
 	#if defined(_POINTLIGHT_)
-		float Diffuse = saturate(dot(Input.Normal.xyz, normalize(Lights[0].pos.xyz - Input.Pos.xyz)));
+		float Diffuse = GetDiffuseValue(Input.Normal.xyz, normalize(Lights[0].pos.xyz - Input.Pos.xyz));
 	#else
-		float Diffuse = saturate((dot(Input.Normal, -Lights[0].dir) + 0.6) / 1.4);
+		float Diffuse = saturate((dot(Input.Normal.xyz, -Lights[0].dir.xyz) + 0.6) / 1.4);
 	#endif
 
 	#if defined(OVERGROWTH)

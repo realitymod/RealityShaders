@@ -1,4 +1,6 @@
 
+#include "shaders/RealityGraphics.fx"
+
 /*
 	ZOnlyShader
 */
@@ -69,9 +71,7 @@ float4 GetWorldPos(APP2VS Input)
 VS2PS BM_ZOnly_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
-
 	Output.HPos = mul(GetWorldPos(Input), ViewProjection); // Output HPOS
-
 	return Output;
 }
 

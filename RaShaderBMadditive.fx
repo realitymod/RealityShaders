@@ -1,4 +1,5 @@
 
+#include "shaders/RealityGraphics.fx"
 #include "shaders/RaCommon.fx"
 #include "shaders/RaShaderBMCommon.fx"
 
@@ -44,7 +45,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION0;
+	float4 HPos : POSITION;
 	float4 Tex : TEXCOORD0;
 };
 
@@ -55,8 +56,8 @@ VS2PS BM_Additive_VS(APP2VS Input)
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
 
-	Output.Pos = float4(mul(Input.Pos, GeomBones[IndexArray[0]]), 1.0);
-	Output.Pos = mul(Output.Pos, ViewProjection);
+	Output.HPos = float4(mul(Input.Pos, GeomBones[IndexArray[0]]), 1.0);
+	Output.HPos = mul(Output.HPos, ViewProjection);
 	Output.Tex = Input.Tex;
 
 	return Output;

@@ -1,4 +1,6 @@
 
+#include "shaders/RealityGraphics.fx"
+
 float4x4 World;
 float4x4 ViewProjection;
 int textureFactor = 0xffAFFFaF;

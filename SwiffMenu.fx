@@ -35,23 +35,23 @@ sampler Sampler_Wrap = sampler_state
 
 struct VS2PS_Shape
 {
-	float4 Position : POSITION;
+	float4 HPos : POSITION;
 	float4 Diffuse : COLOR0;
 };
 
 struct VS2PS_Shape_Texture
 {
-	float4 Position : POSITION;
+	float4 HPos : POSITION;
+	float2 TexCoord : TEXCOORD0;
 	float4 Diffuse : COLOR0;
 	float4 Selector : COLOR1;
-	float2 TexCoord : TEXCOORD0;
 };
 
 VS2PS_Shape Shape_VS(float3 Position : POSITION, float4 VertexColor : COLOR0)
 {
 	VS2PS_Shape Output = (VS2PS_Shape)0;
-	// Output.Position = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
-	Output.Position = float4(Position.xy, 0.0f, 1.0);
+	// Output.HPos = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
+	Output.HPos = float4(Position.xy, 0.0f, 1.0);
 	// Output.Diffuse = saturate(DiffuseColor);
 	Output.Diffuse = saturate(VertexColor);
 	return Output;
@@ -60,9 +60,9 @@ VS2PS_Shape Shape_VS(float3 Position : POSITION, float4 VertexColor : COLOR0)
 VS2PS_Shape Line_VS(float3 Position : POSITION)
 {
 	VS2PS_Shape Output = (VS2PS_Shape)0;
-	// Output.Position = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
-	// Output.Position = float4(Position.xy, 0.0f, 1.0);
-	Output.Position = float4(Position.xy, 0.0f, 1.0);
+	// Output.HPos = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
+	// Output.HPos = float4(Position.xy, 0.0f, 1.0);
+	Output.HPos = float4(Position.xy, 0.0f, 1.0);
 	Output.Diffuse = saturate(DiffuseColor);
 	return Output;
 }
@@ -71,7 +71,7 @@ VS2PS_Shape_Texture Shape_Texture_VS(float3 Position : POSITION)
 {
 	VS2PS_Shape_Texture Output = (VS2PS_Shape_Texture)0;
 
-	Output.Position = mul( float4(Position.xy, 0.0f, 1.0), WorldView);
+	Output.HPos = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
 	Output.Diffuse = saturate(DiffuseColor);
 	Output.Selector = saturate(Position.zzzz);
 
@@ -127,9 +127,6 @@ technique ShapeTextureWrap
 	{
 		VertexShader = compile vs_3_0 Shape_Texture_VS();
 		PixelShader = compile ps_3_0 Regular_Wrap_PS();
-		AlphaTestEnable = FALSE;
-		// AlphaRef = 128;
-		// AlphaFunc = GREATER;
 	}
 }
 
@@ -139,9 +136,6 @@ technique ShapeTextureClamp
 	{
 		VertexShader = compile vs_3_0 Shape_Texture_VS();
 		PixelShader  = compile ps_3_0 PSRegularClamp();
-		// AlphaTestEnable = TRUE;
-		// AlphaRef = 77;
-		// AlphaFunc = GREATER;
 	}
 }
 

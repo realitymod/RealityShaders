@@ -1,6 +1,8 @@
 
 #line 3 "TerrainShader_nv3x.fx"
 
+#include "shaders/RealityGraphics.fx"
+
 /*
 	Low Terrain
 */

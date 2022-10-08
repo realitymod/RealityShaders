@@ -1,4 +1,6 @@
 
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 #if !defined(_HASSHADOW_)
@@ -93,7 +95,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION0;
+	float4 HPos : POSITION;
 	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
 	float3 Normals : TEXCOORD1;
 	float3 VertexPos : TEXCOORD2;
@@ -107,7 +109,7 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 	VS2PS Output = (VS2PS)0;
 
 	Input.Pos *= PosUnpack;
-	Output.Pos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 
 	Output.P_Tex0_Tex1.xy = Input.Tex0 * TexUnpack;
 

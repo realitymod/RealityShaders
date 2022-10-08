@@ -4,6 +4,8 @@
 // describes the direction to the light	source.	 These variables are
 // initialized from	the	application.
 
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 bool AlphaBlendEnable = false;
@@ -50,7 +52,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION0;
+	float4 HPos : POSITION;
 	float2 Tex : TEXCOORD0;
 };
 
@@ -62,7 +64,7 @@ VS2PS Diffuse_Bone_VS(APP2VS Input)
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
 
-	Output.Pos = mul(float4(Input.Pos.xyz, 1.0), mul(Bones[IndexArray[0]], ViewProjection));
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(Bones[IndexArray[0]], ViewProjection));
 	Output.Tex = Input.Tex0;
 
 	return Output;

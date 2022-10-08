@@ -1,6 +1,8 @@
 
 #line 3 "TerrainShader_Shared.fx"
 
+#include "shaders/RealityGraphics.fx"
+
 /*
 	Basic morphed technique
 */
@@ -68,7 +70,7 @@ struct APP2VS_Shared_Default
 
 struct VS2PS_Shared_ZFillLightMap
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
 };
 
@@ -83,7 +85,7 @@ VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared_Default Input)
 	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;
 
 	#if DEBUGTERRAIN
-		Output.Pos = mul(WorldPos, _ViewProj);
+		Output.HPos = mul(WorldPos, _ViewProj);
 		Output.Tex0 = float2(0.0);
 		return Output;
 	#endif
@@ -92,7 +94,8 @@ VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared_Default Input)
 	// Geo_MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
 	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
-	Output.Pos = mul(WorldPos, _ViewProj);
+	Output.HPos = mul(WorldPos, _ViewProj);
+
 	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
 
 	return Output;
@@ -118,7 +121,7 @@ float4 Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input) : COLOR
 
 struct VS2PS_Shared_PointLight
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
 	float3 WorldPos : TEXCOORD1;
 	float3 WorldNormal : TEXCOORD2;
@@ -137,7 +140,8 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared_Default Input)
 	// Geo_MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
 	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
-	Output.Pos = mul(WorldPos, _ViewProj);
+	Output.HPos = mul(WorldPos, _ViewProj);
+
 	// Output.Tex0 = Input.Pos0.xy * _ScaleBaseUV;
 	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
 
@@ -159,7 +163,7 @@ float4 Shared_PointLight_PS(VS2PS_Shared_PointLight Input) : COLOR
 
 struct VS2PS_Shared_LowDetail
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 Tex0a : TEXCOORD0;
 	float2 Tex0b : TEXCOORD1;
 	float4 Tex1 : TEXCOORD2;
@@ -183,7 +187,7 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
 	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;
 
 	#if DEBUGTERRAIN
-		Output.Pos = mul(WorldPos, _ViewProj);
+		Output.HPos = mul(WorldPos, _ViewProj);
 		Output.Tex0a = 0.0;
 		Output.Tex0b = 0.0;
 		Output.Tex1 = 0.0;
@@ -201,7 +205,7 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
 	// Geo_MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
-	Output.Pos = mul(WorldPos, _ViewProj);
+	Output.HPos = mul(WorldPos, _ViewProj);
 
 	// tl: uncompress normal
 	Input.Normal = Input.Normal * 2.0 - 1.0;
@@ -240,7 +244,7 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
 		Output.BlendValueAndWater.xyz = saturate(pow(Input.Normal.y, 8));
 	#endif
 
-	Output.Tex1 = ProjToLighting(Output.Pos);
+	Output.Tex1 = ProjToLighting(Output.HPos);
 
 	Output.VertexPos = WorldPos.xyz;
 
@@ -311,7 +315,7 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 
 struct Shared_VS2PS_DynamicShadowmap
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float4 ShadowTex : TEXCOORD0;
 	float2 Z : TEXCOORD1;
 };
@@ -325,7 +329,7 @@ Shared_VS2PS_DynamicShadowmap Shared_DynamicShadowmap_VS(APP2VS_Shared_Default I
 	// tl: Trans is always 0, and MADs cost more than MULs in certain cards.
 	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;
 
-	Output.Pos = mul(WorldPos, _ViewProj);
+	Output.HPos = mul(WorldPos, _ViewProj);
 
 	Output.ShadowTex = mul(WorldPos, _LightViewProj);
 	Output.ShadowTex.z = 0.999 * Output.ShadowTex.w;
@@ -352,7 +356,7 @@ float4 Shared_DynamicShadowmap_PS(Shared_VS2PS_DynamicShadowmap Input) : COLOR
 
 struct VS2PS_Shared_DirectionalLightShadows
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
 	float4 ShadowTex : TEXCOORD1;
 	float2 Z : TEXCOORD2;
@@ -371,7 +375,7 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
-	Output.Pos = mul(WorldPos, _ViewProj);
+	Output.HPos = mul(WorldPos, _ViewProj);
 
 	Output.ShadowTex = mul(WorldPos, _LightViewProj);
 	float sZ = mul(WorldPos, _LightViewProjOrtho).z;
@@ -392,7 +396,7 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 
 struct VS2PS_Shared_UnderWater
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float4 P_VertexPos_Water : TEXCOORD0; // .xyz = VertexPos; .w = Water;
 };
 
@@ -406,7 +410,7 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared_Default Input)
 	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;
 
 	#if DEBUGTERRAIN
-		Output.Pos = mul(WorldPos, _ViewProj);
+		Output.HPos = mul(WorldPos, _ViewProj);
 		Output.WaterAndFog = float4(0.0);
 		return Output;
 	#endif
@@ -416,7 +420,7 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared_Default Input)
 	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
-	Output.Pos = mul(WorldPos, _ViewProj);
+	Output.HPos = mul(WorldPos, _ViewProj);
 
 	// tl: changed a few things with this factor:
 	// - by pre-multiplying the _WaterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
@@ -454,7 +458,7 @@ struct APP2VS_Shared_ST_Normal
 
 struct VS2PS_Shared_ST_Normal
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float3 BlendValue : TEXCOORD0;
 	float2 ColorLightTex : TEXCOORD1;
 	float2 LowDetailTex : TEXCOORD2;
@@ -480,7 +484,7 @@ VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 	float2 YPlaneTexCoord = Tex.zx;
 	float2 ZPlaneTexCoord = Tex.zy;
 
-	Output.Pos = mul(WorldPos, _ViewProj);
+	Output.HPos = mul(WorldPos, _ViewProj);
 
 	Output.Tex1 = YPlaneTexCoord * _STFarTexTiling.z;
 	Output.Tex2.xy = XPlaneTexCoord.xy * _STFarTexTiling.xy;
@@ -565,7 +569,7 @@ struct HI_APP2VS_OccluderShadow
 
 struct HI_VS2PS_OccluderShadow
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 PosZX : TEXCOORD0;
 };
 
@@ -583,8 +587,8 @@ HI_VS2PS_OccluderShadow Hi_OccluderShadow_VS(HI_APP2VS_OccluderShadow Input)
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
 	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;
-	Output.Pos = Calc_ShadowProjCoords(WorldPos, _VPLightTrapezMat, _VPLightMat);
-	Output.PosZX = Output.Pos.zw;
+	Output.HPos = Calc_ShadowProjCoords(WorldPos, _VPLightTrapezMat, _VPLightMat);
+	Output.PosZX = Output.HPos.zw;
 	return Output;
 }
 

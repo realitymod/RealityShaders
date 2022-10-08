@@ -9,6 +9,8 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
+#include "shaders/RealityGraphics.fx"
+
 /*
 	[Attributes from app]
 */
@@ -74,20 +76,20 @@ struct APP2VS_Quad
 
 struct VS2PS_Quad
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS_Quad_2
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 TexCoord0 : TEXCOORD0;
 	float2 TexCoord1 : TEXCOORD1;
 };
 
 struct VS2PS_Quad_3
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 TexCoord0 : TEXCOORD0;
 	float2 TexCoord1 : TEXCOORD1;
 	float2 TexCoord2 : TEXCOORD2;
@@ -101,7 +103,7 @@ struct PS2FB_Combine
 VS2PS_Quad Basic_VS(APP2VS_Quad Input)
 {
 	VS2PS_Quad Output;
-	Output.Pos = float4(Input.Pos.xy, 0.0, 1.0);
+	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.TexCoord0 = Input.TexCoord0;
 	return Output;
 }
@@ -263,7 +265,7 @@ VS2PS_Quad_3 Thermal_Vision_VS( APP2VS_Quad Input )
 {
 	VS2PS_Quad_3 Output;
 	Input.Pos.xy = sign(Input.Pos.xy);
-	Output.Pos = float4(Input.Pos.xy, 0, 1);
+	Output.HPos = float4(Input.Pos.xy, 0, 1);
 	Output.TexCoord0 = Input.Pos.xy * _Granularity + _Displacement; // Outputs random jitter movement at [-x, x] range
 	Output.TexCoord1 = Input.Pos.xy * 0.25 - 0.35 * _SinFracTime;
 	Output.TexCoord2 = Input.TexCoord0;
@@ -377,7 +379,7 @@ technique TVEffect_Gradient_Tex
 VS2PS_Quad_2 Wave_Distortion_VS(APP2VS_Quad Input)
 {
 	VS2PS_Quad_2 Output;
-	Output.Pos = float4(Input.Pos.xy, 0.0, 1.0);
+	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.TexCoord0 = Input.TexCoord0;
 	Output.TexCoord1 = Input.Pos.xy;
 	return Output;

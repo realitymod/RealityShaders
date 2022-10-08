@@ -1,4 +1,6 @@
 
+#include "shaders/RealityGraphics.fx"
+
 float4x4 _WorldViewProj : WorldViewProjection;
 bool _ZBuffer : ZBUFFER;
 
@@ -12,14 +14,14 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float4 Diffuse : COLOR;
 };
 
 VS2PS Debug_Circle_VS(APP2VS Input)
 {
 	VS2PS Output;
-	Output.Pos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
 	Output.Diffuse.xyz = Input.Diffuse.xyz;
 	Output.Diffuse.w = 0.8f;
 	return Output;

@@ -1,4 +1,5 @@
 
+#include "shaders/RealityGraphics.fx"
 
 /*
 	[Attributes from app]
@@ -31,7 +32,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos: POSITION;
+	float4 HPos: POSITION;
 	float2 TexCoords: TEXCOORD0;
 	float4 Color : COLOR0;
 };
@@ -39,7 +40,7 @@ struct VS2PS
 VS2PS Lightning_VS(APP2VS Input)
 {
 	VS2PS Output;
-	Output.Pos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
+	Output.HPos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
 	Output.TexCoords = Input.TexCoords;
 	Output.Color = saturate(Input.Color);
 	return Output;

@@ -1,4 +1,6 @@
 
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 #define LIGHT_MUL float3(0.8, 0.8, 0.4)
@@ -38,7 +40,7 @@ sampler LightMapSampler = sampler_state
 	};
 #endif
 
-texture	DiffuseMap;
+texture DiffuseMap;
 sampler DiffuseMapSampler = sampler_state
 {
 	Texture = (DiffuseMap);
@@ -100,9 +102,9 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION0;
+	float4 HPos : POSITION0;
 	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1;
-	float4 P_VertexPos_ZFade : TEXCOORD1; // .xyz = VertexPos; .w = ZFade;
+	float3 VertexPos : TEXCOORD1;
 	float4 LightTex : TEXCOORD2;
 };
 
@@ -113,19 +115,18 @@ VS2PS Editor_Road_VS(APP2VS Input)
 	float4 WorldPos = mul(Input.Pos * PosUnpack, World);
 	WorldPos.y += 0.01;
 
-	Output.Pos = mul(WorldPos, ViewProjection);
+	Output.HPos = mul(WorldPos, ViewProjection);
 	Output.P_Tex0_Tex1.xy = Input.Tex0 * TexUnpack;
 	#if defined(USE_DETAIL)
 		Output.P_Tex0_Tex1.zw = Input.Tex1 * TexUnpack;
 	#endif
 
-	Output.LightTex.xy = Output.Pos.xy / Output.Pos.w;
+	Output.LightTex.xy = Output.HPos.xy / Output.HPos.w;
 	Output.LightTex.xy = Output.LightTex.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
-	Output.LightTex.xy = Output.LightTex.xy * Output.Pos.w;
-	Output.LightTex.zw = Output.Pos.zw;
+	Output.LightTex.xy = Output.LightTex.xy * Output.HPos.w;
+	Output.LightTex.zw = Output.HPos.zw;
 
-	Output.P_VertexPos_ZFade.xyz = WorldPos.xyz;
-	Output.P_VertexPos_ZFade.w = 1.0 - saturate((distance(WorldPos.xyz, WorldSpaceCamPos.xyz) * RoadFadeOut.x) - RoadFadeOut.y);
+	Output.VertexPos.xyz = WorldPos.xyz;
 
 	return Output;
 }
@@ -141,8 +142,8 @@ float4 Editor_Road_PS(VS2PS Input) : COLOR
 		float4 Color = Diffuse;
 	#endif
 
-	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.P_VertexPos_ZFade.xyz, WorldSpaceCamPos.xyz));
-	Color.a *= Input.P_VertexPos_ZFade.w;
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
+	Color.a *= GetRoadZFade(Input.VertexPos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
 	return Color;
 };
 

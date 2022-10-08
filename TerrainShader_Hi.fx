@@ -1,6 +1,8 @@
 
 #line 3 "TerrainShader_Hi.fx"
 
+#include "shaders/RealityGraphics.fx"
+
 /*
 	Hi Terrain
 */
@@ -44,7 +46,7 @@ sampler Dyn_Sampler_6_Wrap = sampler_state
 
 struct Hi_VS2PS_FullDetail
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float4 Tex0 : TEXCOORD0;
 	float4 Tex1 : TEXCOORD1;
 	float4 Tex3 : TEXCOORD2;
@@ -64,7 +66,7 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
 	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy); // + _ScaleTransY.zw;
 
 	#if DEBUGTERRAIN
-		Output.Pos = mul(WorldPos, _ViewProj);
+		Output.HPos = mul(WorldPos, _ViewProj);
 		Output.Tex0 = float4(0.0);
 		Output.Tex1 = float4(0.0);
 		Output.BlendValueAndFade = float4(0.0);
@@ -79,7 +81,7 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
 	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
- 	Output.Pos = mul(WorldPos, _ViewProj);
+ 	Output.HPos = mul(WorldPos, _ViewProj);
 
  	// tl: uncompress normal
  	Input.Normal = Input.Normal * 2.0 - 1.0;
@@ -122,10 +124,9 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
 		Output.BlendValueAndFade.yw = pow(Input.Normal.y, 8.0) /* Input.Normal.y */ * Output.P_VertexPos_Fade.w;
 	#endif
 
-	Output.Tex1 = ProjToLighting(Output.Pos);
+	Output.Tex1 = ProjToLighting(Output.HPos);
 
 	// Output.Tex1 = float4(_MorphDeltaAdder[Input.Pos0.z*256], 1) * 256.0 * 256.0;
-
 	return Output;
 }
 
@@ -202,7 +203,7 @@ float4 Hi_FullDetail_PS(Hi_VS2PS_FullDetail Input) : COLOR
 
 struct VS2PS_Hi_FullDetail_Mounten
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float4 Tex0 : TEXCOORD0;
 	float4 Tex1 : TEXCOORD1;
 	#if HIGHTERRAIN
@@ -226,7 +227,7 @@ VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input
 	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;
 
 	#if DEBUGTERRAIN
-		Output.Pos = mul(WorldPos, _ViewProj);
+		Output.HPos = mul(WorldPos, _ViewProj);
 		Output.Tex0 = float4(0.0);
 		Output.Tex1 = float4(0.0);
 		Output.BlendValueAndFade = float4(0.0);
@@ -242,7 +243,7 @@ VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input
 	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
-	Output.Pos = mul(WorldPos, _ViewProj);
+	Output.HPos = mul(WorldPos, _ViewProj);
 
 	// tl: uncompress normal
 	Input.Normal = Input.Normal * 2.0 - 1.0;
@@ -290,7 +291,7 @@ VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input
 		Output.BlendValueAndFade.yw = pow(Input.Normal.y, 8.0);
 	#endif
 
-	Output.Tex1 = ProjToLighting(Output.Pos);
+	Output.Tex1 = ProjToLighting(Output.HPos);
 
 	return Output;
 }
@@ -369,7 +370,7 @@ float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 
 struct Hi_VS2PS_FullDetail_EnvMap
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float4 Tex0 : TEXCOORD0;
 	float4 Tex1 : TEXCOORD1;
 	float4 Tex3 : TEXCOORD2;
@@ -390,7 +391,7 @@ Hi_VS2PS_FullDetail_EnvMap Hi_FullDetail_EnvMap_VS(APP2VS_Shared_Default Input)
 	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy); // + _ScaleTransY.zw;
 
 	#if DEBUGTERRAIN
-		Output.Pos = mul(WorldPos, _ViewProj);
+		Output.HPos = mul(WorldPos, _ViewProj);
 		Output.Tex0 = float4(0.0);
 		Output.Tex1 = float4(0.0);
 		Output.BlendValueAndFade = float4(0.0);
@@ -406,7 +407,7 @@ Hi_VS2PS_FullDetail_EnvMap Hi_FullDetail_EnvMap_VS(APP2VS_Shared_Default Input)
 	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
- 	Output.Pos = mul(WorldPos, _ViewProj);
+ 	Output.HPos = mul(WorldPos, _ViewProj);
 
  	// tl: uncompress normal
  	Input.Normal = Input.Normal * 2.0 - 1.0;
@@ -456,14 +457,10 @@ Hi_VS2PS_FullDetail_EnvMap Hi_FullDetail_EnvMap_VS(APP2VS_Shared_Default Input)
 
 	Output.BlendValueAndFade = saturate(Output.BlendValueAndFade);
 
-	Output.Tex1 = ProjToLighting(Output.Pos);
+	Output.Tex1 = ProjToLighting(Output.HPos);
 
 	// Environment map
-	// tl: no need to normalize, reflection works with long vectors,
-	//     and cube maps auto-normalize.
-	// Output.EnvMap = reflect(WorldPos.xyz - _CameraPos.xyz, float3(0.0, 1.0, 0.0));
-	// Output.EnvMap = float3(1.0, -1.0, 1.0) * WorldPos.xyz - float3(1.0, -1.0, 1.0) * _CameraPos.xyz;
-	Output.EnvMap = reflect(WorldPos.xyz - _CameraPos.xyz, float3(0.0, 1.0, 0.0));
+	Output.EnvMap = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
 
 	return Output;
 }
@@ -544,7 +541,7 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 
 struct VS2PS_Hi_PerPixelPointLight
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float3 WorldPos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
 };
@@ -563,7 +560,7 @@ VS2PS_Hi_PerPixelPointLight Hi_PerPixelPointLight_VS(APP2VS_Shared_Default Input
 	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
- 	Output.Pos = mul(WorldPos, _ViewProj);
+ 	Output.HPos = mul(WorldPos, _ViewProj);
 
  	// tl: uncompress normal
  	Input.Normal = Input.Normal * 2.0 - 1.0;

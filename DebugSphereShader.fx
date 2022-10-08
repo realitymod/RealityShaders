@@ -1,4 +1,6 @@
 
+#include "shaders/RealityGraphics.fx"
+
 float4x4 _WorldViewProj : WorldViewProjection;
 float4x4 _World : World;
 
@@ -32,7 +34,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float4 Diffuse : COLOR0;
 	float2 Tex0 : TEXCOORD0;
 };
@@ -47,14 +49,14 @@ VS2PS Debug_Basic_VS(APP2VS Input)
 {
 	VS2PS Output;
 
- 	float3 Pos = mul(Input.Pos, _World);
-	Output.Pos = mul(float4(Pos.xyz, 1.0f), _WorldViewProj);
+	float3 Pos = mul(Input.Pos, _World);
+	Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProj);
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.xyz + Diffuse(Input.Normal) * _MaterialDiffuse.xyz;
 	Output.Diffuse.w = 1.0f;
 
- 	Output.Tex0 = Input.TexCoord0;
+	Output.Tex0 = Input.TexCoord0;
 
 	return Output;
 }
@@ -133,7 +135,7 @@ VS2PS Debug_LightSource_VS(APP2VS Input)
  	float4 Pos;
  	Pos.xyz = mul(Input.Pos, _World);
  	Pos.w = 1.0;
-	Output.Pos = mul(Pos, _WorldViewProj);
+	Output.HPos = mul(Pos, _WorldViewProj);
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.rgb = _MaterialDiffuse.xyz;

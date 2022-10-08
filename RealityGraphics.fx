@@ -6,8 +6,15 @@
 #if !defined(REALITYGRAPHICS_FX)
 	#define REALITYGRAPHICS_FX
 
-	// Converts linear depth to logarithmic depth in the vertex shader
-	// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
+	/*
+		Shared math functions
+	*/
+
+	/*
+		Description: Converts linear depth to logarithmic depth in the vertex shader
+		Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
+	*/
+
 	float4 GetLogarithmicDepth(float4 HPos)
 	{
 		const float FarPlane = 1000.0;
@@ -52,5 +59,61 @@
 	{
 		float3 c = (x < 0.04045) ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4);
 		return c;
+	}
+
+	/*
+		Description: Gets orthogonal Tangent-Bitangent-Normal (TBN) matrix
+		Uses Gram–Schmidt process to re-orthogonalize Tangent
+		Source: https://en.wikipedia.org/wiki/Gram-Schmidt_process
+		License: https://creativecommons.org/licenses/by-sa/3.0/
+	*/
+
+	float3x3 GetTangentBasis(float3 Tangent, float3 Normal, float Flip)
+	{
+		// Get Tangent and Normal
+		Tangent = normalize(Tangent);
+		Normal = normalize(Normal);
+
+		// Re-orthogonalize Tangent with respect to Normal
+		Tangent = normalize(Tangent - (Normal * dot(Tangent, Normal)));
+
+		// Cross product * flip to create BiNormal
+		float3 BiNormal = normalize(cross(Tangent, Normal)) * Flip;
+
+		return float3x3(Tangent, BiNormal, Normal);
+	}
+
+	/*
+		Shared lighting functions
+	*/
+
+	// Description: Gets Lambertian diffuse value
+	float GetDiffuseValue(float3 NormalVec, float3 LightVec)
+	{
+		return saturate(dot(NormalVec, LightVec));
+	}
+
+	// Description: Gets Blinn-Phong specular value
+	float GetSpecularValue(float3 NormalVec, float3 HalfVec, uniform float Exponent = 32.0)
+	{
+		return pow(saturate(dot(NormalVec, HalfVec)), Exponent);
+	}
+
+	// Description: Gets radial light attenuation value for pointlights
+	float GetRadialAttenuation(float3 LightVec, float Attenuation)
+	{
+		return saturate(1.0 - saturate(length(LightVec) * Attenuation));
+	}
+
+	/*
+		Description: Gets Schlick's approximation value
+		Source: https://en.wikipedia.org/wiki/Schlick%27s_approximation
+		License: https://creativecommons.org/licenses/by-sa/3.0/
+	*/
+
+	float GetSchlickApproximation(float3 NormalVec, float3 EyeVec, uniform float RefractiveIndex = 1.0)
+	{
+		float F0 = pow(RefractiveIndex - 1.0, 2.0) / pow(RefractiveIndex + 1.0, 2.0);
+		return F0 + (1.0 - F0) * pow(1.0 - dot(NormalVec, EyeVec), 5.0);
 	}
 #endif

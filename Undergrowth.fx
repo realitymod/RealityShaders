@@ -25,6 +25,9 @@ uniform float4 _Transparency_x8 : TRANSPARENCY_X8;
 #define FH2_ALPHAREF 127
 
 string Category = "Effects\\Lighting";
+
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 uniform texture Texture_0 : TEXLAYER0;
@@ -79,7 +82,7 @@ struct APP2VS_Simple
 
 struct VS2PS
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1;
 	float4 TexShadow : TEXCOORD1;
 	float3 VertexPos : TEXCOORD2; // .x = LightScale; .y = Fog;
@@ -98,7 +101,8 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMa
 	float HeightScale = saturate((ViewDistance - distance(Pos.xyz, _CameraPos.xyz)) * FadeFactor);
 	Pos.y = (Input.Pos.y / 32767.0 * _PosOffsetAndScale.w) * HeightScale + _PosOffsetAndScale.y + (Input.Pos.w / 32767.0 * _PosOffsetAndScale.w);
 
-	Output.Pos = mul(Pos, _WorldViewProj);
+	Output.HPos = mul(Pos, _WorldViewProj);
+
 	Output.P_Tex0_Tex1.xy = Input.TexCoord / 32767.0;
 	Output.P_Tex0_Tex1.zw = Pos.xz * _TerrainTexCoordScaleAndOffset.xy + _TerrainTexCoordScaleAndOffset.zw;
 
@@ -304,7 +308,7 @@ technique t0_l4_ds
 
 struct VS2PS_Simple
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
 	float4 TexShadow : TEXCOORD1;
 	float3 SunLight : TEXCOORD2;
@@ -325,7 +329,8 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 	float HeightScale = saturate((ViewDistance - distance(Pos.xyz, _CameraPos)) * FadeFactor);
 	Pos.y = (Input.Pos.y / 32767.0 * _PosOffsetAndScale.w) * HeightScale + _PosOffsetAndScale.y + (Input.Pos.w / 32767.0 * _PosOffsetAndScale.w);
 
-	Output.Pos = mul(Pos, _WorldViewProj);
+	Output.HPos = mul(Pos, _WorldViewProj);
+
 	Output.Tex0 = Input.TexCoord / 32767.0;
 
 	if (ShadowMapEnable)
@@ -552,7 +557,7 @@ technique t0_l4_ds_simple
 
 struct VS2PS_ZOnly
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
 };
 
@@ -568,7 +573,8 @@ VS2PS_ZOnly Undergrowth_ZOnly_Simple_VS(APP2VS_Simple Input)
 	float HeightScale = saturate((ViewDistance - distance(Pos.xyz, _CameraPos)) * FadeFactor);
 	Pos.y = (Input.Pos.y / 32767.0 * _PosOffsetAndScale.w) * HeightScale + _PosOffsetAndScale.y + (Input.Pos.w / 32767.0 * _PosOffsetAndScale.w);
 
-	Output.Pos = mul(Pos, _WorldViewProj);
+	Output.HPos = mul(Pos, _WorldViewProj);
+
  	Output.Tex0 = Input.TexCoord / 32767.0;
 
 	return Output;
@@ -587,8 +593,10 @@ VS2PS_ZOnly Undergrowth_ZOnly_VS(APP2VS Input)
 	float HeightScale = saturate((ViewDistance - distance(Pos.xyz, _CameraPos.xyz)) * FadeFactor);
 	Pos.y = (Input.Pos.y / 32767.0 * _PosOffsetAndScale.w) * HeightScale + _PosOffsetAndScale.y + (Input.Pos.w / 32767.0 * _PosOffsetAndScale.w);
 
-	Output.Pos = mul(Pos, _WorldViewProj);
+	Output.HPos = mul(Pos, _WorldViewProj);
+
 	Output.Tex0 = Input.TexCoord / 32767.0;
+
 	return Output;
 }
 

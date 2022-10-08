@@ -1,4 +1,7 @@
 #line 2 "Trail.fx"
+
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/FXCommon.fx"
 
 // UNIFORM INPUTS
@@ -116,6 +119,7 @@ VS2PS_Trail Trail_VS(APP2VS Input)
  	Output.HemiLUTCoord.y = 1.0 - Output.HemiLUTCoord.y;
 	
 	Output.VertexPos = Input.Pos.xyz;
+
 	return Output;
 }
 

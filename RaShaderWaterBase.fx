@@ -1,3 +1,6 @@
+
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 // Affects how transparency is claculated depending on camera height.
@@ -157,7 +160,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	#if defined(USE_3DTEXTURE)
 		float3 Tex : TEXCOORD0;
 	#else
@@ -179,7 +182,7 @@ VS2PS Water_VS(APP2VS Input)
 
 	float4 WorldPos = mul(Input.Pos, World);
 
-	Output.Pos = mul(WorldPos, ViewProjection);
+	Output.HPos = mul(WorldPos, ViewProjection);
 
 	Output.EyeVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
@@ -221,34 +224,28 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	#endif
 
 	#if defined(USE_3DTEXTURE)
-		float3 TN = tex3D(WaterMapSampler, Input.Tex);
+		float3 TangentNormal = tex3D(WaterMapSampler, Input.Tex);
 	#else
-		float3 TN = lerp(tex2D(WaterMapSampler0, Input.Tex), tex2D(WaterMapSampler1, Input.Tex), WaterCycleTime);
+		float3 TangentNormal = lerp(tex2D(WaterMapSampler0, Input.Tex), tex2D(WaterMapSampler1, Input.Tex), WaterCycleTime);
 	#endif
 
 	#if defined(TANGENTSPACE_NORMALS)
-		TN.rbg = normalize((TN.rgb * 2.0) - 1.0);
+		TangentNormal.rbg = normalize((TangentNormal.rgb * 2.0) - 1.0);
 	#else
-		TN.rgb = (TN.rgb * 2.0) - 1.0;
+		TangentNormal.rgb = normalize((TangentNormal.rgb * 2.0) - 1.0);
 	#endif
 
 	#if defined(USE_FRESNEL)
 		#if defined(FRESNEL_NORMALMAP)
-			float4 TN2 = float4(TN, 1.0);
+			float4 TangentNormal2 = float4(TangentNormal, 1.0);
 		#else
-			float4 TN2 = float4(0.0, 1.0, 0.0, 0.0);
+			float4 TangentNormal2 = float4(0.0, 1.0, 0.0, 0.0);
 		#endif
 	#endif
 
 	float3 EyeVec = normalize(Input.EyeVec);
-
-	float3 Reflection = reflect(-EyeVec, TN);
+	float3 Reflection = reflect(-EyeVec, TangentNormal);
 	float3 EnvColor = texCUBE(CubeMapSampler, Reflection);
-
-	#if defined(USE_SPECULAR)
-		float Specular = saturate(dot(-Lights[0].dir, normalize(Reflection)));
-		Specular = pow(Specular, SpecularPower) * SpecularColor.a;
-	#endif
 
 	float ShadFac = LightMap.g;
 
@@ -259,13 +256,14 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float LerpMod = -(1.0 - saturate(ShadFac + SHADOW_FACTOR));
 
 	#if defined(USE_SPECULAR)
+		float Specular = GetSpecularValue(normalize(Reflection), -Lights[0].dir, SpecularPower) * SpecularColor.a;
 		FinalColor.rgb = (Specular * SpecularColor.rgb * ShadFac) + lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 	#else
 		FinalColor.rgb = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 	#endif
 
 	#if defined(USE_FRESNEL)
-		float Fresnel = BASE_TRANSPARENCY - pow(dot(EyeVec, TN2.xyz), POW_TRANSPARENCY);
+		float Fresnel = BASE_TRANSPARENCY - pow(dot(EyeVec, TangentNormal2.xyz), POW_TRANSPARENCY);
 		FinalColor.a = LightMap.r * Fresnel + _WaterColor.w;
 	#else
 		FinalColor.a = LightMap.r + _WaterColor.w;
@@ -273,7 +271,7 @@ float4 Water_PS(in VS2PS Input) : COLOR
 
 	if (FogColor.r < 0.01)
 	{
-		FinalColor.rgb = float3(lerp(0.3, 0.1, TN.r), 1.0, 0.0);
+		FinalColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
 	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));

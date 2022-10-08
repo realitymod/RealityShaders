@@ -1,5 +1,7 @@
 #line 2 "Nametag.fx"
 
+#include "shaders/RealityGraphics.fx"
+
 /*
 	[Attributes from app]
 */
@@ -69,7 +71,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 TexCoord0 : TEXCOORD0;
 	float2 TexCoord1 : TEXCOORD1;
 	float4 Color0 : COLOR0;
@@ -77,7 +79,7 @@ struct VS2PS
 
 struct VS2PS_2TEX
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 TexCoord0 : TEXCOORD0;
 	float2 TexCoord1 : TEXCOORD1;
 	float4 Color0 : COLOR0;
@@ -97,7 +99,7 @@ VS2PS Nametag_VS(APP2VS Input)
 
 	float4 IndexedTrans = _Transformations[Input.Indices.x];
 
-	Output.Pos = float4(Input.Pos.xyz + IndexedTrans.xyz, 1.0);
+	Output.HPos = float4(Input.Pos.xyz + IndexedTrans.xyz, 1.0);
 
 	Output.TexCoord0 = Input.TexCoord0;
 
@@ -154,12 +156,12 @@ VS2PS Nametag_Arrow_VS(APP2VS Input)
 	VS2PS Output = (VS2PS)0;
 
 	// Does a 2x2 matrix 2d rotation of the local vertex coordinates in screen space
-	Output.Pos.x = dot(Input.Pos.xy, _ArrowRot.xy);
-	Output.Pos.y = dot(Input.Pos.xy, _ArrowRot.zw);
-	Output.Pos.z = 0.0;
-	Output.Pos.xyz *= _AspectMul;
-	Output.Pos.xyz += _ArrowTrans * _ArrowMult;
-	Output.Pos.w = 1.0;
+	Output.HPos.x = dot(Input.Pos.xy, _ArrowRot.xy);
+	Output.HPos.y = dot(Input.Pos.xy, _ArrowRot.zw);
+	Output.HPos.z = 0.0;
+	Output.HPos.xyz *= _AspectMul;
+	Output.HPos.xyz += _ArrowTrans * _ArrowMult;
+	Output.HPos.w = 1.0;
 
 	Output.TexCoord0 = Input.TexCoord0;
 
@@ -215,7 +217,7 @@ VS2PS_2TEX Nametag_Healthbar_VS(APP2VS Input)
 {
 	VS2PS_2TEX Output = (VS2PS_2TEX)0;
 
-	Output.Pos = float4(Input.Pos.xyz + _HealthBarTrans.xyz, 1.0);
+	Output.HPos = float4(Input.Pos.xyz + _HealthBarTrans.xyz, 1.0);
 
 	Output.TexCoord0 = Input.TexCoord0;
 	Output.TexCoord1 = Input.TexCoord0;
@@ -291,7 +293,7 @@ VS2PS Nametag_Vehicle_Icons_VS(APP2VS Input)
 	// Fix aspect again
 	RotPos.y *= _AspectComp;
 
-	Output.Pos = float4(RotPos.xyz + _HealthBarTrans.xyz, 1.0);
+	Output.HPos = float4(RotPos.xyz + _HealthBarTrans.xyz, 1.0);
 
 	Output.TexCoord0 = Input.TexCoord0 + _IconTexOffset;
 	Output.TexCoord1 = Input.TexCoord0 * _IconFlashTexScaleOffset.xy + _IconFlashTexScaleOffset.zw;

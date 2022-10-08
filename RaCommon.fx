@@ -42,7 +42,6 @@
 
 	float4 HemiMapConstants;
 
-	// tl: This is a float replicated to a float4 to make 1.3 shaders more efficient (they can't access .rg directly)
 	float4 Transparency = 1.0f;
 
 	float4x4 World;
@@ -55,48 +54,7 @@
 	float4 FogColor : fogColor;
 
 	/*
-		Shared math functions
-	*/
-
-	float3x3 GetTangentBasis(float3 Tangent, float3 Normal, float Flip)
-	{
-		// Get Tangent and Normal
-		Tangent = normalize(Tangent);
-		Normal = normalize(Normal);
-
-		// Re-orthogonalize Tangent with respect to Normal
-		Tangent = normalize(Tangent - (Normal * dot(Tangent, Normal)));
-
-		// Cross product * flip to create BiNormal
-		float3 BiNormal = normalize(cross(Tangent, Normal)) * Flip;
-
-		return float3x3(Tangent, BiNormal, Normal);
-	}
-
-	/*
-		Shared lighting functions
-	*/
-
-	// Lambertian diffuse shader
-	float GetDiffuseValue(float3 NormalVec, float3 LightVec)
-	{
-		return saturate(dot(NormalVec, LightVec));
-	}
-
-	// Blinn-Phong specular shader
-	float GetSpecularValue(float3 NormalVec, float3 HalfVec, uniform float Exponent = 32.0)
-	{
-		return pow(saturate(dot(NormalVec, HalfVec)), Exponent);
-	}
-
-	// Gets radial light attenuation for pointlights
-	float GetRadialAttenuation(float3 LightVec, float Attenuation)
-	{
-		return saturate(1.0 - saturate(length(LightVec) * Attenuation));
-	}
-
-	/*
-		Shared fogging functions
+		Shared fogging and fading functions
 	*/
 
 	float GetFogValue(float3 ObjectPos, float3 CameraPos)
@@ -111,6 +69,11 @@
 	float3 ApplyFog(float3 Color, float FogValue)
 	{
 		return lerp(FogColor.rgb, Color.rgb, FogValue);
+	}
+
+	float GetRoadZFade(float3 ObjectPos, float3 CameraPos, float2 FadeValues)
+	{
+		return saturate(1.0 - saturate((distance(ObjectPos.xyz, CameraPos.xyz) * FadeValues.x) - FadeValues.y));
 	}
 
 	/*
@@ -150,22 +113,29 @@
 		AddressW = CLAMP;
 	};
 
-	// tl: Make _sure_ Pos and matrices are in same space!
-	float4 GetShadowProjection(float4 Pos, uniform float BIAS = -0.001, uniform bool ISOCCLUDER = false)
+	/*
+		Description: GetShadowProjection() transforms the vertex position's depth from World/Object space to light space
+		tl: Make sure Pos and matrices are in same space!
+	*/
+
+	float4 GetShadowProjection(float4 Pos, uniform bool IsOccluder = false)
 	{
 		float4 TexShadow1 = mul(Pos, ShadowTrapMat);
-		float2 TexShadow2 = (ISOCCLUDER) ? mul(Pos, ShadowOccProjMat).zw : mul(Pos, ShadowProjMat).zw;
+		float2 TexShadow2 = (IsOccluder) ? mul(Pos, ShadowOccProjMat).zw : mul(Pos, ShadowProjMat).zw;
 
-		TexShadow2.x += BIAS;
-
-		#if !NVIDIA
-			TexShadow1.z = TexShadow2.x;
-		#else
+		#if NVIDIA
 			TexShadow1.z = (TexShadow2.x * TexShadow1.w) / TexShadow2.y; // (zL*wT)/wL == zL/wL post homo
+		#else
+			TexShadow1.z = TexShadow2.x;
 		#endif
 
 		return TexShadow1;
 	}
+
+	/*
+		Description: GetShadowFactor() compares the depth between the shadowmap's depth (ShadowSampler)
+		and the vertex position's transformed, light-space depth (ShadowCoords.z)
+	*/
 
 	float4 GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
@@ -175,7 +145,10 @@
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, 0.0, 0.0, 0.0));
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(0.0, Texel.y, 0.0, 0.0));
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel);
-		float4 CMPBits = Samples >= saturate(ShadowCoords.z);
+
+		// We need a bias to prevent shadow acne
+		const float Bias = -0.001;
+		float4 CMPBits = step(saturate(ShadowCoords.z + Bias), Samples);
 		return dot(CMPBits, 0.25);
 	}
 #endif

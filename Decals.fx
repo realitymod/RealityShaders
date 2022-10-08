@@ -1,5 +1,7 @@
 #line 2 "Decals.fx"
 
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 /*
@@ -91,6 +93,7 @@ Decals_Common_Data Decals_Common(APP2VS Input)
 
 	Output.Texture0 = Input.TexCoordsInstanceIndexAndAlpha.xy;
 	Output.VertexPos = Output.HPos.xyz;
+
 	return Output;
 }
 
@@ -139,6 +142,8 @@ VS2PS_Decal_Shadowed Decals_Shadowed_VS(APP2VS Input)
 	VS2PS_Decal_Shadowed Output;
 	Decals_Common_Data Data = Decals_Common(Input);
 
+	Output.HPos = Data.HPos;
+
 	Output.Texture0 = Data.Texture0;
 	Output.TexShadow = mul(float4(Data.Pos, 1.0), _ShadowTransformations[Data.Index]);
 	Output.TexShadow.z -= 0.007;
@@ -152,7 +157,7 @@ VS2PS_Decal_Shadowed Decals_Shadowed_VS(APP2VS Input)
 
 float4 Decals_Shadowed_PS(VS2PS_Decal_Shadowed Input) : COLOR
 {
-	float3 Diffuse = saturate(dot(normalize(Input.WorldNormal.xyz), -_SunDirection.xyz)) * _SunColor;
+	float3 Diffuse = GetDiffuseValue(normalize(Input.WorldNormal.xyz), -_SunDirection.xyz) * _SunColor;
 
 	float2 Texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
 	float4 Samples;

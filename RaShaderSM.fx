@@ -3,6 +3,7 @@
 	New, better, "cleaner" skinning code.
 */
 
+#include "shaders/RealityGraphics.fx"
 #include "shaders/RaCommon.fx"
 #include "shaders/RaShaderSMCommon.fx"
 
@@ -147,7 +148,7 @@ float3 GetLightVec(APP2VS Input)
 
 struct VS2PS
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float4 P_Tex0_GroundUV : TEXCOORD0; // .xy = Tex0; .zw = GroundUV;
 	float4 P_LightVec_OccShadow : TEXCOORD1; // .xyz = LightVec; .w = OccShadow;
 	float4 P_EyeVec_HemiLerp : TEXCOORD2; // .xyz = EyeVec; .w = HemiLerp;
@@ -169,7 +170,7 @@ VS2PS Skin_VS(APP2VS Input)
 	float4 WorldPos = GetWorldPos(Input);
 	float3 WorldNormal = normalize(GetWorldNormal(Input));
 
-	Output.Pos = mul(ObjSpacePosition, WorldViewProjection);
+	Output.HPos = mul(ObjSpacePosition, WorldViewProjection);
 	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 
 	Output.P_LightVec_OccShadow.xyz = SkinLightVec(Input, GetLightVec(Input));
@@ -181,7 +182,7 @@ VS2PS Skin_VS(APP2VS Input)
 	#endif
 
 	#if _HASSHADOWOCCLUSION_
-		Output.P_LightVec_OccShadow.w = GetShadowProjection(WorldPos, -0.003, true).z;
+		Output.P_LightVec_OccShadow.w = GetShadowProjection(WorldPos, true).z;
 	#endif
 
 	Output.NormalVec = normalize(Input.Normal);
@@ -234,7 +235,7 @@ float4 Skin_PS(VS2PS Input) : COLOR
 
 	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
 	float3 DiffuseColor = GetDiffuseValue(NormalVec.xyz, LightVec) * Lights[0].color;
-	float3 SpecularColor = GetSpecularValue(NormalVec.xyz, HalfVec, SpecularPower);
+	float3 SpecularColor = GetSpecularValue(NormalVec.xyz, HalfVec, SpecularPower) * Gloss;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetRadialAttenuation(Input.P_EyeVec_HemiLerp.xyz, Lights[0].attenuation);
@@ -243,20 +244,15 @@ float4 Skin_PS(VS2PS Input) : COLOR
 		const float Attenuation = 1.0;
 		SpecularColor *= Lights[0].specularColor;
 	#endif
-	
-	DiffuseColor = DiffuseColor * ShadowDir;
-	SpecularColor = (SpecularColor * Attenuation * Gloss) * ShadowDir;
 
 	float4 OutColor = 0.0;
 
-	#if _POINTLIGHT_
-		OutColor.rgb = DiffuseColor;
-	#else
-		OutColor.rgb = DiffuseColor + HemiColor;
+	#if !_POINTLIGHT_
+		DiffuseColor.rgb += HemiColor;
 	#endif
-	
-	OutColor.rgb *= DiffuseTex.rgb;
-	OutColor.rgb += SpecularColor;
+
+	OutColor.rgb = (DiffuseTex.rgb * DiffuseColor.rgb) + SpecularColor;
+	OutColor.rgb = (OutColor.rgb * Attenuation) * ShadowDir;
 	OutColor.a = DiffuseTex.a * Transparency.a;
 
 	if (FogColor.r < 0.01)

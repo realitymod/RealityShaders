@@ -1,3 +1,6 @@
+
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 Light Lights[1];
@@ -55,7 +58,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION0;
+	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
 	float4 P_Normals_ScaleLN : TEXCOORD1; // .xyz = Normals; .w = ScaleLN;
 	float3 VertexPos : TEXCOORD2;
@@ -65,7 +68,7 @@ VS2PS TrunkOG_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	Output.Pos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 
 	Output.Tex0.xy = Input.Tex0 / 32767.0;
 

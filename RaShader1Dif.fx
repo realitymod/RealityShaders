@@ -1,3 +1,6 @@
+
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 float4 ObjectSpaceCamPos;
@@ -48,7 +51,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION0;
+	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
 	float3 VertexPos : TEXCOORD1;
 };
@@ -57,7 +60,7 @@ VS2PS Diffuse_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	Output.Pos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 	Output.VertexPos = Input.Pos.xyz;
 	Output.Tex0 = Input.Tex0;
 

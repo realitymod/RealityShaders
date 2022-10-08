@@ -1,4 +1,7 @@
 #line 2 "Particles.fx"
+
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/FXCommon.fx"
 
 // UNIFORM INPUTS

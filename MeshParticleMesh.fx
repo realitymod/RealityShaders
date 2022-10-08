@@ -1,4 +1,7 @@
 #line 2 "MeshParticleMesh.fx"
+
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/FXCommon.fx"
 
 /*

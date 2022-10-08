@@ -1,4 +1,7 @@
 #line 2 "TerrainShader.fx"
+
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 /*

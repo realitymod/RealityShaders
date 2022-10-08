@@ -1,4 +1,5 @@
 
+#include "shaders/RealityGraphics.fx"
 #include "shaders/RaCommon.fx"
 #include "shaders/RaShaderSTMCommon.fx"
 
@@ -55,7 +56,7 @@ float GetBinormalFlipping(APP2VS Input)
 
 struct VS2PS
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 
 	float4 P_Normals_Fog : TEXCOORD0; // .xyz = Normals; .w = Fog
 	float3 EyeVec : TEXCOORD1;
@@ -74,7 +75,7 @@ VS2PS StaticMesh_VS(APP2VS Input)
 
 	// Output position early
 	float4 UnpackedPos = float4(Input.Pos.xyz, 1.0) * PosUnpack;
-	Output.Pos = mul(UnpackedPos, WorldViewProjection);
+	Output.HPos = mul(UnpackedPos, WorldViewProjection);
 
 	float3 UnpackedTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y;
 	float3 UnpackedNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
@@ -226,11 +227,11 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 		#endif
 
 		float Attenuation = GetRadialAttenuation(Input.LightVec.xyz, Lights[0].attenuation);
-		float3 PointDiffuse = GetDiffuseValue(Normals, LightVec) * Lights[0].color;
-		float PointSpecular = GetSpecularValue(Normals, HalfVec) * Gloss;
+		float3 DiffuseColor = GetDiffuseValue(Normals, LightVec) * Lights[0].color;
+		float3 SpecularColor = (GetSpecularValue(Normals, HalfVec) * Gloss) * StaticSpecularColor;
 
-		PointDiffuse += PointSpecular * StaticSpecularColor;
-		float3 Lighting = saturate(PointDiffuse * Attenuation * Input.P_Normals_Fog.w);
+		float3 Lighting = DiffuseColor + SpecularColor;
+		Lighting = saturate(Lighting * Attenuation * Input.P_Normals_Fog.w);
 
 		FinalColor.rgb = (FinalColor.rgb * Lighting) * 2.0;
 		return FinalColor;
@@ -274,9 +275,9 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			return float4(Diffuse, 1.0);
 		#endif
 
-		float Specular = GetSpecularValue(Normals, HalfVec) * Lightmap.g * Gloss;
+		float Specular = GetSpecularValue(Normals, HalfVec) * Gloss;
 		FinalColor.rgb = (FinalColor.rgb * Diffuse) * 2.0;
-		FinalColor.rgb += Specular * StaticSpecularColor;
+		FinalColor.rgb += (Specular * Lightmap.g) * StaticSpecularColor;
 	#endif
 
 	#if !_POINTLIGHT_

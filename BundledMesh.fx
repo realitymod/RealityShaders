@@ -1,5 +1,7 @@
 #line 2 "BundledMesh.fx"
 
+#include "shaders/RealityGraphics.fx"
+
 /*
 	[Attributes from app]
 */
@@ -304,6 +306,7 @@ VS2PS_2 Diffuse_VS(APP2VS Input)
 	float Color = 0.8 + max(0.0, dot(Normal, NormalizedLightVec));
 	Output.Diffuse = saturate(float4(Color, Color, Color, 1.0));
 	Output.Fog = 0.0; // Calc_Fog(Output.HPos.w);
+
 	return Output;
 }
 
@@ -549,6 +552,7 @@ VS2PS_ShadowMap ShadowMap_VS(APP2VS Input)
 	Output.HPos = ProjectShadowCoords(float4(Pos.xyz, 1.0), _ViewProjTrapezMatrix, _ViewProjLightMatrix);
 
 	Output.PosZW = Output.HPos.zw;
+
 	return Output;
 }
 

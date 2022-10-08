@@ -1,4 +1,7 @@
 #line 2 "StaticMesh.fx"
+
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/CommonVertexLight.fx"
 
 /*
@@ -145,13 +148,13 @@ struct APP2VS_ShadowMap
 
 struct VS2PS_ShadowMap
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 PosZW : TEXCOORD0;
 };
 
 struct VS2PS_ShadowMap_Alpha
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 Tex : TEXCOORD0;
 	float2 PosZW : TEXCOORD1;
 };
@@ -170,9 +173,8 @@ VS2PS_ShadowMap ShadowMap_VS(APP2VS_ShadowMap Input)
 
  	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
  	float4 WorldPos = mul(UnpackPos, _WorldMat);
-	Output.Pos = Calc_ShadowProjCoords(float4(WorldPos.xyz, 1.0), _LightTrapezMat, _LightMat);
- 	Output.PosZW.xy = Output.Pos.zw;
-
+	Output.HPos = Calc_ShadowProjCoords(float4(WorldPos.xyz, 1.0), _LightTrapezMat, _LightMat);
+ 	Output.PosZW.xy = Output.HPos.zw;
 	return Output;
 }
 
@@ -182,11 +184,9 @@ VS2PS_ShadowMap_Alpha ShadowMap_Alpha_VS(APP2VS_ShadowMap Input)
 
  	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
  	float4 WorldPos = mul(UnpackPos, _WorldMat);
-	Output.Pos = Calc_ShadowProjCoords(WorldPos, _LightTrapezMat, _LightMat);
- 	Output.PosZW.xy = Output.Pos.zw;
-
+	Output.HPos = Calc_ShadowProjCoords(WorldPos, _LightTrapezMat, _LightMat);
+ 	Output.PosZW.xy = Output.HPos.zw;
 	Output.Tex = Input.Tex * _TexUnpack;
-
 	return Output;
 }
 

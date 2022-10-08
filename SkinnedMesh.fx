@@ -3,6 +3,8 @@
 //
 // Author: Mats Dal
 
+#include "shaders/RealityGraphics.fx"
+
 // Note: obj space light vectors
 float4 _SunLightDirection : SunLightDirection;
 float4 _LightDirection : LightDirection;
@@ -149,7 +151,7 @@ struct APP2VStangent
 
 struct VS2PS_PP
 {
-    float4 Pos : POSITION;
+    float4 HPos : POSITION;
     float2 Tex0 : TEXCOORD0;
     float3 GroundUVAndLerp : TEXCOORD1;
     float3 SkinnedLightVec : TEXCOORD2;
@@ -162,7 +164,7 @@ struct VS2PS_PP
 
 struct VS2PS_Skinpre
 {
-    float4 Pos : POSITION;
+    float4 HPos : POSITION;
     float2 Tex0 : TEXCOORD0;
     float3 SkinnedLightVec : TEXCOORD1;
     float3 ObjEyeVec : TEXCOORD2;
@@ -178,8 +180,8 @@ VS2PS_Skinpre Skin_Pre_VS(APP2VS Input, uniform int NumBones)
 
     Output.ObjEyeVec = normalize(_ObjectEyePos.xyz - Pos);
 
-    Output.Pos.xy = Input.TexCoord0 * float2(2.0, -2.0) - float2(1.0, -1.0);
-    Output.Pos.zw = float2(0.0, 1.0);
+    Output.HPos.xy = Input.TexCoord0 * float2(2.0, -2.0) - float2(1.0, -1.0);
+    Output.HPos.zw = float2(0.0, 1.0);
 
     // Hemi lookup values
     float4 WorldPos = mul(Pos, _World);
@@ -215,7 +217,7 @@ float4 Skin_Pre_PS(VS2PS_Skinpre Input) : COLOR
 
 struct VS2PS_Skinpreshadowed
 {
-    float4 Pos : POSITION;
+    float4 HPos : POSITION;
     float4 Tex0AndHZW : TEXCOORD0;
     float3 SkinnedLightVec : TEXCOORD1;
     float4 ShadowTex : TEXCOORD2;
@@ -235,8 +237,8 @@ VS2PS_Skinpreshadowed Skin_Preshadowed_VS(APP2VS Input, uniform int NumBones)
     Output.ShadowTex = mul(float4(Pos, 1), _LightViewProj);
     Output.ShadowTex.z -= 0.007;
 
-    Output.Pos.xy = Input.TexCoord0 * float2(2.0, -2.0) - float2(1.0, -1.0);
-    Output.Pos.zw = float2(0.0, 1.0);
+    Output.HPos.xy = Input.TexCoord0 * float2(2.0, -2.0) - float2(1.0, -1.0);
+    Output.HPos.zw = float2(0.0, 1.0);
     Output.Tex0AndHZW = Input.TexCoord0.xyyy;
 
     return Output;
@@ -286,7 +288,7 @@ VS2PS_PP Skin_Apply_VS(APP2VS Input, uniform int NumBones)
     SkinSoldier_PP(NumBones, Input, -_SunLightDirection.xyz, Pos, Normal, Output.SkinnedLightVec);
 
     // Transform position into view and then projection space
-    Output.Pos = mul(float4(Pos.xyz, 1.0f), _WorldViewProjection);
+    Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProjection);
 
     // Hemi lookup values
     float4 WorldPos = mul(Pos, _World);
@@ -369,7 +371,7 @@ technique humanskin
 
 struct VS2PS_ShadowMap
 {
-    float4 Pos : POSITION;
+    float4 HPos : POSITION;
     float2 PosZW : TEXCOORD0;
 };
 
@@ -387,16 +389,16 @@ VS2PS_ShadowMap ShadowMap_VS(APP2VS Input)
     float3 Pos = mul(Input.Pos, _BoneArray[IndexArray[0]]) * BlendWeightsArray[0];
     Pos += mul(Input.Pos, _BoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
 
-    Output.Pos = mul(float4(Pos.xyz, 1.0), _vpLightTrapezMat);
+    Output.HPos = mul(float4(Pos.xyz, 1.0), _vpLightTrapezMat);
     float2 LightZW = mul(float4(Pos.xyz, 1.0), _vpLightMat).zw;
-    Output.Pos.z = (LightZW.x * Output.Pos.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
-    Output.PosZW = Output.Pos.zw;
+    Output.HPos.z = (LightZW.x * Output.HPos.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
+    Output.PosZW = Output.HPos.zw;
 
     return Output;
 
     // Shadow
-    Output.Pos = mul(float4(Pos.xyz, 1.0), _vpLightMat);
-    Output.PosZW = Output.Pos.zw;
+    Output.HPos = mul(float4(Pos.xyz, 1.0), _vpLightMat);
+    Output.PosZW = Output.HPos.zw;
 
     return Output;
 }
@@ -412,7 +414,7 @@ float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
 
 struct VS2PS_ShadowMapAlpha
 {
-    float4 Pos : POSITION;
+    float4 HPos : POSITION;
     float4 Tex0PosZW : TEXCOORD0;
 };
 
@@ -430,11 +432,11 @@ VS2PS_ShadowMapAlpha ShadowMapAlpha_VS(APP2VS Input)
     float3 Pos = mul(Input.Pos, _BoneArray[IndexArray[0]]) * BlendWeightsArray[0];
     Pos += mul(Input.Pos, _BoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
 
-    Output.Pos = mul(float4(Pos.xyz, 1.0), _vpLightTrapezMat);
+    Output.HPos = mul(float4(Pos.xyz, 1.0), _vpLightTrapezMat);
     float2 LightZW = mul(float4(Pos.xyz, 1.0), _vpLightMat).zw;
-    Output.Pos.z = (LightZW.x * Output.Pos.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
+    Output.HPos.z = (LightZW.x * Output.HPos.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
     Output.Tex0PosZW.xy = Input.TexCoord0;
-    Output.Tex0PosZW.zw = Output.Pos.zw;
+    Output.Tex0PosZW.zw = Output.HPos.zw;
 
     return Output;
 }

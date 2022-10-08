@@ -12,6 +12,8 @@
 	4. Redid coding conventions
 */
 
+#include "shaders/RealityGraphics.fx"
+
 /*
 	[Attributes from app]
 */
@@ -125,27 +127,27 @@ struct APP2VS_Blit
 
 struct VS2PS_4Tap
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 FilterCoords[4] : TEXCOORD0;
 };
 
 struct VS2PS_5Tap
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 TexCoord0 : TEXCOORD0;
 	float4 FilterCoords[2] : TEXCOORD1;
 };
 
 struct VS2PS_Blit
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 TexCoord0 : TEXCOORD0;
 };
 
 VS2PS_Blit Blit_VS(APP2VS_Blit Input)
 {
 	VS2PS_Blit Output;
-	Output.Pos = float4(Input.Pos.xy, 0.0, 1.0);
+	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.TexCoord0 = Input.TexCoord0;
 	return Output;
 }
@@ -153,7 +155,7 @@ VS2PS_Blit Blit_VS(APP2VS_Blit Input)
 VS2PS_Blit Blit_Custom_VS(APP2VS_Blit Input)
 {
 	VS2PS_Blit Output;
-	Output.Pos = mul(float4(Input.Pos.xy, 0.0, 1.0), _CustomMtx);
+	Output.HPos = mul(float4(Input.Pos.xy, 0.0, 1.0), _CustomMtx);
 	Output.TexCoord0 = Input.TexCoord0;
 	return Output;
 }
@@ -241,7 +243,7 @@ float4 Dummy_PS() : COLOR
 VS2PS_Blit Blit_Magnified_PS(APP2VS_Blit Input)
 {
 	VS2PS_Blit Output;
-	Output.Pos = float4(Input.Pos.xy * 1.1, 0.0, 1.0);
+	Output.HPos = float4(Input.Pos.xy * 1.1, 0.0, 1.0);
 	Output.TexCoord0 = Input.TexCoord0;
 	return Output;
 }
@@ -249,7 +251,7 @@ VS2PS_Blit Blit_Magnified_PS(APP2VS_Blit Input)
 VS2PS_4Tap FSBMScaleDown4x4LinearFilter_VS(APP2VS_Blit Input, uniform float4 Offsets[4])
 {
 	VS2PS_4Tap Output;
-	Output.Pos = float4(Input.Pos.xy, 0.0, 1.0);
+	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.FilterCoords[0] = Input.TexCoord0 + Offsets[0].xy;
 	Output.FilterCoords[1] = Input.TexCoord0 + Offsets[1].xy;
 	Output.FilterCoords[2] = Input.TexCoord0 + Offsets[2].xy;
@@ -260,7 +262,7 @@ VS2PS_4Tap FSBMScaleDown4x4LinearFilter_VS(APP2VS_Blit Input, uniform float4 Off
 VS2PS_5Tap Sample5_VS(APP2VS_Blit Input, uniform float Offsets[5], uniform bool Horizontal)
 {
 	VS2PS_5Tap Output;
-	Output.Pos = float4(Input.Pos.xy, 0.0, 1.0);
+	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 
 	float2 VSOffset = (Horizontal) ? float2(Offsets[4], 0.0) : float2(0.0, Offsets[4]);
 	Output.TexCoord0 = Input.TexCoord0 + VSOffset;

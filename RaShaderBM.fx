@@ -1,3 +1,5 @@
+
+#include "shaders/RealityGraphics.fx"
 #include "shaders/RaCommon.fx"
 #include "shaders/RaDefines.fx"
 #include "shaders/RaShaderBMCommon.fx"
@@ -57,10 +59,6 @@
 	// We'd still like fresnel, though
 	#define _FRESNELVALUES_ 1
 #endif
-
-// Rod's magic numbers ;-)
-#define refractionIndexRatio 0.15
-#define R0 (pow(1.0 - refractionIndexRatio, 2.0) / pow(1.0 + refractionIndexRatio, 4.0))
 
 struct APP2VS
 {
@@ -202,7 +200,7 @@ VS2PS Bump_VS(APP2VS Input)
 	#endif
 
 	#if _HASSHADOWOCCLUSION_
-		Output.OccShadowTex = GetShadowProjection(WorldPos, -0.003, true);
+		Output.OccShadowTex = GetShadowProjection(WorldPos, true);
 	#endif
 
 	Output.VertexPos = WorldPos.xyz;
@@ -229,7 +227,7 @@ float4 Bump_PS(VS2PS Input) : COLOR
 	#if _HASNORMALMAP_
 		float4 TangentNormal = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
 		TangentNormal.xyz = normalize(TangentNormal.xyz * 2.0 - 1.0);
-		Normal = TangentNormal;
+		Normal = TangentNormal.xyz;
 	#else
 		Normal = normalize(Input.Normals.xyz);
 	#endif
@@ -254,8 +252,6 @@ float4 Bump_PS(VS2PS Input) : COLOR
 
 	float Diffuse = GetDiffuseValue(Normal, LightVec);
 
-	float Specular = GetSpecularValue(Normal, HalfVec);
-
 	#if _HASCOLORMAPGLOSS_
 		float Gloss = TexDiffuse.a;
 	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
@@ -264,11 +260,11 @@ float4 Bump_PS(VS2PS Input) : COLOR
 		float Gloss = StaticGloss;
 	#endif
 
+	float Specular = GetSpecularValue(Normal, HalfVec) * Gloss;
+
 	#if !_POINTLIGHT_
 		Diffuse *= Lights[0].color;
 	#endif
-
-	Specular *= Gloss;
 
 	#if defined(SHADOW_CHANNEL)
 		return float4(Diffuse + Specular, 1.0);
@@ -325,15 +321,14 @@ float4 Bump_PS(VS2PS Input) : COLOR
 	float4 DiffuseColor = TexDiffuse;
 
 	#if _FRESNELVALUES_
-		float3 ReflectValue = -reflect(EyeVec.xyz, Normal.xyz);
-		float FresnelValue = R0 + (1.0 - R0) * saturate(1.0 - dot(EyeVec.xyz, Normal.xyz));
-
 		#if _HASENVMAP_
-			float3 EnvMapColor = texCUBE(CubeMapSampler, ReflectValue);
+			float3 Reflection = -reflect(EyeVec.xyz, Normal.xyz);
+			float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
 			DiffuseColor.rgb = lerp(DiffuseColor, EnvMapColor, Gloss / 4.0);
 		#endif
 
-		DiffuseColor.a = lerp(DiffuseColor.a, 1.0, FresnelValue * FresnelValue);
+		float FresnelValue = GetSchlickApproximation(Normal.xyz, EyeVec.xyz, 0.15);
+		DiffuseColor.a = lerp(DiffuseColor.a, 1.0, FresnelValue);
 	#endif
 
 	OutputColor.rgb *= DiffuseColor.rgb * GI.rgb;

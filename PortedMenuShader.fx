@@ -60,7 +60,7 @@ struct APP2VS
 
 struct VS2PS
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float4 Color : COLOR0;
 	float2 TexCoord0 : TEXCOORD0;
 	float2 TexCoord2 : TEXCOORD1;
@@ -70,7 +70,7 @@ VS2PS Basic_VS(APP2VS Input)
 {
 	VS2PS Output;
 	float4x4 WorldViewProj = _WorldMatrix * _ViewMatrix * _ProjMatrix;
-	Output.Pos = mul(Input.Pos, WorldViewProj);
+	Output.HPos = mul(Input.Pos, WorldViewProj);
 	Output.Color = saturate(Input.Color);
  	Output.TexCoord0 = Input.TexCoord0;
  	Output.TexCoord2 = Input.TexCoord2;

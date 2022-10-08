@@ -1,5 +1,7 @@
 #line 2 "SkyDome.fx"
 
+#include "shaders/RealityGraphics.fx"
+
 uniform float4x4 _ViewProjMatrix : WorldViewProjection;
 uniform float4 _TexOffset : TEXOFFSET;
 uniform float4 _TexOffset2 : TEXOFFSET2;
@@ -13,7 +15,7 @@ uniform float2 _CloudLerpFactors : CLOUDLERPFACTORS;
 uniform float _LightingBlend : LIGHTINGBLEND;
 uniform float3 _LightingColor : LIGHTINGCOLOR;
 
-uniform texture Texture_0: TEXLAYER0;
+uniform texture Texture_0 : TEXLAYER0;
 sampler Texture_0_Sampler = sampler_state
 {
 	Texture = (Texture_0);
@@ -24,7 +26,7 @@ sampler Texture_0_Sampler = sampler_state
 	AddressV = CLAMP;
 };
 
-uniform texture Texture_1: TEXLAYER1;
+uniform texture Texture_1 : TEXLAYER1;
 sampler Texture_1_Sampler = sampler_state
 {
 	Texture = (Texture_1);
@@ -35,7 +37,7 @@ sampler Texture_1_Sampler = sampler_state
 	AddressV = WRAP;
 };
 
-uniform texture Texture_2: TEXLAYER2;
+uniform texture Texture_2 : TEXLAYER2;
 sampler Texture_2_Sampler = sampler_state
 {
 	Texture = (Texture_2);
@@ -48,23 +50,23 @@ sampler Texture_2_Sampler = sampler_state
 
 struct APP2VS
 {
-    float4 Pos : POSITION;
-    float4 BlendIndices : BLENDINDICES;
-    float2 TexCoord : TEXCOORD0;
-    float2 TexCoord1 : TEXCOORD1;
+	float4 Pos : POSITION;
+	float4 BlendIndices : BLENDINDICES;
+	float2 TexCoord : TEXCOORD0;
+	float2 TexCoord1 : TEXCOORD1;
 };
 
 struct APP2VS_NoClouds
 {
-    float4 Pos : POSITION;
-    float4 BlendIndices : BLENDINDICES;
-    float2 TexCoord : TEXCOORD0;
+	float4 Pos : POSITION;
+	float4 BlendIndices : BLENDINDICES;
+	float2 TexCoord : TEXCOORD0;
 };
 
 struct VS2PS_NoClouds
 {
-	float4 HPos	: POSITION;
-	float2 Tex0	: TEXCOORD0;
+	float4 HPos : POSITION;
+	float2 Tex0 : TEXCOORD0;
 };
 
 struct VS2PS_SkyDome
@@ -82,9 +84,6 @@ struct VS2PS_DualClouds
 	float4 FadeOut : COLOR0;
 };
 
-
-
-
 /*
 	General SkyDome shaders
 */
@@ -92,8 +91,8 @@ struct VS2PS_DualClouds
 VS2PS_SkyDome SkyDome_VS(APP2VS Input)
 {
 	VS2PS_SkyDome Output;
- 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
- 	Output.UV_Sky_Cloud.xy = Input.TexCoord; // Sky coords
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+	Output.UV_Sky_Cloud.xy = Input.TexCoord; // Sky coords
 	Output.UV_Sky_Cloud.zw = Input.TexCoord1.xy + _TexOffset.xy; // Cloud1 coords
 	float Dist = length(Input.Pos.xyz);
 	Output.FadeOut = 1.0 - saturate((Dist - _FadeOutDist.x) / _FadeOutDist.y);
@@ -158,9 +157,6 @@ technique SkyDomeNV3xLit
 	}
 }
 
-
-
-
 /*
 	SkyDome with two clouds shaders
 */
@@ -168,8 +164,8 @@ technique SkyDomeNV3xLit
 VS2PS_DualClouds SkyDome_DualClouds_VS(APP2VS Input)
 {
 	VS2PS_DualClouds Output;
- 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
- 	Output.SkyCoord = Input.TexCoord;
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+	Output.SkyCoord = Input.TexCoord;
 	Output.CloudCoords.xy = (Input.TexCoord1.xy + _TexOffset.xy);
 	Output.CloudCoords.zw = (Input.TexCoord1.xy + _TexOffset2.xy);
 	float Dist = length(Input.Pos.xyz);
@@ -200,9 +196,6 @@ technique SkyDomeNV3xDualClouds
 		PixelShader = compile ps_3_0 SkyDome_DualClouds_PS();
 	}
 }
-
-
-
 
 /*
 	SkyDome with not cloud shaders
@@ -253,9 +246,6 @@ technique SkyDomeNV3xNoCloudsLit
 	}
 }
 
-
-
-
 /*
 	SkyDome with flare shaders
 */
@@ -263,9 +253,9 @@ technique SkyDomeNV3xNoCloudsLit
 VS2PS_NoClouds SkyDome_SunFlare_VS(APP2VS_NoClouds Input)
 {
 	VS2PS_NoClouds Output;
- 	// Output.HPos = Input.Pos * 10000.0;
- 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
- 	Output.Tex0 = Input.TexCoord;
+	// Output.HPos = Input.Pos * 10000.0;
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+	Output.Tex0 = Input.TexCoord;
 	return Output;
 }
 
@@ -295,7 +285,7 @@ technique SkyDomeSunFlare
 		SrcBlend = ONE;
 		DestBlend = ONE;
 		// ColorWriteEnable = 0;
- 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
+		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_SunFlare_PS();
 	}
 }
@@ -318,7 +308,7 @@ technique SkyDomeFlareOccludeCheck
 		AlphaFunc = GREATER;
 		// AlphaRef = 255;
 		// AlphaFunc = LESS;
- 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
+		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_Flare_Occlude_PS();
 	}
 }
@@ -342,7 +332,7 @@ technique SkyDomeFlareOcclude
 		AlphaFunc = GREATER;
 		// AlphaRef = 255;
 		// AlphaFunc = LESS;
- 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
+		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_Flare_Occlude_PS();
 	}
 }

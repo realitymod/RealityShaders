@@ -1,4 +1,6 @@
 
+#include "shaders/RealityGraphics.fx"
+
 float4x4 _WorldViewProj : WORLDVIEWPROJ;
 
 float4 _CellPositions[32] : CELLPOSITIONS;
@@ -36,7 +38,7 @@ struct APP2PS
 
 struct VS2PS_Point
 {
-	float4 Pos: POSITION;
+	float4 HPos: POSITION;
 	float2 TexCoord : TEXCOORD0;
 	float4 Color : COLOR0;
 	float PointSize : PSIZE;
@@ -57,9 +59,10 @@ VS2PS_Point Point_VS(APP2PS Input)
 	float Alpha = 1.0f - length(saturate(CamDelta));
 
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
-	Output.Pos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
+	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.TexCoord = Input.TexCoord;
 	Output.PointSize = min(_ParticleSize * rsqrt(_PointScale[0] + _PointScale[1] * CamDist), _MaxParticleSize);
+
 	return Output;
 }
 
@@ -95,7 +98,7 @@ technique Point
 
 struct VS2PS_Line
 {
-	float4 Pos : POSITION;
+	float4 HPos : POSITION;
 	float2 TexCoord : TEXCOORD0;
 	float4 Color : COLOR0;
 };
@@ -112,8 +115,9 @@ VS2PS_Line Line_VS(APP2PS Input)
 	float Alpha = 1.0f - length(saturate(CamDelta));
 
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
-	Output.Pos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
+	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.TexCoord = Input.TexCoord;
+
 	return Output;
 }
 
@@ -148,7 +152,7 @@ technique Line
 
 struct VS2PS_Cell
 {
-	float4 Pos: POSITION;
+	float4 HPos: POSITION;
 	float2 TexCoord : TEXCOORD0;
 	float4 Color : COLOR0;
 };
@@ -161,8 +165,9 @@ VS2PS_Cell Cells_VS(APP2PS Input)
 	float3 ParticlePos = Input.Pos + CellPos;
 
 	Output.Color = saturate(_ParticleColor);
-	Output.Pos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
+	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.TexCoord = Input.TexCoord;
+
 	return Output;
 }
 

@@ -1,4 +1,7 @@
 #line 2 "RoadCompiled.fx"
+
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 uniform float4x4 _WorldViewProj : WorldViewProjection;
@@ -59,11 +62,10 @@ struct APP2VS
 
 struct VS2PS
 {
-    float4 Pos : POSITION;
-    float4 Tex_0_1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1
-    float4 PosTex : TEXCOORD1;
-	float3 VertexPos : TEXCOORD2;
-    float ZFade : COLOR0;
+	float4 HPos : POSITION;
+	float4 Tex_0_1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1
+	float4 PosTex : TEXCOORD1;
+	float4 P_VertexPos_Alpha : TEXCOORD2; // .xyz = VertexPos; .w = Alpha;
 };
 
 float4 Proj_To_Lighting(float4 HPos)
@@ -83,83 +85,70 @@ VS2PS RoadCompiled_VS(APP2VS Input)
 	VS2PS Output;
 
 	float4 WorldPos = Input.Pos;
-	float CameraDist = distance(Input.Pos.xyz, _LocalEyePos.xyz);
-	float InterpolationValue = saturate(CameraDist * _FadeoutValues.x - _FadeoutValues.y);
-	// WorldPos.y += 0.01 * (1.0 - InterpolationValue);
 	WorldPos.y += 0.01;
-	Output.Pos = mul(WorldPos, _WorldViewProj);
-
-	/*
-		Output.PosTex.xy = Output.Pos.xy/Output.Pos.w;
-		Output.PosTex.xy = (Output.PosTex.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
-		Output.PosTex.xy = Output.PosTex.xy * Output.Pos.w;
-		Output.PosTex.zw = Output.Pos.zw;
-	*/
-	Output.PosTex = Proj_To_Lighting(Output.Pos);
-
+	Output.HPos = mul(WorldPos, _WorldViewProj);
+	Output.PosTex = Proj_To_Lighting(Output.HPos);
 	Output.Tex_0_1 = float4(Input.Tex0, Input.Tex1);
-
-	Output.ZFade = 1.0 - saturate((CameraDist * _FadeoutValues.x) - _FadeoutValues.y);
-	Output.ZFade = saturate(Output.ZFade * Input.Alpha);
-
-	Output.VertexPos = Input.Pos.xyz;
+	Output.P_VertexPos_Alpha = float4(Input.Pos.xyz, Input.Alpha);
 
 	return Output;
 }
 
 float4 RoadCompiled_PS(VS2PS Input) : COLOR
 {
+	float ZFade = GetRoadZFade(Input.P_VertexPos_Alpha.xyz, _LocalEyePos.xyz, _FadeoutValues);
 	float4 Detail0 = tex2D(Detail_0_Sampler, Input.Tex_0_1.xy);
 	float4 Detail1 = tex2D(Detail_1_Sampler, Input.Tex_0_1.zw * 0.1);
 
 	float4 Color = 0.0;
 	Color.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
-	Color.a = Detail0.a * Input.ZFade;
+	Color.a = Detail0.a * saturate(ZFade * Input.P_VertexPos_Alpha.w);
 
-    float4 AccumLights = tex2Dproj(Lighting_Sampler, Input.PosTex);
-    float4 Light = 0.0;
+	float4 AccumLights = tex2Dproj(Lighting_Sampler, Input.PosTex);
+	float4 Light = 0.0;
 
-    if (FogColor.r < 0.01)
-    {
-        // On thermals no shadows
-        Light = (_SunColor * 2.0 + AccumLights) * 2.0;
-        Color.rgb *= Light.xyz;
-        Color.g = clamp(Color.g, 0.0, 0.5);
-    }
-    else
-    {
-        Light = ((AccumLights.w * _SunColor * 2.0) + AccumLights) * 2.0;
-        Color.rgb *= Light.xyz;
-    }
+	if (FogColor.r < 0.01)
+	{
+		// On thermals no shadows
+		Light = (_SunColor * 2.0 + AccumLights) * 2.0;
+		Color.rgb *= Light.xyz;
+		Color.g = clamp(Color.g, 0.0, 0.5);
+	}
+	else
+	{
+		Light = ((AccumLights.w * _SunColor * 2.0) + AccumLights) * 2.0;
+		Color.rgb *= Light.xyz;
+	}
 
-	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, _LocalEyePos.xyz));
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.P_VertexPos_Alpha.xyz, _LocalEyePos.xyz));
 	return Color;
 }
 
 struct VS2PS_Dx9
 {
-    float4 Pos : POSITION;
-    float4 Tex_0_1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1
-    float ZFade : COLOR0;
+	float4 HPos : POSITION;
+	float4 Tex_0_1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1
+	float3 VertexPos : TEXCOORD1;
 };
 
 VS2PS_Dx9 RoadCompiled_Dx9_VS(APP2VS Input)
 {
 	VS2PS_Dx9 Output;
-	Output.Pos = mul(Input.Pos, _WorldViewProj);
+	Output.HPos = mul(Input.Pos, _WorldViewProj);
 	Output.Tex_0_1 = float4(Input.Tex0, Input.Tex1);
-	Output.ZFade = 1.0 - saturate((distance(Input.Pos.xyz, _LocalEyePos.xyz) - _FadeoutValues.x) * _FadeoutValues.y);
+	Output.VertexPos = Input.Pos.xyz;
 	return Output;
 }
 
 float4 RoadCompiled_Dx9_PS(VS2PS_Dx9 Input) : COLOR
 {
+	float ZFade = GetRoadZFade(Input.VertexPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 	float4 Detail0 = tex2D(Detail_0_Sampler, Input.Tex_0_1.xy);
 	float4 Detail1 = tex2D(Detail_1_Sampler, Input.Tex_0_1.zw);
 
 	float4 Final = 0.0;
 	Final.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
-	Final.a = Detail0.a * Input.ZFade;
+	Final.a = Detail0.a * ZFade;
 	return Final;
 }
 
@@ -185,9 +174,6 @@ technique roadcompiledFull
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		// DepthBias = -0.0001f;
-		// SlopeScaleDepthBias = -0.00001f;
-		// FillMode = WIREFRAME;
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		VertexShader = compile vs_3_0 RoadCompiled_VS();
@@ -196,14 +182,9 @@ technique roadcompiledFull
 
 	pass DirectX9
 	{
-		AlphaBlendEnable = FALSE;
-		// AlphaBlendEnable = TRUE;
-		// SrcBlend = SRCALPHA;
-		// DestBlend = INVSRCALPHA;
 		DepthBias = -0.0001f;
 		SlopeScaleDepthBias = -0.00001f;
 		ZEnable = FALSE;
-		// FillMode = WIREFRAME;
 		VertexShader = compile vs_3_0 RoadCompiled_Dx9_VS();
 		PixelShader = compile ps_3_0 RoadCompiled_Dx9_PS();
 	}

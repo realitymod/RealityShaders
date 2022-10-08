@@ -1,5 +1,7 @@
 #line 2 "Font.fx"
 
+#include "shaders/RealityGraphics.fx"
+
 #include "shaders/RaCommon.fx"
 
 /*
@@ -37,14 +39,14 @@ sampler Sampler_TexMap_Bilinear = sampler_state
 
 struct APP2VS
 {
-	float4 Position : POSITION;
+	float4 Pos : POSITION;
 	float4 Color : COLOR;
 	float2 TexCoord : TEXCOORD0;
 };
 
 struct VS2PS_REGULAR
 {
-	float4 Position : POSITION;
+	float4 HPos : POSITION;
 	float4 Diffuse : COLOR0;
 	float2 TexCoord : TEXCOORD0;
 };
@@ -52,8 +54,8 @@ struct VS2PS_REGULAR
 VS2PS_REGULAR Regular_VS(APP2VS Input)
 {
 	VS2PS_REGULAR Output = (VS2PS_REGULAR)0;
-	// Output.Position = mul( float4(Position.xy, 0.5f, 1.0f), _WorldView);
-	Output.Position = float4(Input.Position.xy, 0.5f, 1.0f);
+	// Output.Output.HPos = mul(float4(Input.Pos.xy, 0.5f, 1.0f), _WorldView);
+	Output.HPos = float4(Input.Pos.xy, 0.5f, 1.0f);
 	Output.Diffuse = saturate(Input.Color);
 	Output.TexCoord = Input.TexCoord;
 	return Output;

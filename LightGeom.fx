@@ -1,5 +1,7 @@
 #line 2 "lightGeom.fx"
 
+#include "shaders/RealityGraphics.fx"
+
 /*
 	[Attributes from app]
 */
@@ -23,9 +25,9 @@ struct VS2PS
 
 VS2PS Point_Light_VS(APP2VS Input)
 {
-	VS2PS Out;
- 	Out.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
-	return Out;
+	VS2PS Output;
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
+	return Output;
 }
 
 float4 Point_Light_PS() : COLOR
@@ -67,17 +69,17 @@ struct VS2PS_Spot
 
 VS2PS_Spot Spot_Light_VS(APP2VS Input)
 {
-	VS2PS_Spot Out;
- 	Out.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
+	VS2PS_Spot Output;
+ 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
 
 	// transform vertex
 	float3 VertPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldView);
-	Out.LightVec = -normalize(VertPos);
+	Output.LightVec = -normalize(VertPos);
 
 	// transform LightDir to objectSpace
-	Out.LightDir = mul(_SpotDir, float3x3(_WorldView[0].xyz, _WorldView[1].xyz, _WorldView[2].xyz));
+	Output.LightDir = mul(_SpotDir, float3x3(_WorldView[0].xyz, _WorldView[1].xyz, _WorldView[2].xyz));
 
-	return Out;
+	return Output;
 }
 
 float4 Spot_Light_PS(VS2PS_Spot Input) : COLOR
