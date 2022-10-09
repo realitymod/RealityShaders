@@ -236,10 +236,6 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 		FinalColor.rgb = (FinalColor.rgb * Lighting) * 2.0;
 		return FinalColor;
 	#else
-		#if defined(DIFFUSE_CHANNEL)
-			return float4(FinalColor.rgb, 1.0);
-		#endif
-
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
 
@@ -269,10 +265,6 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 				Diffuse *= Lightmap.g;
 				Diffuse += BumpedSky;
 			#endif
-		#endif
-
-		#if defined(SHADOW_CHANNEL)
-			return float4(Diffuse, 1.0);
 		#endif
 
 		float Specular = GetSpecularValue(Normals, HalfVec) * Gloss;

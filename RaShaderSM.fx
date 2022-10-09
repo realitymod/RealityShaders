@@ -245,14 +245,15 @@ float4 Skin_PS(VS2PS Input) : COLOR
 		SpecularColor *= Lights[0].specularColor;
 	#endif
 
-	float4 OutColor = 0.0;
+	DiffuseColor = DiffuseColor * ShadowDir;
+	SpecularColor = (SpecularColor * Attenuation) * ShadowDir;
 
 	#if !_POINTLIGHT_
 		DiffuseColor.rgb += HemiColor;
 	#endif
 
+	float4 OutColor = 0.0;
 	OutColor.rgb = (DiffuseTex.rgb * DiffuseColor.rgb) + SpecularColor;
-	OutColor.rgb = (OutColor.rgb * Attenuation) * ShadowDir;
 	OutColor.a = DiffuseTex.a * Transparency.a;
 
 	if (FogColor.r < 0.01)

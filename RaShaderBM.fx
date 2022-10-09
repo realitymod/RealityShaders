@@ -210,66 +210,6 @@ VS2PS Bump_VS(APP2VS Input)
 
 float4 Bump_PS(VS2PS Input) : COLOR
 {
-	#if _FINDSHADER_
-		return 1.0;
-	#endif
-
-	float4 OutputColor = (float4)1;
-
-	float4 TexDiffuse = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
-
-	#if defined(DIFFUSE_CHANNEL)
-		return TexDiffuse;
-	#endif
-
-	float3 Normal = 0.0;
-
-	#if _HASNORMALMAP_
-		float4 TangentNormal = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
-		TangentNormal.xyz = normalize(TangentNormal.xyz * 2.0 - 1.0);
-		Normal = TangentNormal.xyz;
-	#else
-		Normal = normalize(Input.Normals.xyz);
-	#endif
-
-	#if defined(NORMAL_CHANNEL)
-		return float4(Normal * 0.5 + 0.5, 1.0);
-	#endif
-
-	float3 LightVec = Input.P_LightVec_HemiLerp.xyz;
-
-	float3 EyeVec = Input.EyeVec;
-
-	#if _POINTLIGHT_
-		float Attenuation = GetRadialAttenuation(LightVec, Lights[0].attenuation);
-	#endif
-
-	LightVec = normalize(LightVec);
-
-	EyeVec = normalize(Input.EyeVec);
-
-	float3 HalfVec = normalize(LightVec + EyeVec);
-
-	float Diffuse = GetDiffuseValue(Normal, LightVec);
-
-	#if _HASCOLORMAPGLOSS_
-		float Gloss = TexDiffuse.a;
-	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
-		float Gloss = TangentNormal.a;
-	#else
-		float Gloss = StaticGloss;
-	#endif
-
-	float Specular = GetSpecularValue(Normal, HalfVec) * Gloss;
-
-	#if !_POINTLIGHT_
-		Diffuse *= Lights[0].color;
-	#endif
-
-	#if defined(SHADOW_CHANNEL)
-		return float4(Diffuse + Specular, 1.0);
-	#endif
-
 	#if _HASSHADOW_
 		float ShadowDir = GetShadowFactor(ShadowMapSampler, Input.ShadowTex);
 	#else
@@ -292,25 +232,47 @@ float4 Bump_PS(VS2PS Input) : COLOR
 		float HemiColor = Lights[0].color.w;
 	#endif
 
+	float3 Normal = 0.0;
+
+	#if _HASNORMALMAP_
+		float4 TangentNormal = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
+		TangentNormal.xyz = normalize(TangentNormal.xyz * 2.0 - 1.0);
+		Normal = TangentNormal.xyz;
+	#else
+		Normal = normalize(Input.Normals.xyz);
+	#endif
+
+	float3 LightVec = normalize(Input.P_LightVec_HemiLerp.xyz);
+	float3 EyeVec = normalize(Input.EyeVec);
+	float3 HalfVec = normalize(LightVec + EyeVec);
+
+	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
+
+	#if _HASCOLORMAPGLOSS_
+		float Gloss = DiffuseMap.a;
+	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
+		float Gloss = TangentNormal.a;
+	#else
+		float Gloss = StaticGloss;
+	#endif
+
+	float Diffuse = GetDiffuseValue(Normal, LightVec);
+	float Specular = GetSpecularValue(Normal, HalfVec) * Gloss;
+
+	#if !_POINTLIGHT_
+		Diffuse *= Lights[0].color;
+	#endif
+
 	// Killing both spec and dot3 if we are in shadows
 	Diffuse *= ShadowDir * ShadowOccDir;
 	Specular *= ShadowDir * ShadowOccDir;
 
-	#if _HASGIMAP_
-		float4 GI = tex2D(GIMapSampler, Input.P_Tex0_GroundUV.xy);
-		float4 GI_TIS = GI; // M
-		if (GI_TIS.a < 0.01)
-		{
-			GI = 1.0;
-		}
-	#else
-		const float4 GI = 1.0;
-	#endif
+	float4 OutputColor = 1.0;
 
 	#if _POINTLIGHT_
 		#if !_HASCOLORMAPGLOSS_
 			// there is no Gloss map so alpha means transparency
-			OutputColor.rgb = Diffuse * TexDiffuse.a;
+			OutputColor.rgb = Diffuse * DiffuseMap.a;
 		#else
 			OutputColor.rgb = Diffuse;
 		#endif
@@ -318,7 +280,7 @@ float4 Bump_PS(VS2PS Input) : COLOR
 		OutputColor.rgb = HemiColor + Diffuse;
 	#endif
 
-	float4 DiffuseColor = TexDiffuse;
+	float4 DiffuseColor = DiffuseMap;
 
 	#if _FRESNELVALUES_
 		#if _HASENVMAP_
@@ -331,11 +293,19 @@ float4 Bump_PS(VS2PS Input) : COLOR
 		DiffuseColor.a = lerp(DiffuseColor.a, 1.0, FresnelValue);
 	#endif
 
+	#if _HASGIMAP_
+		float4 GI = tex2D(GIMapSampler, Input.P_Tex0_GroundUV.xy);
+		float4 GI_TIS = GI; // M
+		GI = (GI_TIS.a < 0.01) ? 1.0 : GI;
+	#else
+		const float4 GI = 1.0;
+	#endif
+
 	OutputColor.rgb *= DiffuseColor.rgb * GI.rgb;
 	OutputColor.rgb += Specular * GI.rgb;
 
 	#if _HASDOT3ALPHATEST_
-		OutputColor.a = dot(TexDiffuse.rgb, 1.0);
+		OutputColor.a = dot(DiffuseMap.rgb, 1.0);
 	#else
 		#if _HASCOLORMAPGLOSS_
 			OutputColor.a = 1.0f;
@@ -345,7 +315,7 @@ float4 Bump_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _POINTLIGHT_
-		OutputColor *= Attenuation;
+		OutputColor *= GetRadialAttenuation(Input.P_LightVec_HemiLerp.xyz, Lights[0].attenuation);
 		OutputColor.a *= GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz);
 	#endif
 
@@ -358,7 +328,7 @@ float4 Bump_PS(VS2PS Input) : COLOR
 			{
 				if (GI_TIS.g < 0.01)
 				{
-					OutputColor.rgb = float3(lerp(0.43, 0.17, TexDiffuse.b), 1.0, 0.0);
+					OutputColor.rgb = float3(lerp(0.43, 0.17, DiffuseMap.b), 1.0, 0.0);
 				}
 				else
 				{
@@ -368,13 +338,13 @@ float4 Bump_PS(VS2PS Input) : COLOR
 			else
 			{
 				// Normal Wrecks also cold
-				OutputColor.rgb = float3(lerp(0.43, 0.17, TexDiffuse.b), 1.0, 0.0);
+				OutputColor.rgb = float3(lerp(0.43, 0.17, DiffuseMap.b), 1.0, 0.0);
 			}
 		}
 	#else
 		if (FogColor.r < 0.01)
 		{
-			OutputColor.rgb = float3(lerp(0.64, 0.3, TexDiffuse.b), 1.0, 0.0); // M // 0.61, 0.25
+			OutputColor.rgb = float3(lerp(0.64, 0.3, DiffuseMap.b), 1.0, 0.0); // M // 0.61, 0.25
 		}
 	#endif
 

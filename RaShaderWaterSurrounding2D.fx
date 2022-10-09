@@ -1,4 +1,5 @@
 
-#define NO_LIGHTMAP
+#define USE_FRESNEL
+#define USE_SPECULAR
 
 #include "shaders/RaShaderWaterBase.fx"

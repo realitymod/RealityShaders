@@ -166,7 +166,7 @@ struct VS2PS
 	#else
 		float2 Tex : TEXCOORD0;
 	#endif
-	#if !defined(NO_LIGHTMAP)
+	#if defined(USE_LIGHTMAP)
 		float2 LightMapTex : TEXCOORD1;
 	#endif
 	float3 VertexPos : TEXCOORD2;
@@ -200,7 +200,7 @@ VS2PS Water_VS(APP2VS Input)
 
 	Output.Tex = Tex;
 
-	#if !defined(NO_LIGHTMAP)
+	#if defined(USE_LIGHTMAP)
 		Output.LightMapTex = Input.LMTex * LightMapOffset.xy + LightMapOffset.zw;
 	#endif
 
@@ -217,10 +217,10 @@ float4 Water_PS(in VS2PS Input) : COLOR
 {
 	float4 FinalColor = 0.0;
 
-	#if defined(NO_LIGHTMAP)
-		float4 LightMap = PointColor;
-	#else
+	#if defined(USE_LIGHTMAP)
 		float4 LightMap = tex2D(LightMapSampler, Input.LightMapTex);
+	#else
+		float4 LightMap = PointColor;
 	#endif
 
 	#if defined(USE_3DTEXTURE)

@@ -146,9 +146,9 @@
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(0.0, Texel.y, 0.0, 0.0));
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel);
 
-		// We need a bias to prevent shadow acne
-		const float Bias = -0.001;
-		float4 CMPBits = step(saturate(ShadowCoords.z + Bias), Samples);
+		// Use bias to avoid shadow acne (const from xpack)
+		const float Bias = -0.003;
+		float4 CMPBits = step(saturate(GetSlopedBasedBias(ShadowCoords.z, Bias)), Samples);
 		return dot(CMPBits, 0.25);
 	}
 #endif

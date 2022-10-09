@@ -11,6 +11,20 @@
 	*/
 
 	/*
+		Description: Gets slope-scaled bias from depth
+		Implementation: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
+		Source: https://learn.microsoft.com/en-us/windows/win32/direct3d9/depth-bias
+	*/
+
+	float GetSlopedBasedBias(float Depth, float Bias)
+	{
+		float OutputDepth = Depth;
+		OutputDepth += (Bias * abs(ddx(Depth)));
+		OutputDepth += (Bias * abs(ddy(Depth)));
+		return OutputDepth;
+	}
+
+	/*
 		Description: Converts linear depth to logarithmic depth in the vertex shader
 		Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
 	*/
