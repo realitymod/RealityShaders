@@ -1,9 +1,11 @@
 
 /*
+	Description:
+
 	Shader that handles most of the screen-space post processing and texture conversions in the game.
 	The shader includes the following
-	1. Convolution filtering (glow, blur, downsample, upsample, etc.)
-	2. Texture datatype conversions to 8-bit
+	1. Blurs (glow, blur, downsample, upsample, etc.)
+	2. Texture conversions to 8-bit
 
 	Changes:
 	1. Removed Shader Model 1.4 shaders (these were done because arbitrary texture coordinate swizzling wasn't a thing in Shader Model 1.x)

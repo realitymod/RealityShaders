@@ -1,5 +1,9 @@
 #line 2 "SkyDome.fx"
 
+/*
+	Description: Renders sky and skybox
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 uniform float4x4 _ViewProjMatrix : WorldViewProjection;

@@ -1,4 +1,8 @@
 
+/*
+	Description: Shared functions for BF2's main 3D shaders
+*/
+
 #if !defined(RACOMMON_FX)
 	#define RACOMMON_FX
 

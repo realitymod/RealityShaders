@@ -1,5 +1,11 @@
 #line 2 "StaticMesh.fx"
 
+/*
+	Description:
+	- Builds shadow map for staticmesh (buildings, static props)
+	- Outputs used in RaShaderSTM.fx
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/CommonVertexLight.fx"
@@ -159,7 +165,7 @@ struct VS2PS_ShadowMap_Alpha
 	float2 PosZW : TEXCOORD1;
 };
 
-float4 Calc_ShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
+float4 GetShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
 {
  	float4 shadowcoords = mul(Pos, matTrap);
  	float2 lightZW = mul(Pos, matLight).zw;
@@ -173,7 +179,7 @@ VS2PS_ShadowMap ShadowMap_VS(APP2VS_ShadowMap Input)
 
  	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
  	float4 WorldPos = mul(UnpackPos, _WorldMat);
-	Output.HPos = Calc_ShadowProjCoords(float4(WorldPos.xyz, 1.0), _LightTrapezMat, _LightMat);
+	Output.HPos = GetShadowProjCoords(float4(WorldPos.xyz, 1.0), _LightTrapezMat, _LightMat);
  	Output.PosZW.xy = Output.HPos.zw;
 	return Output;
 }
@@ -184,7 +190,7 @@ VS2PS_ShadowMap_Alpha ShadowMap_Alpha_VS(APP2VS_ShadowMap Input)
 
  	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
  	float4 WorldPos = mul(UnpackPos, _WorldMat);
-	Output.HPos = Calc_ShadowProjCoords(WorldPos, _LightTrapezMat, _LightMat);
+	Output.HPos = GetShadowProjCoords(WorldPos, _LightTrapezMat, _LightMat);
  	Output.PosZW.xy = Output.HPos.zw;
 	Output.Tex = Input.Tex * _TexUnpack;
 	return Output;

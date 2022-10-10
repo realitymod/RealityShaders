@@ -1,4 +1,8 @@
 
+/*
+	Description: Shared code in particle shaders
+*/
+
 #if !defined(FXCOMMON_FX)
 	#define FXCOMMON_FX
 

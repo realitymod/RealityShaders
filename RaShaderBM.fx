@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders lighting for bundledmesh (objects that are dynamic, nonhuman)
+*/
+
 #include "shaders/RealityGraphics.fx"
 #include "shaders/RaCommon.fx"
 #include "shaders/RaDefines.fx"
@@ -232,14 +236,14 @@ float4 Bump_PS(VS2PS Input) : COLOR
 		float HemiColor = Lights[0].color.w;
 	#endif
 
-	float3 Normal = 0.0;
+	float3 NormalVec = 0.0;
 
 	#if _HASNORMALMAP_
 		float4 TangentNormal = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
 		TangentNormal.xyz = normalize(TangentNormal.xyz * 2.0 - 1.0);
-		Normal = TangentNormal.xyz;
+		NormalVec = TangentNormal.xyz;
 	#else
-		Normal = normalize(Input.Normals.xyz);
+		NormalVec = normalize(Input.Normals.xyz);
 	#endif
 
 	float3 LightVec = normalize(Input.P_LightVec_HemiLerp.xyz);
@@ -256,14 +260,9 @@ float4 Bump_PS(VS2PS Input) : COLOR
 		float Gloss = StaticGloss;
 	#endif
 
-	float Diffuse = GetDiffuseValue(Normal, LightVec);
-	float Specular = GetSpecularValue(Normal, HalfVec) * Gloss;
+	float3 Diffuse = GetDiffuseValue(NormalVec, LightVec) * Lights[0].color;
+	float3 Specular = GetSpecularValue(NormalVec, HalfVec) * Lights[0].color * Gloss;
 
-	#if !_POINTLIGHT_
-		Diffuse *= Lights[0].color;
-	#endif
-
-	// Killing both spec and dot3 if we are in shadows
 	Diffuse *= ShadowDir * ShadowOccDir;
 	Specular *= ShadowDir * ShadowOccDir;
 
@@ -277,19 +276,19 @@ float4 Bump_PS(VS2PS Input) : COLOR
 			OutputColor.rgb = Diffuse;
 		#endif
 	#else
-		OutputColor.rgb = HemiColor + Diffuse;
+		OutputColor.rgb = Diffuse + HemiColor;
 	#endif
 
 	float4 DiffuseColor = DiffuseMap;
 
 	#if _FRESNELVALUES_
 		#if _HASENVMAP_
-			float3 Reflection = -reflect(EyeVec.xyz, Normal.xyz);
+			float3 Reflection = -reflect(EyeVec.xyz, NormalVec.xyz);
 			float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
 			DiffuseColor.rgb = lerp(DiffuseColor, EnvMapColor, Gloss / 4.0);
 		#endif
 
-		float FresnelValue = GetSchlickApproximation(Normal.xyz, EyeVec.xyz, 0.15);
+		float FresnelValue = GetSchlickApproximation(NormalVec.xyz, EyeVec.xyz, 0.15);
 		DiffuseColor.a = lerp(DiffuseColor.a, 1.0, FresnelValue);
 	#endif
 
@@ -301,8 +300,12 @@ float4 Bump_PS(VS2PS Input) : COLOR
 		const float4 GI = 1.0;
 	#endif
 
+	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or DiffuseMap)
+	// Prevents non-detailed bundledmesh from looking shiny
 	OutputColor.rgb *= DiffuseColor.rgb * GI.rgb;
-	OutputColor.rgb += Specular * GI.rgb;
+	#if _HASCOLORMAPGLOSS_ || _HASNORMALMAP_
+		OutputColor.rgb += Specular * GI.rgb;
+	#endif
 
 	#if _HASDOT3ALPHATEST_
 		OutputColor.a = dot(DiffuseMap.rgb, 1.0);

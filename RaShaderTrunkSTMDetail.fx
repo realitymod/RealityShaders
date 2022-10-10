@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders lighting for objects with characteristics of tree-trunks (poles)
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/RaCommon.fx"

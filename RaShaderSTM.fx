@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders lighting for staticmesh (buildings, static props)
+*/
+
 #include "shaders/RealityGraphics.fx"
 #include "shaders/RaCommon.fx"
 #include "shaders/RaShaderSTMCommon.fx"
@@ -204,10 +208,6 @@ float3 GetLightmap(VS2PS Input)
 
 float4 StaticMesh_PS(VS2PS Input) : COLOR
 {
-	#if _FINDSHADER_
-		return float4(1.0, 1.0, 0.4, 1.0);
-	#endif
-
 	float3 EyeVec = normalize(Input.EyeVec.xyz);
 	float3 LightVec = normalize(Input.LightVec.xyz);
 	float3 HalfVec = normalize(LightVec + EyeVec);
@@ -250,9 +250,9 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			Diffuse = BumpedSky + Diffuse * Lightmap.g;
 			Diffuse += Lightmap.r * SinglePointColor; // tl: Jonas, disable once we know which materials are actually affected.
 		#else
-			float DotLN = GetDiffuseValue(Normals, -Lights[0].dir);
-			float3 Diffuse = saturate(DotLN * Lights[0].color);
+			float DotLN = saturate(dot(Normals * 0.2, -Lights[0].dir));
 			float3 InvDot = saturate(saturate(1.0 - DotLN) * StaticSkyColor.rgb * skyNormal.z);
+			float3 Diffuse = GetDiffuseValue(Normals, -Lights[0].dir) * Lights[0].color;
 
 			#if _LIGHTMAP_
 				// Add ambient here as well to get correct ambient for surfaces parallel to the sun
@@ -267,9 +267,9 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			#endif
 		#endif
 
-		float Specular = GetSpecularValue(Normals, HalfVec) * Gloss;
+		float3 Specular = GetSpecularValue(Normals, HalfVec) * StaticSpecularColor * Gloss;
 		FinalColor.rgb = (FinalColor.rgb * Diffuse) * 2.0;
-		FinalColor.rgb += (Specular * Lightmap.g) * StaticSpecularColor;
+		FinalColor.rgb += (Specular * Lightmap.g);
 	#endif
 
 	#if !_POINTLIGHT_

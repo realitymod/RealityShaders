@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders object's diffuse map
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/RaCommon.fx"

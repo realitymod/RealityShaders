@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders road for editor
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/RaCommon.fx"

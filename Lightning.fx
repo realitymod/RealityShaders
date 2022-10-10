@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders lightning
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 /*

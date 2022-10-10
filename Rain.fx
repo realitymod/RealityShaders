@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders rain effect
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 float4x4 _WorldViewProj : WORLDVIEWPROJ;

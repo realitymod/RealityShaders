@@ -1,5 +1,9 @@
 #line 2 "MeshParticleMesh.fx"
 
+/*
+	Description: Renders particle lighting
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/FXCommon.fx"

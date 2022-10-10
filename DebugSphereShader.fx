@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders debug lightsource spheres
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 float4x4 _WorldViewProj : WorldViewProjection;

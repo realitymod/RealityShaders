@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders debug linegraph
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 float2 _GraphPos : GRAPHSIZE;

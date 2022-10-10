@@ -1,5 +1,9 @@
 #line 2 "lightGeom.fx"
 
+/*
+	Description: Renders pointlight and spotlights
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 /*
@@ -23,14 +27,14 @@ struct VS2PS
 	float4 HPos : POSITION;
 };
 
-VS2PS Point_Light_VS(APP2VS Input)
+VS2PS PointLight_VS(APP2VS Input)
 {
 	VS2PS Output;
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
 	return Output;
 }
 
-float4 Point_Light_PS() : COLOR
+float4 PointLight_PS() : COLOR
 {
 	return _LightColor;
 }
@@ -55,8 +59,8 @@ technique Pointlight
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
 
- 		VertexShader = compile vs_3_0 Point_Light_VS();
-		PixelShader = compile ps_3_0 Point_Light_PS();
+ 		VertexShader = compile vs_3_0 PointLight_VS();
+		PixelShader = compile ps_3_0 PointLight_PS();
 	}
 }
 
@@ -67,7 +71,7 @@ struct VS2PS_Spot
 	float3 LightVec : TEXCOORD1;
 };
 
-VS2PS_Spot Spot_Light_VS(APP2VS Input)
+VS2PS_Spot SpotLight_VS(APP2VS Input)
 {
 	VS2PS_Spot Output;
  	Output.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
@@ -82,7 +86,7 @@ VS2PS_Spot Spot_Light_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Spot_Light_PS(VS2PS_Spot Input) : COLOR
+float4 SpotLight_PS(VS2PS_Spot Input) : COLOR
 {
 	float3 LightVec = normalize(Input.LightVec);
 	float3 LightDir = normalize(Input.LightDir);
@@ -110,7 +114,7 @@ technique Spotlight
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
 
- 		VertexShader = compile vs_3_0 Spot_Light_VS();
-		PixelShader = compile ps_3_0 Spot_Light_PS();
+ 		VertexShader = compile vs_3_0 SpotLight_VS();
+		PixelShader = compile ps_3_0 SpotLight_PS();
 	}
 }

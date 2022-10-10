@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders objects with leaf-like characteristics
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/RaCommon.fx"
@@ -140,16 +144,16 @@ VS2PS Leaf_VS(APP2VS Input)
 	float ScaleLN = Input.Pos.w / 32767.0;
 
 	#if defined(_POINTLIGHT_)
-		float Diffuse = GetDiffuseValue(Input.Normal.xyz, normalize(Lights[0].pos.xyz - Input.Pos.xyz));
+		float3 Diffuse = GetDiffuseValue(Input.Normal.xyz, normalize(Lights[0].pos.xyz - Input.Pos.xyz));
 	#else
-		float Diffuse = saturate((dot(Input.Normal.xyz, -Lights[0].dir.xyz) + 0.6) / 1.4);
+		float3 Diffuse = saturate((dot(Input.Normal.xyz, -Lights[0].dir.xyz) + 0.6) / 1.4);
 	#endif
 
 	#if defined(OVERGROWTH)
-		Output.Color.rgb = Lights[0].color * ScaleLN * Diffuse * ScaleLN;
+		Output.Color.rgb = Diffuse * Lights[0].color * ScaleLN;
 		OverGrowthAmbient *= ScaleLN;
 	#else
-		Output.Color.rgb = Lights[0].color * Diffuse;
+		Output.Color.rgb = Diffuse * Lights[0].color;
 	#endif
 
 	#if (!_HASSHADOW_) && !defined(_POINTLIGHT_)
@@ -157,7 +161,7 @@ VS2PS Leaf_VS(APP2VS Input)
 	#endif
 
 	#if defined(_POINTLIGHT_)
-		Output.Color.rgb *=  GetRadialAttenuation(Lights[0].pos.xyz - Input.Pos.xyz, Lights[0].attenuation);
+		Output.Color.rgb *= GetRadialAttenuation(Lights[0].pos.xyz - Input.Pos.xyz, Lights[0].attenuation);
 		Output.Color.rgb *= GetFogValue(LocalPos.xyz, ObjectSpaceCamPos.xyz);
 	#endif
 

@@ -1,5 +1,9 @@
 #line 2 "Trail.fx"
 
+/*
+	Description: Renders lighting for particles that trail
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/FXCommon.fx"

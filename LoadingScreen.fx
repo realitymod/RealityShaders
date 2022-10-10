@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders loading screen at startup
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 /*

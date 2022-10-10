@@ -1,5 +1,9 @@
 #line 2 "Particles.fx"
 
+/*
+	Description: Renders static particles
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/FXCommon.fx"

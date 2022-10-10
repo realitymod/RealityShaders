@@ -1,6 +1,6 @@
 
 /*
-	New, better, "cleaner" skinning code.
+	Description: Renders lighting for skinnedmesh (objects that are dynamic, human-like with bones)
 */
 
 #include "shaders/RealityGraphics.fx"
@@ -217,7 +217,7 @@ float4 Skin_PS(VS2PS Input) : COLOR
 		float3 HemiColor = lerp(GroundColor, HemiMapSkyColor, Input.P_EyeVec_HemiLerp.w);
 	#else
 		// "old" -- expose a per-level "static hemi" value (ambient mod)
-		const float3 HemiColor = float3(0.425, 0.425, 0.4);
+		const float3 HemiColor = 0.425;
 		float4 GroundColor = 1.0;
 	#endif
 
@@ -235,14 +235,12 @@ float4 Skin_PS(VS2PS Input) : COLOR
 
 	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
 	float3 DiffuseColor = GetDiffuseValue(NormalVec.xyz, LightVec) * Lights[0].color;
-	float3 SpecularColor = GetSpecularValue(NormalVec.xyz, HalfVec, SpecularPower) * Gloss;
+	float3 SpecularColor = GetSpecularValue(NormalVec.xyz, HalfVec, SpecularPower) * Lights[0].color * Gloss;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetRadialAttenuation(Input.P_EyeVec_HemiLerp.xyz, Lights[0].attenuation);
-		SpecularColor *= Lights[0].color;
 	#else
 		const float Attenuation = 1.0;
-		SpecularColor *= Lights[0].specularColor;
 	#endif
 
 	DiffuseColor = DiffuseColor * ShadowDir;

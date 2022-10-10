@@ -1,7 +1,7 @@
 #line 2 "PortedMenuShader.fx"
 
 /*
-	Shader that handles BF2's UI elements
+	Description: Shader that handles BF2's UI elements
 */
 
 /*

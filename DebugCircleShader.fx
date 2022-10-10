@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders circle for debug shaders
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 float4x4 _WorldViewProj : WorldViewProjection;

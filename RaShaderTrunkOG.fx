@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders lighting for tree-trunk overgrowth
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/RaCommon.fx"
@@ -86,10 +90,10 @@ VS2PS TrunkOG_VS(APP2VS Input)
 float4 TrunkOG_PS(VS2PS Input) : COLOR
 {
 	float3 Normals = normalize(Input.P_Normals_ScaleLN.xyz);
-	float Diffuse = GetDiffuseValue(Normals.xyz, -Lights[0].dir);
+	float3 Diffuse = GetDiffuseValue(Normals.xyz, -Lights[0].dir) * Lights[0].color;
 
 	float ScaleLN = Input.P_Normals_ScaleLN.w;
-	float3 Color = Lights[0].color * Diffuse * ScaleLN * ScaleLN;
+	float3 Color = Diffuse * ScaleLN;
 	Color += OverGrowthAmbient.rgb * ScaleLN;
 
 	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.Tex0.xy);

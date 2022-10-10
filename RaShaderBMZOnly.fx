@@ -1,9 +1,9 @@
 
-#include "shaders/RealityGraphics.fx"
-
 /*
-	ZOnlyShader
+	Description: ZOnly shader for bundledmesh (dynamic, nonhuman objects)
 */
+
+#include "shaders/RealityGraphics.fx"
 
 string reqVertexElement[] =
 {

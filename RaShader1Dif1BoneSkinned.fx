@@ -1,8 +1,12 @@
 
-// Global variables	we use to hold the view	matrix,	projection matrix,
-// ambient material, diffuse material, and the light vector	that
-// describes the direction to the light	source.	 These variables are
-// initialized from	the	application.
+/*
+	Description: Renders object's diffuse map
+	
+	Global variables we use to hold the view matrix, projection matrix,
+	ambient material, diffuse material, and the light vector that
+	describes the direction to the light source. These variables are
+	initialized from the application.
+*/
 
 #include "shaders/RealityGraphics.fx"
 
@@ -56,7 +60,7 @@ struct VS2PS
 	float2 Tex : TEXCOORD0;
 };
 
-VS2PS Diffuse_Bone_VS(APP2VS Input)
+VS2PS DiffuseBone_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -70,7 +74,7 @@ VS2PS Diffuse_Bone_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Diffuse_Bone_PS(VS2PS Input) : COLOR
+float4 DiffuseBone_PS(VS2PS Input) : COLOR
 {
 	return tex2D(DiffuseMapSampler, Input.Tex) * float4(1.0, 0.0, 1.0, 1.0);
 };
@@ -79,8 +83,8 @@ technique defaultTechnique
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 Diffuse_Bone_VS();
-		PixelShader = compile ps_3_0 Diffuse_Bone_PS();
+		VertexShader = compile vs_3_0 DiffuseBone_VS();
+		PixelShader = compile ps_3_0 DiffuseBone_PS();
 
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;

@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders simple blendop shader
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 uniform float4x4 _WorldViewProj : WorldViewProjection;
@@ -72,7 +76,8 @@ technique t0
 	}
 }
 
-/*technique marked
+/*
+	technique marked
 	{
 		pass p0
 		{

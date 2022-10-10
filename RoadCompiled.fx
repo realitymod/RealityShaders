@@ -1,5 +1,9 @@
 #line 2 "RoadCompiled.fx"
 
+/*
+	Description: Renders lighting for road
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/RaCommon.fx"
@@ -68,7 +72,7 @@ struct VS2PS
 	float4 P_VertexPos_Alpha : TEXCOORD2; // .xyz = VertexPos; .w = Alpha;
 };
 
-float4 Proj_To_Lighting(float4 HPos)
+float4 ProjToLighting(float4 HPos)
 {
 	float4 Tex;
 	// tl: This has been rearranged optimally (I believe) into 1 MUL and 1 MAD,
@@ -87,7 +91,7 @@ VS2PS RoadCompiled_VS(APP2VS Input)
 	float4 WorldPos = Input.Pos;
 	WorldPos.y += 0.01;
 	Output.HPos = mul(WorldPos, _WorldViewProj);
-	Output.PosTex = Proj_To_Lighting(Output.HPos);
+	Output.PosTex = ProjToLighting(Output.HPos);
 	Output.Tex_0_1 = float4(Input.Tex0, Input.Tex1);
 	Output.P_VertexPos_Alpha = float4(Input.Pos.xyz, Input.Alpha);
 

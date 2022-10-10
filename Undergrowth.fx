@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders lighting for undergrowth such as grass
+*/
+
 uniform float4x4 _WorldViewProj : WorldViewProjection;
 uniform float4x4 _WorldView : WorldView;
 uniform float4 _PosOffsetAndScale : PosOffsetAndScale;

@@ -1,5 +1,9 @@
 #line 2 "Font.fx"
 
+/*
+	Description: Renders game font
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/RaCommon.fx"

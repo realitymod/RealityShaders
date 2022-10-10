@@ -1,6 +1,6 @@
 
 /*
-	Third-party shader code
+	Description: Third-party shader code
 */
 
 #if !defined(REALITYGRAPHICS_FX)

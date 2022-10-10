@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders command-line font
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 /*

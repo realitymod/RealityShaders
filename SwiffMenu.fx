@@ -1,7 +1,7 @@
 #line 2 "SwiffMenu.fx"
 
 /*
-	Shaders for main menu
+	Description: Shaders for main menu
 */
 
 #include "shaders/RaCommon.fx"

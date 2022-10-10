@@ -1,4 +1,8 @@
 
+/*
+	Description: Outputs common terrain light for staticmesh and terrain shaders
+*/
+
 #if !defined(COMMONVERTEXLIGHT_FX)
 	#define COMMONVERTEXLIGHT_FX
 

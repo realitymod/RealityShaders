@@ -1,6 +1,10 @@
 
 #line 3 "TerrainShader_Hi.fx"
 
+/*
+	Description: High-settings terrain shader
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 /*

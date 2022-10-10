@@ -1,4 +1,8 @@
 
+/*
+	Description: Renders water
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 #include "shaders/RaCommon.fx"

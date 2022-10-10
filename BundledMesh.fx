@@ -1,5 +1,11 @@
 #line 2 "BundledMesh.fx"
 
+/*
+	Description:
+	- Builds shadow map and environmental for bundledmesh (dynamic, nonhuman objects)
+	- Outputs used in RaShaderBM.fx
+*/
+
 #include "shaders/RealityGraphics.fx"
 
 /*
@@ -32,16 +38,12 @@ uniform dword _DwordStencilRef : STENCILREF = 0;
 uniform float4 _EyePos : EYEPOS = { 0.0f, 0.0f, 1.0f, 0.25f };
 uniform float _AltitudeFactor : ALTITUDEFACTOR = 0.7f;
 
-uniform float4 _Attenuation : Attenuation;
-
 uniform float4x4 _ViewPortMatrix: _ViewPortMatrix;
 uniform float4 _ViewportMap2: ViewportMap;
 uniform bool _AlphaBlendEnable: AlphaBlendEnable;
 
+uniform float4 _Attenuation : Attenuation;
 uniform float4 _LightPosition : LightPosition;
-
-// float4 _EyePos;
-
 uniform float4 _LightDirection : LightDirection;
 
 // offset x/y HeightmapSize z / HemiLerpBias w
@@ -196,12 +198,11 @@ void Specular_VS(APP2VS Input, out float4 HPos, out float3 LightVec, out float3 
 
 	// Need to calculate the WorldI based on each matBone skinning world matrix
 	float3x3 TanBasis = float3x3(Input.Tan, BiNormal, Input.Normal);
+
 	// Calculate WorldTangent directly... inverse is the transpose for affine rotations
 	float3x3 WorldI = transpose(mul(TanBasis, _MatOneBoneSkinning[IndexArray[0]]));
 
 	// Transform Light pos to Object space
-	// float4 MatsLightDir = float4(0.2, 0.8, -0.2, 1.);
-	// float3 MatsLightDir = float3(0.0, 1.0, 0.0);
 	float3 MatsLightDir = float3(0.5, 0.5, 0.0);
 	float3 NormalizedTanLightVec = normalize(mul(MatsLightDir, WorldI));
 
@@ -235,7 +236,7 @@ float4 BlinnSpecularBump_1_PS(VS2PS_1 Input) : COLOR
 	float4 NormalMap = tex2D(Sampler_Normal, Input.NormalDiffuseMap.xy);
 	float U = dot(Input.LightVec.xy, Input.NormalDiffuseMap.xy * 2.0 - 1.0);
 	float V = dot(Input.HalfVec.xy, Input.NormalDiffuseMap.xy * 2.0 - 1.0);
-	float4 Gloss = tex2D(Sampler_Diffuse, float2(U,V));
+	float4 Gloss = tex2D(Sampler_Diffuse, float2(U, V));
 	float4 DiffuseMap = tex2D(Sampler_Diffuse, Input.NormalDiffuseMap.zw);
 
 	float4 OutColor = saturate((Gloss * Diffuse) + Ambient);
@@ -380,8 +381,6 @@ void AlphaMap_VS
 	Tex.xy = Tex.xy * 0.5 + 0.5;
 	Tex.y = 1.0 - Tex.y;
 	Tex.xy += _TexProjOffset;
-	// Tex.x += 0.000625;
-	// Tex.y += 0.000833;
 	Tex.xy = Tex.xy * HPos.w;
 	Tex.zw = HPos.zw;
 }
