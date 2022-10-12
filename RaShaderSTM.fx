@@ -219,7 +219,8 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	float Gloss;
-	float4 FinalColor = GetCompositeDiffuse(Input, EyeVec, Gloss);
+	float4 DiffuseTex = GetCompositeDiffuse(Input, EyeVec, Gloss);
+	float4 OutputColor = DiffuseTex;
 
 	#if _POINTLIGHT_
 		#if !defined(USE_DETAIL)
@@ -227,14 +228,12 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 		#endif
 
 		float Attenuation = GetRadialAttenuation(Input.LightVec.xyz, Lights[0].attenuation);
-		float3 DiffuseColor = GetDiffuseValue(Normals, LightVec) * Lights[0].color;
-		float3 SpecularColor = (GetSpecularValue(Normals, HalfVec) * Gloss) * StaticSpecularColor;
+		float3 Diffuse = GetDiffuseValue(Normals, LightVec);
+		float3 Specular = GetSpecularValue(Normals, HalfVec) * Gloss;
 
-		float3 Lighting = DiffuseColor + SpecularColor;
-		Lighting = saturate(Lighting * Attenuation * Input.P_Normals_Fog.w);
-
-		FinalColor.rgb = (FinalColor.rgb * Lighting) * 2.0;
-		return FinalColor;
+		float3 Lighting = (Diffuse * Lights[0].color) + (Specular * StaticSpecularColor);
+		Lighting = saturate(Lighting * Attenuation);
+		OutputColor.rgb = (DiffuseTex.rgb * Lighting) * Input.P_Normals_Fog.w;
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
@@ -247,8 +246,8 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			float3 Diffuse = GetDiffuseValue(Normals, LightVec) * Lights[0].color;
 			// Pre-calc: Lightmap.b *= invDot
 			float3 BumpedSky = Lightmap.b * dot(Normals, skyNormal) * StaticSkyColor;
-			Diffuse = BumpedSky + Diffuse * Lightmap.g;
-			Diffuse += Lightmap.r * SinglePointColor; // tl: Jonas, disable once we know which materials are actually affected.
+			// tl: Jonas, disable once we know which materials are actually affected.
+			Diffuse = ((Diffuse * Lightmap.g) + BumpedSky) + (SinglePointColor * Lightmap.r);
 		#else
 			float DotLN = saturate(dot(Normals * 0.2, -Lights[0].dir));
 			float3 InvDot = saturate(saturate(1.0 - DotLN) * StaticSkyColor.rgb * skyNormal.z);
@@ -256,36 +255,30 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 			#if _LIGHTMAP_
 				// Add ambient here as well to get correct ambient for surfaces parallel to the sun
-				float3 BumpedSky = Lightmap.b * InvDot;
-				float3 BumpedDiff = Diffuse + BumpedSky;
-				Diffuse = lerp(BumpedSky, BumpedDiff, Lightmap.g);
-				Diffuse += Lightmap.r * SinglePointColor;
+				float3 BumpedSky = InvDot * Lightmap.b;
+				float3 BumpedDiffuse = Diffuse + BumpedSky;
+				Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g) + (SinglePointColor * Lightmap.r);
 			#else
 				float3 BumpedSky = InvDot;
-				Diffuse *= Lightmap.g;
-				Diffuse += BumpedSky;
+				Diffuse = (Diffuse * Lightmap.g) + BumpedSky;
 			#endif
 		#endif
 
-		float3 Specular = GetSpecularValue(Normals, HalfVec) * StaticSpecularColor * Gloss;
-		FinalColor.rgb = (FinalColor.rgb * Diffuse) * 2.0;
-		FinalColor.rgb += (Specular * Lightmap.g);
+		float3 Specular = GetSpecularValue(Normals, HalfVec) * (Gloss * Lightmap.g);
+		OutputColor.rgb = ((DiffuseTex.rgb * Diffuse) * 2.0) + (Specular * StaticSpecularColor);
 	#endif
 
 	#if !_POINTLIGHT_
-		FinalColor.rgb = ApplyFog(FinalColor.rgb, Input.P_Normals_Fog.w);
+		OutputColor.rgb = ApplyFog(OutputColor.rgb, Input.P_Normals_Fog.w);
 	#endif
 
-	return FinalColor;
+	return OutputColor;
 };
 
 technique defaultTechnique
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 StaticMesh_VS();
-		PixelShader = compile ps_3_0 StaticMesh_PS();
-
 		ZFunc = LESS;
 
 		#if defined(ENABLE_WIREFRAME)
@@ -298,7 +291,11 @@ technique defaultTechnique
 			SrcBlend = ONE;
 			DestBlend = ONE;
 		#endif
+
 		AlphaTestEnable = < AlphaTest >;
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
+
+		VertexShader = compile vs_3_0 StaticMesh_VS();
+		PixelShader = compile ps_3_0 StaticMesh_PS();
 	}
 }

@@ -12,16 +12,16 @@
 
 	/*
 		Description: Gets slope-scaled bias from depth
-		Implementation: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
+		About: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
 		Source: https://learn.microsoft.com/en-us/windows/win32/direct3d9/depth-bias
 	*/
 
-	float GetSlopedBasedBias(float Depth, float Bias)
+	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.0001, uniform float Bias = -0.001)
 	{
 		float OutputDepth = Depth;
-		OutputDepth += (Bias * abs(ddx(Depth)));
-		OutputDepth += (Bias * abs(ddy(Depth)));
-		return OutputDepth;
+		OutputDepth += (SlopeScaleBias * abs(ddx(Depth)));
+		OutputDepth += (SlopeScaleBias * abs(ddy(Depth)));
+		return OutputDepth + Bias;
 	}
 
 	/*

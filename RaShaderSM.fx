@@ -1,6 +1,8 @@
 
 /*
-	Description: Renders lighting for skinnedmesh (objects that are dynamic, human-like with bones)
+	Description:
+	- Renders lighting for skinnedmesh (objects that are dynamic, human-like with bones)
+	- Skinning function currently for 2 bones
 */
 
 #include "shaders/RealityGraphics.fx"
@@ -24,9 +26,6 @@
 	#define _USEHEMIMAP_ 0
 	#define _HASSHADOW_ 0
 #endif
-
-// Always 2 for now, test with 1!
-#define NUMBONES 2
 
 struct APP2VS
 {
@@ -53,60 +52,33 @@ float GetBinormalFlipping(APP2VS Input)
 	return 1.0 + IndexArray[2] * -2.0;
 }
 
-float3 SkinPos(APP2VS Input, float4 Vec, uniform int NumBones = NUMBONES)
+float3 SkinPosition(APP2VS Input)
 {
-	float3 Pos0 = mul(Vec, GetBoneMatrix(Input, 0));
-	float3 Pos1 = mul(Vec, GetBoneMatrix(Input, 1));
-	float3 SkinnedPos = (NumBones > 1) ? lerp(Pos1, Pos0, Input.BlendWeights) : Pos0;
-	return SkinnedPos;
+	float3 Vec0 = mul(Input.Pos, GetBoneMatrix(Input, 0));
+	float3 Vec1 = mul(Input.Pos, GetBoneMatrix(Input, 1));
+	return lerp(Vec1, Vec0, Input.BlendWeights);
 }
 
-float3 SkinVec(APP2VS Input, float3 Vec, uniform int NumBones = NUMBONES)
+float3 SkinNormal(APP2VS Input)
 {
-	float3 Vec0 = mul(Vec, GetBoneMatrix(Input, 0));
-	float3 Vec1 = mul(Vec, GetBoneMatrix(Input, 1));
-	float3 SkinnedVec = (NumBones > 1) ? lerp(Vec1, Vec0, Input.BlendWeights) : Vec0;
-	return SkinnedVec;
+	float3 Vec0 = mul(Input.Normal, GetBoneMatrix(Input, 0));
+	float3 Vec1 = mul(Input.Normal, GetBoneMatrix(Input, 1));
+	return lerp(Vec1, Vec0, Input.BlendWeights);
 }
 
-float3 SkinVecToObj(APP2VS Input, float3 Vec, uniform int NumBones = NUMBONES)
+float3 SkinVecToObj(APP2VS Input, float3 Vec)
 {
 	float3 Vec0 = mul(Vec, transpose(GetBoneMatrix(Input, 0)));
 	float3 Vec1 = mul(Vec, transpose(GetBoneMatrix(Input, 1)));
-	float3 SkinnedVec = (NumBones > 1) ? lerp(Vec1, Vec0, Input.BlendWeights) : Vec0;
-	return SkinnedVec;
+	return lerp(Vec1, Vec0, Input.BlendWeights);
 }
 
-float3 SkinVecToTan(APP2VS Input, float3 Vec, uniform int NumBones = NUMBONES)
+float3 SkinVecToTan(APP2VS Input, float3 Vec)
 {
 	float3x3 TanBasis = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
 	float3 Vec0 = mul(Vec, transpose(mul(TanBasis, GetBoneMatrix(Input, 0))));
 	float3 Vec1 = mul(Vec, transpose(mul(TanBasis, GetBoneMatrix(Input, 1))));
-	float3 SkinnedVec = (NumBones > 1) ? lerp(Vec1, Vec0, Input.BlendWeights) : Vec0;
-	return SkinnedVec;
-}
-
-float4 SkinPosition(APP2VS Input)
-{
-	return float4(SkinPos(Input, Input.Pos), 1.0);
-}
-
-float3 SkinNormal(APP2VS Input, uniform int NumBones = NUMBONES)
-{
-	float3 SkinnedNormal = SkinVec(Input, Input.Normal);
-	// Re-normalize skinned Normal
-	SkinnedNormal = (NumBones > 1) ? normalize(SkinnedNormal) : SkinnedNormal;
-	return SkinnedNormal;
-}
-
-float4 GetWorldPos(APP2VS Input)
-{
-	return mul(SkinPosition(Input), World);
-}
-
-float3 GetWorldNormal(APP2VS Input)
-{
-	return mul(SkinNormal(Input), World);
+	return lerp(Vec1, Vec0, Input.BlendWeights);
 }
 
 float2 GetGroundUV(float3 WorldPos, float3 WorldNormal)
@@ -127,20 +99,11 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 	return clamp((WorldNormal.y + Offset) * 0.5 + 0.5, 0.0, 0.9);
 }
 
-float3 SkinLightVec(APP2VS Input, float3 LightVec)
-{
-	#if _OBJSPACENORMALMAP_ || !_HASNORMALMAP_
-		return SkinVecToObj(Input, LightVec, 1);
-	#else
-		return SkinVecToTan(Input, LightVec, 1);
-	#endif
-}
-
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
 float3 GetLightVec(APP2VS Input)
 {
 	#if _POINTLIGHT_
-		return (Lights[0].pos - SkinPosition(Input).xyz);
+		return Lights[0].pos - SkinPosition(Input);
 	#else
 		return -Lights[0].dir;
 	#endif
@@ -160,21 +123,28 @@ struct VS2PS
 	#endif
 };
 
-VS2PS Skin_VS(APP2VS Input)
+VS2PS SkinnedMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	float4 ObjSpacePosition = SkinPosition(Input);
+	float4 ObjSpacePosition = float4(SkinPosition(Input), 1.0);
+	float3 ObjSpaceNormal = normalize(SkinNormal(Input));
+	float3 ObjSpaceLightVec = GetLightVec(Input);
 	float3 ObjSpaceEyeVec = ObjectSpaceCamPos.xyz - ObjSpacePosition.xyz;
 
-	float4 WorldPos = GetWorldPos(Input);
-	float3 WorldNormal = normalize(GetWorldNormal(Input));
+	float4 WorldPos = mul(ObjSpacePosition, World);
+	float3 WorldNormal = normalize(mul(ObjSpaceNormal, World));
 
 	Output.HPos = mul(ObjSpacePosition, WorldViewProjection);
 	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 
-	Output.P_LightVec_OccShadow.xyz = SkinLightVec(Input, GetLightVec(Input));
-	Output.P_EyeVec_HemiLerp.xyz = SkinLightVec(Input, ObjSpaceEyeVec);
+	#if _OBJSPACENORMALMAP_ || !_HASNORMALMAP_ // Do object-space bumped/non-bumped lighting
+		Output.P_LightVec_OccShadow.xyz = SkinVecToObj(Input, ObjSpaceLightVec);
+		Output.P_EyeVec_HemiLerp.xyz = SkinVecToObj(Input, ObjSpaceEyeVec);
+	#else // Do tangent-space bumped lighting
+		Output.P_LightVec_OccShadow.xyz = SkinVecToTan(Input, ObjSpaceLightVec);
+		Output.P_EyeVec_HemiLerp.xyz = SkinVecToTan(Input, ObjSpaceEyeVec);
+	#endif
 
 	#if (_USEHEMIMAP_)
 		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, WorldNormal);
@@ -196,8 +166,20 @@ VS2PS Skin_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Skin_PS(VS2PS Input) : COLOR
+float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 {
+	float3 LightVec = normalize(Input.P_LightVec_OccShadow.xyz);
+	float3 EyeVec = normalize(Input.P_EyeVec_HemiLerp.xyz);
+	float3 HalfVec = normalize(LightVec + EyeVec);
+	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
+
+	#if _HASNORMALMAP_
+		float4 NormalVec = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
+		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
+	#else
+		float4 NormalVec = float4(normalize(Input.NormalVec), 0.15);
+	#endif
+
 	#if _HASSHADOW_
 		float ShadowDir = GetShadowFactor(ShadowMapSampler, Input.ShadowMat);
 	#else
@@ -214,44 +196,26 @@ float4 Skin_PS(VS2PS Input) : COLOR
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
 		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
-		float3 HemiColor = lerp(GroundColor, HemiMapSkyColor, Input.P_EyeVec_HemiLerp.w);
+		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, Input.P_EyeVec_HemiLerp.w);
 	#else
-		// "old" -- expose a per-level "static hemi" value (ambient mod)
-		const float3 HemiColor = 0.425;
-		float4 GroundColor = 1.0;
+		float3 Ambient = Lights[0].color.w;
 	#endif
-
-	#if _HASNORMALMAP_
-		float4 NormalVec = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
-		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
-	#else
-		float4 NormalVec = float4(normalize(Input.NormalVec), 0.15);
-	#endif
-
-	float Gloss = NormalVec.a;
-	float3 LightVec = normalize(Input.P_LightVec_OccShadow.xyz);
-	float3 EyeVec = normalize(Input.P_EyeVec_HemiLerp.xyz);
-	float3 HalfVec = normalize(LightVec + EyeVec);
-
-	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
-	float3 DiffuseColor = GetDiffuseValue(NormalVec.xyz, LightVec) * Lights[0].color;
-	float3 SpecularColor = GetSpecularValue(NormalVec.xyz, HalfVec, SpecularPower) * Lights[0].color * Gloss;
 
 	#if _POINTLIGHT_
-		float Attenuation = GetRadialAttenuation(Input.P_EyeVec_HemiLerp.xyz, Lights[0].attenuation);
+		float Attenuation = GetRadialAttenuation(Input.P_LightVec_OccShadow.xyz, Lights[0].attenuation);
 	#else
 		const float Attenuation = 1.0;
 	#endif
 
-	DiffuseColor = DiffuseColor * ShadowDir;
-	SpecularColor = (SpecularColor * Attenuation) * ShadowDir;
-
-	#if !_POINTLIGHT_
-		DiffuseColor.rgb += HemiColor;
-	#endif
-
 	float4 OutColor = 0.0;
-	OutColor.rgb = (DiffuseTex.rgb * DiffuseColor.rgb) + SpecularColor;
+
+	float Gloss = NormalVec.a;
+	float3 Diffuse = GetDiffuseValue(NormalVec.xyz, LightVec);
+	float3 Specular = GetSpecularValue(NormalVec.xyz, HalfVec) * (Gloss * 4.0);
+
+	float3 LightFactors = Attenuation * ShadowDir;
+	float3 Lighting = ((Diffuse + Specular) * Lights[0].color) * LightFactors;
+	OutColor.rgb = DiffuseTex.rgb * (Ambient + Lighting);
 	OutColor.a = DiffuseTex.a * Transparency.a;
 
 	if (FogColor.r < 0.01)
@@ -286,7 +250,7 @@ technique VariableTechnique
 			AlphaBlendEnable = FALSE;
 		#endif
 
-		VertexShader = compile vs_3_0 Skin_VS();
-		PixelShader = compile ps_3_0 Skin_PS();
+		VertexShader = compile vs_3_0 SkinnedMesh_VS();
+		PixelShader = compile ps_3_0 SkinnedMesh_PS();
 	}
 }

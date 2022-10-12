@@ -134,13 +134,13 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 float4 TrunkSTMDetail_PS(VS2PS Input) : COLOR
 {
 	float3 Normals = normalize(Input.Normals.xyz);
-	float3 DiffuseColor = GetDiffuseValue(Normals.xyz, -Lights[0].dir) * Lights[0].color;
+	float3 Diffuse = GetDiffuseValue(Normals.xyz, -Lights[0].dir) * Lights[0].color;
 
 	#if !_HASSHADOW_
-		DiffuseColor.rgb += OverGrowthAmbient.rgb;
+		Diffuse.rgb += OverGrowthAmbient.rgb;
 	#endif
 
-	DiffuseColor = saturate(DiffuseColor * 0.5);
+	Diffuse = saturate(Diffuse * 0.5);
 
 	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.P_Tex0_Tex1.xy);
 	#if !defined(BASEDIFFUSEONLY)
@@ -148,11 +148,11 @@ float4 TrunkSTMDetail_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _HASSHADOW_
-		DiffuseColor.rgb *= GetShadowFactor(ShadowMapSampler, Input.TexShadow);
-		DiffuseColor.rgb += OverGrowthAmbient.rgb * 0.5;
+		Diffuse.rgb *= GetShadowFactor(ShadowMapSampler, Input.TexShadow);
+		Diffuse.rgb += OverGrowthAmbient.rgb * 0.5;
 	#endif
 
-	float4 FinalColor = float4((DiffuseColor.rgb * DiffuseMap.rgb) * 4.0, Transparency.r * 2.0);
+	float4 FinalColor = float4((Diffuse.rgb * DiffuseMap.rgb) * 4.0, Transparency.r * 2.0);
 
 	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	return FinalColor;

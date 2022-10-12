@@ -60,8 +60,6 @@
 	#define _HASENVMAP_ 0
 	#define _USEHEMIMAP_ 0
 	#define _HASSHADOW_ 0
-	// We'd still like fresnel, though
-	#define _FRESNELVALUES_ 1
 #endif
 
 struct APP2VS
@@ -162,31 +160,33 @@ struct VS2PS
 	float4 OccShadowTex : TEXCOORD6;
 };
 
-VS2PS Bump_VS(APP2VS Input)
+VS2PS BundledMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
 	float4 WorldPos = GetWorldPos(Input);
 	float3 WorldNormal = normalize(GetWorldNormal(Input));
 	float3 WorldEyeVec = WorldSpaceCamPos.xyz - WorldPos.xyz;
+	float3 WorldLightVec = GetLightVec(Input);
 
 	Output.HPos = mul(WorldPos, ViewProjection); // Output HPOS
 
 	#if _HASNORMALMAP_ // Do tangent space bumped pixel lighting
 		float3 UnpackedTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y;
-        float3 UnpackedNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
-        float3x3 TanBasis = GetTangentBasis(UnpackedTangent, UnpackedNormal, GetBinormalFlipping(Input));
-        float3x3 World2TanMat = transpose(mul(TanBasis, GetSkinnedWorldMatrix(Input)));
+		float3 UnpackedNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
+		float3x3 TanBasis = GetTangentBasis(UnpackedTangent, UnpackedNormal, GetBinormalFlipping(Input));
+		float3x3 World2TanMat = transpose(mul(TanBasis, GetSkinnedWorldMatrix(Input)));
 
-		float3 TanEyeVec = mul(normalize(WorldEyeVec), World2TanMat);
-		float3 TanLightVec = mul(GetLightVec(Input), World2TanMat);
-		Output.P_LightVec_HemiLerp.xyz = normalize(TanLightVec);
-		Output.EyeVec = normalize(TanEyeVec);
+		float3 TanEyeVec = mul(WorldEyeVec, World2TanMat);
+		float3 TanLightVec = mul(WorldLightVec, World2TanMat);
+		Output.P_LightVec_HemiLerp.xyz = TanLightVec;
+		Output.EyeVec = TanEyeVec;
 	#else // Do world space non-bumped pixel lighting
-		Output.P_LightVec_HemiLerp.xyz = GetLightVec(Input);
+		Output.P_LightVec_HemiLerp.xyz = WorldLightVec;
 		Output.EyeVec = WorldEyeVec;
-		Output.Normals.xyz = WorldNormal.xyz;
 	#endif
+
+	Output.Normals.xyz = WorldNormal.xyz;
 
 	#if _HASUVANIMATION_
 		Output.P_Tex0_GroundUV.xy = CalcUVRotation(Input).xy; // pass-through rotate coords
@@ -212,8 +212,21 @@ VS2PS Bump_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Bump_PS(VS2PS Input) : COLOR
+float4 BundledMesh_PS(VS2PS Input) : COLOR
 {
+	float3 LightVec = normalize(Input.P_LightVec_HemiLerp.xyz);
+	float3 EyeVec = normalize(Input.EyeVec);
+	float3 HalfVec = normalize(LightVec + EyeVec);
+	float4 ColorMap = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
+	float4 DiffuseTex = ColorMap;
+
+	#if _HASNORMALMAP_
+		float4 TangentNormal = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
+		float3 NormalVec = normalize(TangentNormal.xyz * 2.0 - 1.0);
+	#else
+		float3 NormalVec = normalize(Input.Normals.xyz);
+	#endif
+
 	#if _HASSHADOW_
 		float ShadowDir = GetShadowFactor(ShadowMapSampler, Input.ShadowTex);
 	#else
@@ -229,67 +242,42 @@ float4 Bump_PS(VS2PS Input) : COLOR
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
 		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
-		float3 HemiColor = lerp(GroundColor, HemiMapSkyColor, Input.P_LightVec_HemiLerp.w);
+		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, Input.P_LightVec_HemiLerp.w);
 	#else
-		//tl: by setting this to 0, hlsl will remove it from the compiled code (in an addition).
-		//    for non-hemi'ed materials, a static ambient will be added to sun color in vertex shader
-		float HemiColor = Lights[0].color.w;
+		float3 Ambient = Lights[0].color.w;
 	#endif
-
-	float3 NormalVec = 0.0;
-
-	#if _HASNORMALMAP_
-		float4 TangentNormal = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
-		TangentNormal.xyz = normalize(TangentNormal.xyz * 2.0 - 1.0);
-		NormalVec = TangentNormal.xyz;
-	#else
-		NormalVec = normalize(Input.Normals.xyz);
-	#endif
-
-	float3 LightVec = normalize(Input.P_LightVec_HemiLerp.xyz);
-	float3 EyeVec = normalize(Input.EyeVec);
-	float3 HalfVec = normalize(LightVec + EyeVec);
-
-	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
 
 	#if _HASCOLORMAPGLOSS_
-		float Gloss = DiffuseMap.a;
+		float Gloss = ColorMap.a;
 	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
 		float Gloss = TangentNormal.a;
 	#else
 		float Gloss = StaticGloss;
 	#endif
 
-	float3 Diffuse = GetDiffuseValue(NormalVec, LightVec) * Lights[0].color;
-	float3 Specular = GetSpecularValue(NormalVec, HalfVec) * Lights[0].color * Gloss;
-
-	Diffuse *= ShadowDir * ShadowOccDir;
-	Specular *= ShadowDir * ShadowOccDir;
-
-	float4 OutputColor = 1.0;
-
-	#if _POINTLIGHT_
-		#if !_HASCOLORMAPGLOSS_
-			// there is no Gloss map so alpha means transparency
-			OutputColor.rgb = Diffuse * DiffuseMap.a;
-		#else
-			OutputColor.rgb = Diffuse;
-		#endif
-	#else
-		OutputColor.rgb = Diffuse + HemiColor;
-	#endif
-
-	float4 DiffuseColor = DiffuseMap;
-
 	#if _FRESNELVALUES_
 		#if _HASENVMAP_
 			float3 Reflection = -reflect(EyeVec.xyz, NormalVec.xyz);
 			float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
-			DiffuseColor.rgb = lerp(DiffuseColor, EnvMapColor, Gloss / 4.0);
+			DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss / 4.0);
 		#endif
+		float RefractionIndexRatio = 0.15;
+		float F0 = pow(1.0 - RefractionIndexRatio, 2.0) / pow(1.0 + RefractionIndexRatio, 4.0);
+		float FresnelValue = pow(F0 + (1.0 - F0) * (1.0 - dot(NormalVec, EyeVec)), 2.0);
+		DiffuseTex.a = lerp(DiffuseTex.a, 1.0, FresnelValue);
+	#endif
 
-		float FresnelValue = GetSchlickApproximation(NormalVec.xyz, EyeVec.xyz, 0.15);
-		DiffuseColor.a = lerp(DiffuseColor.a, 1.0, FresnelValue);
+	float3 Diffuse = GetDiffuseValue(NormalVec, LightVec);
+	float3 Specular = GetSpecularValue(NormalVec, HalfVec) * (Gloss * 4.0);
+
+	#if _POINTLIGHT_
+		#if !_HASCOLORMAPGLOSS_
+			// there is no Gloss map so alpha means transparency
+			Diffuse *= ColorMap.a;
+		#endif
+		float Attenuation = GetRadialAttenuation(Lights[0].pos.xyz - Input.VertexPos.xyz, Lights[0].attenuation);
+	#else
+		const float Attenuation = 1.0;
 	#endif
 
 	#if _HASGIMAP_
@@ -300,29 +288,34 @@ float4 Bump_PS(VS2PS Input) : COLOR
 		const float4 GI = 1.0;
 	#endif
 
-	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or DiffuseMap)
+	float4 OutputColor = 1.0;
+
+	// Calculate diffuse + specular lighting
+	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
 	// Prevents non-detailed bundledmesh from looking shiny
-	OutputColor.rgb *= DiffuseColor.rgb * GI.rgb;
+	float3 LightFactors = ShadowDir * ShadowOccDir;
 	#if _HASCOLORMAPGLOSS_ || _HASNORMALMAP_
-		OutputColor.rgb += Specular * GI.rgb;
+		float3 Lighting = ((Diffuse + Specular) * Lights[0].color) * LightFactors;
+		OutputColor.rgb = DiffuseTex.rgb * ((Ambient + Lighting) * GI.rgb);
+	#else
+		float3 Lighting = (Diffuse * Lights[0].color) * LightFactors;
+		OutputColor.rgb = DiffuseTex.rgb * ((Ambient + Lighting) * GI.rgb);
+	#endif
+
+	#if _POINTLIGHT_
+		OutputColor *= Attenuation;
+		OutputColor.rgb *= GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz);
 	#endif
 
 	#if _HASDOT3ALPHATEST_
-		OutputColor.a = dot(DiffuseMap.rgb, 1.0);
+		OutputColor.a = dot(ColorMap.rgb, 1.0);
 	#else
 		#if _HASCOLORMAPGLOSS_
 			OutputColor.a = 1.0f;
 		#else
-			OutputColor.a = DiffuseColor.a;
+			OutputColor.a = DiffuseTex.a;
 		#endif
 	#endif
-
-	#if _POINTLIGHT_
-		OutputColor *= GetRadialAttenuation(Input.P_LightVec_HemiLerp.xyz, Lights[0].attenuation);
-		OutputColor.a *= GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz);
-	#endif
-
-	OutputColor.a *= Transparency.a;
 
 	#if _HASGIMAP_
 		if (FogColor.r < 0.01)
@@ -331,7 +324,7 @@ float4 Bump_PS(VS2PS Input) : COLOR
 			{
 				if (GI_TIS.g < 0.01)
 				{
-					OutputColor.rgb = float3(lerp(0.43, 0.17, DiffuseMap.b), 1.0, 0.0);
+					OutputColor.rgb = float3(lerp(0.43, 0.17, ColorMap.b), 1.0, 0.0);
 				}
 				else
 				{
@@ -341,19 +334,21 @@ float4 Bump_PS(VS2PS Input) : COLOR
 			else
 			{
 				// Normal Wrecks also cold
-				OutputColor.rgb = float3(lerp(0.43, 0.17, DiffuseMap.b), 1.0, 0.0);
+				OutputColor.rgb = float3(lerp(0.43, 0.17, ColorMap.b), 1.0, 0.0);
 			}
 		}
 	#else
 		if (FogColor.r < 0.01)
 		{
-			OutputColor.rgb = float3(lerp(0.64, 0.3, DiffuseMap.b), 1.0, 0.0); // M // 0.61, 0.25
+			OutputColor.rgb = float3(lerp(0.64, 0.3, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
 		}
 	#endif
 
 	#if !_POINTLIGHT_
 		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
 	#endif
+
+	OutputColor.a *= Transparency.a;
 
 	return OutputColor;
 }
@@ -362,9 +357,6 @@ technique Variable
 {
 	pass p0
 	{
-		VertexShader = compile vs_3_0 Bump_VS();
-		PixelShader = compile ps_3_0 Bump_PS();
-
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
@@ -382,5 +374,8 @@ technique Variable
 			DestBlend = INVSRCALPHA;
 			ZWriteEnable = (DepthWrite);
 		#endif
+
+		VertexShader = compile vs_3_0 BundledMesh_VS();
+		PixelShader = compile ps_3_0 BundledMesh_PS();
 	}
 }
