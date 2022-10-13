@@ -1,4 +1,3 @@
-#line 2 "StaticMesh.fx"
 
 /*
 	Description:

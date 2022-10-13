@@ -1,4 +1,3 @@
-#line 2 "Nametag.fx"
 
 /*
 	Description: Renders icons and in-game nametags above players

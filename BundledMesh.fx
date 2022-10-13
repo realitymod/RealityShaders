@@ -1,4 +1,3 @@
-#line 2 "BundledMesh.fx"
 
 /*
 	Description:

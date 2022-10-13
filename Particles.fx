@@ -1,4 +1,3 @@
-#line 2 "Particles.fx"
 
 /*
 	Description: Renders static particles

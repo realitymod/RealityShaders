@@ -1,6 +1,4 @@
 
-#line 3 "TerrainShader_Shared.fx"
-
 /*
 	Description: Shared functions for terrain shader
 */

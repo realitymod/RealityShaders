@@ -1,6 +1,4 @@
 
-#line 3 "TerrainShader_Hi.fx"
-
 /*
 	Description: High-settings terrain shader
 */

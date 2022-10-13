@@ -62,15 +62,15 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float4 P_Normals_Fog : TEXCOORD0; // .xyz = Normals; .w = Fog
-	float3 EyeVec : TEXCOORD1;
-	float3 LightVec : TEXCOORD2;
+	float3 VertexPos : TEXCOORD0;
+	float3 Normals : TEXCOORD1;
+	float3 EyeVec : TEXCOORD2;
+	float3 LightVec : TEXCOORD3;
 
-	float4 P_Base_Detail : TEXCOORD3; // .xy = TexBase; .zw = TexDetail;
-	float4 P_Dirt_Crack : TEXCOORD4; // .xy = TexDirt; .zw = TexCrack;
-
-	float4 LightMapTex : TEXCOORD5;
-	float4 ShadowTex : TEXCOORD6;
+	float4 P_Base_Detail : TEXCOORD4; // .xy = TexBase; .zw = TexDetail;
+	float4 P_Dirt_Crack : TEXCOORD5; // .xy = TexDirt; .zw = TexCrack;
+	float4 LightMapTex : TEXCOORD6;
+	float4 ShadowTex : TEXCOORD7;
 };
 
 VS2PS StaticMesh_VS(APP2VS Input)
@@ -86,16 +86,15 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	float3x3 ObjI = transpose(GetTangentBasis(UnpackedTangent, UnpackedNormal, GetBinormalFlipping(Input)));
 
 	float3 ObjSpaceEyeVec = ObjectSpaceCamPos - UnpackedPos;
+	Output.EyeVec = mul(ObjSpaceEyeVec, ObjI);
 
-	Output.P_Normals_Fog.xyz = normalize(UnpackedNormal);
-	Output.P_Normals_Fog.w = GetFogValue(UnpackedPos.xyz, ObjectSpaceCamPos.xyz);
-
-	Output.EyeVec.xyz = mul(ObjSpaceEyeVec, ObjI);
+	Output.VertexPos = UnpackedPos;
+	Output.Normals = normalize(UnpackedNormal);
 
 	#if _POINTLIGHT_
-		Output.LightVec.xyz = mul(Lights[0].pos - UnpackedPos, ObjI);
+		Output.LightVec = mul(Lights[0].pos - UnpackedPos, ObjI);
 	#else
-		Output.LightVec.xyz = mul(-Lights[0].dir, ObjI);
+		Output.LightVec = mul(-Lights[0].dir, ObjI);
 	#endif
 
 	#if _BASE_
@@ -208,14 +207,14 @@ float3 GetLightmap(VS2PS Input)
 
 float4 StaticMesh_PS(VS2PS Input) : COLOR
 {
-	float3 EyeVec = normalize(Input.EyeVec.xyz);
-	float3 LightVec = normalize(Input.LightVec.xyz);
+	float3 EyeVec = normalize(Input.EyeVec);
+	float3 LightVec = normalize(Input.LightVec);
 	float3 HalfVec = normalize(LightVec + EyeVec);
 
 	#if defined(USE_DETAIL)
 		float3 Normals = normalize(GetCompositeNormals(Input, EyeVec));
 	#else
-		float3 Normals = normalize(Input.P_Normals_Fog.xyz);
+		float3 Normals = normalize(Input.Normals);
 	#endif
 
 	float Gloss;
@@ -227,13 +226,13 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			Normals = float3(0.0, 0.0, 1.0);
 		#endif
 
-		float Attenuation = GetRadialAttenuation(Input.LightVec.xyz, Lights[0].attenuation);
+		float Attenuation = GetRadialAttenuation(Input.LightVec, Lights[0].attenuation);
 		float3 Diffuse = GetDiffuseValue(Normals, LightVec);
 		float3 Specular = GetSpecularValue(Normals, HalfVec) * Gloss;
 
 		float3 Lighting = (Diffuse * Lights[0].color) + (Specular * StaticSpecularColor);
 		Lighting = saturate(Lighting * Attenuation);
-		OutputColor.rgb = (DiffuseTex.rgb * Lighting) * Input.P_Normals_Fog.w;
+		OutputColor.rgb = (DiffuseTex.rgb * Lighting) * GetFogValue(Input.VertexPos, ObjectSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
@@ -269,7 +268,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if !_POINTLIGHT_
-		OutputColor.rgb = ApplyFog(OutputColor.rgb, Input.P_Normals_Fog.w);
+		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, ObjectSpaceCamPos));
 	#endif
 
 	return OutputColor;

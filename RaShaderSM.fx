@@ -84,18 +84,18 @@ float3 SkinVecToTan(APP2VS Input, float3 Vec)
 float2 GetGroundUV(float3 WorldPos, float3 WorldNormal)
 {
 	// HemiMapConstants: Offset x/y heightmapsize z / hemilerpbias w
-	float2 GroundUVAndLerp = 0.0;
-	GroundUVAndLerp.xy = ((WorldPos + (HemiMapConstants.z / 2.0) + WorldNormal).xz - HemiMapConstants.xy) / HemiMapConstants.z;
-	GroundUVAndLerp.y = 1.0 - GroundUVAndLerp.y;
-	return GroundUVAndLerp;
+	float2 GroundUV = 0.0;
+	GroundUV.xy = ((WorldPos + (HemiMapConstants.z / 2.0) + WorldNormal).xz - HemiMapConstants.xy) / HemiMapConstants.z;
+	GroundUV.y = 1.0 - GroundUV.y;
+	return GroundUV;
 }
 
 float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 {
 	// LocalHeight scale, 1 for top and 0 for bottom
-	float LocalHeight = (WorldPos.y - (World[3][1] - 0.5)) * 0.5 /* InvHemiHeightScale */;
+	float LocalHeight = (WorldPos.y - (World[3][1] - 0.5)) * 0.5;
 	float Offset = (LocalHeight * 2.0 - 1.0) + HeightOverTerrain;
-	Offset = clamp(Offset, -2.0 * (1.0 - HeightOverTerrain), 0.8); // For TL: seems like taking this like away doesn't change much, take it out?
+	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
 	return clamp((WorldNormal.y + Offset) * 0.5 + 0.5, 0.0, 0.9);
 }
 
@@ -177,7 +177,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 		float4 NormalVec = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
 		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
 	#else
-		float4 NormalVec = float4(normalize(Input.NormalVec), 0.15);
+		float4 NormalVec = float4(normalize(Input.NormalVec), 0.1);
 	#endif
 
 	#if _HASSHADOW_
@@ -212,9 +212,9 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	float Gloss = NormalVec.a;
 	float3 Diffuse = GetDiffuseValue(NormalVec.xyz, LightVec);
 	float3 Specular = GetSpecularValue(NormalVec.xyz, HalfVec) * (Gloss * 4.0);
-
 	float3 LightFactors = Attenuation * ShadowDir;
 	float3 Lighting = ((Diffuse + Specular) * Lights[0].color) * LightFactors;
+
 	OutColor.rgb = DiffuseTex.rgb * (Ambient + Lighting);
 	OutColor.a = DiffuseTex.a * Transparency.a;
 
@@ -222,7 +222,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	{
 		#if _HASENVMAP_
 			// If EnvMap enabled, then should be hot on thermals
-			OutColor.rgb = float3(lerp(0.6, 0.3, DiffuseTex.b), 1.0, 0.0); // M //0.61,0.25
+			OutColor.rgb = float3(lerp(0.6, 0.3, DiffuseTex.b), 1.0, 0.0); // M // 0.61,0.25
 		#else
 			// Else cold
 			OutColor.rgb = float3(lerp(0.43, 0.17, DiffuseTex.b), 1.0, 0.0);

@@ -1,6 +1,4 @@
 
-#line 3 "TerrainShader_nv3x.fx"
-
 /*
 	Description: Low-settings terrain shader
 */

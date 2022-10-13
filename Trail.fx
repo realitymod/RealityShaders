@@ -1,4 +1,3 @@
-#line 2 "Trail.fx"
 
 /*
 	Description: Renders lighting for particles that trail

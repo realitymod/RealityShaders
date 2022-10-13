@@ -1,4 +1,3 @@
-#line 2 "MeshParticleMesh.fx"
 
 /*
 	Description: Renders particle lighting

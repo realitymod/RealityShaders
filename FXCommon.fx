@@ -6,7 +6,6 @@
 #if !defined(FXCOMMON_FX)
 	#define FXCOMMON_FX
 
-	#line 6 "FXCommon.fx"
 	#include "shaders/RaCommon.fx"
 
 	// Particle Texture

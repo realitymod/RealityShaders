@@ -62,6 +62,18 @@
 	#define _HASSHADOW_ 0
 #endif
 
+/*
+	#if defined(_DEBUG_)
+		#define _HASUVANIMATION_ 1
+		#define _USEHEMIMAP_ 1
+		#define _HASSHADOW_ 1
+		#define _HASSHADOWOCCLUSION_ 1
+		#define _HASNORMALMAP_ 1
+		#define _FRESNELVALUES_ 1
+		#define _HASGIMAP_ 1
+	#endif
+*/
+
 struct APP2VS
 {
    	float4 Pos : POSITION;
@@ -93,110 +105,62 @@ float GetBinormalFlipping(APP2VS Input)
 	return 1.0 + IndexArray[2] * -2.0;
 }
 
-float4 GetWorldPos(APP2VS Input)
-{
-	float4 UnpackedPos = Input.Pos * PosUnpack;
-	return float4(mul(UnpackedPos, GetSkinnedWorldMatrix(Input)), 1.0);
-}
-
-float3 GetWorldNormal(APP2VS Input)
-{
-	// Unpack normal
-	float3 Normal = normalize(Input.Normal * NormalUnpack.x + NormalUnpack.y);
-	return mul(Normal, GetSkinnedWorldMatrix(Input)); // tl: We don't scale/shear objects
-}
-
-float2 GetGroundUV(APP2VS Input)
+float2 GetGroundUV(float3 WorldPos, float3 WorldNormal)
 {
 	// HemiMapConstants: Offset x/y heightmapsize z / hemilerpbias w
-	float4 GroundUV = 0.0;
-	GroundUV.xy = ((GetWorldPos(Input) + (HemiMapConstants.z / 2.0) + GetWorldNormal(Input)).xz - HemiMapConstants.xy) / HemiMapConstants.z;
+	float2 GroundUV = 0.0;
+	GroundUV.xy = ((WorldPos + (HemiMapConstants.z / 2.0) + WorldNormal).xz - HemiMapConstants.xy) / HemiMapConstants.z;
 	GroundUV.y = 1.0 - GroundUV.y;
 	return GroundUV;
 }
 
-float GetGroundLerp(float3 WorldPos, float3 WorldNormal)
-{
-	// LocalHeight scale, 1 for top and 0 for bottom
-	float LocalHeight = (WorldPos.y - GeomBones[0][3][1]) * InvHemiHeightScale;
-	float Offset = (LocalHeight * 2.0 - 1.0) + HeightOverTerrain;
-	Offset = clamp(Offset, -2.0 * (1.0 - HeightOverTerrain), 0.8); // For TL: seems like taking this like away doesn't change much, take it out?
-	return clamp((WorldNormal.y + Offset) * 0.5 + 0.5, 0.0, 0.9);
-}
-
-float4 CalcUVRotation(APP2VS Input)
+float4 GetUVRotation(APP2VS Input)
 {
 	// TODO: (ROD) Gotta rotate the tangent space as well as the uv
-	float2 UV = mul(float3(Input.TexUVRotCenter * TexUnpack, 1.0), GetSkinnedUVMatrix(Input)).xy + Input.TexDiffuse * TexUnpack;
-	return float4(UV.xy, 0.0, 1.0);
-}
-
-// NOTE: This returns un-normalized for point, because point needs to be attenuated.
-float3 GetLightVec(APP2VS Input)
-{
-	#if _POINTLIGHT_
-		return (Lights[0].pos - GetWorldPos(Input).xyz);
-	#else
-		float3 LightVec = -Lights[0].dir;
-		#if _HASCOCKPIT_
-			//tl: Skin lighting vector to part to create static cockpit lighting
-			LightVec = mul(LightVec, GetSkinnedWorldMatrix(Input));
-		#endif
-		return LightVec;
-	#endif
+	float2 UV = mul(float3(Input.TexUVRotCenter * TexUnpack, 1.0), GetSkinnedUVMatrix(Input)).xy;
+	return float4(UV.xy + (Input.TexDiffuse * TexUnpack), 0.0, 1.0);
 }
 
 struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float4 Normals : TEXCOORD0;
-	float4 P_Tex0_GroundUV : TEXCOORD1; // .xy = Tex0; .zw = GroundUV;
-	float4 P_LightVec_HemiLerp : TEXCOORD2;
-	float3 EyeVec : TEXCOORD3;
-	float3 VertexPos : TEXCOORD4;
+	float4 P_VertexPos_Flip : TEXCOORD0; // .xyz = WorldPos; .w = BiNormalFlipping
+	float3 WorldNormal : TEXCOORD1;
+	float3 WorldTangent : TEXCOORD2;
 
-	float4 ShadowTex : TEXCOORD5;
-	float4 OccShadowTex : TEXCOORD6;
+	float4 P_Tex0_GroundUV : TEXCOORD3; // .xy = Tex0; .zw = GroundUV;
+	float4 ShadowTex : TEXCOORD4;
+	float4 OccShadowTex : TEXCOORD5;
 };
 
 VS2PS BundledMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	float4 WorldPos = GetWorldPos(Input);
-	float3 WorldNormal = normalize(GetWorldNormal(Input));
-	float3 WorldEyeVec = WorldSpaceCamPos.xyz - WorldPos.xyz;
-	float3 WorldLightVec = GetLightVec(Input);
+	float4 UnpackedPos = Input.Pos * PosUnpack;
+	float3 UnpackedNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
+	float3 UnpackedTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y;
 
-	Output.HPos = mul(WorldPos, ViewProjection); // Output HPOS
+	float4x3 SkinnedWorldMatrix = GetSkinnedWorldMatrix(Input);
+	float4 WorldPos = float4(mul(UnpackedPos, SkinnedWorldMatrix), 1.0);
+	float3 WorldNormal = mul(UnpackedNormal, SkinnedWorldMatrix);
+	float3 WorldTangent = mul(UnpackedTangent, SkinnedWorldMatrix);
 
-	#if _HASNORMALMAP_ // Do tangent space bumped pixel lighting
-		float3 UnpackedTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y;
-		float3 UnpackedNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
-		float3x3 TanBasis = GetTangentBasis(UnpackedTangent, UnpackedNormal, GetBinormalFlipping(Input));
-		float3x3 World2TanMat = transpose(mul(TanBasis, GetSkinnedWorldMatrix(Input)));
+	Output.HPos = mul(WorldPos, ViewProjection); // Output HPos
 
-		float3 TanEyeVec = mul(WorldEyeVec, World2TanMat);
-		float3 TanLightVec = mul(WorldLightVec, World2TanMat);
-		Output.P_LightVec_HemiLerp.xyz = TanLightVec;
-		Output.EyeVec = TanEyeVec;
-	#else // Do world space non-bumped pixel lighting
-		Output.P_LightVec_HemiLerp.xyz = WorldLightVec;
-		Output.EyeVec = WorldEyeVec;
-	#endif
-
-	Output.Normals.xyz = WorldNormal.xyz;
+	Output.P_VertexPos_Flip = float4(WorldPos.xyz, GetBinormalFlipping(Input));
+	Output.WorldNormal = WorldNormal;
+	Output.WorldTangent = WorldTangent;
 
 	#if _HASUVANIMATION_
-		Output.P_Tex0_GroundUV.xy = CalcUVRotation(Input).xy; // pass-through rotate coords
+		Output.P_Tex0_GroundUV.xy = GetUVRotation(Input).xy; // pass-through rotate coords
 	#else
 		Output.P_Tex0_GroundUV.xy = Input.TexDiffuse.xy * TexUnpack; // pass-through texcoord
 	#endif
 
 	#if _USEHEMIMAP_
-		Output.P_Tex0_GroundUV.zw = GetGroundUV(Input);
-		Output.P_LightVec_HemiLerp.w = GetGroundLerp(WorldPos, WorldNormal);
+		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, WorldNormal);
 	#endif
 
 	#if _HASSHADOW_
@@ -207,24 +171,50 @@ VS2PS BundledMesh_VS(APP2VS Input)
 		Output.OccShadowTex = GetShadowProjection(WorldPos, true);
 	#endif
 
-	Output.VertexPos = WorldPos.xyz;
-
 	return Output;
+}
+
+// NOTE: This returns un-normalized for point, because point needs to be attenuated.
+float3 GetLightVec(float3 WorldPos)
+{
+	#if _POINTLIGHT_
+		return Lights[0].pos - WorldPos;
+	#else
+		return -Lights[0].dir;
+	#endif
+}
+
+float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
+{
+	// LocalHeight scale, 1 for top and 0 for bottom
+	float LocalHeight = (WorldPos.y - GeomBones[0][3][1]) * InvHemiHeightScale;
+	float Offset = (LocalHeight * 2.0 - 1.0) + HeightOverTerrain;
+	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
+	return clamp((WorldNormal.y + Offset) * 0.5 + 0.5, 0.0, 0.9);
 }
 
 float4 BundledMesh_PS(VS2PS Input) : COLOR
 {
-	float3 LightVec = normalize(Input.P_LightVec_HemiLerp.xyz);
-	float3 EyeVec = normalize(Input.EyeVec);
+	float3 WorldPos = Input.P_VertexPos_Flip.xyz;
+	float3 WorldNormal = Input.WorldNormal;
+	float3 WorldTangent = Input.WorldTangent;
+	float BiNormalFlip = Input.P_VertexPos_Flip.w;
+	float3x3 TBN = GetTangentBasis(WorldTangent, WorldNormal, BiNormalFlip);
+
+	float3 LightVec = normalize(GetLightVec(WorldPos));
+	float3 EyeVec = normalize(WorldSpaceCamPos - WorldPos);
 	float3 HalfVec = normalize(LightVec + EyeVec);
+
 	float4 ColorMap = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
 	float4 DiffuseTex = ColorMap;
 
 	#if _HASNORMALMAP_
+		// Transform from tangent-space to world-space
 		float4 TangentNormal = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
 		float3 NormalVec = normalize(TangentNormal.xyz * 2.0 - 1.0);
+		NormalVec = normalize(mul(NormalVec, TBN));
 	#else
-		float3 NormalVec = normalize(Input.Normals.xyz);
+		float3 NormalVec = normalize(WorldNormal);
 	#endif
 
 	#if _HASSHADOW_
@@ -242,7 +232,8 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
 		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
-		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, Input.P_LightVec_HemiLerp.w);
+		float HemiLerp = GetHemiLerp(WorldPos, NormalVec);
+		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 	#else
 		float3 Ambient = Lights[0].color.w;
 	#endif
@@ -257,7 +248,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	#if _FRESNELVALUES_
 		#if _HASENVMAP_
-			float3 Reflection = -reflect(EyeVec.xyz, NormalVec.xyz);
+			float3 Reflection = -reflect(EyeVec, NormalVec);
 			float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
 			DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss / 4.0);
 		#endif
@@ -275,7 +266,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 			// there is no Gloss map so alpha means transparency
 			Diffuse *= ColorMap.a;
 		#endif
-		float Attenuation = GetRadialAttenuation(Lights[0].pos.xyz - Input.VertexPos.xyz, Lights[0].attenuation);
+		float Attenuation = GetRadialAttenuation(Lights[0].pos - WorldPos, Lights[0].attenuation);
 	#else
 		const float Attenuation = 1.0;
 	#endif
@@ -293,7 +284,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	// Calculate diffuse + specular lighting
 	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
 	// Prevents non-detailed bundledmesh from looking shiny
-	float3 LightFactors = ShadowDir * ShadowOccDir;
+	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
 	#if _HASCOLORMAPGLOSS_ || _HASNORMALMAP_
 		float3 Lighting = ((Diffuse + Specular) * Lights[0].color) * LightFactors;
 		OutputColor.rgb = DiffuseTex.rgb * ((Ambient + Lighting) * GI.rgb);
@@ -303,8 +294,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _POINTLIGHT_
-		OutputColor *= Attenuation;
-		OutputColor.rgb *= GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz);
+		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
 	#endif
 
 	#if _HASDOT3ALPHATEST_
@@ -345,7 +335,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if !_POINTLIGHT_
-		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
+		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 
 	OutputColor.a *= Transparency.a;

@@ -1,4 +1,3 @@
-#line 2 "Decals.fx"
 
 /*
 	Description: Renders decals such as bullet holes
