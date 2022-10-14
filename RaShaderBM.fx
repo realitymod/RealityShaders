@@ -1,6 +1,8 @@
 
 /*
-	Description: Renders lighting for bundledmesh (objects that are dynamic, nonhuman)
+	Description:
+	- Renders lighting for bundledmesh (objects that are dynamic, nonhuman)
+	- Calculates world-space lighting
 */
 
 #include "shaders/RealityGraphics.fx"
@@ -121,12 +123,21 @@ float4 GetUVRotation(APP2VS Input)
 	return float4(UV.xy + (Input.TexDiffuse * TexUnpack), 0.0, 1.0);
 }
 
+float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
+{
+	// LocalHeight scale, 1 for top and 0 for bottom
+	float LocalHeight = (WorldPos.y - GeomBones[0][3][1]) * InvHemiHeightScale;
+	float Offset = (LocalHeight * 2.0 - 1.0) + HeightOverTerrain;
+	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
+	return clamp((WorldNormal.y + Offset) * 0.5 + 0.5, 0.0, 0.9);
+}
+
 struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float4 P_VertexPos_Flip : TEXCOORD0; // .xyz = WorldPos; .w = BiNormalFlipping
-	float3 WorldNormal : TEXCOORD1;
+	float4 P_VertexPos_Flip : TEXCOORD0; // .xyz = WorldPos; .w = BiNormalFlipping;
+	float4 P_WorldNormal_Lerp : TEXCOORD1; // .xyz = WorldPos; .w = HemiLerp;
 	float3 WorldTangent : TEXCOORD2;
 
 	float4 P_Tex0_GroundUV : TEXCOORD3; // .xy = Tex0; .zw = GroundUV;
@@ -144,13 +155,13 @@ VS2PS BundledMesh_VS(APP2VS Input)
 
 	float4x3 SkinnedWorldMatrix = GetSkinnedWorldMatrix(Input);
 	float4 WorldPos = float4(mul(UnpackedPos, SkinnedWorldMatrix), 1.0);
-	float3 WorldNormal = mul(UnpackedNormal, SkinnedWorldMatrix);
-	float3 WorldTangent = mul(UnpackedTangent, SkinnedWorldMatrix);
+	float3 WorldNormal = mul(UnpackedNormal, (float3x3)SkinnedWorldMatrix);
+	float3 WorldTangent = mul(UnpackedTangent, (float3x3)SkinnedWorldMatrix);
 
 	Output.HPos = mul(WorldPos, ViewProjection); // Output HPos
 
 	Output.P_VertexPos_Flip = float4(WorldPos.xyz, GetBinormalFlipping(Input));
-	Output.WorldNormal = WorldNormal;
+	Output.P_WorldNormal_Lerp.xyz = WorldNormal;
 	Output.WorldTangent = WorldTangent;
 
 	#if _HASUVANIMATION_
@@ -161,6 +172,7 @@ VS2PS BundledMesh_VS(APP2VS Input)
 
 	#if _USEHEMIMAP_
 		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, WorldNormal);
+		Output.P_WorldNormal_Lerp.w = GetHemiLerp(WorldPos, WorldNormal);
 	#endif
 
 	#if _HASSHADOW_
@@ -184,19 +196,10 @@ float3 GetLightVec(float3 WorldPos)
 	#endif
 }
 
-float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
-{
-	// LocalHeight scale, 1 for top and 0 for bottom
-	float LocalHeight = (WorldPos.y - GeomBones[0][3][1]) * InvHemiHeightScale;
-	float Offset = (LocalHeight * 2.0 - 1.0) + HeightOverTerrain;
-	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
-	return clamp((WorldNormal.y + Offset) * 0.5 + 0.5, 0.0, 0.9);
-}
-
 float4 BundledMesh_PS(VS2PS Input) : COLOR
 {
 	float3 WorldPos = Input.P_VertexPos_Flip.xyz;
-	float3 WorldNormal = Input.WorldNormal;
+	float3 WorldNormal = Input.P_WorldNormal_Lerp.xyz;
 	float3 WorldTangent = Input.WorldTangent;
 	float BiNormalFlip = Input.P_VertexPos_Flip.w;
 	float3x3 TBN = GetTangentBasis(WorldTangent, WorldNormal, BiNormalFlip);
@@ -231,8 +234,8 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
+		float HemiLerp = Input.P_WorldNormal_Lerp.w;
 		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
-		float HemiLerp = GetHemiLerp(WorldPos, NormalVec);
 		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 	#else
 		float3 Ambient = Lights[0].color.w;

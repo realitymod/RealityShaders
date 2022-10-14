@@ -21,8 +21,8 @@ string GenerateStructs[] =
 //
 string reqVertexElementBase[] = 
 {
- 	"Position",
- 	"Normal",
+	"Position",
+	"Normal",
 	"Bone4Idcs",
 	"Bone2Weights",
 	"TBase2D"

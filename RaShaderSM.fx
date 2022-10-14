@@ -3,6 +3,7 @@
 	Description:
 	- Renders lighting for skinnedmesh (objects that are dynamic, human-like with bones)
 	- Skinning function currently for 2 bones
+	- Calculates tangent-space lighting (object-space lighting for obj normalmap)
 */
 
 #include "shaders/RealityGraphics.fx"
@@ -112,14 +113,14 @@ float3 GetLightVec(APP2VS Input)
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 P_Tex0_GroundUV : TEXCOORD0; // .xy = Tex0; .zw = GroundUV;
-	float4 P_LightVec_OccShadow : TEXCOORD1; // .xyz = LightVec; .w = OccShadow;
-	float4 P_EyeVec_HemiLerp : TEXCOORD2; // .xyz = EyeVec; .w = HemiLerp;
-	float3 NormalVec : TEXCOORD3;
-	float3 VertexPos : TEXCOORD4;
+
+	float3 VertexPos : TEXCOORD0;
+	float4 P_Tex0_GroundUV : TEXCOORD1; // .xy = Tex0; .zw = GroundUV;
+	float4 P_LightVec_OccShadow : TEXCOORD2; // .xyz = LightVec; .w = OccShadow;
+	float4 P_EyeVec_HemiLerp : TEXCOORD3; // .xyz = EyeVec; .w = HemiLerp;
 
 	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
-		float4 ShadowMat : TEXCOORD5;
+		float4 ShadowMat : TEXCOORD4;
 	#endif
 };
 
@@ -138,15 +139,15 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	Output.HPos = mul(ObjSpacePosition, WorldViewProjection);
 	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 
-	#if _OBJSPACENORMALMAP_ || !_HASNORMALMAP_ // Do object-space bumped/non-bumped lighting
+	#if _OBJSPACENORMALMAP_ // Do object-space bumped lighting
 		Output.P_LightVec_OccShadow.xyz = SkinVecToObj(Input, ObjSpaceLightVec);
 		Output.P_EyeVec_HemiLerp.xyz = SkinVecToObj(Input, ObjSpaceEyeVec);
-	#else // Do tangent-space bumped lighting
+	#else // Do tangent-space lighting
 		Output.P_LightVec_OccShadow.xyz = SkinVecToTan(Input, ObjSpaceLightVec);
 		Output.P_EyeVec_HemiLerp.xyz = SkinVecToTan(Input, ObjSpaceEyeVec);
 	#endif
 
-	#if (_USEHEMIMAP_)
+	#if _USEHEMIMAP_
 		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, WorldNormal);
 		Output.P_EyeVec_HemiLerp.w = GetHemiLerp(WorldPos, WorldNormal);
 	#endif
@@ -154,8 +155,6 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	#if _HASSHADOWOCCLUSION_
 		Output.P_LightVec_OccShadow.w = GetShadowProjection(WorldPos, true).z;
 	#endif
-
-	Output.NormalVec = normalize(Input.Normal);
 
 	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
 		Output.ShadowMat = GetShadowProjection(WorldPos);
@@ -177,7 +176,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 		float4 NormalVec = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
 		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
 	#else
-		float4 NormalVec = float4(normalize(Input.NormalVec), 0.1);
+		float4 NormalVec = float4(0.0, 0.0, 1.0, 0.1);
 	#endif
 
 	#if _HASSHADOW_
@@ -222,7 +221,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	{
 		#if _HASENVMAP_
 			// If EnvMap enabled, then should be hot on thermals
-			OutColor.rgb = float3(lerp(0.6, 0.3, DiffuseTex.b), 1.0, 0.0); // M // 0.61,0.25
+			OutColor.rgb = float3(lerp(0.6, 0.3, DiffuseTex.b), 1.0, 0.0); // M // 0.61, 0.25
 		#else
 			// Else cold
 			OutColor.rgb = float3(lerp(0.43, 0.17, DiffuseTex.b), 1.0, 0.0);

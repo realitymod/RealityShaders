@@ -1,13 +1,14 @@
 
 /*
 	Description: Third-party shader code
+	Author: [R-CON]papadanku
 */
 
 #if !defined(REALITYGRAPHICS_FX)
 	#define REALITYGRAPHICS_FX
 
 	/*
-		Shared math functions
+		Shared depth functions
 	*/
 
 	/*
@@ -36,6 +37,10 @@
 		HPos.z = log2(max(1e-6, 1.0 + HPos.w)) * FCoef - 1.0;
 		return HPos;
 	}
+
+	/*
+		Shared color functions
+	*/
 
 	/*
 		Source: https://github.com/microsoft/DirectX-Graphics-Samples
@@ -76,6 +81,10 @@
 	}
 
 	/*
+		Shared lighting functions
+	*/
+
+	/*
 		Description: Gets orthogonal Tangent-Bitangent-Normal (TBN) matrix
 		Uses Gram–Schmidt process to re-orthogonalize Tangent
 		Source: https://en.wikipedia.org/wiki/Gram-Schmidt_process
@@ -96,10 +105,6 @@
 
 		return float3x3(Tangent, BiNormal, Normal);
 	}
-
-	/*
-		Shared lighting functions
-	*/
 
 	// Description: Gets Lambertian diffuse value
 	float GetDiffuseValue(float3 NormalVec, float3 LightVec)

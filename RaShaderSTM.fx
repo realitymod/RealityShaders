@@ -1,13 +1,15 @@
 
 /*
-	Description: Renders lighting for staticmesh (buildings, static props)
+	Description:
+	- Renders lighting for staticmesh (buildings, static props)
+	- Calculates tangent-space lighting
 */
 
 #include "shaders/RealityGraphics.fx"
 #include "shaders/RaCommon.fx"
 #include "shaders/RaShaderSTMCommon.fx"
 
-#define skyNormal float3(0.78,0.52,0.65)
+#define SkyNormal float3(0.78, 0.52, 0.65)
 
 // tl: Alias packed data indices to regular indices:
 #if defined(TexBasePackedInd)
@@ -63,14 +65,13 @@ struct VS2PS
 	float4 HPos : POSITION;
 
 	float3 VertexPos : TEXCOORD0;
-	float3 Normals : TEXCOORD1;
-	float3 EyeVec : TEXCOORD2;
-	float3 LightVec : TEXCOORD3;
+	float3 EyeVec : TEXCOORD1;
+	float3 LightVec : TEXCOORD2;
 
-	float4 P_Base_Detail : TEXCOORD4; // .xy = TexBase; .zw = TexDetail;
-	float4 P_Dirt_Crack : TEXCOORD5; // .xy = TexDirt; .zw = TexCrack;
-	float4 LightMapTex : TEXCOORD6;
-	float4 ShadowTex : TEXCOORD7;
+	float4 P_Base_Detail : TEXCOORD3; // .xy = TexBase; .zw = TexDetail;
+	float4 P_Dirt_Crack : TEXCOORD4; // .xy = TexDirt; .zw = TexCrack;
+	float4 LightMapTex : TEXCOORD5;
+	float4 ShadowTex : TEXCOORD6;
 };
 
 VS2PS StaticMesh_VS(APP2VS Input)
@@ -89,7 +90,6 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	Output.EyeVec = mul(ObjSpaceEyeVec, ObjI);
 
 	Output.VertexPos = UnpackedPos;
-	Output.Normals = normalize(UnpackedNormal);
 
 	#if _POINTLIGHT_
 		Output.LightVec = mul(Lights[0].pos - UnpackedPos, ObjI);
@@ -100,7 +100,7 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	#if _BASE_
 		Output.P_Base_Detail.xy = Input.TexSets[TexBaseInd].xy * TexUnpack;
 	#endif
-	#if (_DETAIL_ || _NDETAIL_)
+	#if _DETAIL_ || _NDETAIL_
 		Output.P_Base_Detail.zw = Input.TexSets[TexDetailInd].xy * TexUnpack;
 	#endif
 
@@ -214,7 +214,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	#if defined(USE_DETAIL)
 		float3 Normals = normalize(GetCompositeNormals(Input, EyeVec));
 	#else
-		float3 Normals = normalize(Input.Normals);
+		float3 Normals = float3(0.0, 0.0, 1.0);
 	#endif
 
 	float Gloss;
@@ -222,16 +222,11 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float4 OutputColor = DiffuseTex;
 
 	#if _POINTLIGHT_
-		#if !defined(USE_DETAIL)
-			Normals = float3(0.0, 0.0, 1.0);
-		#endif
-
 		float Attenuation = GetRadialAttenuation(Input.LightVec, Lights[0].attenuation);
-		float3 Diffuse = GetDiffuseValue(Normals, LightVec);
-		float3 Specular = GetSpecularValue(Normals, HalfVec) * Gloss;
+		float3 Diffuse = GetDiffuseValue(Normals, LightVec) * Lights[0].color;
+		float3 Specular = (GetSpecularValue(Normals, HalfVec) * Gloss) * StaticSpecularColor;
 
-		float3 Lighting = (Diffuse * Lights[0].color) + (Specular * StaticSpecularColor);
-		Lighting = saturate(Lighting * Attenuation);
+		float3 Lighting = saturate((Diffuse + Specular) * Attenuation);
 		OutputColor.rgb = (DiffuseTex.rgb * Lighting) * GetFogValue(Input.VertexPos, ObjectSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
@@ -241,30 +236,14 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			Lightmap.g *= GetShadowFactor(ShadowMapSampler, Input.ShadowTex);
 		#endif
 
-		#if defined(USE_DETAIL)
-			float3 Diffuse = GetDiffuseValue(Normals, LightVec) * Lights[0].color;
-			// Pre-calc: Lightmap.b *= invDot
-			float3 BumpedSky = Lightmap.b * dot(Normals, skyNormal) * StaticSkyColor;
-			// tl: Jonas, disable once we know which materials are actually affected.
-			Diffuse = ((Diffuse * Lightmap.g) + BumpedSky) + (SinglePointColor * Lightmap.r);
-		#else
-			float DotLN = saturate(dot(Normals * 0.2, -Lights[0].dir));
-			float3 InvDot = saturate(saturate(1.0 - DotLN) * StaticSkyColor.rgb * skyNormal.z);
-			float3 Diffuse = GetDiffuseValue(Normals, -Lights[0].dir) * Lights[0].color;
+		// Pre-calc: Lightmap.b *= invDot
+		float3 BumpedSky = (dot(Normals, SkyNormal) * StaticSkyColor) * Lightmap.b;
+		float3 Diffuse = (GetDiffuseValue(Normals, LightVec) * Lights[0].color) * Lightmap.g;
+		float3 Specular = (GetSpecularValue(Normals, HalfVec) * Gloss * StaticSpecularColor) * Lightmap.g;
 
-			#if _LIGHTMAP_
-				// Add ambient here as well to get correct ambient for surfaces parallel to the sun
-				float3 BumpedSky = InvDot * Lightmap.b;
-				float3 BumpedDiffuse = Diffuse + BumpedSky;
-				Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g) + (SinglePointColor * Lightmap.r);
-			#else
-				float3 BumpedSky = InvDot;
-				Diffuse = (Diffuse * Lightmap.g) + BumpedSky;
-			#endif
-		#endif
-
-		float3 Specular = GetSpecularValue(Normals, HalfVec) * (Gloss * Lightmap.g);
-		OutputColor.rgb = ((DiffuseTex.rgb * Diffuse) * 2.0) + (Specular * StaticSpecularColor);
+		// tl: Jonas, disable once we know which materials are actually affected.
+		Diffuse = (Diffuse + BumpedSky) + (SinglePointColor * Lightmap.r);
+		OutputColor.rgb = DiffuseTex.rgb * ((Diffuse * 2.0) + Specular);
 	#endif
 
 	#if !_POINTLIGHT_
