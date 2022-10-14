@@ -64,14 +64,15 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float3 VertexPos : TEXCOORD0;
-	float3 EyeVec : TEXCOORD1;
-	float3 LightVec : TEXCOORD2;
+	float3 ObjectPos : TEXCOORD0;
+	float3 ObjectTangent : TEXCOORD1;
+	float3 ObjectBiNormal : TEXCOORD2;
+	float3 ObjectNormal : TEXCOORD3;
 
-	float4 P_Base_Detail : TEXCOORD3; // .xy = TexBase; .zw = TexDetail;
-	float4 P_Dirt_Crack : TEXCOORD4; // .xy = TexDirt; .zw = TexCrack;
-	float4 LightMapTex : TEXCOORD5;
-	float4 ShadowTex : TEXCOORD6;
+	float4 P_Base_Detail : TEXCOORD4; // .xy = TexBase; .zw = TexDetail;
+	float4 P_Dirt_Crack : TEXCOORD5; // .xy = TexDirt; .zw = TexCrack;
+	float4 LightMapTex : TEXCOORD6;
+	float4 ShadowTex : TEXCOORD7;
 };
 
 VS2PS StaticMesh_VS(APP2VS Input)
@@ -84,18 +85,12 @@ VS2PS StaticMesh_VS(APP2VS Input)
 
 	float3 UnpackedTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y;
 	float3 UnpackedNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
-	float3x3 ObjI = transpose(GetTangentBasis(UnpackedTangent, UnpackedNormal, GetBinormalFlipping(Input)));
+	float3x3 TBN = GetTangentBasis(UnpackedTangent, UnpackedNormal, GetBinormalFlipping(Input));
 
-	float3 ObjSpaceEyeVec = ObjectSpaceCamPos - UnpackedPos;
-	Output.EyeVec = mul(ObjSpaceEyeVec, ObjI);
-
-	Output.VertexPos = UnpackedPos;
-
-	#if _POINTLIGHT_
-		Output.LightVec = mul(Lights[0].pos - UnpackedPos, ObjI);
-	#else
-		Output.LightVec = mul(-Lights[0].dir, ObjI);
-	#endif
+	Output.ObjectPos = UnpackedPos;
+	Output.ObjectTangent = TBN[0];
+	Output.ObjectBiNormal = TBN[1];
+	Output.ObjectNormal = TBN[2];
 
 	#if _BASE_
 		Output.P_Base_Detail.xy = Input.TexSets[TexBaseInd].xy * TexUnpack;
@@ -205,10 +200,25 @@ float3 GetLightmap(VS2PS Input)
 	#endif
 }
 
+float3 GetLightVec(float3 ObjectPos)
+{
+	#if _POINTLIGHT_
+		return Lights[0].pos - ObjectPos;
+	#else
+		return -Lights[0].dir;
+	#endif
+}
+
 float4 StaticMesh_PS(VS2PS Input) : COLOR
 {
-	float3 EyeVec = normalize(Input.EyeVec);
-	float3 LightVec = normalize(Input.LightVec);
+	float3 ObjectPos = Input.ObjectPos;
+	float3 ObjectTangent = normalize(Input.ObjectTangent);
+	float3 ObjectBiNormal = normalize(Input.ObjectBiNormal);
+	float3 ObjectNormal = normalize(Input.ObjectNormal);
+	float3x3 ObjI = transpose(float3x3(ObjectTangent, ObjectBiNormal, ObjectNormal));
+
+	float3 LightVec = normalize(mul(GetLightVec(ObjectPos), ObjI));
+	float3 EyeVec = normalize(mul(ObjectSpaceCamPos - ObjectPos, ObjI));
 	float3 HalfVec = normalize(LightVec + EyeVec);
 
 	#if defined(USE_DETAIL)
@@ -217,17 +227,17 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 		float3 Normals = float3(0.0, 0.0, 1.0);
 	#endif
 
+	float4 OutputColor = 0.0;
+
 	float Gloss;
 	float4 DiffuseTex = GetCompositeDiffuse(Input, EyeVec, Gloss);
-	float4 OutputColor = DiffuseTex;
+	float3 Diffuse = GetDiffuseValue(Normals, LightVec) * Lights[0].color;
+	float3 Specular = (GetSpecularValue(Normals, HalfVec) * Gloss) * StaticSpecularColor;
 
 	#if _POINTLIGHT_
-		float Attenuation = GetRadialAttenuation(Input.LightVec, Lights[0].attenuation);
-		float3 Diffuse = GetDiffuseValue(Normals, LightVec) * Lights[0].color;
-		float3 Specular = (GetSpecularValue(Normals, HalfVec) * Gloss) * StaticSpecularColor;
-
+		float Attenuation = GetRadialAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
 		float3 Lighting = saturate((Diffuse + Specular) * Attenuation);
-		OutputColor.rgb = (DiffuseTex.rgb * Lighting) * GetFogValue(Input.VertexPos, ObjectSpaceCamPos);
+		OutputColor.rgb = (DiffuseTex.rgb * Lighting) * GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
@@ -238,16 +248,15 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 		// Pre-calc: Lightmap.b *= invDot
 		float3 BumpedSky = (dot(Normals, SkyNormal) * StaticSkyColor) * Lightmap.b;
-		float3 Diffuse = (GetDiffuseValue(Normals, LightVec) * Lights[0].color) * Lightmap.g;
-		float3 Specular = (GetSpecularValue(Normals, HalfVec) * Gloss * StaticSpecularColor) * Lightmap.g;
-
 		// tl: Jonas, disable once we know which materials are actually affected.
-		Diffuse = (Diffuse + BumpedSky) + (SinglePointColor * Lightmap.r);
-		OutputColor.rgb = DiffuseTex.rgb * ((Diffuse * 2.0) + Specular);
+		float3 Ambient = BumpedSky + (SinglePointColor * Lightmap.r);
+
+		float3 Lighting = ((Ambient + Diffuse) * 2.0) + Specular;
+		OutputColor.rgb = DiffuseTex.rgb * Lighting;
 	#endif
 
 	#if !_POINTLIGHT_
-		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, ObjectSpaceCamPos));
+		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
 	#endif
 
 	return OutputColor;

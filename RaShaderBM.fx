@@ -136,13 +136,14 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float4 P_VertexPos_Flip : TEXCOORD0; // .xyz = WorldPos; .w = BiNormalFlipping;
-	float4 P_WorldNormal_Lerp : TEXCOORD1; // .xyz = WorldPos; .w = HemiLerp;
-	float3 WorldTangent : TEXCOORD2;
+	float4 P_WorldPos_Lerp : TEXCOORD0; // .xyz = WorldPos; .w = HemiLerp;
+	float3 WorldTangent : TEXCOORD1;
+	float3 WorldBiNormal : TEXCOORD2;
+	float3 WorldNormal : TEXCOORD3;
 
-	float4 P_Tex0_GroundUV : TEXCOORD3; // .xy = Tex0; .zw = GroundUV;
-	float4 ShadowTex : TEXCOORD4;
-	float4 OccShadowTex : TEXCOORD5;
+	float4 P_Tex0_GroundUV : TEXCOORD4; // .xy = Tex0; .zw = GroundUV;
+	float4 ShadowTex : TEXCOORD5;
+	float4 OccShadowTex : TEXCOORD6;
 };
 
 VS2PS BundledMesh_VS(APP2VS Input)
@@ -157,12 +158,14 @@ VS2PS BundledMesh_VS(APP2VS Input)
 	float4 WorldPos = float4(mul(UnpackedPos, SkinnedWorldMatrix), 1.0);
 	float3 WorldNormal = mul(UnpackedNormal, (float3x3)SkinnedWorldMatrix);
 	float3 WorldTangent = mul(UnpackedTangent, (float3x3)SkinnedWorldMatrix);
+	float3x3 TBN = GetTangentBasis(WorldTangent, WorldNormal, GetBinormalFlipping(Input));
 
 	Output.HPos = mul(WorldPos, ViewProjection); // Output HPos
 
-	Output.P_VertexPos_Flip = float4(WorldPos.xyz, GetBinormalFlipping(Input));
-	Output.P_WorldNormal_Lerp.xyz = WorldNormal;
-	Output.WorldTangent = WorldTangent;
+	Output.P_WorldPos_Lerp.xyz = WorldPos.xyz;
+	Output.WorldTangent = TBN[0];
+	Output.WorldBiNormal = TBN[1];
+	Output.WorldNormal = TBN[2];
 
 	#if _HASUVANIMATION_
 		Output.P_Tex0_GroundUV.xy = GetUVRotation(Input).xy; // pass-through rotate coords
@@ -172,7 +175,7 @@ VS2PS BundledMesh_VS(APP2VS Input)
 
 	#if _USEHEMIMAP_
 		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, WorldNormal);
-		Output.P_WorldNormal_Lerp.w = GetHemiLerp(WorldPos, WorldNormal);
+		Output.P_WorldPos_Lerp.w = GetHemiLerp(WorldPos, WorldNormal);
 	#endif
 
 	#if _HASSHADOW_
@@ -198,11 +201,11 @@ float3 GetLightVec(float3 WorldPos)
 
 float4 BundledMesh_PS(VS2PS Input) : COLOR
 {
-	float3 WorldPos = Input.P_VertexPos_Flip.xyz;
-	float3 WorldNormal = Input.P_WorldNormal_Lerp.xyz;
-	float3 WorldTangent = Input.WorldTangent;
-	float BiNormalFlip = Input.P_VertexPos_Flip.w;
-	float3x3 TBN = GetTangentBasis(WorldTangent, WorldNormal, BiNormalFlip);
+	float3 WorldPos = Input.P_WorldPos_Lerp.xyz;
+	float3 WorldTangent = normalize(Input.WorldTangent);
+	float3 WorldBiNormal = normalize(Input.WorldBiNormal);
+	float3 WorldNormal = normalize(Input.WorldNormal);
+	float3x3 TBN = float3x3(WorldTangent, WorldBiNormal, WorldNormal);
 
 	float3 LightVec = normalize(GetLightVec(WorldPos));
 	float3 EyeVec = normalize(WorldSpaceCamPos - WorldPos);
@@ -234,7 +237,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
-		float HemiLerp = Input.P_WorldNormal_Lerp.w;
+		float HemiLerp = Input.P_WorldPos_Lerp.w;
 		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
 		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 	#else
