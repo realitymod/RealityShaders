@@ -10,22 +10,23 @@
 #include "shaders/RaCommon.fx"
 #include "shaders/RaShaderSMCommon.fx"
 
-// Debug data
-// #define _HASNORMALMAP_ 1
-// #define _OBJSPACENORMALMAP_ 1
-// #define _HASENVMAP_ 1
-
-// #define _USEHEMIMAP_ 1
-// #define _HASSHADOW_ 1
-// #define _HASSHADOWOCCLUSION_ 1
-// #define _POINTLIGHT_ 1
-
 // Dep.checks, etc
 
 #if _POINTLIGHT_
 	#define _HASENVMAP_ 0
 	#define _USEHEMIMAP_ 0
 	#define _HASSHADOW_ 0
+#endif
+
+// #define _DEBUG_
+#if defined(_DEBUG_)
+	#define _HASNORMALMAP_ 1
+	#define _OBJSPACENORMALMAP_ 1
+	#define _HASENVMAP_ 1
+	#define _USEHEMIMAP_ 1
+	#define _HASSHADOW_ 1
+	#define _HASSHADOWOCCLUSION_ 1
+	#define _POINTLIGHT_ 1
 #endif
 
 struct APP2VS
@@ -128,24 +129,30 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	float4 ObjSpacePosition = float4(SkinPosition(Input), 1.0);
-	float3 ObjSpaceNormal = normalize(SkinNormal(Input));
-	float3 ObjSpaceLightVec = GetLightVec(Input);
-	float3 ObjSpaceEyeVec = ObjectSpaceCamPos.xyz - ObjSpacePosition.xyz;
+	// Get object-space properties
+	float4 ObjectPosition = float4(SkinPosition(Input), 1.0);
+	float3 ObjectNormal = normalize(SkinNormal(Input));
+	float3 ObjectLightVec = GetLightVec(Input);
+	float3 ObjectEyeVec = ObjectSpaceCamPos.xyz - ObjectPosition.xyz;
 
-	float4 WorldPos = mul(ObjSpacePosition, World);
-	float3 WorldNormal = normalize(mul(ObjSpaceNormal, World));
+	// Get world-space properties
+	float4 WorldPos = mul(ObjectPosition, World);
+	float3 WorldNormal = normalize(mul(ObjectNormal, World));
 
-	Output.HPos = mul(ObjSpacePosition, WorldViewProjection);
-	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
+	// Output HPos
+	Output.HPos = mul(ObjectPosition, WorldViewProjection);
+
+	Output.VertexPos = ObjectPosition.xyz;
 
 	#if _OBJSPACENORMALMAP_ // Do object-space bumped lighting
-		Output.P_LightVec_OccShadow.xyz = SkinVecToObj(Input, ObjSpaceLightVec);
-		Output.P_EyeVec_HemiLerp.xyz = SkinVecToObj(Input, ObjSpaceEyeVec);
+		Output.P_LightVec_OccShadow.xyz = SkinVecToObj(Input, ObjectLightVec);
+		Output.P_EyeVec_HemiLerp.xyz = SkinVecToObj(Input, ObjectEyeVec);
 	#else // Do tangent-space lighting
-		Output.P_LightVec_OccShadow.xyz = SkinVecToTan(Input, ObjSpaceLightVec);
-		Output.P_EyeVec_HemiLerp.xyz = SkinVecToTan(Input, ObjSpaceEyeVec);
+		Output.P_LightVec_OccShadow.xyz = SkinVecToTan(Input, ObjectLightVec);
+		Output.P_EyeVec_HemiLerp.xyz = SkinVecToTan(Input, ObjectEyeVec);
 	#endif
+
+	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 
 	#if _USEHEMIMAP_
 		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, WorldNormal);
@@ -159,8 +166,6 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
 		Output.ShadowMat = GetShadowProjection(WorldPos);
 	#endif
-
-	Output.VertexPos = ObjSpacePosition.xyz;
 
 	return Output;
 }

@@ -79,18 +79,20 @@ VS2PS StaticMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	// Output position early
-	float4 UnpackedPos = float4(Input.Pos.xyz, 1.0) * PosUnpack;
-	Output.HPos = mul(UnpackedPos, WorldViewProjection);
+	// Output HPos
+	float4 ObjectPosition = float4(Input.Pos.xyz, 1.0) * PosUnpack;
+	Output.HPos = mul(ObjectPosition, WorldViewProjection);
 
-	float3 UnpackedTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y;
-	float3 UnpackedNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
-	float3x3 TBN = GetTangentBasis(UnpackedTangent, UnpackedNormal, GetBinormalFlipping(Input));
+	// Get object-space properties
+	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
+	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
+	float3x3 ObjectTBN = GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
 
-	Output.ObjectPos = UnpackedPos;
-	Output.ObjectTangent = TBN[0];
-	Output.ObjectBiNormal = TBN[1];
-	Output.ObjectNormal = TBN[2];
+	// Output object-space properties
+	Output.ObjectPos = ObjectPosition.xyz;
+	Output.ObjectTangent = ObjectTBN[0];
+	Output.ObjectBiNormal = ObjectTBN[1];
+	Output.ObjectNormal = ObjectTBN[2];
 
 	#if _BASE_
 		Output.P_Base_Detail.xy = Input.TexSets[TexBaseInd].xy * TexUnpack;
@@ -211,12 +213,14 @@ float3 GetLightVec(float3 ObjectPos)
 
 float4 StaticMesh_PS(VS2PS Input) : COLOR
 {
+	// Get object-space properties
 	float3 ObjectPos = Input.ObjectPos;
 	float3 ObjectTangent = normalize(Input.ObjectTangent);
 	float3 ObjectBiNormal = normalize(Input.ObjectBiNormal);
 	float3 ObjectNormal = normalize(Input.ObjectNormal);
 	float3x3 ObjI = transpose(float3x3(ObjectTangent, ObjectBiNormal, ObjectNormal));
 
+	// Get tangent-space vectors
 	float3 LightVec = normalize(mul(GetLightVec(ObjectPos), ObjI));
 	float3 EyeVec = normalize(mul(ObjectSpaceCamPos - ObjectPos, ObjI));
 	float3 HalfVec = normalize(LightVec + EyeVec);
@@ -246,7 +250,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			Lightmap.g *= GetShadowFactor(ShadowMapSampler, Input.ShadowTex);
 		#endif
 
-		// Pre-calc: Lightmap.b *= invDot
+		// Pre-calc: Lightmap.b *=  InvDot
 		float3 BumpedSky = (dot(Normals, SkyNormal) * StaticSkyColor) * Lightmap.b;
 		// tl: Jonas, disable once we know which materials are actually affected.
 		float3 Ambient = BumpedSky + (SinglePointColor * Lightmap.r);

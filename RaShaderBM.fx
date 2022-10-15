@@ -64,17 +64,16 @@
 	#define _HASSHADOW_ 0
 #endif
 
-/*
-	#if defined(_DEBUG_)
-		#define _HASUVANIMATION_ 1
-		#define _USEHEMIMAP_ 1
-		#define _HASSHADOW_ 1
-		#define _HASSHADOWOCCLUSION_ 1
-		#define _HASNORMALMAP_ 1
-		#define _FRESNELVALUES_ 1
-		#define _HASGIMAP_ 1
-	#endif
-*/
+// #define _DEBUG_
+#if defined(_DEBUG_)
+	#define _HASUVANIMATION_ 1
+	#define _USEHEMIMAP_ 1
+	#define _HASSHADOW_ 1
+	#define _HASSHADOWOCCLUSION_ 1
+	#define _HASNORMALMAP_ 1
+	#define _FRESNELVALUES_ 1
+	#define _HASGIMAP_ 1
+#endif
 
 struct APP2VS
 {
@@ -150,22 +149,25 @@ VS2PS BundledMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	float4 UnpackedPos = Input.Pos * PosUnpack;
-	float3 UnpackedNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
-	float3 UnpackedTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y;
+	// Output HPos
+	float4 ObjectPosition = Input.Pos * PosUnpack; // Unpack object-space position
+	Output.HPos = mul(WorldPos, ViewProjection);
 
+	// Get object-space properties
+	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
+	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
+	float3x3 ObjectTBN = GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
+
+	// Get world-space properties
 	float4x3 SkinnedWorldMatrix = GetSkinnedWorldMatrix(Input);
-	float4 WorldPos = float4(mul(UnpackedPos, SkinnedWorldMatrix), 1.0);
-	float3 WorldNormal = mul(UnpackedNormal, (float3x3)SkinnedWorldMatrix);
-	float3 WorldTangent = mul(UnpackedTangent, (float3x3)SkinnedWorldMatrix);
-	float3x3 TBN = GetTangentBasis(WorldTangent, WorldNormal, GetBinormalFlipping(Input));
+	float4 WorldPos = float4(mul(ObjectPosition, SkinnedWorldMatrix), 1.0);
+	float3x3 WorldTBN = mul(ObjectTBN, (float3x3)SkinnedWorldMatrix);
 
-	Output.HPos = mul(WorldPos, ViewProjection); // Output HPos
-
+	// Output world-space properties
 	Output.P_WorldPos_Lerp.xyz = WorldPos.xyz;
-	Output.WorldTangent = TBN[0];
-	Output.WorldBiNormal = TBN[1];
-	Output.WorldNormal = TBN[2];
+	Output.WorldTangent = WorldTBN[0];
+	Output.WorldBiNormal = WorldTBN[1];
+	Output.WorldNormal = WorldTBN[2];
 
 	#if _HASUVANIMATION_
 		Output.P_Tex0_GroundUV.xy = GetUVRotation(Input).xy; // pass-through rotate coords
@@ -174,8 +176,8 @@ VS2PS BundledMesh_VS(APP2VS Input)
 	#endif
 
 	#if _USEHEMIMAP_
-		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, WorldNormal);
-		Output.P_WorldPos_Lerp.w = GetHemiLerp(WorldPos, WorldNormal);
+		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos.xyz, Output.WorldNormal);
+		Output.P_WorldPos_Lerp.w = GetHemiLerp(WorldPos.xyz, Output.WorldNormal);
 	#endif
 
 	#if _HASSHADOW_
@@ -201,12 +203,14 @@ float3 GetLightVec(float3 WorldPos)
 
 float4 BundledMesh_PS(VS2PS Input) : COLOR
 {
+	// Get world-space properties
 	float3 WorldPos = Input.P_WorldPos_Lerp.xyz;
 	float3 WorldTangent = normalize(Input.WorldTangent);
 	float3 WorldBiNormal = normalize(Input.WorldBiNormal);
 	float3 WorldNormal = normalize(Input.WorldNormal);
-	float3x3 TBN = float3x3(WorldTangent, WorldBiNormal, WorldNormal);
+	float3x3 WorldTBN = float3x3(WorldTangent, WorldBiNormal, WorldNormal);
 
+	// Get world-space vectors
 	float3 LightVec = normalize(GetLightVec(WorldPos));
 	float3 EyeVec = normalize(WorldSpaceCamPos - WorldPos);
 	float3 HalfVec = normalize(LightVec + EyeVec);
@@ -218,7 +222,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		// Transform from tangent-space to world-space
 		float4 TangentNormal = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
 		float3 NormalVec = normalize(TangentNormal.xyz * 2.0 - 1.0);
-		NormalVec = normalize(mul(NormalVec, TBN));
+		NormalVec = normalize(mul(NormalVec, WorldTBN));
 	#else
 		float3 NormalVec = normalize(WorldNormal);
 	#endif
