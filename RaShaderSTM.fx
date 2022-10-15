@@ -79,17 +79,17 @@ VS2PS StaticMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	// Output HPos
-	float4 ObjectPosition = float4(Input.Pos.xyz, 1.0) * PosUnpack;
-	Output.HPos = mul(ObjectPosition, WorldViewProjection);
-
 	// Get object-space properties
+	float4 ObjectPos = float4(Input.Pos.xyz, 1.0) * PosUnpack;
 	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
 	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
 	float3x3 ObjectTBN = GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
 
+	// Output HPos
+	Output.HPos = mul(ObjectPos, WorldViewProjection);
+
 	// Output object-space properties
-	Output.ObjectPos = ObjectPosition.xyz;
+	Output.ObjectPos = ObjectPos.xyz;
 	Output.ObjectTangent = ObjectTBN[0];
 	Output.ObjectBiNormal = ObjectTBN[1];
 	Output.ObjectNormal = ObjectTBN[2];
@@ -113,7 +113,7 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	#endif
 
 	#if _SHADOW_ && _LIGHTMAP_
-		Output.ShadowTex = GetShadowProjection(UnpackedPos);
+		Output.ShadowTex = GetShadowProjection(ObjectPos);
 	#endif
 
 	return Output;

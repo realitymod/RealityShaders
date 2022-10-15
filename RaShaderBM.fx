@@ -149,19 +149,19 @@ VS2PS BundledMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	// Output HPos
-	float4 ObjectPosition = Input.Pos * PosUnpack; // Unpack object-space position
-	Output.HPos = mul(WorldPos, ViewProjection);
-
 	// Get object-space properties
+	float4 ObjectPos = Input.Pos * PosUnpack; // Unpack object-space position
 	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
 	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
 	float3x3 ObjectTBN = GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
 
 	// Get world-space properties
 	float4x3 SkinnedWorldMatrix = GetSkinnedWorldMatrix(Input);
-	float4 WorldPos = float4(mul(ObjectPosition, SkinnedWorldMatrix), 1.0);
+	float4 WorldPos = float4(mul(ObjectPos, SkinnedWorldMatrix), 1.0);
 	float3x3 WorldTBN = mul(ObjectTBN, (float3x3)SkinnedWorldMatrix);
+
+	// Output HPos
+	Output.HPos = mul(WorldPos, ViewProjection);
 
 	// Output world-space properties
 	Output.P_WorldPos_Lerp.xyz = WorldPos.xyz;
@@ -176,8 +176,8 @@ VS2PS BundledMesh_VS(APP2VS Input)
 	#endif
 
 	#if _USEHEMIMAP_
-		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos.xyz, Output.WorldNormal);
-		Output.P_WorldPos_Lerp.w = GetHemiLerp(WorldPos.xyz, Output.WorldNormal);
+		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, Output.WorldNormal);
+		Output.P_WorldPos_Lerp.w = GetHemiLerp(WorldPos, Output.WorldNormal);
 	#endif
 
 	#if _HASSHADOW_
