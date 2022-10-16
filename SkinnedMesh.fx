@@ -1,8 +1,8 @@
 
 /*
 	Description:
-	- Does bone skinning for 1,2 bones
 	- Builds shadow map for skinnedmesh (objects that are dynamic, human-like with bones)
+	- Does bone skinning for 2 bones
 	- Outputs used in RaShaderSM.fx
 	Author: Mats Dal
 */

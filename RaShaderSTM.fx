@@ -119,10 +119,10 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	return Output;
 }
 
-float2 CalcParallax(float2 HeightTexCoords, sampler2D HeightSampler, float4 ScaleBias, float3 EyeVec)
+float2 CalcParallax(float2 HeightTexCoords, sampler2D HeightSampler, float4 ScaleBias, float3 ViewVec)
 {
 	float2 Height = tex2D(HeightSampler, HeightTexCoords).aa;
-	float2 EyeVecN = EyeVec.xy * float2(1.0, -1.0);
+	float2 EyeVecN = ViewVec.xy * float2(1.0, -1.0);
 	float4 FakeBias = float4(FH2_HARDCODED_PARALLAX_BIAS, FH2_HARDCODED_PARALLAX_BIAS, 0.0, 0.0);
 	Height = Height * FakeBias.xy + FakeBias.wz;
 	return HeightTexCoords + Height * EyeVecN.xy;
@@ -222,11 +222,11 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 	// Get tangent-space vectors
 	float3 LightVec = normalize(mul(GetLightVec(ObjectPos), ObjI));
-	float3 EyeVec = normalize(mul(ObjectSpaceCamPos - ObjectPos, ObjI));
-	float3 HalfVec = normalize(LightVec + EyeVec);
+	float3 ViewVec = normalize(mul(ObjectSpaceCamPos - ObjectPos, ObjI));
+	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	#if defined(USE_DETAIL)
-		float3 Normals = normalize(GetCompositeNormals(Input, EyeVec));
+		float3 Normals = normalize(GetCompositeNormals(Input, ViewVec));
 	#else
 		float3 Normals = float3(0.0, 0.0, 1.0);
 	#endif
@@ -234,29 +234,43 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float4 OutputColor = 0.0;
 
 	float Gloss;
-	float4 DiffuseTex = GetCompositeDiffuse(Input, EyeVec, Gloss);
-	float3 Diffuse = GetDiffuseValue(Normals, LightVec) * Lights[0].color;
-	float3 Specular = (GetSpecularValue(Normals, HalfVec) * Gloss) * StaticSpecularColor;
+	float4 DiffuseTex = GetCompositeDiffuse(Input, ViewVec, Gloss);
+
+	float Diffuse = GetDiffuse(Normals, LightVec);
+	float Specular = GetSpecular(Diffuse, Normals, HalfVec) * Gloss;
+
+	float3 DiffuseColor = Diffuse * Lights[0].color;
+	float3 SpecularColor = Specular * StaticSpecularColor;
 
 	#if _POINTLIGHT_
-		float Attenuation = GetRadialAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
-		float3 Lighting = saturate((Diffuse + Specular) * Attenuation);
+		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
+		float3 Lighting = (DiffuseColor + SpecularColor) * Attenuation;
 		OutputColor.rgb = (DiffuseTex.rgb * Lighting) * GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
+		float3 Ambient = SinglePointColor * Lightmap.r;
 
-		#if _SHADOW_ && _LIGHTMAP_
-			Lightmap.g *= GetShadowFactor(ShadowMapSampler, Input.ShadowTex);
+		#if defined(USE_DETAIL)
+			// Pre-calc: Lightmap.b *= invDot
+			float3 BumpedSky = Lightmap.b * dot(Normals, SkyNormal) * StaticSkyColor;
+			// tl: Jonas, disable once we know which materials are actually affected.
+			DiffuseColor = ((DiffuseColor * Lightmap.g) + BumpedSky) + Ambient;
+		#else
+			float DotLN = saturate(dot(Normals * 0.2, -Lights[0].dir));
+			float3 InvDot = saturate(saturate(1.0 - DotLN) * StaticSkyColor.rgb * SkyNormal.z);
+			#if _LIGHTMAP_
+				// Add ambient here as well to get correct ambient for surfaces parallel to the sun
+				float3 BumpedSky = InvDot * Lightmap.b;
+				float3 BumpedDiffuse = DiffuseColor + BumpedSky;
+				DiffuseColor = lerp(BumpedSky, BumpedDiffuse, Lightmap.g) + Ambient;
+			#else
+				float3 BumpedSky = InvDot;
+				DiffuseColor = (DiffuseColor * Lightmap.g) + BumpedSky;
+			#endif
 		#endif
 
-		// Pre-calc: Lightmap.b *=  InvDot
-		float3 BumpedSky = (dot(Normals, SkyNormal) * StaticSkyColor) * Lightmap.b;
-		// tl: Jonas, disable once we know which materials are actually affected.
-		float3 Ambient = BumpedSky + (SinglePointColor * Lightmap.r);
-
-		float3 Lighting = ((Ambient + Diffuse) * 2.0) + Specular;
-		OutputColor.rgb = DiffuseTex.rgb * Lighting;
+		OutputColor.rgb = DiffuseTex.rgb * ((DiffuseColor * 2.0) + (SpecularColor * Lightmap.g));
 	#endif
 
 	#if !_POINTLIGHT_

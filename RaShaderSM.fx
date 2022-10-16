@@ -118,7 +118,7 @@ struct VS2PS
 	float3 VertexPos : TEXCOORD0;
 	float4 P_Tex0_GroundUV : TEXCOORD1; // .xy = Tex0; .zw = GroundUV;
 	float4 P_LightVec_OccShadow : TEXCOORD2; // .xyz = LightVec; .w = OccShadow;
-	float4 P_EyeVec_HemiLerp : TEXCOORD3; // .xyz = EyeVec; .w = HemiLerp;
+	float4 P_EyeVec_HemiLerp : TEXCOORD3; // .xyz = ViewVec; .w = HemiLerp;
 
 	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
 		float4 ShadowMat : TEXCOORD4;
@@ -173,8 +173,8 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 {
 	float3 LightVec = normalize(Input.P_LightVec_OccShadow.xyz);
-	float3 EyeVec = normalize(Input.P_EyeVec_HemiLerp.xyz);
-	float3 HalfVec = normalize(LightVec + EyeVec);
+	float3 ViewVec = normalize(Input.P_EyeVec_HemiLerp.xyz);
+	float3 HalfVec = normalize(LightVec + ViewVec);
 	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
 
 	#if _HASNORMALMAP_
@@ -199,14 +199,15 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
+		float HemiLerp = Input.P_EyeVec_HemiLerp.w;
 		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
-		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, Input.P_EyeVec_HemiLerp.w);
+		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 	#else
 		float3 Ambient = Lights[0].color.w;
 	#endif
 
 	#if _POINTLIGHT_
-		float Attenuation = GetRadialAttenuation(Input.P_LightVec_OccShadow.xyz, Lights[0].attenuation);
+		float Attenuation = GetLightAttenuation(Input.P_LightVec_OccShadow.xyz, Lights[0].attenuation);
 	#else
 		const float Attenuation = 1.0;
 	#endif
@@ -214,8 +215,8 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	float4 OutColor = 0.0;
 
 	float Gloss = NormalVec.a;
-	float3 Diffuse = GetDiffuseValue(NormalVec.xyz, LightVec);
-	float3 Specular = GetSpecularValue(NormalVec.xyz, HalfVec) * (Gloss * 4.0);
+	float Diffuse = GetDiffuse(NormalVec.xyz, LightVec);
+	float Specular = GetSpecular(Diffuse, NormalVec.xyz, HalfVec) * abs(Gloss * 4.0);
 	float3 LightFactors = Attenuation * ShadowDir;
 	float3 Lighting = ((Diffuse + Specular) * Lights[0].color) * LightFactors;
 

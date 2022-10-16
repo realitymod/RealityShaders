@@ -64,16 +64,18 @@
 	#define _HASSHADOW_ 0
 #endif
 
-// #define _DEBUG_
-#if defined(_DEBUG_)
-	#define _HASUVANIMATION_ 1
-	#define _USEHEMIMAP_ 1
-	#define _HASSHADOW_ 1
-	#define _HASSHADOWOCCLUSION_ 1
-	#define _HASNORMALMAP_ 1
-	#define _FRESNELVALUES_ 1
-	#define _HASGIMAP_ 1
-#endif
+/*
+	// #define _DEBUG_
+	#if defined(_DEBUG_)
+		#define _HASUVANIMATION_ 1
+		#define _USEHEMIMAP_ 1
+		#define _HASSHADOW_ 1
+		#define _HASSHADOWOCCLUSION_ 1
+		#define _HASNORMALMAP_ 1
+		#define _FRESNELVALUES_ 1
+		#define _HASGIMAP_ 1
+	#endif
+*/
 
 struct APP2VS
 {
@@ -212,8 +214,8 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	// Get world-space vectors
 	float3 LightVec = normalize(GetLightVec(WorldPos));
-	float3 EyeVec = normalize(WorldSpaceCamPos - WorldPos);
-	float3 HalfVec = normalize(LightVec + EyeVec);
+	float3 ViewVec = normalize(WorldSpaceCamPos - WorldPos);
+	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	float4 ColorMap = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
 	float4 DiffuseTex = ColorMap;
@@ -258,25 +260,25 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	#if _FRESNELVALUES_
 		#if _HASENVMAP_
-			float3 Reflection = -reflect(EyeVec, NormalVec);
+			float3 Reflection = -reflect(ViewVec, NormalVec);
 			float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
 			DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss / 4.0);
 		#endif
 		float RefractionIndexRatio = 0.15;
 		float F0 = pow(1.0 - RefractionIndexRatio, 2.0) / pow(1.0 + RefractionIndexRatio, 4.0);
-		float FresnelValue = pow(F0 + (1.0 - F0) * (1.0 - dot(NormalVec, EyeVec)), 2.0);
+		float FresnelValue = pow(F0 + (1.0 - F0) * (1.0 - dot(NormalVec, ViewVec)), 2.0);
 		DiffuseTex.a = lerp(DiffuseTex.a, 1.0, FresnelValue);
 	#endif
 
-	float3 Diffuse = GetDiffuseValue(NormalVec, LightVec);
-	float3 Specular = GetSpecularValue(NormalVec, HalfVec) * (Gloss * 4.0);
+	float Diffuse = GetDiffuse(NormalVec, LightVec);
+	float Specular = GetSpecular(Diffuse, NormalVec, HalfVec) * abs(Gloss * 4.0);
 
 	#if _POINTLIGHT_
 		#if !_HASCOLORMAPGLOSS_
 			// there is no Gloss map so alpha means transparency
 			Diffuse *= ColorMap.a;
 		#endif
-		float Attenuation = GetRadialAttenuation(Lights[0].pos - WorldPos, Lights[0].attenuation);
+		float Attenuation = GetLightAttenuation(Lights[0].pos - WorldPos, Lights[0].attenuation);
 	#else
 		const float Attenuation = 1.0;
 	#endif

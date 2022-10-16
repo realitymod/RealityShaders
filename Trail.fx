@@ -58,13 +58,13 @@ VS2PS_Trail Trail_VS(APP2VS Input)
 	// FADE values
 	float FadeIn = saturate(Age/TParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.x);
 	float FadeOut = saturate((1.0f - Age) / TParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.y);
-	float3 EyeVec = _EyePos.xyz - Input.Pos.xyz;
+	float3 ViewVec = _EyePos.xyz - Input.Pos.xyz;
 
 	// Project eyevec to Tangent vector to get position on axis
-	float TanPos = dot(EyeVec, Input.Tangent);
+	float TanPos = dot(ViewVec, Input.Tangent);
 
 	// Closest point to camera
-	float3 AxisVec = EyeVec - (Input.Tangent * TanPos);
+	float3 AxisVec = ViewVec - (Input.Tangent * TanPos);
 	AxisVec = normalize(AxisVec);
 
 	// Find rotation around axis

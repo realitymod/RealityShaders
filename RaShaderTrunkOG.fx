@@ -90,7 +90,7 @@ VS2PS TrunkOG_VS(APP2VS Input)
 float4 TrunkOG_PS(VS2PS Input) : COLOR
 {
 	float3 Normals = normalize(Input.P_Normals_ScaleLN.xyz);
-	float3 Diffuse = GetDiffuseValue(Normals.xyz, -Lights[0].dir) * Lights[0].color;
+	float3 Diffuse = GetDiffuse(Normals.xyz, -Lights[0].dir) * Lights[0].color;
 
 	float ScaleLN = Input.P_Normals_ScaleLN.w;
 	float3 Color = Diffuse * ScaleLN;

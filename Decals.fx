@@ -116,7 +116,7 @@ VS2PS Decals_VS(APP2VS Input)
 float4 Decals_PS(VS2PS Input) : COLOR
 {
 	float3 Normals = normalize(Input.WorldNormal.xyz);
-	float3 Diffuse = GetDiffuseValue(Normals, -_SunDirection.xyz) * _SunColor;
+	float3 Diffuse = GetDiffuse(Normals, -_SunDirection.xyz) * _SunColor;
 	float3 Lighting = _AmbientColor.rgb + Diffuse;
 	float4 OutColor = tex2D(Sampler_0, Input.Texture0); // * Input.Color;
 
@@ -160,7 +160,7 @@ VS2PS_Decal_Shadowed Decals_Shadowed_VS(APP2VS Input)
 
 float4 Decals_Shadowed_PS(VS2PS_Decal_Shadowed Input) : COLOR
 {
-	float3 Diffuse = GetDiffuseValue(normalize(Input.WorldNormal.xyz), -_SunDirection.xyz) * _SunColor;
+	float3 Diffuse = GetDiffuse(normalize(Input.WorldNormal.xyz), -_SunDirection.xyz) * _SunColor;
 
 	float2 Texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
 	float4 Samples;

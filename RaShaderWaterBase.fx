@@ -56,7 +56,7 @@ texture CubeMap;
 sampler CubeMapSampler = sampler_state
 {
 	Texture = (CubeMap);
-	MipFilter = LINEAR; // Rasterizing speedup
+	MipFilter = LINEAR;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	AddressU = WRAP;
@@ -69,7 +69,7 @@ sampler CubeMapSampler = sampler_state
 	sampler WaterMapSampler = sampler_state
 	{
 		Texture = (WaterMap);
-		MipFilter = LINEAR; // Rasterizing speedup
+		MipFilter = LINEAR;
 		MinFilter = LINEAR;
 		MagFilter = LINEAR;
 		AddressU = WRAP;
@@ -81,7 +81,7 @@ sampler CubeMapSampler = sampler_state
 	sampler WaterMapSampler0 = sampler_state
 	{
 		Texture = (WaterMapFrame0);
-		MipFilter = LINEAR; // Rasterizing speedup
+		MipFilter = LINEAR;
 		MinFilter = LINEAR;
 		MagFilter = LINEAR;
 		AddressU = WRAP;
@@ -92,7 +92,7 @@ sampler CubeMapSampler = sampler_state
 	sampler WaterMapSampler1 = sampler_state
 	{
 		Texture = (WaterMapFrame1);
-		MipFilter = LINEAR; // Rasterizing speedup
+		MipFilter = LINEAR;
 		MinFilter = LINEAR;
 		MagFilter = LINEAR;
 		AddressU = WRAP;
@@ -159,24 +159,19 @@ string reqVertexElement[] =
 struct APP2VS
 {
 	float4 Pos : POSITION0;
-	float2 LMTex : TEXCOORD1;
+	float2 LightMap : TEXCOORD1;
 };
 
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	#if defined(USE_3DTEXTURE)
-		float3 Tex : TEXCOORD0;
-	#else
-		float2 Tex : TEXCOORD0;
-	#endif
+	float3 Tex : TEXCOORD0;
+	float3 WorldPos : TEXCOORD1;
 	#if defined(USE_LIGHTMAP)
-		float2 LightMapTex : TEXCOORD1;
+		float2 LightMapTex : TEXCOORD2;
 	#endif
-	float3 VertexPos : TEXCOORD2;
-	float3 EyeVec : TEXCOORD3;
 	#if defined(USE_SHADOWS)
-		float4 TexShadow : TEXCOORD4;
+		float4 TexShadow : TEXCOORD3;
 	#endif
 };
 
@@ -185,27 +180,20 @@ VS2PS Water_VS(APP2VS Input)
 	VS2PS Output = (VS2PS)0;
 
 	float4 WorldPos = mul(Input.Pos, World);
-
 	Output.HPos = mul(WorldPos, ViewProjection);
+	Output.WorldPos = WorldPos.xyz;
 
-	Output.EyeVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
-
-	Output.VertexPos = WorldPos.xyz;
-
+	float3 Tex = 0.0;
 	#if defined(USE_3DTEXTURE)
-		float3 Tex;
-		Tex.xy = (WorldPos.xz / float2(29.13, 31.81));
-		Tex.xy += (WaterScroll.xy * WaterCycleTime);
+		Tex.xy = (WorldPos.xz / float2(29.13, 31.81)) + (WaterScroll.xy * WaterCycleTime);
 		Tex.z = WaterCycleTime * 10.0 + dot(Tex.xy, float2(0.7, 1.13));
 	#else
-		float2 Tex;
 		Tex.xy = (WorldPos.xz / float2(99.13, 71.81));
 	#endif
-
 	Output.Tex = Tex;
 
 	#if defined(USE_LIGHTMAP)
-		Output.LightMapTex = Input.LMTex * LightMapOffset.xy + LightMapOffset.zw;
+		Output.LightMapTex = Input.LightMap * LightMapOffset.xy + LightMapOffset.zw;
 	#endif
 
 	#if defined(USE_SHADOWS)
@@ -219,8 +207,6 @@ VS2PS Water_VS(APP2VS Input)
 
 float4 Water_PS(in VS2PS Input) : COLOR
 {
-	float4 FinalColor = 0.0;
-
 	#if defined(USE_LIGHTMAP)
 		float4 LightMap = tex2D(LightMapSampler, Input.LightMapTex);
 	#else
@@ -230,7 +216,9 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	#if defined(USE_3DTEXTURE)
 		float3 TangentNormal = tex3D(WaterMapSampler, Input.Tex);
 	#else
-		float3 TangentNormal = lerp(tex2D(WaterMapSampler0, Input.Tex), tex2D(WaterMapSampler1, Input.Tex), WaterCycleTime);
+		float3 Normal0 = tex2D(WaterMapSampler0, Input.Tex.xy).xyz;
+		float3 Normal1 = tex2D(WaterMapSampler1, Input.Tex.xy).xyz;
+		float3 TangentNormal = lerp(Normal0, Normal1, WaterCycleTime);
 	#endif
 
 	#if defined(TANGENTSPACE_NORMALS)
@@ -247,27 +235,32 @@ float4 Water_PS(in VS2PS Input) : COLOR
 		#endif
 	#endif
 
-	float3 EyeVec = normalize(Input.EyeVec);
-	float3 Reflection = reflect(-EyeVec, TangentNormal);
+	float3 WorldPos = Input.WorldPos;
+	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
+	float3 Reflection = normalize(reflect(-ViewVec, TangentNormal));
 	float3 EnvColor = texCUBE(CubeMapSampler, Reflection);
 
 	float ShadFac = LightMap.g;
-
 	#if defined(USE_SHADOWS)
 		ShadFac *= GetShadowFactor(ShadowMapSampler, Input.TexShadow);
 	#endif
 
 	float LerpMod = -(1.0 - saturate(ShadFac + SHADOW_FACTOR));
+	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
+
+	float LightFactors = SpecularColor.a * ShadFac;
+	float3 Specular = GetSpecular(1.0, Reflection, -Lights[0].dir, SpecularPower) * SpecularColor.rgb;
+
+	float4 FinalColor = 0.0;
 
 	#if defined(USE_SPECULAR)
-		float Specular = GetSpecularValue(normalize(Reflection), -Lights[0].dir, SpecularPower) * SpecularColor.a;
-		FinalColor.rgb = (Specular * SpecularColor.rgb * ShadFac) + lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
+		FinalColor.rgb = WaterLerp + (Specular * LightFactors);
 	#else
-		FinalColor.rgb = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
+		FinalColor.rgb = WaterLerp;
 	#endif
 
 	#if defined(USE_FRESNEL)
-		float Fresnel = BASE_TRANSPARENCY - pow(dot(EyeVec, TangentNormal2.xyz), POW_TRANSPARENCY);
+		float Fresnel = BASE_TRANSPARENCY - pow(dot(ViewVec, TangentNormal2.xyz), POW_TRANSPARENCY);
 		FinalColor.a = LightMap.r * Fresnel + _WaterColor.w;
 	#else
 		FinalColor.a = LightMap.r + _WaterColor.w;
@@ -278,7 +271,7 @@ float4 Water_PS(in VS2PS Input) : COLOR
 		FinalColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
-	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
+	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	return FinalColor;
 }
@@ -287,18 +280,19 @@ technique defaultShader
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 Water_VS();
-		PixelShader = compile ps_3_0 Water_PS();
-
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
+
 		CullMode = NONE;
-		AlphaBlendEnable = TRUE;
 		AlphaTestEnable = TRUE;
 		AlphaRef = 1;
 
+		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
+		VertexShader = compile vs_3_0 Water_VS();
+		PixelShader = compile ps_3_0 Water_PS();
 	}
 }

@@ -143,8 +143,10 @@ VS2PS Leaf_VS(APP2VS Input)
 
 	float ScaleLN = Input.Pos.w / 32767.0;
 
+	float3 LightVec = Lights[0].pos.xyz - Input.Pos.xyz;
+
 	#if defined(_POINTLIGHT_)
-		float3 Diffuse = GetDiffuseValue(Input.Normal.xyz, normalize(Lights[0].pos.xyz - Input.Pos.xyz));
+		float3 Diffuse = GetDiffuse(Input.Normal.xyz, normalize(LightVec));
 	#else
 		float3 Diffuse = saturate((dot(Input.Normal.xyz, -Lights[0].dir.xyz) + 0.6) / 1.4);
 	#endif
@@ -161,7 +163,7 @@ VS2PS Leaf_VS(APP2VS Input)
 	#endif
 
 	#if defined(_POINTLIGHT_)
-		Output.Color.rgb *= GetRadialAttenuation(Lights[0].pos.xyz - Input.Pos.xyz, Lights[0].attenuation);
+		Output.Color.rgb *= GetLightAttenuation(LightVec, Lights[0].attenuation);
 		Output.Color.rgb *= GetFogValue(LocalPos.xyz, ObjectSpaceCamPos.xyz);
 	#endif
 

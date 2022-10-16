@@ -107,19 +107,20 @@
 	}
 
 	// Description: Gets Lambertian diffuse value
-	float GetDiffuseValue(float3 NormalVec, float3 LightVec)
+	float GetDiffuse(float3 NormalVec, float3 LightVec)
 	{
 		return saturate(dot(NormalVec, LightVec));
 	}
 
-	// Description: Gets Blinn-Phong specular value
-	float GetSpecularValue(float3 NormalVec, float3 HalfVec, uniform float Exponent = 32.0)
+	// Description: Gets modified Blinn-Phong specular value
+	float GetSpecular(float CosAngle, float3 NormalVec, float3 HalfVec, uniform float Exponent = 32.0)
 	{
-		return pow(saturate(dot(NormalVec, HalfVec)), Exponent);
+		float Specular = saturate(dot(NormalVec, HalfVec));
+		return pow(abs(Specular), Exponent) * CosAngle;
 	}
 
 	// Description: Gets radial light attenuation value for pointlights
-	float GetRadialAttenuation(float3 LightVec, float Attenuation)
+	float GetLightAttenuation(float3 LightVec, float Attenuation)
 	{
 		return saturate(1.0 - saturate(length(LightVec) * Attenuation));
 	}
@@ -130,9 +131,9 @@
 		License: https://creativecommons.org/licenses/by-sa/3.0/
 	*/
 
-	float GetSchlickApproximation(float3 NormalVec, float3 EyeVec, uniform float RefractiveIndex = 1.0)
+	float GetSchlickApproximation(float3 NormalVec, float3 ViewVec, uniform float RefractiveIndex = 1.0)
 	{
 		float F0 = pow(RefractiveIndex - 1.0, 2.0) / pow(RefractiveIndex + 1.0, 2.0);
-		return F0 + (1.0 - F0) * pow(1.0 - dot(NormalVec, EyeVec), 5.0);
+		return F0 + (1.0 - F0) * pow(1.0 - dot(NormalVec, ViewVec), 5.0);
 	}
 #endif

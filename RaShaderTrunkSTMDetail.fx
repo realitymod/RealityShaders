@@ -134,7 +134,7 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 float4 TrunkSTMDetail_PS(VS2PS Input) : COLOR
 {
 	float3 Normals = normalize(Input.Normals.xyz);
-	float3 Diffuse = GetDiffuseValue(Normals.xyz, -Lights[0].dir) * Lights[0].color;
+	float3 Diffuse = GetDiffuse(Normals.xyz, -Lights[0].dir) * Lights[0].color;
 
 	#if !_HASSHADOW_
 		Diffuse.rgb += OverGrowthAmbient.rgb;

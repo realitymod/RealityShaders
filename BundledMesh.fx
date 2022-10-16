@@ -1,7 +1,7 @@
 
 /*
 	Description:
-	- Builds shadow map and environmental for bundledmesh (dynamic, nonhuman objects)
+	- Builds shadow and environment maps for bundledmesh (dynamic, nonhuman objects)
 	- Outputs used in RaShaderBM.fx
 */
 
