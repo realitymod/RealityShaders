@@ -19,16 +19,16 @@ string GenerateStructs[] =
 };
 
 // This is the common vertexElement members
-string reqVertexElementBase[] = 
+string reqVertexElementBase[] =
 {
- 	"PositionPacked",
- 	"NormalPacked8",
+	"PositionPacked",
+	"NormalPacked8",
 	"Bone4Idcs",
 	"TBasePacked2D",
 };
 
 // This is the common global parameters
-string GlobalParametersBase[] = 
+string GlobalParametersBase[] =
 {
 	"ViewProjection",
 	"SpecularPower",
@@ -38,7 +38,7 @@ string GlobalParametersBase[] =
 };
 
 // This is the common template parameters
-string TemplateParametersBase[] = 
+string TemplateParametersBase[] =
 {
 	"DiffuseMap",
 	"PosUnpack",
@@ -47,7 +47,7 @@ string TemplateParametersBase[] =
 };
 
 // This is the common instance parameters
-string InstanceParametersBase[] = 
+string InstanceParametersBase[] =
 {
 	"AlphaBlendEnable",
 	"DepthWrite",
@@ -66,12 +66,12 @@ const dword _nothing_ : LITERAL;
 
 const dword _hasuvanimation_ : LITERAL
 <
-	string reqVertexElement[] = 
+	string reqVertexElement[] =
 	{
-	 	"TUVAnimationPacked2D"
+		"TUVAnimationPacked2D"
 	};
 
-	string InstanceParameters[] = 
+	string InstanceParameters[] =
 	{
 		"UserData"
 	};
@@ -79,12 +79,12 @@ const dword _hasuvanimation_ : LITERAL
 
 const dword _hasnormalmap_ : LITERAL
 <
-	string reqVertexElement[] = 
+	string reqVertexElement[] =
 	{
-	 	"TangentSpacePacked8"
+		"TangentSpacePacked8"
 	};
 
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
 		"NormalMap"
 	};
@@ -92,15 +92,15 @@ const dword _hasnormalmap_ : LITERAL
 
 const dword _hasgimap_ : LITERAL
 <
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
 		"GIMap"
 	};
 >;
 
-const dword _hasenvmap_	: LITERAL
+const dword _hasenvmap_ : LITERAL
 <
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
 		"CubeMap", // Funky name!!!
 	};
@@ -108,28 +108,28 @@ const dword _hasenvmap_	: LITERAL
 
 const dword _hascockpit_ : LITERAL;
 
-const dword _hasshadow_	: LITERAL
+const dword _hasshadow_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"ShadowMap"
 	};
 
-	string InstanceParameters[] = 
+	string InstanceParameters[] =
 	{
 		"ShadowProjMat",
 		"ShadowTrapMat"
 	};
 >;
 
-const dword _hasshadowocclusion_	: LITERAL
+const dword _hasshadowocclusion_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"ShadowOccluderMap"
 	};
 
-	string InstanceParameters[] = 
+	string InstanceParameters[] =
 	{
 		"ShadowOccProjMat",
 		"ShadowTrapMat"
@@ -140,7 +140,7 @@ const dword _hascolormapgloss_ : LITERAL;
 
 const dword _hasstaticgloss_ : LITERAL
 <
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
 		"StaticGloss"
 	};
@@ -150,15 +150,14 @@ const dword _hasdot3alphatest_ : LITERAL;
 
 const dword _usehemimap_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"HemiMap",
 		"HemiMapConstants"
-		
 	};
 
 	string TemplateParameters[] =
-	{ 
+	{
 		"InvHemiHeightScale"
 	};
 
@@ -169,7 +168,7 @@ const dword _usehemimap_ : LITERAL
 	};
 >;
 
-const dword _pointlight_	: LITERAL;
+const dword _pointlight_ : LITERAL;
 
 //
 // This is the array of the shader permutations to generate.
@@ -224,7 +223,7 @@ string GenerateShaderModifiers[] =
 	"_hasstaticgloss_",
 	"_hasshadow_|_hascolormapgloss_",
 	"_hasshadow_|_hasstaticgloss_",
-	
+
 	"_hasshadow_|_hasshadowocclusion_",
 	"_hasshadow_|_hascolormapgloss_|_hasshadowocclusion_",
 	"_hasshadow_|_hasstaticgloss_|_hasshadowocclusion_",
@@ -252,8 +251,8 @@ string GenerateShaderModifiers[] =
 
 string DeprecationList[] =
 {
-	{"hasnormalmap", ""},
-	{"usehemimap", "hasenvmap", ""},
-	{"hasshadow", "hasdot3alphatest", "hascolormapgloss", "hasshadowocclusion" , ""},
-	{"hasuvanimation", "hasgimap", ""},
+	{ "hasnormalmap", "" },
+	{ "usehemimap", "hasenvmap", "" },
+	{ "hasshadow", "hasdot3alphatest", "hascolormapgloss", "hasshadowocclusion", "" },
+	{ "hasuvanimation", "hasgimap", "" },
 };

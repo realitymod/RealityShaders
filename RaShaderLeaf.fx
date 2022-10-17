@@ -108,7 +108,7 @@ struct VS2PS
 	#if _HASSHADOW_
 		float4 TexShadow : TEXCOORD2;
 	#endif
-	float4 Color : COLOR0;
+	float4 Color : TEXCOORD3;
 };
 
 VS2PS Leaf_VS(APP2VS Input)
@@ -178,8 +178,6 @@ VS2PS Leaf_VS(APP2VS Input)
 
 float4 Leaf_PS(VS2PS Input) : COLOR
 {
-	float4 OutColor = 0.0;
-
 	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.Tex0.xy);
 	float4 VertexColor = Input.Color;
 
@@ -188,11 +186,12 @@ float4 Leaf_PS(VS2PS Input) : COLOR
 		VertexColor.rgb += OverGrowthAmbient.rgb * 0.5;
 	#endif
 
+	float4 OutColor = DiffuseMap * VertexColor;
+
 	#if defined(_POINTLIGHT_)
-		OutColor = DiffuseMap * VertexColor;
 		OutColor.a *= 2.0;
 	#else
-		OutColor = (DiffuseMap * VertexColor) * 2.0;
+		OutColor *= 2.0;
 	#endif
 
 	#if defined(OVERGROWTH) && HASALPHA2MASK

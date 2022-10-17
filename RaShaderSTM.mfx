@@ -16,34 +16,33 @@ string GenerateStructs[] =
 	"InstanceParameters"
 };
 
-
 //
 // this is the common vertexElement members
 //
-string reqVertexElementBase[] = 
+string reqVertexElementBase[] =
 {
- 	"PositionPacked",
- 	"NormalPacked8",
- 	"TangentSpacePacked8",	
+	"PositionPacked",
+	"NormalPacked8",
+	"TangentSpacePacked8",
 	"TBasePacked2D"
 };
 
 //
 // this is the common global parameters
 //
-string GlobalParametersBase[] = 
+string GlobalParametersBase[] =
 {
 	"StaticSkyColor",
 	"StaticSpecularColor",
 	"FogRange",
-	"FogColor", 
+	"FogColor",
 	"StaticGloss"
 };
 
 //
 // this is the common template parameters (none for this shader)
 //
-string TemplateParametersBase[] = 
+string TemplateParametersBase[] =
 {
 	"DiffuseMap",
 	"PosUnpack",
@@ -51,11 +50,10 @@ string TemplateParametersBase[] =
 	"NormalUnpack"
 };
 
-
 //
 // this is the common instance parameters
 //
-string InstanceParametersBase[] = 
+string InstanceParametersBase[] =
 {
 	"WorldViewProjection",
 	"Transparency",
@@ -64,12 +62,11 @@ string InstanceParametersBase[] =
 	"AlphaTest"
 };
 
-
 //
 // Literals, and their requirements
 //
 
-// 
+//
 // It is of uttermost importance that the usage indexes of the generated shader permutations match the vertex declaration
 // the order for static meshes texcoords should be (they can be omitted though...ie we dont need to have crack to gave lightmap and so on.
 //
@@ -79,138 +76,142 @@ string InstanceParametersBase[] =
 // TLightMap2D
 // TangentSpace
 
-const dword _base_	: LITERAL
+const dword _base_ : LITERAL
 <
 >;
 
-const dword _nbase_			: LITERAL
+const dword _nbase_ : LITERAL
 <
 	// this is actually a duplicate...should be removed
-	string reqVertexElement[] = 
+	string reqVertexElement[] =
 	{
 		"TBasePacked2D"
 	};
-	string TemplateParameters[] = 
+
+	string TemplateParameters[] =
 	{
 		"NormalMap"
 	};
 >;
 
-
-
-const dword _detail_			: LITERAL
+const dword _detail_ : LITERAL
 <
 	string reqVertexElement[] =
 	{
 		"TDetailPacked2D"
 	};
-	string TemplateParameters[] = 
+
+	string TemplateParameters[] =
 	{
 		"DetailMap"
 	};
 >;
-const dword _ndetail_		: LITERAL
+
+const dword _ndetail_ : LITERAL
 <
 	// this is actually a duplicate...should be removed
-	string reqVertexElement[] = 
+	string reqVertexElement[] =
 	{
-		"TDetailPacked2D"		
+		"TDetailPacked2D"
 	};
-	string TemplateParameters[] = 
+
+	string TemplateParameters[] =
 	{
 		"NormalMap"
 	};
 >;
 
-
-
-const dword _dirt_			: LITERAL
+const dword _dirt_ : LITERAL
 <
 	string reqVertexElement[] =
 	{
 		"TDirtPacked2D"
 	};
-	string TemplateParameters[] = 
+
+	string TemplateParameters[] =
 	{
 		"DirtMap"
 	};
 >;
 
-const dword _crack_			: LITERAL
+const dword _crack_ : LITERAL
 <
 	string reqVertexElement[] =
 	{
 		"TCrackPacked2D"
 	};
-	string TemplateParameters[] = 
+
+	string TemplateParameters[] =
 	{
 		"CrackMap"
 	};
 >;
-const dword _ncrack_			: LITERAL
+
+const dword _ncrack_ : LITERAL
 <
 	// this is actually a duplicate...should be removed
-	string reqVertexElement[] = 
+	string reqVertexElement[] =
 	{
 		"TCrackPacked2D"
 	};
-	string TemplateParameters[] = 
+
+	string TemplateParameters[] =
 	{
 		"CrackNormalMap"
 	};
 >;
 
-
-const dword _parallaxdetail_		: LITERAL
+const dword _parallaxdetail_ : LITERAL
 <
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
 		"DetailMap",
 		"NormalMap",
 		"ParallaxScaleBias"
 	};
+
 	string reqVertexElement[] =
 	{
 		"TDetailPacked2D"
 	};
 >;
 
-
-const dword _lightmap_		: LITERAL
+const dword _lightmap_ : LITERAL
 <
-	string reqVertexElement[] = {
+	string reqVertexElement[] =
+	{
 		"TLightMapPacked2D"
 	};
-	
-	string GlobalParameters[] = {
+
+	string GlobalParameters[] =
+	{
 		"SinglePointColor"
 	};
-	string InstanceParameters[] = 
+
+	string InstanceParameters[] =
 	{
 		"LightMapOffset",
 		"LightMap"
 	};
 >;
 
-
-const dword _shadow_		: LITERAL
+const dword _shadow_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"ShadowMap"
 	};
-	string InstanceParameters[] = 
+
+	string InstanceParameters[] =
 	{
 		"ShadowProjMat",
 		"ShadowTrapMat"
 	};
-
 >;
 
-const dword _alphatest_		: LITERAL;
-const dword _dirlight_		: LITERAL;
-const dword _pointlight_	: LITERAL;
-
+const dword _alphatest_ : LITERAL;
+const dword _dirlight_ : LITERAL;
+const dword _pointlight_ : LITERAL;
 
 //
 // This is the array of the shader permutations to generate.
@@ -262,9 +263,8 @@ string GenerateShaderModifiers[] =
 //
 string DeprecationList[] =
 {
-	{"parallaxdetail", ""},
-	{"crack", "ncrack", ""},
-	{"nbase", "ndetail", "dirt", ""},
-	{"shadow",""},
+	{ "parallaxdetail", "" },
+	{ "crack", "ncrack", "" },
+	{ "nbase", "ndetail", "dirt", "" },
+	{ "shadow", "" },
 };
-

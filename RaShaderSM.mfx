@@ -19,7 +19,7 @@ string GenerateStructs[] =
 //
 // this is the common vertexElement members
 //
-string reqVertexElementBase[] = 
+string reqVertexElementBase[] =
 {
 	"Position",
 	"Normal",
@@ -31,27 +31,26 @@ string reqVertexElementBase[] =
 //
 // this is the common global parameters
 //
-string GlobalParametersBase[] = 
+string GlobalParametersBase[] =
 {
 	"SpecularPower",
 	"FogRange",
-	"FogColor", 
+	"FogColor",
 };
 
 //
 // this is the common template parameters
 //
-string TemplateParametersBase[] = 
+string TemplateParametersBase[] =
 {
 	"DiffuseMap",
 	// "CubeMap", //Funky name!!!
 };
 
-
 //
 // this is the common instance parameters
 //
-string InstanceParametersBase[] = 
+string InstanceParametersBase[] =
 {
 	// "AlphaBlendEnable",
 	// "DepthWrite",
@@ -69,40 +68,40 @@ string InstanceParametersBase[] =
 // Literals, and their requirements
 //
 
-const dword _nothing_	: LITERAL;
+const dword _nothing_ : LITERAL;
 
-const dword _hasnormalmap_	: LITERAL
+const dword _hasnormalmap_ : LITERAL
 <
-	string reqVertexElement[] = 
+	string reqVertexElement[] =
 	{
-	 	"TangentSpace"
+		"TangentSpace"
 	};
 
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
 		"NormalMap"
 	};
 >;
 
-const dword _objspacenormalmap_	: LITERAL;
+const dword _objspacenormalmap_ : LITERAL;
 
-const dword _hasenvmap_	: LITERAL
+const dword _hasenvmap_ : LITERAL
 <
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
 		"CubeMap", // Funky name!!!
 		"Reflectivity" // Also somewhat funky. Means env map scale.
 	};
 >;
 
-const dword _hasshadow_	: LITERAL
+const dword _hasshadow_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"ShadowMap"
 	};
 
-	string InstanceParameters[] = 
+	string InstanceParameters[] =
 	{
 		"ShadowProjMat",
 		"ShadowTrapMat"
@@ -111,12 +110,12 @@ const dword _hasshadow_	: LITERAL
 
 const dword _hasshadowocclusion_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"ShadowOccluderMap"
 	};
 
-	string InstanceParameters[] = 
+	string InstanceParameters[] =
 	{
 		"ShadowOccProjMat",
 		"ShadowTrapMat"
@@ -127,7 +126,7 @@ const dword _hasshadowocclusion_ : LITERAL
 /*
 	const dword _hasstaticgloss_ : LITERAL
 	<
-		string TemplateParameters[] = 
+		string TemplateParameters[] =
 		{
 			"StaticGloss"
 		};
@@ -136,14 +135,14 @@ const dword _hasshadowocclusion_ : LITERAL
 
 // const dword _hasdot3alphatest_ : LITERAL;
 
-const dword _usehemimap_	: LITERAL
+const dword _usehemimap_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"HemiMap",
 		"HemiMapConstants"
 	};
-	
+
 	string InstanceParameters[] =
 	{
 		"HemiMapSkyColor",
@@ -189,8 +188,8 @@ string GenerateShaderModifiers[] =
 // Fallback stuff
 string DeprecationList[] =
 {
-	{"hasnormalmap", "objspacenormalmap", ""},
-	{"usehemimap", "hasenvmap", ""},
-	{"hasshadow", "hasshadowocclusion" , ""},
-	{"hascolormapgloss", ""},
+	{ "hasnormalmap", "objspacenormalmap", "" },
+	{ "usehemimap", "hasenvmap", "" },
+	{ "hasshadow", "hasshadowocclusion", "" },
+	{ "hascolormapgloss", "" },
 };

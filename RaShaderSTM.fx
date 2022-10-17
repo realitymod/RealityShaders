@@ -231,7 +231,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 		float3 Normals = float3(0.0, 0.0, 1.0);
 	#endif
 
-	float4 OutputColor = 0.0;
+	float4 OutputColor = 1.0;
 
 	float Gloss;
 	float4 DiffuseTex = GetCompositeDiffuse(Input, ViewVec, Gloss);
@@ -276,6 +276,8 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	#if !_POINTLIGHT_
 		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
 	#endif
+
+	OutputColor.a = DiffuseTex.a;
 
 	return OutputColor;
 };
