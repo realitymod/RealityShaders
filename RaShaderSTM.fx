@@ -237,7 +237,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float4 DiffuseTex = GetCompositeDiffuse(Input, ViewVec, Gloss);
 
 	float Diffuse = GetDiffuse(Normals, LightVec);
-	float Specular = GetSpecular(Diffuse, Normals, HalfVec) * Gloss;
+	float Specular = GetSpecular(Diffuse, Normals, HalfVec) * (Gloss / 5.0);
 
 	float3 DiffuseColor = Diffuse * Lights[0].color;
 	float3 SpecularColor = Specular * StaticSpecularColor;
@@ -252,7 +252,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 		float3 Ambient = SinglePointColor * Lightmap.r;
 
 		#if defined(USE_DETAIL)
-			// Pre-calc: Lightmap.b *= invDot
+			// Pre-calc: Lightmap.b *= InvDot
 			float3 BumpedSky = Lightmap.b * dot(Normals, SkyNormal) * StaticSkyColor;
 			// tl: Jonas, disable once we know which materials are actually affected.
 			DiffuseColor = ((DiffuseColor * Lightmap.g) + BumpedSky) + Ambient;

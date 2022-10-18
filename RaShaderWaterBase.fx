@@ -249,12 +249,13 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 
 	float LightFactors = SpecularColor.a * ShadFac;
-	float Specular = GetSpecular(1.0, Reflection, -Lights[0].dir, SpecularPower);
+	float Specular = saturate(dot(Reflection, -Lights[0].dir));
+	Specular = pow(abs(Specular), SpecularPower) * LightFactors;
 
 	float4 FinalColor = 0.0;
 
 	#if defined(USE_SPECULAR)
-		FinalColor.rgb = WaterLerp + ((Specular * SpecularColor.rgb) * LightFactors);
+		FinalColor.rgb = WaterLerp + (Specular * SpecularColor.rgb);
 	#else
 		FinalColor.rgb = WaterLerp;
 	#endif
