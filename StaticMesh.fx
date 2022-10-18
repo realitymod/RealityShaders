@@ -22,6 +22,7 @@ uniform float4x4 _WorldMat : World;
 uniform float4 _AmbientColor : Ambient = { 0.0, 0.0, 0.0, 1.0 };
 uniform float4 _DiffColor : Diffuse = { 1.0, 1.0, 1.0, 1.0 };
 uniform float4 _SpecColor : Specular = { 0.0, 0.0, 0.0, 1.0 };
+
 uniform float4 _FuzzyLightScaleValue : FuzzyLightScaleValue = { 1.75, 1.75, 1.75, 1.0 };
 uniform float4 _LightmapOffset : LightmapOffset;
 uniform float _DropShadowClipheight : DROPSHADOWCLIPHEIGHT;
@@ -39,6 +40,21 @@ uniform float4 _ParaboloidZValues : ParaboloidZValues;
 
 uniform float4 _Attenuation : Attenuation; // SHADOW
 
+uniform float4 _LightPos : LightPosition : register(vs_3_0, c12)
+<
+	string Object = "PointLight";
+	string Space = "World";
+> = { 0.0, 0.0, 1.0, 1.0 };
+
+uniform float4 _LightDir : LightDirection;
+uniform float4 _SunColor : SunColor;
+uniform float4 _EyePos : EyePos;
+uniform float4 _EyePosObjectSpace : EyePosObjectSpace;
+
+/*
+	[Textures and Samplers]
+*/
+
 uniform texture Texture_0: TEXLAYER0;
 uniform texture Texture_1: TEXLAYER1;
 uniform texture Texture_2: TEXLAYER2;
@@ -47,17 +63,6 @@ uniform texture Texture_4: TEXLAYER4;
 uniform texture Texture_5: TEXLAYER5;
 uniform texture Texture_6: TEXLAYER6;
 uniform texture Texture_7: TEXLAYER7;
-
-float4 _LightPos : LightPosition : register(vs_3_0, c12)
-<
-	string Object = "PointLight";
-	string Space = "World";
-> = { 0.0, 0.0, 1.0, 1.0 };
-
-float4 _LightDir : LightDirection;
-float4 _SunColor : SunColor;
-float4 _EyePos : EyePos;
-float4 _EyePosObjectSpace : EyePosObjectSpace;
 
 sampler Sampler_Shadow_Alpha = sampler_state
 {
@@ -84,12 +89,14 @@ sampler Sampler_Color_LUT = sampler_state
 	Texture = (Texture_2);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
+	MipFilter = LINEAR;
 	AddressU = Clamp;
 	AddressV = Clamp;
 };
 
-
-
+/*
+	Normalmap shaders
+*/
 
 struct APP2VS
 {
@@ -106,10 +113,10 @@ struct VS2PS_Simple
 	float2 TexCoord : TEXCOORD0;
 };
 
-VS2PS_Simple StaticMesh_Simple_VS(APP2VS Input, uniform float4x4 WorldViewProj)
+VS2PS_Simple StaticMesh_Simple_VS(APP2VS Input)
 {
 	VS2PS_Simple Output;
-	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProj);
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	Output.TexCoord = Input.TexCoord;
 	return Output;
 }
@@ -128,8 +135,8 @@ technique alpha_one
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		CullMode = NONE;
-		AlphaBlendEnable = TRUE;
 
+		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE;
 
@@ -137,13 +144,14 @@ technique alpha_one
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
 
-		VertexShader = compile vs_3_0 StaticMesh_Simple_VS(_WorldViewProj);
+		VertexShader = compile vs_3_0 StaticMesh_Simple_VS();
 		PixelShader = compile ps_3_0 StaticMesh_Simple_PS();
 	}
 }
 
-
-
+/*
+	Shadowmap shaders
+*/
 
 struct APP2VS_ShadowMap
 {
@@ -157,17 +165,10 @@ struct VS2PS_ShadowMap
 	float2 PosZW : TEXCOORD0;
 };
 
-struct VS2PS_ShadowMap_Alpha
+float4 GetShadowProjCoords(float4 Pos)
 {
-	float4 HPos : POSITION;
-	float2 Tex : TEXCOORD0;
-	float2 PosZW : TEXCOORD1;
-};
-
-float4 GetShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
-{
- 	float4 shadowcoords = mul(Pos, matTrap);
- 	float2 lightZW = mul(Pos, matLight).zw;
+ 	float4 shadowcoords = mul(Pos, _LightTrapezMat);
+ 	float2 lightZW = mul(Pos, _LightMat).zw;
 	shadowcoords.z = (lightZW.x*shadowcoords.w) / lightZW.y; // (zL*wT)/wL == zL/wL post homo
 	return shadowcoords;
 }
@@ -175,23 +176,10 @@ float4 GetShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
 VS2PS_ShadowMap ShadowMap_VS(APP2VS_ShadowMap Input)
 {
 	VS2PS_ShadowMap Output;
-
  	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
  	float4 WorldPos = mul(UnpackPos, _WorldMat);
-	Output.HPos = GetShadowProjCoords(float4(WorldPos.xyz, 1.0), _LightTrapezMat, _LightMat);
+	Output.HPos = GetShadowProjCoords(float4(WorldPos.xyz, 1.0));
  	Output.PosZW.xy = Output.HPos.zw;
-	return Output;
-}
-
-VS2PS_ShadowMap_Alpha ShadowMap_Alpha_VS(APP2VS_ShadowMap Input)
-{
-	VS2PS_ShadowMap_Alpha Output;
-
- 	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
- 	float4 WorldPos = mul(UnpackPos, _WorldMat);
-	Output.HPos = GetShadowProjCoords(WorldPos, _LightTrapezMat, _LightMat);
- 	Output.PosZW.xy = Output.HPos.zw;
-	Output.Tex = Input.Tex * _TexUnpack;
 	return Output;
 }
 
@@ -202,6 +190,24 @@ float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
 	#else
 		return Input.PosZW.x / Input.PosZW.y;
 	#endif
+}
+
+struct VS2PS_ShadowMap_Alpha
+{
+	float4 HPos : POSITION;
+	float2 Tex : TEXCOORD0;
+	float2 PosZW : TEXCOORD1;
+};
+
+VS2PS_ShadowMap_Alpha ShadowMap_Alpha_VS(APP2VS_ShadowMap Input)
+{
+	VS2PS_ShadowMap_Alpha Output;
+ 	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
+ 	float4 WorldPos = mul(UnpackPos, _WorldMat);
+	Output.HPos = GetShadowProjCoords(WorldPos);
+	Output.Tex = Input.Tex * _TexUnpack;
+ 	Output.PosZW.xy = Output.HPos.zw;
+	return Output;
 }
 
 float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap_Alpha Input) : COLOR
@@ -216,6 +222,19 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap_Alpha Input) : COLOR
 	#endif
 }
 
+#define STATICMESH_SHADOWMAP_RENDERSTATES \
+	AlphaBlendEnable = FALSE; \
+	ZEnable = TRUE; \
+	ZWriteEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
+	ScissorTestEnable = TRUE; \
+
+#define STATICMESH_POINT_RENDERSTATES \
+	AlphaBlendEnable = FALSE; \
+	ZEnable = TRUE; \
+	ZWriteEnable = TRUE; \
+	ScissorTestEnable = TRUE; \
+
 technique DrawShadowMap
 {
 	pass directionalspot
@@ -224,12 +243,7 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ScissorTestEnable = TRUE;
-
+		STATICMESH_SHADOWMAP_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -244,12 +258,7 @@ technique DrawShadowMap
 		#endif
 
 		CullMode = CW;
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ScissorTestEnable = TRUE;
-
+		STATICMESH_SHADOWMAP_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_Alpha_VS();
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
@@ -260,16 +269,11 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ScissorTestEnable = TRUE;
-
+		STATICMESH_POINT_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 }
-//#endif
 
 // We actually don't need to have 2 techniques here
 // but it is kept for back-compatibility with original BF2
@@ -281,12 +285,7 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ScissorTestEnable = TRUE;
-
+		STATICMESH_SHADOWMAP_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -301,13 +300,7 @@ technique DrawShadowMapNV
 		#endif
 
 		CullMode = CW;
-
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ScissorTestEnable = TRUE;
-
+		STATICMESH_SHADOWMAP_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_Alpha_VS();
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
@@ -318,11 +311,7 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ScissorTestEnable = TRUE;
-
+		STATICMESH_POINT_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}

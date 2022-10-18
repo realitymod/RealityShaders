@@ -10,86 +10,70 @@
 #include "shaders/RealityGraphics.fx"
 
 // Note: obj space light vectors
-float4 _SunLightDirection : SunLightDirection;
-float4 _LightDirection : LightDirection;
-float _NormalOffsetScale : NormalOffsetScale;
-// float _HemiMapInfo.z : _HemiMapInfo.z;
-// float _HemiMapInfo.w : _HemiMapInfo.w;
+uniform float4 _SunLightDirection : SunLightDirection;
+uniform float4 _LightDirection : LightDirection;
+uniform float _NormalOffsetScale : NormalOffsetScale;
 
 // Offset x/y _HemiMapInfo.z z / _HemiMapInfo.w w
-float4 _HemiMapInfo : HemiMapInfo;
+uniform float4 _HemiMapInfo : HemiMapInfo;
 
-float4 _SkyColor : SkyColor;
-float4 _AmbientColor : AmbientColor;
-float4 _SunColor : SunColor;
+uniform float4 _AmbientColor : AmbientColor;
+uniform float4 _LightColor : LightColor;
+uniform float4 _SkyColor : SkyColor;
+uniform float4 _SunColor : SunColor;
 
-float4 _LightPosition : LightPosition;
-float _AttenuationSqrInv : AttenuationSqrInv;
-float4 _LightColor : LightColor;
+uniform float4 _LightPosition : LightPosition;
+uniform float _AttenuationSqrInv : AttenuationSqrInv;
 
-float _ShadowAlphaThreshold : SHADOWALPHATHRESHOLD;
+uniform float _ShadowAlphaThreshold : SHADOWALPHATHRESHOLD;
 
-float _ConeAngle : ConeAngle;
-float4 _WorldEyePos : WorldEyePos;
-float4 _ObjectEyePos : ObjectEyePos;
+uniform float _ConeAngle : ConeAngle;
+uniform float4 _WorldEyePos : WorldEyePos;
+uniform float4 _ObjectEyePos : ObjectEyePos;
 
-float4x4 _LightViewProj : LIGHTVIEWPROJ;
-float4x4 _LightViewProj2 : LIGHTVIEWPROJ2;
-float4x4 _LightViewProj3 : LIGHTVIEWPROJ3;
-float4 _ViewportMap : VIEWPORTMAP;
+uniform float4x4 _LightViewProj : LIGHTVIEWPROJ;
+uniform float4x4 _LightViewProj2 : LIGHTVIEWPROJ2;
+uniform float4x4 _LightViewProj3 : LIGHTVIEWPROJ3;
+uniform float4 _ViewportMap : VIEWPORTMAP;
 
-dword _StencilRef : STENCILREF = 0;
+uniform dword _StencilRef : STENCILREF = 0;
 
-float4x4 _World : World;
-float4x4 _WorldT : WorldT;
-float4x4 _WorldView : WorldView;
-float4x4 _WorldViewI : WorldViewI; // (WorldViewIT)T = WorldViewI
-float4x4 _WorldViewProjection : WorldViewProjection;
-float4x3 _BoneArray[26] : BoneArray; // : register(c15) < bool sparseArray = true; int arrayStart = 15; >;
+uniform float4x4 _World : World;
+uniform float4x4 _WorldT : WorldT;
+uniform float4x4 _WorldView : WorldView;
+uniform float4x4 _WorldViewI : WorldViewI; // (WorldViewIT)T = WorldViewI
+uniform float4x4 _WorldViewProjection : WorldViewProjection;
+uniform float4x3 _BoneArray[26] : BoneArray; // : register(c15) < bool sparseArray = true; int arrayStart = 15; >;
 
-float4x4 _vpLightMat : vpLightMat;
-float4x4 _vpLightTrapezMat : vpLightTrapezMat;
+uniform float4x4 _vpLightMat : vpLightMat;
+uniform float4x4 _vpLightTrapezMat : vpLightTrapezMat;
 
-float4 _ParaboloidValues : ParaboloidValues;
-float4 _ParaboloidZValues : ParaboloidZValues;
+uniform float4 _ParaboloidValues : ParaboloidValues;
+uniform float4 _ParaboloidZValues : ParaboloidZValues;
 
-texture Texture_0 : TEXLAYER0;
-texture Texture_1 : TEXLAYER1;
-texture Texture_2 : TEXLAYER2;
-texture Texture_3 : TEXLAYER3;
-texture Texture_4 : TEXLAYER4;
+/*
+	[Textures and Samplers]
+*/
 
-sampler Sampler_0 = sampler_state
-{
-	Texture = (Texture_0);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
+uniform texture Texture_0 : TEXLAYER0;
+uniform texture Texture_1 : TEXLAYER1;
+uniform texture Texture_2 : TEXLAYER2;
+uniform texture Texture_3 : TEXLAYER3;
+uniform texture Texture_4 : TEXLAYER4;
 
-sampler Sampler_1 = sampler_state
-{
-	Texture = (Texture_1);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
+#define CREATE_SAMPLER(NAME, TEXTURE, FILTER) \
+	sampler NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = FILTER; \
+		MagFilter = FILTER; \
+		MipFilter = FILTER; \
+	};
 
-sampler Sampler_2 = sampler_state
-{
-	Texture = (Texture_2);
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-};
-
-sampler Sampler_3 = sampler_state
-{
-	Texture = (Texture_3);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
+CREATE_SAMPLER(Sampler_0, Texture_0, LINEAR)
+CREATE_SAMPLER(Sampler_1, Texture_1, LINEAR)
+CREATE_SAMPLER(Sampler_2, Texture_2, LINEAR)
+CREATE_SAMPLER(Sampler_3, Texture_3, LINEAR)
 
 struct APP2VS
 {
@@ -100,171 +84,146 @@ struct APP2VS
 	float2 TexCoord0 : TEXCOORD0;
 };
 
-// Object-based lighting
+/*
+	Object-based skinning
+*/
 
-void SkinSoldier_PP(uniform int NumBones, in APP2VS Input, in float3 LightVec, out float3 Pos, out float3 Normal,
-					out float3 SkinnedLightVec)
+struct SkinnedData
 {
-	float LastWeight = 0.0;
-	Pos = 0.0;
-	Normal = 0.0;
-	SkinnedLightVec = 0.0;
+	float3 Pos;
+	float3 Normal;
+	float3 LightVec;
+};
 
-	// Compensate for lack of UBYTE4 on Geforce3
-	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
+SkinnedData SkinSoldier(in APP2VS Input, uniform int NumBones, in float3 LightVec)
+{
+	SkinnedData Output = (SkinnedData)0;
 
 	// Cast the vectors to arrays for use in the for loop below
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
 	int IndexArray[4] = (int[4])IndexVector;
 
 	// Calculate the pos/normal using the "normal" weights
 	// and accumulate the weights to calculate the last weight
+	float LastWeight = 0.0;
+
 	for (int BoneIndex = 0; BoneIndex < NumBones - 1; BoneIndex++)
 	{
-		LastWeight += BlendWeightsArray[BoneIndex];
-
-		Pos += mul(Input.Pos, _BoneArray[IndexArray[BoneIndex]]) * BlendWeightsArray[BoneIndex];
-		Normal += mul(Input.Normal, _BoneArray[IndexArray[BoneIndex]]) * BlendWeightsArray[BoneIndex];
-		float3x3 mat = transpose((float3x3)_BoneArray[IndexArray[BoneIndex]]);
-		SkinnedLightVec += mul(LightVec, mat) * BlendWeightsArray[BoneIndex];
+		float4x3 CurrentBone = _BoneArray[IndexArray[BoneIndex]];
+		float CurrentWeight = BlendWeightsArray[BoneIndex];
+		Output.Pos += mul(Input.Pos, CurrentBone) * CurrentWeight;
+		Output.Normal += mul(Input.Normal, (float3x3)CurrentBone) * CurrentWeight;
+		Output.LightVec += mul((float3x3)CurrentBone, LightVec) * CurrentWeight;
+		LastWeight += CurrentWeight;
 	}
-	LastWeight = 1.0 - LastWeight;
 
 	// Now that we have the calculated weight, add in the final influence
-	Pos += mul(Input.Pos, _BoneArray[IndexArray[NumBones - 1]]) * LastWeight;
-	Normal += mul(Input.Normal, _BoneArray[IndexArray[NumBones - 1]]) * LastWeight;
-	float3x3 mat = transpose((float3x3)_BoneArray[IndexArray[NumBones - 1]]);
-	SkinnedLightVec += mul(LightVec, mat) * LastWeight;
+	LastWeight = 1.0 - LastWeight;
+	float4x3 LastBone = _BoneArray[IndexArray[NumBones - 1]];
+	Output.Pos += mul(Input.Pos, LastBone) * LastWeight;
+	Output.Normal += mul(Input.Normal, (float3x3)LastBone) * LastWeight;
+	Output.LightVec += mul((float3x3)LastBone, LightVec) * LastWeight;
 
 	// Normalize normals
-	Normal = normalize(Normal);
-	// SkinnedLightVec = normalize(SkinnedLightVec); // Don't normalize
+	Output.Normal = normalize(Output.Normal);
+
+	return Output;
 }
 
-// Tangent-based lighting
+/*
+	Humanskin shader
+*/
 
-struct APP2VStangent
-{
-	float4 Pos : POSITION;
-	float3 Normal : NORMAL;
-	float BlendWeights : BLENDWEIGHT;
-	float4 BlendIndices : BLENDINDICES;
-	float2 TexCoord0 : TEXCOORD0;
-	float3 Tan : TANGENT;
-};
-
-struct VS2PS_PP
+struct VS2PS_PreSkin
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float3 GroundUVAndLerp : TEXCOORD1;
-	float3 SkinnedLightVec : TEXCOORD2;
-	float3 HalfVec : TEXCOORD3;
+	float4 P_Tex0_GroundUV : TEXCOORD0; // .xy = Tex0; .zw = GroundUV
+	float4 P_ViewVec_Lerp : TEXCOORD1; // .xyz = ViewVec; .w = HemiLerp;
+	float3 LightVec : TEXCOORD2;
 };
 
-//----------------
-// Humanskin
-//----------------
-
-struct VS2PS_Skinpre
+VS2PS_PreSkin PreSkin_VS(APP2VS Input, uniform int NumBones)
 {
-	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float3 SkinnedLightVec : TEXCOORD1;
-	float3 ObjEyeVec : TEXCOORD2;
-	float3 GroundUVAndLerp : TEXCOORD3;
-};
-
-VS2PS_Skinpre Skin_Pre_VS(APP2VS Input, uniform int NumBones)
-{
-	VS2PS_Skinpre Output;
-	float3 Pos, Normal;
-
-	SkinSoldier_PP(NumBones, Input, -_SunLightDirection.xyz, Pos, Normal, Output.SkinnedLightVec);
-
-	Output.ObjEyeVec = normalize(_ObjectEyePos.xyz - Pos);
+	VS2PS_PreSkin Output = (VS2PS_PreSkin)0;
+	SkinnedData Skin = SkinSoldier(Input, NumBones, -_SunLightDirection.xyz);
 
 	Output.HPos.xy = Input.TexCoord0 * float2(2.0, -2.0) - float2(1.0, -1.0);
 	Output.HPos.zw = float2(0.0, 1.0);
+
+	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 
 	// Hemi lookup values
-	float4 WorldPos = mul(Pos, _World);
-	Output.GroundUVAndLerp.xy = ((WorldPos.xyz + (_HemiMapInfo.z / 2.0) + Normal * 1.0).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
-	Output.GroundUVAndLerp.y = 1.0 - Output.GroundUVAndLerp.y;
-	Output.GroundUVAndLerp.z = (Normal.y * 0.5) + 0.5;
-	Output.GroundUVAndLerp.z -= _HemiMapInfo.w;
+	float4 WorldPos = mul(Skin.Pos, (float3x4)_World);
+	Output.P_Tex0_GroundUV.zw = ((WorldPos.xyz + (_HemiMapInfo.z / 2.0) + Skin.Normal).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
+	Output.P_Tex0_GroundUV.w = 1.0 - Output.P_Tex0_GroundUV.w;
 
-	Output.Tex0 = Input.TexCoord0;
-	Output.SkinnedLightVec = normalize(Output.SkinnedLightVec);
+	Output.P_ViewVec_Lerp.xyz = normalize(_ObjectEyePos.xyz - Skin.Pos);
+	Output.P_ViewVec_Lerp.w = ((Skin.Normal.y * 0.5) + 0.5) - _HemiMapInfo.w;
+
+	Output.LightVec = normalize(Skin.LightVec);
 
 	return Output;
 }
 
-float4 Skin_Pre_PS(VS2PS_Skinpre Input) : COLOR
+float4 PreSkin_PS(VS2PS_PreSkin Input) : COLOR
 {
-	float4 ExpNormal = tex2D(Sampler_0, Input.Tex0);
-	float4 GroundColor = tex2D(Sampler_1, Input.GroundUVAndLerp.xy);
+	float HemiLerp = Input.P_ViewVec_Lerp.w;
+	float3 ViewVec = normalize(Input.P_ViewVec_Lerp.xyz);
+	float3 LightVec = normalize(Input.LightVec);
 
-	ExpNormal.rgb = (ExpNormal * 2.0) - 1.0;
-	float WrapDiff = dot(ExpNormal.xyz, Input.SkinnedLightVec) + 0.5;
-	WrapDiff = saturate(WrapDiff / 1.5);
+	float4 GroundColor = tex2D(Sampler_1, Input.P_Tex0_GroundUV.zw);
+	float4 NormalMap = tex2D(Sampler_0, Input.P_Tex0_GroundUV.xy);
+	NormalMap.rgb = normalize((NormalMap * 2.0) - 1.0);
 
-	float RimDiff = 1.0 - dot(ExpNormal.xyz, Input.ObjEyeVec);
-	RimDiff = pow(RimDiff, 3.0);
+	float WrapDiffuse = dot(NormalMap.xyz, Input.LightVec) + 0.5;
+	WrapDiffuse = saturate(WrapDiffuse / 1.5);
 
-	RimDiff *= saturate(0.75 - saturate(dot(Input.ObjEyeVec, Input.SkinnedLightVec)));
-	// RimDiff *= saturate(0.1-saturate(dot(Input.ObjEyeVec, normalize(Input.SkinnedLightVec))));
+	float RimDiffuse = pow(1.0 - dot(NormalMap.xyz, ViewVec), 3.0);
+	RimDiffuse = saturate(0.75 - saturate(dot(LightVec, ViewVec)));
 
-	return float4((WrapDiff.rrr + RimDiff) * GroundColor.a * GroundColor.a, ExpNormal.a);
+	return float4((WrapDiffuse.rrr + RimDiffuse) * (GroundColor.a * GroundColor.a), NormalMap.a);
 }
 
-struct VS2PS_Skinpreshadowed
+struct VS2PS_ShadowedPreSkin
 {
 	float4 HPos : POSITION;
-	float4 Tex0AndHZW : TEXCOORD0;
-	float3 SkinnedLightVec : TEXCOORD1;
-	float4 ShadowTex : TEXCOORD2;
-	float3 ObjEyeVec : TEXCOORD3;
+	float2 Tex0 : TEXCOORD0;
+	float3 LightVec : TEXCOORD1;
+	float3 ViewVec : TEXCOORD2;
+	float4 ShadowTex : TEXCOORD3;
 };
 
-VS2PS_Skinpreshadowed Skin_Preshadowed_VS(APP2VS Input, uniform int NumBones)
+VS2PS_ShadowedPreSkin ShadowedPreSkin_VS(APP2VS Input, uniform int NumBones)
 {
-	VS2PS_Skinpreshadowed Output;
-	float3 Pos, Normal;
-
-	// don't need as much code for this case.. will rewrite later
-	SkinSoldier_PP(NumBones, Input, -_SunLightDirection.xyz, Pos, Normal, Output.SkinnedLightVec);
-
-	Output.ObjEyeVec = normalize(_ObjectEyePos.xyz - Pos);
-
-	Output.ShadowTex = mul(float4(Pos, 1), _LightViewProj);
-	Output.ShadowTex.z -= 0.007;
+	VS2PS_ShadowedPreSkin Output = (VS2PS_ShadowedPreSkin)0;
+	SkinnedData Skin = SkinSoldier(Input, NumBones, -_SunLightDirection.xyz);
 
 	Output.HPos.xy = Input.TexCoord0 * float2(2.0, -2.0) - float2(1.0, -1.0);
 	Output.HPos.zw = float2(0.0, 1.0);
-	Output.Tex0AndHZW = Input.TexCoord0.xyyy;
+
+	Output.Tex0 = Input.TexCoord0;
+
+	Output.LightVec = normalize(Skin.LightVec);
+	Output.ViewVec = normalize(_ObjectEyePos.xyz - Skin.Pos);
+
+	Output.ShadowTex = mul(float4(Skin.Pos, 1.0), _LightViewProj);
+	Output.ShadowTex.z -= 0.007;
 
 	return Output;
 }
 
-float4 Skin_Preshadowed_PS(VS2PS_Skinpreshadowed Input) : COLOR
+float4 ShadowedPreSkin_PS(VS2PS_ShadowedPreSkin Input) : COLOR
 {
-	float4 ExpNormal = tex2D(Sampler_0, Input.Tex0AndHZW.xy);
-	ExpNormal.rgb = (ExpNormal * 2.0) - 1.0;
-
-	float WrapDiff = dot(ExpNormal.xyz, Input.SkinnedLightVec) + 0.5;
-	WrapDiff = saturate(WrapDiff / 1.5);
-
-	float RimDiff = 1.0 - dot(ExpNormal.xyz, Input.ObjEyeVec);
-	RimDiff = pow(RimDiff, 3.0);
-	RimDiff *= saturate(0.75 - saturate(dot(Input.ObjEyeVec, Input.SkinnedLightVec)));
+	float3 ViewVec = normalize(Input.ViewVec);
+	float3 LightVec = normalize(Input.LightVec);
 
 	float2 Texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
 	float4 Samples;
 	// Input.ShadowTex.xy = clamp(Input.ShadowTex.xy, _ViewportMap.xy, _ViewportMap.zw);
 	Samples.x = tex2D(Sampler_2, Input.ShadowTex.xy);
-	Samples.y = tex2D(Sampler_2, Input.ShadowTex.xy + float2(Texel.x, 0));
-	Samples.z = tex2D(Sampler_2, Input.ShadowTex.xy + float2(0, Texel.y));
+	Samples.y = tex2D(Sampler_2, Input.ShadowTex.xy + float2(Texel.x, 0.0));
+	Samples.z = tex2D(Sampler_2, Input.ShadowTex.xy + float2(0.0, Texel.y));
 	Samples.w = tex2D(Sampler_2, Input.ShadowTex.xy + Texel);
 
 	float4 StaticSamples;
@@ -276,132 +235,145 @@ float4 Skin_Preshadowed_PS(VS2PS_Skinpreshadowed Input) : COLOR
 
 	float4 CMPBits = Samples > saturate(Input.ShadowTex.z);
 	float AvgShadowValue = dot(CMPBits, 0.25);
-
 	float TotalShadow = AvgShadowValue.x * StaticSamples.x;
-	float TotalDiff = WrapDiff + RimDiff;
-	return float4(TotalDiff, TotalShadow, saturate(TotalShadow + 0.35), ExpNormal.a);
+
+	float4 NormalMap = tex2D(Sampler_0, Input.Tex0);
+	NormalMap.rgb = normalize((NormalMap * 2.0) - 1.0);
+
+	float WrapDiffuse = dot(NormalMap.xyz, LightVec) + 0.5;
+	WrapDiffuse = saturate(WrapDiffuse / 1.5);
+
+	float RimDiffuse = 1.0 - dot(NormalMap.xyz, ViewVec);
+	RimDiffuse = pow(RimDiffuse, 3.0) * saturate(0.75 - saturate(dot(ViewVec, LightVec)));
+
+	float4 OutputColor = 0.0;
+	OutputColor.r = WrapDiffuse + RimDiffuse;
+	OutputColor.g = TotalShadow;
+	OutputColor.b = saturate(TotalShadow + 0.35);
+	OutputColor.a = NormalMap.a;
+
+	return OutputColor;
 }
 
-VS2PS_PP Skin_Apply_VS(APP2VS Input, uniform int NumBones)
+struct VS2PS_ApplySkin
 {
-	VS2PS_PP Output;
+	float4 HPos : POSITION;
+	float4 P_Tex0_GroundUV : TEXCOORD0; // .xy = Tex0; .zw = GroundUV
+	float4 P_LightVec_Lerp : TEXCOORD1; // .xyz = ViewVec; .w = HemiLerp;
+	float3 HalfVec : TEXCOORD2;
+};
 
-	float3 Pos, Normal;
-
-	SkinSoldier_PP(NumBones, Input, -_SunLightDirection.xyz, Pos, Normal, Output.SkinnedLightVec);
+VS2PS_ApplySkin ApplySkin_VS(APP2VS Input, uniform int NumBones)
+{
+	VS2PS_ApplySkin Output = (VS2PS_ApplySkin)0;
+	SkinnedData Skin = SkinSoldier(Input, NumBones, -_SunLightDirection.xyz);
 
 	// Transform position into view and then projection space
-	Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProjection);
+	Output.HPos = mul(float4(Skin.Pos, 1.0f), _WorldViewProjection);
+
+	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 
 	// Hemi lookup values
-	float4 WorldPos = mul(Pos, _World);
-	Output.GroundUVAndLerp.xy =
-		((WorldPos.xyz + (_HemiMapInfo.z / 2.0) + Normal * 1.0).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
-	Output.GroundUVAndLerp.y = 1.0 - Output.GroundUVAndLerp.y;
-	Output.GroundUVAndLerp.z = (Normal.y * 0.5) + 0.5;
-	Output.GroundUVAndLerp.z -= _HemiMapInfo.w;
+	float4 WorldPos = mul(Skin.Pos, _World);
+	Output.P_Tex0_GroundUV.zw = ((WorldPos.xyz + (_HemiMapInfo.z / 2.0) + Skin.Normal).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
+	Output.P_Tex0_GroundUV.w = 1.0 - Output.P_Tex0_GroundUV.w;
 
-	Output.Tex0 = Input.TexCoord0;
-	Output.HalfVec = normalize(normalize(_ObjectEyePos.xyz - Pos) + Output.SkinnedLightVec);
-	Output.SkinnedLightVec = normalize(Output.SkinnedLightVec);
+	float3 LightVec = normalize(Skin.LightVec);
+	float3 ViewVec = normalize(_ObjectEyePos.xyz - Skin.Pos);
+
+	Output.P_LightVec_Lerp.xyz = LightVec;
+	Output.P_LightVec_Lerp.w = ((Skin.Normal.y * 0.5) + 0.5) - _HemiMapInfo.w;
+
+	Output.HalfVec = normalize(ViewVec + LightVec);
 
 	return Output;
 }
 
-float4 Skin_Apply_PS(VS2PS_PP Input) : COLOR
+float4 ApplySkin_PS(VS2PS_ApplySkin Input) : COLOR
 {
-	float4 GroundColor = tex2D(Sampler_0, Input.GroundUVAndLerp.xy);
-	float4 HemiColor = lerp(GroundColor, _SkyColor, Input.GroundUVAndLerp.z);
-	float4 ExpNormal = tex2D(Sampler_1, Input.Tex0);
-	ExpNormal.rgb = (ExpNormal * 2.0) - 1.0;
-	float4 Diffuse = tex2D(Sampler_2, Input.Tex0);
-	float4 DiffuseLight = tex2D(Sampler_3, Input.Tex0);
+	float3 LightVec = normalize(Input.P_LightVec_Lerp.xyz);
+	float3 HalfVec = normalize(Input.HalfVec);
+	float HemiLerp = Input.P_LightVec_Lerp.w;
+
+	float4 GroundColor = tex2D(Sampler_0, Input.P_Tex0_GroundUV.zw);
+	float4 HemiColor = lerp(GroundColor, _SkyColor, HemiLerp);
+
+	float4 NormalMap = tex2D(Sampler_1, Input.P_Tex0_GroundUV.xy);
+	NormalMap.xyz = normalize((NormalMap * 2.0) - 1.0);
+	float4 DiffuseMap = tex2D(Sampler_2, Input.P_Tex0_GroundUV.xy);
+	float4 DiffuseLight = tex2D(Sampler_3, Input.P_Tex0_GroundUV.xy);
 
 	// Glossmap is in the Diffuse alpha channel.
-	float Specular = pow(dot(ExpNormal.rgb, Input.HalfVec), 32.0) * Diffuse.a;
-
-	float4 TotalColor = saturate(_AmbientColor * HemiColor + DiffuseLight.r * DiffuseLight.b * _SunColor);
-	TotalColor *= Diffuse;
-
-	// What to do what the shadow???
+	float4 Ambient = _AmbientColor * HemiColor;
+	float4 Diffuse = (DiffuseLight.r * DiffuseLight.b) * _SunColor;
 	float ShadowIntensity = saturate(DiffuseLight.g);
-	TotalColor.rgb += Specular * ShadowIntensity * ShadowIntensity;
-	return TotalColor;
+	float CosAngle = saturate(dot(NormalMap.xyz, LightVec));
+	float Specular = GetSpecular(CosAngle, NormalMap.xyz, HalfVec) * DiffuseMap.a * pow(ShadowIntensity, 2.0);
+
+	return (DiffuseMap * (Ambient + Diffuse)) + Specular;
 }
+
+#define HUMANSKIN_RENDERSTATES(CULLMODE) \
+	CullMode = CULLMODE; \
+	AlphaBlendEnable = FALSE; \
+	ZEnable = FALSE; \
+	ZWriteEnable = FALSE; \
+	ZFunc = LESSEQUAL; \
+	StencilEnable = FALSE; \
 
 technique humanskin
 {
 	pass pre
 	{
-		CullMode = NONE;
-		AlphaBlendEnable = FALSE;
-		ZEnable = FALSE;
-		ZWriteEnable = FALSE;
-		ZFunc = LESSEQUAL;
-
-		StencilEnable = FALSE;
-
-		VertexShader = compile vs_3_0 Skin_Pre_VS(2);
-		PixelShader = compile ps_3_0 Skin_Pre_PS();
+		HUMANSKIN_RENDERSTATES(NONE)
+		VertexShader = compile vs_3_0 PreSkin_VS(2);
+		PixelShader = compile ps_3_0 PreSkin_PS();
 	}
 
 	pass preshadowed
 	{
-		CullMode = NONE;
-		AlphaBlendEnable = FALSE;
-		ZEnable = FALSE;
-		ZWriteEnable = FALSE;
-		ZFunc = LESSEQUAL;
-
-		StencilEnable = FALSE;
-
-		VertexShader = compile vs_3_0 Skin_Preshadowed_VS(2);
-		PixelShader = compile ps_3_0 Skin_Preshadowed_PS();
+		HUMANSKIN_RENDERSTATES(NONE)
+		VertexShader = compile vs_3_0 ShadowedPreSkin_VS(2);
+		PixelShader = compile ps_3_0 ShadowedPreSkin_PS();
 	}
 
 	pass apply
 	{
-		CullMode = CCW;
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-
-		VertexShader = compile vs_3_0 Skin_Apply_VS(2);
-		PixelShader = compile ps_3_0 Skin_Apply_PS();
+		HUMANSKIN_RENDERSTATES(CCW)
+		VertexShader = compile vs_3_0 ApplySkin_VS(2);
+		PixelShader = compile ps_3_0 ApplySkin_PS();
 	}
 }
+
+/*
+	Shadowmap shaders
+*/
 
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float2 PosZW : TEXCOORD0;
+	float4 P_Tex0_PosZW : TEXCOORD0; // .xy = Tex0; .zw = PosZW;
 };
 
 VS2PS_ShadowMap ShadowMap_VS(APP2VS Input)
 {
 	VS2PS_ShadowMap Output;
 
-	// Compensate for lack of UBYTE4 on Geforce3
-	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-
 	// Cast the vectors to arrays for use in the for loop below
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
 	int IndexArray[4] = (int[4])IndexVector;
 
-	float3 Pos = mul(Input.Pos, _BoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-	Pos += mul(Input.Pos, _BoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
+	float3 Bone0 = mul(Input.Pos, _BoneArray[IndexArray[0]]);
+	float3 Bone1 = mul(Input.Pos, _BoneArray[IndexArray[1]]);
+	float3 BonePos = lerp(Bone1, Bone0, BlendWeightsArray[0]);
 
-	Output.HPos = mul(float4(Pos.xyz, 1.0), _vpLightTrapezMat);
-	float2 LightZW = mul(float4(Pos.xyz, 1.0), _vpLightMat).zw;
+	Output.HPos = mul(float4(BonePos.xyz, 1.0), _vpLightTrapezMat);
+	float2 LightZW = mul(float4(BonePos.xyz, 1.0), _vpLightMat).zw;
 	Output.HPos.z = (LightZW.x * Output.HPos.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
-	Output.PosZW = Output.HPos.zw;
 
-	return Output;
-
-	// Shadow
-	Output.HPos = mul(float4(Pos.xyz, 1.0), _vpLightMat);
-	Output.PosZW = Output.HPos.zw;
+	Output.P_Tex0_PosZW.xy = Input.TexCoord0;
+	Output.P_Tex0_PosZW.zw = Output.HPos.zw;
 
 	return Output;
 }
@@ -411,49 +383,28 @@ float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
 	#if NVIDIA
 		return 0.0;
 	#else
-		return Input.PosZW.x / Input.PosZW.y;
+		return Input.P_Tex0_PosZW.z / Input.P_Tex0_PosZW.w;
 	#endif
 }
 
-struct VS2PS_ShadowMapAlpha
+float4 ShadowMapAlpha_PS(VS2PS_ShadowMap Input) : COLOR
 {
-	float4 HPos : POSITION;
-	float4 Tex0PosZW : TEXCOORD0;
-};
-
-VS2PS_ShadowMapAlpha ShadowMapAlpha_VS(APP2VS Input)
-{
-	VS2PS_ShadowMapAlpha Output;
-
-	// Compensate for lack of UBYTE4 on Geforce3
-	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-
-	// Cast the vectors to arrays for use in the for loop below
-	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
-	int IndexArray[4] = (int[4])IndexVector;
-
-	float3 Pos = mul(Input.Pos, _BoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-	Pos += mul(Input.Pos, _BoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
-
-	Output.HPos = mul(float4(Pos.xyz, 1.0), _vpLightTrapezMat);
-	float2 LightZW = mul(float4(Pos.xyz, 1.0), _vpLightMat).zw;
-	Output.HPos.z = (LightZW.x * Output.HPos.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
-	Output.Tex0PosZW.xy = Input.TexCoord0;
-	Output.Tex0PosZW.zw = Output.HPos.zw;
-
-	return Output;
-}
-
-float4 ShadowMapAlpha_PS(VS2PS_ShadowMapAlpha Input) : COLOR
-{
-	float Alpha = tex2D(Sampler_0, Input.Tex0PosZW.xy).a - _ShadowAlphaThreshold;
+	float Alpha = tex2D(Sampler_0, Input.P_Tex0_PosZW.xy).a - _ShadowAlphaThreshold;
 	#if NVIDIA
 		return Alpha;
 	#else
 		clip(Alpha);
-		return Input.Tex0PosZW.z / Input.Tex0PosZW.w;
+		return Input.P_Tex0_PosZW.z / Input.P_Tex0_PosZW.w;
 	#endif
 }
+
+#define SHADOWMAP_RENDERSTATES(CULLMODE) \
+	CullMode = CULLMODE; \
+	AlphaBlendEnable = FALSE; \
+	ZEnable = TRUE; \
+	ZWriteEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
+	ScissorTestEnable = TRUE; \
 
 technique DrawShadowMap
 {
@@ -463,18 +414,9 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		CullMode = CW;
-
-		ScissorTestEnable = TRUE;
-
+		SHADOWMAP_RENDERSTATES(CW)
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
-
-		CullMode = None;
 	}
 
 	pass directionalspotalpha
@@ -485,18 +427,10 @@ technique DrawShadowMap
 			AlphaRef = 0;
 		#endif
 
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-
-		ScissorTestEnable = TRUE;
-
-		VertexShader = compile vs_3_0 ShadowMapAlpha_VS();
+		SHADOWMAP_RENDERSTATES(CCW)
+		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMapAlpha_PS();
 
-		CullMode = CCW;
-		CullMode = None;
 	}
 
 	pass point_
@@ -505,17 +439,9 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-
-		ScissorTestEnable = TRUE;
-
+		SHADOWMAP_RENDERSTATES(NONE)
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
-
-		CullMode = None;
 	}
 }
 
@@ -529,18 +455,9 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		CullMode = CW;
-
-		ScissorTestEnable = TRUE;
-
+		SHADOWMAP_RENDERSTATES(CW)
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
-
-		CullMode = None;
 	}
 
 	pass directionalspotalpha
@@ -551,18 +468,10 @@ technique DrawShadowMapNV
 			AlphaRef = 0;
 		#endif
 
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-
-		ScissorTestEnable = TRUE;
-
-		VertexShader = compile vs_3_0 ShadowMapAlpha_VS();
+		SHADOWMAP_RENDERSTATES(CCW)
+		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMapAlpha_PS();
 
-		CullMode = CCW;
-		CullMode = None;
 	}
 
 	pass point_
@@ -571,16 +480,8 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		AlphaBlendEnable = FALSE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-
-		ScissorTestEnable = TRUE;
-
+		SHADOWMAP_RENDERSTATES(NONE)
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
-
-		CullMode = None;
 	}
 }

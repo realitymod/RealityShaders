@@ -218,7 +218,6 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	float4 ColorMap = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
-	float4 DiffuseTex = ColorMap;
 
 	#if _HASNORMALMAP_
 		// Transform from tangent-space to world-space
@@ -241,6 +240,10 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		float ShadowOccDir = 1.0f;
 	#endif
 
+	/*
+		Calculate diffuse + specular lighting
+	*/
+
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
 		float HemiLerp = Input.P_WorldPos_Lerp.w;
@@ -258,20 +261,16 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		float Gloss = StaticGloss;
 	#endif
 
-	#if _FRESNELVALUES_
-		#if _HASENVMAP_
-			float3 Reflection = -reflect(ViewVec, NormalVec);
-			float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
-			DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss / 4.0);
-		#endif
-		float RefractionIndexRatio = 0.15;
-		float F0 = pow(1.0 - RefractionIndexRatio, 2.0) / pow(1.0 + RefractionIndexRatio, 4.0);
-		float FresnelValue = pow(F0 + (1.0 - F0) * (1.0 - dot(NormalVec, ViewVec)), 2.0);
-		DiffuseTex.a = lerp(DiffuseTex.a, 1.0, FresnelValue);
+	float4 DiffuseTex = ColorMap;
+
+	#if _FRESNELVALUES_ && _HASENVMAP_
+		float3 Reflection = -reflect(ViewVec, NormalVec);
+		float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
+		DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss / 4.0);
 	#endif
 
 	float Diffuse = GetDiffuse(NormalVec, LightVec);
-	float Specular = GetSpecular(Diffuse, NormalVec, HalfVec) * abs(Gloss * 4.0);
+	float Specular = GetSpecular(Diffuse, NormalVec, HalfVec) * Gloss;
 
 	#if _POINTLIGHT_
 		#if !_HASCOLORMAPGLOSS_
@@ -293,7 +292,6 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	float4 OutputColor = 1.0;
 
-	// Calculate diffuse + specular lighting
 	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
 	// Prevents non-detailed bundledmesh from looking shiny
 	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
@@ -305,18 +303,12 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		OutputColor.rgb = DiffuseTex.rgb * ((Ambient + Lighting) * GI.rgb);
 	#endif
 
+	/*
+		Calculate fogging and other occluders
+	*/
+
 	#if _POINTLIGHT_
 		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
-	#endif
-
-	#if _HASDOT3ALPHATEST_
-		OutputColor.a = dot(ColorMap.rgb, 1.0);
-	#else
-		#if _HASCOLORMAPGLOSS_
-			OutputColor.a = 1.0f;
-		#else
-			OutputColor.a = DiffuseTex.a;
-		#endif
 	#endif
 
 	#if _HASGIMAP_
@@ -350,9 +342,30 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 
-	OutputColor.a *= Transparency.a;
+	/*
+		Calculate alpha transparency
+	*/
 
-	return OutputColor;
+	float Alpha = 1.0;
+
+	#if _FRESNELVALUES_
+		float RefractionIndexRatio = 0.15;
+		float F0 = pow(1.0 - RefractionIndexRatio, 2.0) / pow(1.0 + RefractionIndexRatio, 4.0);
+		float FresnelValue = pow(F0 + (1.0 - F0) * (1.0 - dot(NormalVec, ViewVec)), 2.0);
+		Alpha = lerp(ColorMap.a, 1.0, FresnelValue);
+	#endif
+
+	#if _HASDOT3ALPHATEST_
+		Alpha = dot(ColorMap.rgb, 1.0);
+	#else
+		#if _HASCOLORMAPGLOSS_
+			Alpha = 1.0f;
+		#else
+			Alpha = DiffuseTex.a;
+		#endif
+	#endif
+
+	return float4(OutputColor.rgb, saturate(Alpha * Transparency.a));
 }
 
 technique Variable

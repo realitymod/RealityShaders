@@ -7,6 +7,8 @@
 #if !defined(REALITYGRAPHICS_FX)
 	#define REALITYGRAPHICS_FX
 
+	#define MATH_CONST_PI 3.1415926535897
+
 	/*
 		Shared depth functions
 	*/
@@ -17,7 +19,7 @@
 		Source: https://learn.microsoft.com/en-us/windows/win32/direct3d9/depth-bias
 	*/
 
-	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.0001, uniform float Bias = -0.001)
+	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.0001, uniform float Bias = -0.003)
 	{
 		float OutputDepth = Depth;
 		OutputDepth += (SlopeScaleBias * abs(ddx(Depth)));
@@ -112,11 +114,13 @@
 		return saturate(dot(NormalVec, LightVec));
 	}
 
-	// Description: Gets modified Blinn-Phong specular value
+	// Description: Gets normalized modified Blinn-Phong specular value
+	// Source: https://www.rorydriscoll.com/2009/01/25/energy-conservation-in-games/
 	float GetSpecular(float CosAngle, float3 NormalVec, float3 HalfVec, uniform float Exponent = 32.0)
 	{
+		float NormalizationFactor = (Exponent + 8.0) / 8.0;
 		float Specular = saturate(dot(NormalVec, HalfVec));
-		return pow(abs(Specular), Exponent) * CosAngle;
+		return NormalizationFactor * pow(abs(Specular), Exponent) * CosAngle;
 	}
 
 	// Description: Gets radial light attenuation value for pointlights

@@ -270,7 +270,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			#endif
 		#endif
 
-		OutputColor.rgb = DiffuseTex.rgb * ((DiffuseColor * 2.0) + (SpecularColor * Lightmap.g));
+		OutputColor.rgb = ((DiffuseTex.rgb * DiffuseColor) * 2.0) + (SpecularColor * Lightmap.g);
 	#endif
 
 	#if !_POINTLIGHT_
