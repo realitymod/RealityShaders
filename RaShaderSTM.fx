@@ -119,13 +119,12 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	return Output;
 }
 
-float2 CalcParallax(float2 HeightTexCoords, sampler2D HeightSampler, float4 ScaleBias, float3 ViewVec)
+float2 GetParallax(float2 TexCoords, float3 ViewVec)
 {
-	float2 Height = tex2D(HeightSampler, HeightTexCoords).aa;
-	float2 EyeVecN = ViewVec.xy * float2(1.0, -1.0);
-	float4 FakeBias = float4(FH2_HARDCODED_PARALLAX_BIAS, FH2_HARDCODED_PARALLAX_BIAS, 0.0, 0.0);
-	Height = Height * FakeBias.xy + FakeBias.wz;
-	return HeightTexCoords + Height * EyeVecN.xy;
+	float Height = tex2D(NormalMapSampler, TexCoords).a;
+	Height = (Height * 2.0 - 1.0);
+	ViewVec.y = -ViewVec.y;
+	return TexCoords + (ViewVec.xy * Height * HARDCODED_PARALLAX_BIAS);
 }
 
 float4 GetCompositeDiffuse(VS2PS Input, float3 TanEyeVec, out float Gloss)
@@ -138,7 +137,8 @@ float4 GetCompositeDiffuse(VS2PS Input, float3 TanEyeVec, out float Gloss)
 	#endif
 
 	#if _PARALLAXDETAIL_
-		float4 Detail = tex2D(DetailMapSampler, CalcParallax(Input.P_Base_Detail.zw, NormalMapSampler, ParallaxScaleBias, TanEyeVec));
+		Diffuse = tex2D(DiffuseMapSampler, GetParallax(Input.P_Base_Detail.xy, TanEyeVec));
+		float4 Detail = tex2D(DetailMapSampler, GetParallax(Input.P_Base_Detail.zw, TanEyeVec));
 	#elif _DETAIL_
 		float4 Detail = tex2D(DetailMapSampler, Input.P_Base_Detail.zw);
 	#endif
@@ -179,7 +179,7 @@ float3 GetCompositeNormals(VS2PS Input, float3 TanEyeVec)
 	#endif
 
 	#if _PARALLAXDETAIL_
-		Normals = tex2D(NormalMapSampler, CalcParallax(Input.P_Base_Detail.zw, NormalMapSampler, ParallaxScaleBias, TanEyeVec));
+		Normals = tex2D(NormalMapSampler, GetParallax(Input.P_Base_Detail.zw, TanEyeVec));
 	#elif _NDETAIL_
 		Normals = tex2D(NormalMapSampler, Input.P_Base_Detail.zw);
 	#endif

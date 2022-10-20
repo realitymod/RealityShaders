@@ -39,7 +39,7 @@
 
 	int alphaRef = 20;
 	int CullMode = 3; // D3DCULL_CCW
-	#define FH2_HARDCODED_PARALLAX_BIAS 0.0025
+	#define HARDCODED_PARALLAX_BIAS 0.003
 
 	float GlobalTime;
 	float WindSpeed = 0;

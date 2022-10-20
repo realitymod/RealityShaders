@@ -88,10 +88,11 @@ float4 TrunkOG_PS(VS2PS Input) : COLOR
 {
 	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.Tex0.xy);
 	float3 Normals = normalize(Input.P_Normals_ScaleLN.xyz);
-	float3 Diffuse = GetDiffuse(Normals.xyz, -Lights[0].dir) * Lights[0].color;
+	float Diffuse = GetDiffuse(Normals.xyz, -Lights[0].dir);
 
 	float ScaleLN = Input.P_Normals_ScaleLN.w;
-	float3 Color = (OverGrowthAmbient.rgb + Diffuse) * ScaleLN;
+	float3 Color = (OverGrowthAmbient.rgb * ScaleLN);
+	Color += ((Diffuse * ScaleLN) * (Lights[0].color * ScaleLN));
 
 	float4 FinalColor = float4((DiffuseMap.rgb * Color.rgb) * 2.0, Transparency.a);
 	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));

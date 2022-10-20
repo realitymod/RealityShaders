@@ -79,8 +79,8 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
 	#endif
 
 	float YDelta, InterpVal;
-	// Geo_MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
-	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
+	// MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
+	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
  	Output.HPos = mul(WorldPos, _ViewProj);
@@ -97,6 +97,7 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
 
  	Output.Tex0.xy = (YPlaneTexCoord * _ColorLightTex.x) + _ColorLightTex.y;
  	Output.Tex6 = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
+
 	Output.Tex3.xy = YPlaneTexCoord.xy * _NearTexTiling.z;
  	Output.Tex5.xy = YPlaneTexCoord * _FarTexTiling.z;
 
@@ -241,8 +242,8 @@ VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input
 	#endif
 
 	float YDelta, InterpVal;
-	// Geo_MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
-	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
+	// MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
+	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
 	Output.HPos = mul(WorldPos, _ViewProj);
@@ -405,8 +406,8 @@ Hi_VS2PS_FullDetail_EnvMap Hi_FullDetail_EnvMap_VS(APP2VS_Shared_Default Input)
 	#endif
 
 	float YDelta, InterpVal;
-	// Geo_MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
-	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
+	// MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
+	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
  	Output.HPos = mul(WorldPos, _ViewProj);
@@ -558,8 +559,8 @@ VS2PS_Hi_PerPixelPointLight Hi_PerPixelPointLight_VS(APP2VS_Shared_Default Input
 	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;
 
 	float YDelta, InterpVal;
-	// Geo_MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
-	Geo_MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
+	// MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
+	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
  	Output.HPos = mul(WorldPos, _ViewProj);
