@@ -54,32 +54,34 @@ float GetBinormalFlipping(APP2VS Input)
 	return 1.0 + IndexArray[2] * -2.0;
 }
 
-float3 SkinPosition(APP2VS Input)
+float3 SkinPosition(APP2VS Input, float4x3 BoneMats[2])
 {
-	float3 Vec0 = mul(Input.Pos, GetBoneMatrix(Input, 0));
-	float3 Vec1 = mul(Input.Pos, GetBoneMatrix(Input, 1));
+	float3 Vec0 = mul(Input.Pos, BoneMats[0]);
+	float3 Vec1 = mul(Input.Pos, BoneMats[1]);
 	return lerp(Vec1, Vec0, Input.BlendWeights);
 }
 
-float3 SkinNormal(APP2VS Input)
+float3 SkinNormal(APP2VS Input, float4x3 BoneMats[2])
 {
-	float3 Vec0 = mul(Input.Normal, GetBoneMatrix(Input, 0));
-	float3 Vec1 = mul(Input.Normal, GetBoneMatrix(Input, 1));
+	float3 Vec0 = mul(Input.Normal, (float3x3)BoneMats[0]);
+	float3 Vec1 = mul(Input.Normal, (float3x3)BoneMats[1]);
 	return lerp(Vec1, Vec0, Input.BlendWeights);
 }
 
-float3 SkinVecToObj(APP2VS Input, float3 Vec)
+float3 SkinVecToObj(APP2VS Input, float3 Vec, float4x3 BoneMats[2])
 {
-	float3 Vec0 = mul(Vec, transpose(GetBoneMatrix(Input, 0)));
-	float3 Vec1 = mul(Vec, transpose(GetBoneMatrix(Input, 1)));
+	// mul(mat, vec) == mul(vec, transpose(mat))
+	float3 Vec0 = mul(BoneMats[0], Vec);
+	float3 Vec1 = mul(BoneMats[1], Vec);
 	return lerp(Vec1, Vec0, Input.BlendWeights);
 }
 
-float3 SkinVecToTan(APP2VS Input, float3 Vec)
+float3 SkinVecToTan(APP2VS Input, float3 Vec, float4x3 BoneMats[2])
 {
-	float3x3 TanBasis = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
-	float3 Vec0 = mul(Vec, transpose(mul(TanBasis, GetBoneMatrix(Input, 0))));
-	float3 Vec1 = mul(Vec, transpose(mul(TanBasis, GetBoneMatrix(Input, 1))));
+	// mul(mat, vec) == mul(vec, transpose(mat))
+	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
+	float3 Vec0 = mul(mul(ObjectTBN, (float3x3)BoneMats[0]), Vec);
+	float3 Vec1 = mul(mul(ObjectTBN, (float3x3)BoneMats[1]), Vec);
 	return lerp(Vec1, Vec0, Input.BlendWeights);
 }
 
@@ -115,7 +117,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float3 VertexPos : TEXCOORD0;
+	float3 ObjectPos : TEXCOORD0;
 	float4 P_Tex0_GroundUV : TEXCOORD1; // .xy = Tex0; .zw = GroundUV;
 	float4 P_LightVec_OccShadow : TEXCOORD2; // .xyz = LightVec; .w = OccShadow;
 	float4 P_EyeVec_HemiLerp : TEXCOORD3; // .xyz = ViewVec; .w = HemiLerp;
@@ -129,9 +131,16 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
+	// Get bone matrices
+	float4x3 BoneMats[2] = 
+	{
+		GetBoneMatrix(Input, 0),
+		GetBoneMatrix(Input, 1),
+	};
+
 	// Get object-space properties
-	float4 ObjectPosition = float4(SkinPosition(Input), 1.0);
-	float3 ObjectNormal = normalize(SkinNormal(Input));
+	float4 ObjectPosition = float4(SkinPosition(Input, BoneMats), 1.0);
+	float3 ObjectNormal = normalize(SkinNormal(Input, BoneMats));
 	float3 ObjectLightVec = GetLightVec(Input);
 	float3 ObjectEyeVec = ObjectSpaceCamPos.xyz - ObjectPosition.xyz;
 
@@ -140,16 +149,15 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	float3 WorldNormal = normalize(mul(ObjectNormal, World));
 
 	// Output HPos
+	Output.ObjectPos = ObjectPosition.xyz;
 	Output.HPos = mul(ObjectPosition, WorldViewProjection);
 
-	Output.VertexPos = ObjectPosition.xyz;
-
 	#if _OBJSPACENORMALMAP_ // Do object-space bumped lighting
-		Output.P_LightVec_OccShadow.xyz = SkinVecToObj(Input, ObjectLightVec);
-		Output.P_EyeVec_HemiLerp.xyz = SkinVecToObj(Input, ObjectEyeVec);
+		Output.P_LightVec_OccShadow.xyz = SkinVecToObj(Input, ObjectLightVec, BoneMats);
+		Output.P_EyeVec_HemiLerp.xyz = SkinVecToObj(Input, ObjectEyeVec, BoneMats);
 	#else // Do tangent-space lighting
-		Output.P_LightVec_OccShadow.xyz = SkinVecToTan(Input, ObjectLightVec);
-		Output.P_EyeVec_HemiLerp.xyz = SkinVecToTan(Input, ObjectEyeVec);
+		Output.P_LightVec_OccShadow.xyz = SkinVecToTan(Input, ObjectLightVec, BoneMats);
+		Output.P_EyeVec_HemiLerp.xyz = SkinVecToTan(Input, ObjectEyeVec, BoneMats);
 	#endif
 
 	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
@@ -235,7 +243,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	}
 
 	#if !_POINTLIGHT_
-		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.ObjectPos.xyz, ObjectSpaceCamPos.xyz));
 	#endif
 
 	return OutColor;

@@ -1,15 +1,11 @@
 
 /*
-	Description: Third-party shader code
+	Third-party shader code
 	Author: [R-CON]papadanku
 */
 
 /*
-	Functions used:
-		- MATH_CONST_PI
-		- RemoveSRGBCurve()
-		- ApplySRGBCurve()
-	Source: https://github.com/microsoft/DirectX-Graphics-Samples
+	https://github.com/microsoft/DirectX-Graphics-Samples
 
 	The MIT License (MIT)
 
@@ -37,18 +33,12 @@
 #if !defined(REALITYGRAPHICS_FX)
 	#define REALITYGRAPHICS_FX
 
-	#define MATH_CONST_PI 3.1415926535897
-
 	/*
 		Shared depth functions
 	*/
 
-	/*
-		Description: Gets slope-scaled bias from depth
-		About: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
-		Source: https://learn.microsoft.com/en-us/windows/win32/direct3d9/depth-bias
-	*/
-
+	// Gets slope-scaled bias from depth
+	// Source: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
 	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.0001, uniform float Bias = -0.003)
 	{
 		float OutputDepth = Depth;
@@ -57,11 +47,8 @@
 		return OutputDepth + Bias;
 	}
 
-	/*
-		Description: Converts linear depth to logarithmic depth in the vertex shader
-		Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
-	*/
-
+	// Converts linear depth to logarithmic depth in the vertex shader
+	// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
 	float4 GetLogarithmicDepth(float4 HPos)
 	{
 		const float FarPlane = 1000.0;
@@ -88,15 +75,15 @@
 
 	/*
 		Shared lighting functions
-	*/
 
-	/*
-		Description: Gets orthogonal Tangent-Bitangent-Normal (TBN) matrix
-		Uses Gram–Schmidt process to re-orthogonalize Tangent
-		Source: https://en.wikipedia.org/wiki/Gram-Schmidt_process
+		Sources:
+		- GetTangentBasis(): https://en.wikipedia.org/wiki/Gram-Schmidt_process
+		- GetSpecular(): https://www.rorydriscoll.com/2009/01/25/energy-conservation-in-games/
+
 		License: https://creativecommons.org/licenses/by-sa/3.0/
 	*/
 
+	// Gets Orthonormal (TBN) matrix
 	float3x3 GetTangentBasis(float3 Tangent, float3 Normal, float Flip)
 	{
 		// Get Tangent and Normal
@@ -112,14 +99,13 @@
 		return float3x3(Tangent, BiNormal, Normal);
 	}
 
-	// Description: Gets Lambertian diffuse value
+	// Gets Lambertian diffuse value
 	float GetDiffuse(float3 NormalVec, float3 LightVec)
 	{
 		return saturate(dot(NormalVec, LightVec));
 	}
 
-	// Description: Gets normalized modified Blinn-Phong specular value
-	// Source: https://www.rorydriscoll.com/2009/01/25/energy-conservation-in-games/
+	// Gets normalized modified Blinn-Phong specular value
 	float GetSpecular(float CosAngle, float3 NormalVec, float3 HalfVec, uniform float N = 32.0)
 	{
 		float NFactor = (N + 8.0) / 8.0;
@@ -127,21 +113,9 @@
 		return NFactor * pow(abs(Specular), N) * CosAngle;
 	}
 
-	// Description: Gets radial light attenuation value for pointlights
+	// Gets radial light attenuation value for pointlights
 	float GetLightAttenuation(float3 LightVec, float Attenuation)
 	{
 		return saturate(1.0 - saturate(length(LightVec) * Attenuation));
-	}
-
-	/*
-		Description: Gets Schlick's approximation value
-		Source: https://en.wikipedia.org/wiki/Schlick%27s_approximation
-		License: https://creativecommons.org/licenses/by-sa/3.0/
-	*/
-
-	float GetSchlickApproximation(float3 NormalVec, float3 ViewVec, uniform float RefractiveIndex = 1.0)
-	{
-		float F0 = pow(RefractiveIndex - 1.0, 2.0) / pow(RefractiveIndex + 1.0, 2.0);
-		return F0 + (1.0 - F0) * pow(1.0 - dot(NormalVec, ViewVec), 5.0);
 	}
 #endif

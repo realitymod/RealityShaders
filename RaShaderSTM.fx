@@ -218,11 +218,11 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float3 ObjectTangent = normalize(Input.ObjectTangent);
 	float3 ObjectBiNormal = normalize(Input.ObjectBiNormal);
 	float3 ObjectNormal = normalize(Input.ObjectNormal);
-	float3x3 ObjI = transpose(float3x3(ObjectTangent, ObjectBiNormal, ObjectNormal));
+	float3x3 ObjectTBN = float3x3(ObjectTangent, ObjectBiNormal, ObjectNormal);
 
-	// Get tangent-space vectors
-	float3 LightVec = normalize(mul(GetLightVec(ObjectPos), ObjI));
-	float3 ViewVec = normalize(mul(ObjectSpaceCamPos - ObjectPos, ObjI));
+	// mul(mat, vec) == mul(vec, transpose(mat))
+	float3 LightVec = normalize(mul(ObjectTBN, GetLightVec(ObjectPos)));
+	float3 ViewVec = normalize(mul(ObjectTBN, ObjectSpaceCamPos - ObjectPos));
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	#if defined(USE_DETAIL)
@@ -286,11 +286,11 @@ technique defaultTechnique
 {
 	pass P0
 	{
-		ZFunc = LESS;
-
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
+
+		ZFunc = LESS;
 
 		#if _POINTLIGHT_
 			ZFunc = LESSEQUAL;
