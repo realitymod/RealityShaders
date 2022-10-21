@@ -104,10 +104,10 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 }
 
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
-float3 GetLightVec(APP2VS Input)
+float3 GetLightVec(float3 ObjectPos)
 {
 	#if _POINTLIGHT_
-		return Lights[0].pos - SkinPosition(Input);
+		return Lights[0].pos - ObjectPos;
 	#else
 		return -Lights[0].dir;
 	#endif
@@ -141,7 +141,7 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	// Get object-space properties
 	float4 ObjectPosition = float4(SkinPosition(Input, BoneMats), 1.0);
 	float3 ObjectNormal = normalize(SkinNormal(Input, BoneMats));
-	float3 ObjectLightVec = GetLightVec(Input);
+	float3 ObjectLightVec = GetLightVec(ObjectPosition.xyz);
 	float3 ObjectEyeVec = ObjectSpaceCamPos.xyz - ObjectPosition.xyz;
 
 	// Get world-space properties

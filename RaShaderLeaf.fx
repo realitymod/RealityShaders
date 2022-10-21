@@ -117,9 +117,9 @@ VS2PS Leaf_VS(APP2VS Input)
 
 	#if !defined(OVERGROWTH)
 		Input.Pos *= PosUnpack;
-		WindSpeed += WIND_ADD;
+		float Wind = WindSpeed + WIND_ADD;
 		float ObjRadii = ObjRadius + Input.Pos.y;
-		Input.Pos.xyz += sin((GlobalTime / ObjRadii) * WindSpeed) * ObjRadii * ObjRadii / LEAF_MOVEMENT;
+		Input.Pos.xyz += sin((GlobalTime / ObjRadii) * Wind) * ObjRadii * ObjRadii / LEAF_MOVEMENT;
 	#endif
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
@@ -146,7 +146,7 @@ VS2PS Leaf_VS(APP2VS Input)
 	float3 LightVec = Lights[0].pos.xyz - Input.Pos.xyz;
 
 	#if defined(_POINTLIGHT_)
-		float Diffuse = GetLambert(Input.Normal.xyz, normalize(LightVec));
+		float Diffuse = GetLambert(Input.Normal, normalize(LightVec));
 	#else
 		float Diffuse = saturate((dot(Input.Normal.xyz, -Lights[0].dir.xyz) + 0.6) / 1.4);
 	#endif
