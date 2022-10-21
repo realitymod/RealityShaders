@@ -95,7 +95,7 @@ float4 Decals_PS(VS2PS_Decals Input) : COLOR
 {
 	float4 DiffuseMap = tex2D(Sampler_0, Input.Tex0);
 	float3 Normals = normalize(Input.WorldNormal.xyz);
-	float3 Diffuse = GetDiffuse(Normals, -_SunDirection.xyz) * _SunColor;
+	float3 Diffuse = GetLambert(Normals, -_SunDirection.xyz) * _SunColor;
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
 	float4 OutputColor = DiffuseMap * float4(Lighting, Input.Color.a);
@@ -163,7 +163,7 @@ float4 ShadowedDecals_PS(VS2PS_ShadowedDecals Input) : COLOR
 	float DirShadow = 1.0;
 	float4 DiffuseMap = tex2D(Sampler_0, Input.Tex0);
 	float3 Normals = normalize(Input.WorldNormal.xyz);
-	float3 Diffuse = GetDiffuse(Normals, -_SunDirection.xyz) * _SunColor * DirShadow;
+	float3 Diffuse = GetLambert(Normals, -_SunDirection.xyz) * _SunColor * DirShadow;
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
 	float4 OutputColor = DiffuseMap * float4(Lighting, Input.Color.a);

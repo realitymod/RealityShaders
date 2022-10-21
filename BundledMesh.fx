@@ -186,8 +186,8 @@ float4 Lighting_PS(VS2PS_Specular Input) : COLOR
 
 	float Gloss = NormalMap.a;
 	float4 Ambient = float4(0.4, 0.4, 0.4, 1.0);
-	float Diffuse = GetDiffuse(NormalMap.xyz, TanLightVec);
-	float Specular = GetSpecular(Diffuse, NormalMap.xyz, TanHalfVec) * Gloss;
+	float4 Diffuse = GetLambert(NormalMap.xyz, TanLightVec);
+	float4 Specular = GetSpecular(NormalMap.xyz, TanHalfVec) * Gloss;
 
 	float4 Lighting = Ambient + Diffuse + Specular;
 	return saturate(DiffuseMap * Lighting);
@@ -259,7 +259,7 @@ float4 Diffuse_PS(VS2PS_Diffuse Input) : COLOR
 	float3 LightVec = normalize(ObjSpaceLightDir);
 
 	float4 DiffuseMap = tex2D(Sampler_Diffuse, Input.TexCoord);
-	float4 Diffuse = saturate(GetDiffuse(Normal, LightVec) + 0.8);
+	float4 Diffuse = saturate(GetLambert(Normal, LightVec) + 0.8);
 	Diffuse.a = 1.0;
 
 	return DiffuseMap * Diffuse;

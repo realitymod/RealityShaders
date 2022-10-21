@@ -88,7 +88,7 @@ float4 TrunkOG_PS(VS2PS Input) : COLOR
 {
 	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.Tex0.xy);
 	float3 Normals = normalize(Input.P_Normals_ScaleLN.xyz);
-	float Diffuse = GetDiffuse(Normals.xyz, -Lights[0].dir);
+	float Diffuse = GetLambert(Normals.xyz, -Lights[0].dir);
 
 	float ScaleLN = Input.P_Normals_ScaleLN.w;
 	float3 Color = (OverGrowthAmbient.rgb * ScaleLN);

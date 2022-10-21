@@ -98,7 +98,7 @@ Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
  	Output.Tex0.xy = (YPlaneTexCoord * _ColorLightTex.x) + _ColorLightTex.y;
  	Output.Tex6 = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
 
-	Output.Tex3.xy = YPlaneTexCoord.xy * _NearTexTiling.z;
+	Output.Tex3.xy = YPlaneTexCoord * _NearTexTiling.z;
  	Output.Tex5.xy = YPlaneTexCoord * _FarTexTiling.z;
 
 	#if HIGHTERRAIN

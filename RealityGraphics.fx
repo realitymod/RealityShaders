@@ -100,17 +100,17 @@
 	}
 
 	// Gets Lambertian diffuse value
-	float GetDiffuse(float3 NormalVec, float3 LightVec)
+	float GetLambert(float3 NormalVec, float3 LightVec)
 	{
 		return saturate(dot(NormalVec, LightVec));
 	}
 
 	// Gets normalized modified Blinn-Phong specular value
-	float GetSpecular(float CosAngle, float3 NormalVec, float3 HalfVec, uniform float N = 32.0)
+	float GetSpecular(float3 NormalVec, float3 HalfVec, uniform float N = 32.0)
 	{
 		float NFactor = (N + 8.0) / 8.0;
 		float Specular = saturate(dot(NormalVec, HalfVec));
-		return NFactor * pow(abs(Specular), N) * CosAngle;
+		return NFactor * pow(abs(Specular), N);
 	}
 
 	// Gets radial light attenuation value for pointlights

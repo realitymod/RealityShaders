@@ -308,7 +308,7 @@ float4 ApplySkin_PS(VS2PS_ApplySkin Input) : COLOR
 	float4 Diffuse = (DiffuseLight.r * DiffuseLight.b) * _SunColor;
 	float ShadowIntensity = saturate(DiffuseLight.g);
 	float CosAngle = saturate(dot(NormalMap.xyz, LightVec));
-	float Specular = GetSpecular(CosAngle, NormalMap.xyz, HalfVec) * DiffuseMap.a * pow(ShadowIntensity, 2.0);
+	float Specular = GetSpecular(NormalMap.xyz, HalfVec) * DiffuseMap.a * pow(ShadowIntensity, 2.0);
 
 	return (DiffuseMap * (Ambient + Diffuse)) + Specular;
 }

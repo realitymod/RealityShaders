@@ -269,8 +269,9 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss / 4.0);
 	#endif
 
-	float Diffuse = GetDiffuse(NormalVec, LightVec);
-	float Specular = GetSpecular(Diffuse, NormalVec, HalfVec) * Gloss;
+	float3 CosAngle = GetLambert(NormalVec, LightVec);
+	float3 Diffuse = CosAngle * Lights[0].color;
+	float3 Specular = (GetSpecular(NormalVec, HalfVec) * Gloss) * Lights[0].color;
 
 	#if _POINTLIGHT_
 		#if !_HASCOLORMAPGLOSS_
@@ -296,12 +297,11 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	// Prevents non-detailed bundledmesh from looking shiny
 	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
 	#if _HASCOLORMAPGLOSS_ || _HASNORMALMAP_
-		float3 Lighting = ((Diffuse + Specular) * Lights[0].color) * LightFactors;
-		OutputColor.rgb = DiffuseTex.rgb * ((Ambient + Lighting) * GI.rgb);
+		float3 Lighting = ((Diffuse + Specular) * CosAngle) * LightFactors;
 	#else
-		float3 Lighting = (Diffuse * Lights[0].color) * LightFactors;
-		OutputColor.rgb = DiffuseTex.rgb * ((Ambient + Lighting) * GI.rgb);
+		float3 Lighting = (Diffuse * CosAngle) * LightFactors;
 	#endif
+	OutputColor.rgb = DiffuseTex.rgb * ((Ambient + Lighting) * GI.rgb);
 
 	/*
 		Calculate fogging and other occluders
