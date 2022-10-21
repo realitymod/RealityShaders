@@ -94,9 +94,9 @@ float4 TrunkOG_PS(VS2PS Input) : COLOR
 	float3 Color = (OverGrowthAmbient.rgb * ScaleLN);
 	Color += ((Diffuse * ScaleLN) * (Lights[0].color * ScaleLN));
 
-	float4 OutputColor = float4((DiffuseMap.rgb * Color.rgb) * 2.0, Transparency.a);
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
-	return OutputColor;
+	float4 FinalColor = float4((DiffuseMap.rgb * Color.rgb) * 2.0, Transparency.a);
+	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+	return FinalColor;
 };
 
 technique defaultTechnique

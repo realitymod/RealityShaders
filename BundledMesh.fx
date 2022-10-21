@@ -319,9 +319,9 @@ float4 Alpha_PS(VS2PS_Alpha Input) : COLOR
 {
 	float4 DiffuseMap = tex2D(Sampler_0, Input.DiffuseTex);
 	float4 ProjLight = tex2Dproj(Sampler_1, Input.ProjTex);
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = (DiffuseMap.rgb * ProjLight.rgb) + ProjLight.a;
-	return OutputColor;
+	float4 OutColor = 0.0;
+	OutColor.rgb = (DiffuseMap.rgb * ProjLight.rgb) + ProjLight.a;
+	return OutColor;
 }
 
 /*

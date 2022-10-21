@@ -122,13 +122,13 @@ float4 Particle_Medium_PS(VS2PS_Particle Input) : COLOR
 {
 	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
 	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.DiffuseCoords.zw);
-	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
-	OutputColor.rgb *= GetParticleLighting(1.0, Input.AnimBFactorAndLMapIntOffset.b, Input.LightFactorAndAlphaBlend.a);
-	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.a *= Input.LightFactorAndAlphaBlend.b;
+	float4 Color = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
+	Color.rgb *= GetParticleLighting(1.0, Input.AnimBFactorAndLMapIntOffset.b, Input.LightFactorAndAlphaBlend.a);
+	Color.rgb *= Input.Color.rgb;
+	Color.a *= Input.LightFactorAndAlphaBlend.b;
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
-	return OutputColor;
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
+	return Color;
 }
 
 float4 Particle_High_PS(VS2PS_Particle Input) : COLOR
@@ -200,9 +200,10 @@ technique ParticleHigh
 
 float4 Particle_Show_Fill_PS(VS2PS_Particle Input) : COLOR
 {
-	float4 OutputColor = _EffectSunColor.rrrr;
-	OutputColor.rgb *= GetFogValue(Input.VertexPos, 0.0);
-	return OutputColor;
+	float4 OutColor = _EffectSunColor.rrrr;
+
+	OutColor.rgb *= GetFogValue(Input.VertexPos, 0.0);
+	return OutColor;
 }
 
 float4 Particle_Additive_Low_PS(VS2PS_Particle Input) : COLOR
@@ -221,13 +222,14 @@ float4 Particle_Additive_High_PS(VS2PS_Particle Input) : COLOR
 {
 	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
 	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.DiffuseCoords.zw);
-	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
-	OutputColor.rgb *= Input.Color.rgb;
-	// Mask with alpha since were doing an add
-	OutputColor.rgb *= OutputColor.a * Input.LightFactorAndAlphaBlend.b;
 
-	OutputColor.rgb *= GetFogValue(Input.VertexPos, 0.0);
-	return OutputColor;
+	float4 Color = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
+	Color.rgb *= Input.Color.rgb;
+	// Mask with alpha since were doing an add
+	Color.rgb *= Color.a * Input.LightFactorAndAlphaBlend.b;
+
+	Color.rgb *= GetFogValue(Input.VertexPos, 0.0);
+	return Color;
 }
 
 #define COMMON_RENDERSTATES_PARTICLE_ADDITIVE \

@@ -370,11 +370,11 @@ VS2PS_Grid Debug_Grid_VS(APP2VS Input)
 
 float4 Debug_Grid_PS(VS2PS_Grid Input) : COLOR
 {
+	float4 Output;
 	float4 Tex = tex2D(sampler0, Input.Tex);
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = Tex * Input.Diffuse;
-	OutputColor.a = (1.0 - Tex.b);// * Input.Diffuse.a;
-	return OutputColor;
+	Output.rgb = Tex * Input.Diffuse;
+	Output.a = (1.0 - Tex.b);// * Input.Diffuse.a;
+	return Output;
 }
 
 technique grid

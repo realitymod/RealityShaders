@@ -136,22 +136,23 @@ float4 Undergrowth_PS
 ) : COLOR
 {
 	float4 Base = tex2D(SampleColorMap, Input.P_Tex0_Tex1.xy);
+
 	float4 TerrainColor = (FogColor.r < 0.01) ? 0.333 : tex2D(SampleTerrainColorMap, Input.P_Tex0_Tex1.zw);
 	TerrainColor.rgb = lerp(TerrainColor.rgb, 1.0, Input.Color.a);
+
 	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.P_Tex0_Tex1.zw);
 	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(ShadowMapSampler, Input.TexShadow) : 1.0;
 
 	float3 PointColor = (PointLightEnable) ? Input.Color.rgb * 0.125 : 0.0;
 	float3 TerrainLight = (TerrainLightMap.y * _SunColor.rgb * TerrainShadow.rgb + PointColor) * 2.0 + (TerrainLightMap.z * _GIColor.rgb);
 
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight.rgb * 2.0;
-	OutputColor.a = Base.a * _Transparency_x8.a * 4.0;
-	OutputColor.a = OutputColor.a + OutputColor.a;
+	TerrainColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight.rgb * 2.0;
+	TerrainColor.a = Base.a * _Transparency_x8.a * 4.0;
+	TerrainColor.a = TerrainColor.a + TerrainColor.a;
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
+	TerrainColor.rgb = ApplyFog(TerrainColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 
-	return OutputColor;
+	return TerrainColor;
 }
 
 // { StreamNo, DataType, Usage, UsageIdx }
@@ -391,14 +392,14 @@ float4 Undergrowth_Simple_PS
 		LightColor = Base.rgb * Input.P_TerrainColor.rgb * 2.0;
 	}
 
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = (FogColor.r < 0.01) ? float3(lerp(0.43, 0.17, LightColor.b), 1.0, 0.0) : LightColor;
-	OutputColor.a = Base.a * _Transparency_x8.a * 4.0;
-	OutputColor.a = OutputColor.a + OutputColor.a;
+	float4 OutColor = 0.0;
+	OutColor.rgb = (FogColor.r < 0.01) ? float3(lerp(0.43, 0.17, LightColor.b), 1.0, 0.0) : LightColor;
+	OutColor.a = Base.a * _Transparency_x8.a * 4.0;
+	OutColor.a = OutColor.a + OutColor.a;
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
+	OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 
-	return OutputColor;
+	return OutColor;
 }
 
 // { StreamNo, DataType, Usage, UsageIdx }
@@ -605,10 +606,10 @@ VS2PS_ZOnly Undergrowth_ZOnly_VS(APP2VS Input)
 
 float4 Undergrowth_ZOnly_PS(VS2PS_ZOnly Input) : COLOR
 {
-	float4 OutputColor = tex2D(SampleColorMap, Input.Tex0);
-	OutputColor.a *= _Transparency_x8.a * 4.0;
-	OutputColor.a += OutputColor.a;
-	return OutputColor;
+	float4 Base = tex2D(SampleColorMap, Input.Tex0);
+	Base.a *= _Transparency_x8.a * 4.0;
+	Base.a += Base.a;
+	return Base;
 }
 
 // { StreamNo, DataType, Usage, UsageIdx }

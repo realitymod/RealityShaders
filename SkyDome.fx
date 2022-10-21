@@ -183,9 +183,9 @@ float4 SkyDome_DualClouds_PS(VS2PS_DualClouds Input) : COLOR
 	float4 Sky = tex2D(Texture_0_Sampler, Input.SkyCoord);
 	float4 Cloud1 = tex2D(Texture_1_Sampler, Input.CloudCoords.xy);
 	float4 Cloud2 = tex2D(Texture_2_Sampler, Input.CloudCoords.zw);
-	float4 Temp = Cloud1 * _CloudLerpFactors.x + Cloud2 * _CloudLerpFactors.y;
-	Temp *= Input.FadeOut;
-	return lerp(Sky, Temp, Temp.a);
+	float4 Tmp = Cloud1 * _CloudLerpFactors.x + Cloud2 * _CloudLerpFactors.y;
+	Tmp *= Input.FadeOut;
+	return lerp(Sky, Tmp, Tmp.a);
 }
 
 technique SkyDomeNV3xDualClouds
@@ -266,8 +266,8 @@ float4 SkyDome_SunFlare_PS(VS2PS_SkyDome Input) : COLOR
 {
 	// return 1.0;
 	// return float4(_FlareParams[0], 0.0, 0.0, 1.0);
-	float3 OutputColor = tex2D(Texture_0_Sampler, Input.UV_Sky_Cloud.xy).rgb * _FlareParams[0];
-	return float4(OutputColor, 1.0);
+	float3 Color = tex2D(Texture_0_Sampler, Input.UV_Sky_Cloud.xy).rgb * _FlareParams[0];
+	return float4(Color, 1.0);
 }
 
 float4 SkyDome_Flare_Occlude_PS(VS2PS_SkyDome Input) : COLOR

@@ -141,14 +141,14 @@ float4 Editor_Road_PS(VS2PS Input) : COLOR
 
 	#if defined(USE_DETAIL)
 		float4 Detail = tex2D(DetailMapSampler, Input.P_Tex0_Tex1.zw);
-		float4 OutputColor = Diffuse * Detail;
+		float4 Color = Diffuse * Detail;
 	#else
-		float4 OutputColor = Diffuse;
+		float4 Color = Diffuse;
 	#endif
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
-	OutputColor.a *= GetRoadZFade(Input.VertexPos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
-	return OutputColor;
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
+	Color.a *= GetRoadZFade(Input.VertexPos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
+	return Color;
 };
 
 technique defaultTechnique

@@ -62,11 +62,11 @@ VS2PS HPos_VS(APP2VS Input)
 
 float4 HPos_PS(VS2PS Input) : COLOR
 {
-	float4 OutputColor = tex2D(Sampler_0_Clamp, Input.TexCoord);
-	float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
-	OutputColor = dot(OutputColor, NoAlpha);
-	OutputColor.rgb = OutputColor.rgb * Input.Color;
-	return OutputColor;
+    float4 OutColor = tex2D(Sampler_0_Clamp, Input.TexCoord);
+    float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
+    OutColor = dot(OutColor, NoAlpha);
+    OutColor.rgb = OutColor.rgb * Input.Color;
+    return OutColor;
 }
 
 technique Text_States <bool Restore = true;>

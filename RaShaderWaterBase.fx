@@ -252,29 +252,29 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float Specular = saturate(dot(Reflection, -Lights[0].dir));
 	Specular = pow(abs(Specular), SpecularPower) * LightFactors;
 
-	float4 OutputColor = 0.0;
+	float4 FinalColor = 0.0;
 
 	#if defined(USE_SPECULAR)
-		OutputColor.rgb = WaterLerp + (Specular * SpecularColor.rgb);
+		FinalColor.rgb = WaterLerp + (Specular * SpecularColor.rgb);
 	#else
-		OutputColor.rgb = WaterLerp;
+		FinalColor.rgb = WaterLerp;
 	#endif
 
 	#if defined(USE_FRESNEL)
 		float Fresnel = BASE_TRANSPARENCY - pow(dot(ViewVec, TangentNormal2.xyz), POW_TRANSPARENCY);
-		OutputColor.a = LightMap.r * Fresnel + _WaterColor.w;
+		FinalColor.a = LightMap.r * Fresnel + _WaterColor.w;
 	#else
-		OutputColor.a = LightMap.r + _WaterColor.w;
+		FinalColor.a = LightMap.r + _WaterColor.w;
 	#endif
 
 	if (FogColor.r < 0.01)
 	{
-		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
+		FinalColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
-	return OutputColor;
+	return FinalColor;
 }
 
 technique defaultShader

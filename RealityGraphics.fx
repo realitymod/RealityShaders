@@ -39,7 +39,7 @@
 
 	// Gets slope-scaled bias from depth
 	// Source: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
-	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.0001, uniform float Bias = -0.003)
+	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.0001, uniform float Bias = -0.001)
 	{
 		float OutputDepth = Depth;
 		OutputDepth += (SlopeScaleBias * abs(ddx(Depth)));

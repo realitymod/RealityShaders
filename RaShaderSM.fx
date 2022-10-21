@@ -221,33 +221,33 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	float Gloss = NormalVec.a;
-	float3 CosAngle = GetLambert(NormalVec.xyz, LightVec);
+	float CosAngle = GetLambert(NormalVec.xyz, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
 	float3 Specular = GetSpecular(NormalVec.xyz, HalfVec) * Gloss * Lights[0].color;
 
 	float3 LightFactors = Attenuation * ShadowDir;
 	float3 Lighting = ((Diffuse + Specular) * CosAngle) * LightFactors;
 
-	float4 OutputColor = 1.0;
-	OutputColor.rgb = DiffuseTex.rgb * (Ambient + Lighting);
-	OutputColor.a = DiffuseTex.a * Transparency.a;
+	float4 OutColor = 1.0;
+	OutColor.rgb = DiffuseTex.rgb * (Ambient + Lighting);
+	OutColor.a = DiffuseTex.a * Transparency.a;
 
 	if (FogColor.r < 0.01)
 	{
 		#if _HASENVMAP_
 			// If EnvMap enabled, then should be hot on thermals
-			OutputColor.rgb = float3(lerp(0.6, 0.3, DiffuseTex.b), 1.0, 0.0); // M // 0.61, 0.25
+			OutColor.rgb = float3(lerp(0.6, 0.3, DiffuseTex.b), 1.0, 0.0); // M // 0.61, 0.25
 		#else
 			// Else cold
-			OutputColor.rgb = float3(lerp(0.43, 0.17, DiffuseTex.b), 1.0, 0.0);
+			OutColor.rgb = float3(lerp(0.43, 0.17, DiffuseTex.b), 1.0, 0.0);
 		#endif
 	}
 
 	#if !_POINTLIGHT_
-		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.ObjectPos.xyz, ObjectSpaceCamPos.xyz));
+		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.ObjectPos.xyz, ObjectSpaceCamPos.xyz));
 	#endif
 
-	return OutputColor;
+	return OutColor;
 }
 
 technique VariableTechnique

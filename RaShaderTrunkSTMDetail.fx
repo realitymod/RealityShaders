@@ -145,10 +145,10 @@ float4 TrunkSTMDetail_PS(VS2PS Input) : COLOR
 	#endif
 	Diffuse = saturate(OverGrowthAmbient.rgb + Diffuse);
 
-	float4 OutputColor = float4((DiffuseMap.rgb * Diffuse.rgb) * 2.0, Transparency.r * 2.0);
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+	float4 FinalColor = float4((DiffuseMap.rgb * Diffuse.rgb) * 2.0, Transparency.r * 2.0);
+	FinalColor.rgb = ApplyFog(FinalColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 
-	return OutputColor;
+	return FinalColor;
 };
 
 technique defaultTechnique

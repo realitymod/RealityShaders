@@ -176,8 +176,9 @@ VS2PS Nametag_Arrow_VS(APP2VS Input)
 
 float4 Nametag_Arrow_PS(VS2PS Input) : COLOR0
 {
-	float4 Tex0 = tex2D(Sampler_0, Input.TexCoord0);
-	return Tex0 * Input.Color0;
+	float4 Tx0 = tex2D(Sampler_0, Input.TexCoord0);
+	float4 Result = Tx0 * Input.Color0;
+	return Result;
 }
 
 technique nametag_arrow
@@ -321,9 +322,9 @@ VS2PS Nametag_Vehicle_Icons_VS(APP2VS Input)
 
 float4 Nametag_Vehicle_Icons_PS(VS2PS Input) : COLOR0
 {
-	float4 Tex0 = tex2D(Sampler_0, Input.TexCoord0);
-	float4 Tex1 = tex2D(Sampler_1, Input.TexCoord1);
-	return lerp(Tex0, Tex1, _CrossFadeValue) * Input.Color0;
+	float4 Tx0 = tex2D(Sampler_0, Input.TexCoord0);
+	float4 Tx1 = tex2D(Sampler_1, Input.TexCoord1);
+	return lerp(Tx0, Tx1, _CrossFadeValue) * Input.Color0;
 }
 
 technique nametag_vehicleIcons

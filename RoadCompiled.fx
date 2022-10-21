@@ -103,9 +103,9 @@ float4 RoadCompiled_PS(VS2PS Input) : COLOR
 	float4 Detail0 = tex2D(Detail_0_Sampler, Input.Tex_0_1.xy);
 	float4 Detail1 = tex2D(Detail_1_Sampler, Input.Tex_0_1.zw * 0.1);
 
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
-	OutputColor.a = Detail0.a * saturate(ZFade * Input.P_VertexPos_Alpha.w);
+	float4 Color = 0.0;
+	Color.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
+	Color.a = Detail0.a * saturate(ZFade * Input.P_VertexPos_Alpha.w);
 
 	float4 AccumLights = tex2Dproj(Lighting_Sampler, Input.PosTex);
 	float4 Light = 0.0;
@@ -114,17 +114,17 @@ float4 RoadCompiled_PS(VS2PS Input) : COLOR
 	{
 		// On thermals no shadows
 		Light = (_SunColor * 2.0 + AccumLights) * 2.0;
-		OutputColor.rgb *= Light.xyz;
-		OutputColor.g = clamp(OutputColor.g, 0.0, 0.5);
+		Color.rgb *= Light.xyz;
+		Color.g = clamp(Color.g, 0.0, 0.5);
 	}
 	else
 	{
 		Light = ((AccumLights.w * _SunColor * 2.0) + AccumLights) * 2.0;
-		OutputColor.rgb *= Light.xyz;
+		Color.rgb *= Light.xyz;
 	}
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.P_VertexPos_Alpha.xyz, _LocalEyePos.xyz));
-	return OutputColor;
+	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.P_VertexPos_Alpha.xyz, _LocalEyePos.xyz));
+	return Color;
 }
 
 struct VS2PS_Dx9
@@ -149,10 +149,10 @@ float4 RoadCompiled_Dx9_PS(VS2PS_Dx9 Input) : COLOR
 	float4 Detail0 = tex2D(Detail_0_Sampler, Input.Tex_0_1.xy);
 	float4 Detail1 = tex2D(Detail_1_Sampler, Input.Tex_0_1.zw);
 
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
-	OutputColor.a = Detail0.a * ZFade;
-	return OutputColor;
+	float4 Final = 0.0;
+	Final.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
+	Final.a = Detail0.a * ZFade;
+	return Final;
 }
 
 technique roadcompiledFull
