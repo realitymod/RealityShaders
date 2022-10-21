@@ -127,7 +127,7 @@ float2 GetParallax(float2 TexCoords, float3 ViewVec)
 	return TexCoords + (ViewVec.xy * Height * HARDCODED_PARALLAX_BIAS);
 }
 
-float4 GetCompositeDiffuse(VS2PS Input, float3 TanEyeVec, out float Gloss)
+float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float Gloss)
 {
 	float4 Diffuse = 0.0;
 	Gloss = StaticGloss;
@@ -170,7 +170,7 @@ float4 GetCompositeDiffuse(VS2PS Input, float3 TanEyeVec, out float Gloss)
 }
 
 // This also includes the composite Gloss map
-float3 GetCompositeNormals(VS2PS Input, float3 TanEyeVec)
+float3 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 {
 	float3 Normals = 0.0;
 
@@ -226,7 +226,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	#if defined(USE_DETAIL)
-		float3 Normals = normalize(GetCompositeNormals(Input, ViewVec));
+		float3 Normals = normalize(GetNormalMap(Input, ViewVec));
 	#else
 		float3 Normals = float3(0.0, 0.0, 1.0);
 	#endif
@@ -234,11 +234,11 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float4 OutputColor = 1.0;
 
 	float Gloss;
-	float4 DiffuseTex = GetCompositeDiffuse(Input, ViewVec, Gloss);
+	float4 DiffuseTex = GetDiffuseMap(Input, ViewVec, Gloss);
 
 	float3 CosAngle = GetLambert(Normals, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = (GetSpecular(Normals, HalfVec) * CosAngle) * (Gloss / 5.0)  * Lights[0].color;
+	float3 Specular = (GetSpecular(Normals, HalfVec) * CosAngle) * (Gloss / 5.0) * Lights[0].color;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
@@ -253,15 +253,15 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			// Pre-calc: Lightmap.b *= InvDot
 			float3 BumpedSky = Lightmap.b * dot(Normals, SkyNormal) * StaticSkyColor;
 			// tl: Jonas, disable once we know which materials are actually affected.
-			Diffuse = ((Diffuse * Lightmap.g) + BumpedSky) + Ambient;
+			Diffuse = Ambient + ((Diffuse * Lightmap.g) + BumpedSky);
 		#else
 			float DotLN = saturate(dot(Normals * 0.2, -Lights[0].dir));
-			float3 InvDot = saturate(saturate(1.0 - DotLN) * StaticSkyColor.rgb * SkyNormal.z);
+			float3 InvDot = saturate(saturate(1.0 - DotLN) * SkyNormal.z * StaticSkyColor);
 			#if _LIGHTMAP_
 				// Add ambient here as well to get correct ambient for surfaces parallel to the sun
 				float3 BumpedSky = InvDot * Lightmap.b;
 				float3 BumpedDiffuse = Diffuse + BumpedSky;
-				Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g) + Ambient;
+				Diffuse = Ambient + lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
 			#else
 				float3 BumpedSky = InvDot;
 				Diffuse = (Diffuse * Lightmap.g) + BumpedSky;

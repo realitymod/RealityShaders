@@ -1,3 +1,4 @@
+
 //
 /// SkinnedMesh MetaFx
 //
@@ -16,9 +17,7 @@ string GenerateStructs[] =
 	"InstanceParameters"
 };
 
-//
-// this is the common vertexElement members
-//
+// This is the common vertexElement members
 string reqVertexElementBase[] =
 {
 	"Position",
@@ -28,9 +27,7 @@ string reqVertexElementBase[] =
 	"TBase2D"
 };
 
-//
-// this is the common global parameters
-//
+// This is the common global parameters
 string GlobalParametersBase[] =
 {
 	"SpecularPower",
@@ -38,18 +35,14 @@ string GlobalParametersBase[] =
 	"FogColor",
 };
 
-//
-// this is the common template parameters
-//
+// This is the common template parameters
 string TemplateParametersBase[] =
 {
 	"DiffuseMap",
 	// "CubeMap", //Funky name!!!
 };
 
-//
-// this is the common instance parameters
-//
+// This is the common instance parameters
 string InstanceParametersBase[] =
 {
 	// "AlphaBlendEnable",
@@ -173,9 +166,7 @@ string GenerateShaderPermutations[] =
 	"_hasenvmap_|_usehemimap_",
 };
 
-//
-// for each shader in the permutation array, the following variants will be generated
-//
+// For each shader in the permutation array, the following variants will be generated
 string GenerateShaderModifiers[] =
 {
 	"_hasshadow_",

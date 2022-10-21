@@ -1,3 +1,4 @@
+
 //
 /// StaticMesh MetaFx - for PerPixel
 //
@@ -16,9 +17,7 @@ string GenerateStructs[] =
 	"InstanceParameters"
 };
 
-//
-// this is the common vertexElement members
-//
+// This is the common vertexElement members
 string reqVertexElementBase[] =
 {
 	"PositionPacked",
@@ -27,9 +26,7 @@ string reqVertexElementBase[] =
 	"TBasePacked2D"
 };
 
-//
-// this is the common global parameters
-//
+// This is the common global parameters
 string GlobalParametersBase[] =
 {
 	"StaticSkyColor",
@@ -39,9 +36,7 @@ string GlobalParametersBase[] =
 	"StaticGloss"
 };
 
-//
-// this is the common template parameters (none for this shader)
-//
+// This is the common template parameters (none for this shader)
 string TemplateParametersBase[] =
 {
 	"DiffuseMap",
@@ -50,9 +45,7 @@ string TemplateParametersBase[] =
 	"NormalUnpack"
 };
 
-//
-// this is the common instance parameters
-//
+// This is the common instance parameters
 string InstanceParametersBase[] =
 {
 	"WorldViewProjection",
@@ -82,7 +75,7 @@ const dword _base_ : LITERAL
 
 const dword _nbase_ : LITERAL
 <
-	// this is actually a duplicate...should be removed
+	// This is actually a duplicate...should be removed
 	string reqVertexElement[] =
 	{
 		"TBasePacked2D"
@@ -109,7 +102,7 @@ const dword _detail_ : LITERAL
 
 const dword _ndetail_ : LITERAL
 <
-	// this is actually a duplicate...should be removed
+	// This is actually a duplicate...should be removed
 	string reqVertexElement[] =
 	{
 		"TDetailPacked2D"
@@ -149,7 +142,7 @@ const dword _crack_ : LITERAL
 
 const dword _ncrack_ : LITERAL
 <
-	// this is actually a duplicate...should be removed
+	// This is actually a duplicate...should be removed
 	string reqVertexElement[] =
 	{
 		"TCrackPacked2D"
@@ -241,9 +234,7 @@ string GenerateShaderPermutations[] =
 	"_base_|_ndetail_|_parallaxdetail_"
 };
 
-//
-// for each shader in the permutation array, the following variants will be generated
-//
+// For each shader in the permutation array, the following variants will be generated
 string GenerateShaderModifiers[] =
 {
 	"_alphatest_",
@@ -258,9 +249,7 @@ string GenerateShaderModifiers[] =
 	"_lightmap_|_shadow_"
 };
 
-//
 // How should we handle fallbacks
-//
 string DeprecationList[] =
 {
 	{ "parallaxdetail", "" },

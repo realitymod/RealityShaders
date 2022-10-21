@@ -17,7 +17,7 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Col : COLOR;
+	float4 Color : COLOR0;
 };
 
 VS2PS Debug_Linegraph_VS(APP2VS Input)
@@ -31,13 +31,13 @@ VS2PS Debug_Linegraph_VS(APP2VS Input)
 	Output.HPos.xy = ScreenPos;
 	Output.HPos.z = 0.001;
 	Output.HPos.w = 1.0;
-	Output.Col = Input.Col;
+	Output.Color = Input.Col;
 	return Output;
 }
 
 float4 Debug_Linegraph_PS(VS2PS Input) : COLOR
 {
-	return Input.Col;
+	return Input.Color;
 }
 
 technique Graph <

@@ -143,12 +143,12 @@ VS2PS_Trail Trail_VS(APP2VS Input)
 
 float4 Trail_Low_PS(VS2PS_Trail Input) : COLOR
 {
-	float4 Color = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
-	Color.rgb *= Input.Color.rgb;
-	Color.a *= Input.LightFactorAndAlpha.b;
+	float4 OutputColor = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
+	OutputColor.rgb *= Input.Color.rgb;
+	OutputColor.a *= Input.LightFactorAndAlpha.b;
 
-	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
-	return Color;
+	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
+	return OutputColor;
 }
 
 technique TrailLow
@@ -180,13 +180,13 @@ float4 Trail_Medium_PS(VS2PS_Trail Input) : COLOR
 	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
 	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.DiffuseCoords.zw);
 
-	float4 Color = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.x);
-	Color.rgb *= Input.Color.rgb;
-	Color.rgb *= GetParticleLighting(1, Input.AnimBFactorAndLMapIntOffset.z, Input.LightFactorAndAlpha.a);
-	Color.a *= Input.LightFactorAndAlpha.b;
+	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.x);
+	OutputColor.rgb *= Input.Color.rgb;
+	OutputColor.rgb *= GetParticleLighting(1, Input.AnimBFactorAndLMapIntOffset.z, Input.LightFactorAndAlpha.a);
+	OutputColor.a *= Input.LightFactorAndAlpha.b;
 
-	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
-	return Color;
+	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
+	return OutputColor;
 }
 
 technique TrailMedium
@@ -219,13 +219,13 @@ float4 Trail_High_PS(VS2PS_Trail Input) : COLOR
 	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.DiffuseCoords.zw);
 	float4 TLUT = tex2D(LUT_Sampler, Input.HemiLUTCoord.xy);
 
-	float4 Color = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.x);
-	Color.rgb *= Input.Color.rgb;
-	Color.rgb *= GetParticleLighting(TLUT.a, Input.AnimBFactorAndLMapIntOffset.z, Input.LightFactorAndAlpha.a);
-	Color.a *= Input.LightFactorAndAlpha.b;
+	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.x);
+	OutputColor.rgb *= Input.Color.rgb;
+	OutputColor.rgb *= GetParticleLighting(TLUT.a, Input.AnimBFactorAndLMapIntOffset.z, Input.LightFactorAndAlpha.a);
+	OutputColor.a *= Input.LightFactorAndAlpha.b;
 
-	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
-	return Color;
+	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
+	return OutputColor;
 }
 
 technique TrailHigh
@@ -254,10 +254,9 @@ technique TrailHigh
 
 float4 Trail_Show_Fill_PS(VS2PS_Trail Input) : COLOR
 {
-	float4 Color = _EffectSunColor.rrrr;
-
-	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
-	return Color;
+	float4 OutputColor = _EffectSunColor.rrrr;
+	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
+	return OutputColor;
 }
 
 technique TrailShowFill

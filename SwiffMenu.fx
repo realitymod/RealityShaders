@@ -38,7 +38,7 @@ struct VS2PS_Shape
 	float4 Diffuse : COLOR0;
 };
 
-struct VS2PS_Shape_Texture
+struct VS2PS_ShapeTexture
 {
 	float4 HPos : POSITION;
 	float2 TexCoord : TEXCOORD0;
@@ -66,9 +66,9 @@ VS2PS_Shape Line_VS(float3 Position : POSITION)
 	return Output;
 }
 
-VS2PS_Shape_Texture Shape_Texture_VS(float3 Position : POSITION)
+VS2PS_ShapeTexture ShapeTexture_VS(float3 Position : POSITION)
 {
-	VS2PS_Shape_Texture Output = (VS2PS_Shape_Texture)0;
+	VS2PS_ShapeTexture Output = (VS2PS_ShapeTexture)0;
 
 	Output.HPos = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
 	Output.Diffuse = saturate(DiffuseColor);
@@ -81,24 +81,22 @@ VS2PS_Shape_Texture Shape_Texture_VS(float3 Position : POSITION)
 	return Output;
 }
 
-float4 Regular_Wrap_PS(VS2PS_Shape_Texture Input) : COLOR
+float4 RegularWrap_PS(VS2PS_ShapeTexture Input) : COLOR
 {
-	float4 Color = 0.0;
+	float4 OutputColor = 0.0;
 	float4 Tex = tex2D(Sampler_Wrap, Input.TexCoord);
-	// return Tex.aaaa;
-	Color.rgb = Tex * Input.Diffuse * Input.Selector + Input.Diffuse * (1.0 - Input.Selector);
-	Color.a = Tex.a * Input.Diffuse.a;
-	return Color;
+	OutputColor.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
+	OutputColor.a = Tex.a * Input.Diffuse.a;
+	return OutputColor;
 }
 
-float4 PSRegularClamp(VS2PS_Shape_Texture Input) : COLOR
+float4 RegularClamp_PS(VS2PS_ShapeTexture Input) : COLOR
 {
-	float4 Color = 0.0;
+	float4 OutputColor = 0.0;
 	float4 Tex = tex2D(Sampler_Clamp, Input.TexCoord);
-	// return Tex.aaaa + 1.0;
-	Color.rgb = Tex * Input.Diffuse * Input.Selector + Input.Diffuse * (1.0 - Input.Selector);
-	Color.a = Tex.a * Input.Diffuse.a;
-	return Color;
+	OutputColor.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
+	OutputColor.a = Tex.a * Input.Diffuse.a;
+	return OutputColor;
 }
 
 float4 Diffuse_PS(VS2PS_Shape Input) : COLOR
@@ -124,8 +122,8 @@ technique ShapeTextureWrap
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 Shape_Texture_VS();
-		PixelShader = compile ps_3_0 Regular_Wrap_PS();
+		VertexShader = compile vs_3_0 ShapeTexture_VS();
+		PixelShader = compile ps_3_0 RegularWrap_PS();
 	}
 }
 
@@ -133,8 +131,8 @@ technique ShapeTextureClamp
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 Shape_Texture_VS();
-		PixelShader  = compile ps_3_0 PSRegularClamp();
+		VertexShader = compile vs_3_0 ShapeTexture_VS();
+		PixelShader  = compile ps_3_0 RegularClamp_PS();
 	}
 }
 

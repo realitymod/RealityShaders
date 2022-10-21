@@ -136,11 +136,11 @@ float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 	float Darkness = max(4.0 * UV.x * UV.x - 4.0 * UV.x + 1.0, saturate((pow(2.5, UV.y) - UV.y / 2.0 - 1.0)));
 
 	// Weight the blurred version more heavily as you go lower on the screen
-	float4 FinalColor = lerp(Color, Blur, saturate(2.0 * (pow(4.0, UV.y) - UV.y - 1.0)));
+	float4 OutputColor = lerp(Color, Blur, saturate(2.0 * (pow(4.0, UV.y) - UV.y - 1.0)));
 
 	// Darken the left, right, and bottom edges of the final product
-	FinalColor = lerp(FinalColor, float4(0.0, 0.0, 0.0, 1.0), Darkness);
-	return float4(FinalColor.rgb, saturate(2.0 * _BackBufferLerpBias));
+	OutputColor = lerp(OutputColor, float4(0.0, 0.0, 0.0, 1.0), Darkness);
+	return float4(OutputColor.rgb, saturate(2.0 * _BackBufferLerpBias));
 }
 
 technique Tinnitus
@@ -429,11 +429,11 @@ float4 Flashbang_PS(VS2PS_Quad Input) : COLOR
 	float4 Sample2 = tex2D(Sampler_2_Bilinear, Input.TexCoord0);
 	float4 Sample3 = tex2D(Sampler_3_Bilinear, Input.TexCoord0);
 
-	float4 Accumulation = Sample0 * 0.5;
-	Accumulation += Sample1 * 0.25;
-	Accumulation += Sample2 * 0.15;
-	Accumulation += Sample3 * 0.10;
-	return float4(Accumulation.rgb, _BackBufferLerpBias);
+	float4 OutputColor = Sample0 * 0.5;
+	OutputColor += Sample1 * 0.25;
+	OutputColor += Sample2 * 0.15;
+	OutputColor += Sample3 * 0.10;
+	return float4(OutputColor.rgb, _BackBufferLerpBias);
 }
 
 technique Flashbang
