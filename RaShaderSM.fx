@@ -223,7 +223,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	float Gloss = NormalVec.a;
 	float CosAngle = GetLambert(NormalVec.xyz, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = GetSpecular(NormalVec.xyz, HalfVec) * Gloss * Lights[0].color;
+	float3 Specular = (GetSpecular(NormalVec.xyz, HalfVec) * Gloss) * Lights[0].color;
 
 	float3 LightFactors = Attenuation * ShadowDir;
 	float3 Lighting = ((Diffuse + Specular) * CosAngle) * LightFactors;

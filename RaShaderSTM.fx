@@ -33,9 +33,7 @@
 #endif
 
 #if (_NBASE_ || _NDETAIL_ || _NCRACK_ || _PARALLAXDETAIL_)
-	#define USE_DETAIL
-#else
-	#define _CRACK_ 0 // We do not allow Crack if we run on the non detailed path.
+	#define PERPIXEL
 #endif
 
 // common vars
@@ -127,10 +125,9 @@ float2 GetParallax(float2 TexCoords, float3 ViewVec)
 	return TexCoords + (ViewVec.xy * Height * HARDCODED_PARALLAX_BIAS);
 }
 
-float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float Gloss)
+float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec)
 {
 	float4 Diffuse = 0.0;
-	Gloss = StaticGloss;
 
 	#if _BASE_
 		Diffuse = tex2D(DiffuseMapSampler, Input.P_Base_Detail.xy);
@@ -145,10 +142,8 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float Gloss)
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
 		// tl: assumes base has .a = 1 (which should be the case)
-		// Diffuse.rgb *= Detail.rgb;
 		Diffuse *= Detail;
 		#if (!_ALPHATEST_)
-			Gloss = Detail.a;
 			Diffuse.a = Transparency.a;
 		#else
 			Diffuse.a *= Transparency.a;
@@ -170,9 +165,9 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float Gloss)
 }
 
 // This also includes the composite Gloss map
-float3 GetNormalMap(VS2PS Input, float3 TanEyeVec)
+float4 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 {
-	float3 Normals = 0.0;
+	float4 Normals = 0.0;
 
 	#if	_NBASE_
 		Normals = tex2D(NormalMapSampler, Input.P_Base_Detail.xy);
@@ -187,10 +182,12 @@ float3 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 	#if _NCRACK_
 		float4 CrackNormal = tex2D(CrackNormalMapSampler, Input.P_Dirt_Crack.zw);
 		float CrackMask = tex2D(CrackMapSampler, Input.P_Dirt_Crack.zw).a;
-		Normals = lerp(Normals, CrackNormal.rgb, CrackMask);
+		Normals.xyz = lerp(Normals.xyz, CrackNormal.xyz, CrackMask);
 	#endif
 
-	return Normals * 2.0 - 1.0;
+	Normals.xyz = normalize(Normals.xyz * 2.0 - 1.0);
+
+	return Normals;
 }
 
 float3 GetLightmap(VS2PS Input)
@@ -225,59 +222,43 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float3 ViewVec = normalize(mul(ObjectTBN, ObjectSpaceCamPos - ObjectPos));
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
-	#if defined(USE_DETAIL)
-		float3 Normals = normalize(GetNormalMap(Input, ViewVec));
+	// Directional light + Lightmap etc
+	float3 Lightmap = GetLightmap(Input);
+	float4 DiffuseMap = GetDiffuseMap(Input, ViewVec);
+
+	#if defined(PERPIXEL)
+		float4 Normals = GetNormalMap(Input, ViewVec);
 	#else
-		float3 Normals = float3(0.0, 0.0, 1.0);
+		float4 Normals = float4(0.0, 0.0, 1.0, StaticGloss);
+	#endif
+
+	#if (_DETAIL_ || _PARALLAXDETAIL_) && (!_ALPHATEST_)
+		float Gloss = DiffuseMap.a;
+	#else
+		float Gloss = Normals.a;
 	#endif
 
 	float4 OutputColor = 1.0;
 
-	float Gloss;
-	float4 DiffuseTex = GetDiffuseMap(Input, ViewVec, Gloss);
-
-	float3 CosAngle = GetLambert(Normals, LightVec);
+	float3 CosAngle = GetLambert(Normals.xyz, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = (GetSpecular(Normals, HalfVec) * CosAngle) * (Gloss / 5.0) * Lights[0].color;
+	float3 Specular = (GetSpecular(Normals.xyz, HalfVec) * (Gloss / 5.0)) * Lights[0].color;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
 		float3 Lighting = ((Diffuse + Specular) * CosAngle) * Attenuation;
-		OutputColor.rgb = (DiffuseTex.rgb * Lighting) * GetFogValue(ObjectPos, ObjectSpaceCamPos);
+		OutputColor.rgb = (DiffuseMap.rgb * Lighting) * GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
-		// Directional light + Lightmap etc
-		float3 Lightmap = GetLightmap(Input);
-		float3 Ambient = SinglePointColor * Lightmap.r;
-
-		#if defined(USE_DETAIL)
-			// Pre-calc: Lightmap.b *= InvDot
-			float3 BumpedSky = Lightmap.b * dot(Normals, SkyNormal) * StaticSkyColor;
-			// tl: Jonas, disable once we know which materials are actually affected.
-			Diffuse = Ambient + ((Diffuse * Lightmap.g) + BumpedSky);
-		#else
-			float DotLN = saturate(dot(Normals * 0.2, -Lights[0].dir));
-			float3 InvDot = saturate(saturate(1.0 - DotLN) * SkyNormal.z * StaticSkyColor);
-			#if _LIGHTMAP_
-				// Add ambient here as well to get correct ambient for surfaces parallel to the sun
-				float3 BumpedSky = InvDot * Lightmap.b;
-				float3 BumpedDiffuse = Diffuse + BumpedSky;
-				Diffuse = Ambient + lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
-			#else
-				float3 BumpedSky = InvDot;
-				Diffuse = (Diffuse * Lightmap.g) + BumpedSky;
-			#endif
-		#endif
-
-		Diffuse = Diffuse * 2.0;
-		Specular = Specular * Lightmap.g;
-		OutputColor.rgb = (DiffuseTex.rgb * Diffuse) + Specular;
+		float3 Ambient = saturate(dot(Normals.xyz, SkyNormal)) * StaticSkyColor;
+		float3 Lighting = ((Diffuse + Specular) * CosAngle) * Lightmap.g;
+		OutputColor.rgb = (DiffuseMap.rgb * ((Ambient * Lightmap.b) + Lighting)) * 2.0;
 	#endif
 
 	#if !_POINTLIGHT_
 		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
 	#endif
 
-	OutputColor.a = DiffuseTex.a;
+	OutputColor.a = DiffuseMap.a;
 
 	return OutputColor;
 };
