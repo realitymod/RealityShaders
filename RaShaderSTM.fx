@@ -167,7 +167,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec)
 // This also includes the composite Gloss map
 float4 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 {
-	float4 Normals = 0.0;
+	float4 Normals = float4(0.0, 0.0, 1.0, StaticGloss);
 
 	#if	_NBASE_
 		Normals = tex2D(NormalMapSampler, Input.P_Base_Detail.xy);
@@ -185,7 +185,9 @@ float4 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 		Normals.xyz = lerp(Normals.xyz, CrackNormal.xyz, CrackMask);
 	#endif
 
-	Normals.xyz = normalize(Normals.xyz * 2.0 - 1.0);
+	#if defined(PERPIXEL)
+		Normals.xyz = normalize(Normals.xyz * 2.0 - 1.0);
+	#endif
 
 	return Normals;
 }
@@ -223,30 +225,23 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	float4 DiffuseMap = GetDiffuseMap(Input, ViewVec);
-
-	#if defined(PERPIXEL)
-		float4 Normals = GetNormalMap(Input, ViewVec);
-	#else
-		float4 Normals = float4(0.0, 0.0, 1.0, 1.0);
-	#endif
+	float4 Normals = GetNormalMap(Input, ViewVec);
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_) && (!_ALPHATEST_)
 		float Gloss = DiffuseMap.a;
-	#elif defined(PERPIXEL)
-		float Gloss = Normals.a;
 	#else
-		float Gloss = StaticGloss;
+		float Gloss = Normals.a;
 	#endif
 
 	float4 OutputColor = 1.0;
 
-	float3 CosAngle = GetLambert(Normals, LightVec);
+	float3 CosAngle = GetLambert(Normals.xyz, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = (GetSpecular(Normals, HalfVec) * CosAngle) * (Gloss / 5.0) * Lights[0].color;
+	float3 Specular = (GetSpecular(Normals.xyz, HalfVec) * CosAngle) * (Gloss / 10.0) * Lights[0].color;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
-		float3 Lighting = ((Diffuse + Specular) * CosAngle) * Attenuation;
+		float3 Lighting = (Diffuse + Specular) * Attenuation;
 		OutputColor.rgb = (DiffuseMap.rgb * Lighting) * GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
@@ -255,11 +250,11 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 		#if defined(PERPIXEL)
 			// Pre-calc: Lightmap.b *= InvDot
-			float3 BumpedSky = (dot(Normals, SkyNormal) * StaticSkyColor) * Lightmap.b;
+			float3 BumpedSky = (dot(Normals.xyz, SkyNormal) * StaticSkyColor) * Lightmap.b;
 			// tl: Jonas, disable once we know which materials are actually affected.
 			Diffuse = Ambient + ((Diffuse * Lightmap.g) + BumpedSky);
 		#else
-			float DotLN = saturate(dot(Normals * 0.2, -Lights[0].dir));
+			float DotLN = saturate(dot(Normals.xyz * 0.2, -Lights[0].dir));
 			float3 InvDot = saturate((1.0 - DotLN) * StaticSkyColor * SkyNormal.z);
 			#if _LIGHTMAP_
 				// Add ambient here as well to get correct ambient for surfaces parallel to the sun

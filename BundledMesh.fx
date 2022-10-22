@@ -186,10 +186,10 @@ float4 Lighting_PS(VS2PS_Specular Input) : COLOR
 
 	float Gloss = NormalMap.a;
 	float4 Ambient = float4(0.4, 0.4, 0.4, 1.0);
-	float4 Diffuse = GetLambert(NormalMap.xyz, TanLightVec);
+	float4 CosAngle = GetLambert(NormalMap.xyz, TanLightVec);
 	float4 Specular = GetSpecular(NormalMap.xyz, TanHalfVec) * Gloss;
 
-	float4 Lighting = Ambient + Diffuse + Specular;
+	float4 Lighting = Ambient + ((CosAngle + Specular) * CosAngle);
 	return saturate(DiffuseMap * Lighting);
 }
 
