@@ -89,9 +89,6 @@ struct VS2PS_2TEX
 	float4 Color1 : COLOR1;
 };
 
-
-
-
 /*
 	Nametag shader
 */
@@ -147,9 +144,6 @@ technique nametag
 	}
 }
 
-
-
-
 /*
 	Nametag arrow shader
 */
@@ -176,9 +170,8 @@ VS2PS Nametag_Arrow_VS(APP2VS Input)
 
 float4 Nametag_Arrow_PS(VS2PS Input) : COLOR0
 {
-	float4 Tx0 = tex2D(Sampler_0, Input.TexCoord0);
-	float4 Result = Tx0 * Input.Color0;
-	return Result;
+	float4 Tex0 = tex2D(Sampler_0, Input.TexCoord0);
+	return Tex0 * Input.Color0;
 }
 
 technique nametag_arrow
@@ -208,9 +201,6 @@ technique nametag_arrow
 		PixelShader = compile ps_3_0 Nametag_Arrow_PS();
 	}
 }
-
-
-
 
 /*
 	Nametag healthbar shader
@@ -271,11 +261,8 @@ technique nametag_healthbar
 	}
 }
 
-
-
-
 /*
-	Nametag vecicle icon shader
+	Nametag vehicle icon shader
 */
 
 VS2PS Nametag_Vehicle_Icons_VS(APP2VS Input)
@@ -322,9 +309,9 @@ VS2PS Nametag_Vehicle_Icons_VS(APP2VS Input)
 
 float4 Nametag_Vehicle_Icons_PS(VS2PS Input) : COLOR0
 {
-	float4 Tx0 = tex2D(Sampler_0, Input.TexCoord0);
-	float4 Tx1 = tex2D(Sampler_1, Input.TexCoord1);
-	return lerp(Tx0, Tx1, _CrossFadeValue) * Input.Color0;
+	float4 Tex0 = tex2D(Sampler_0, Input.TexCoord0);
+	float4 Tex1 = tex2D(Sampler_1, Input.TexCoord1);
+	return lerp(Tex0, Tex1, _CrossFadeValue) * Input.Color0;
 }
 
 technique nametag_vehicleIcons
