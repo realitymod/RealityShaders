@@ -241,6 +241,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float4 OutputColor = 1.0;
 
 	float3 CosAngle = GetLambert(Normals.xyz, LightVec);
+	float3 Ambient = SinglePointColor * Lightmap.r;
 	float3 Diffuse = CosAngle * Lights[0].color;
 	float3 Specular = (GetSpecular(Normals.xyz, HalfVec) * (Gloss / 5.0)) * Lights[0].color;
 
@@ -249,9 +250,9 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 		float3 Lighting = ((Diffuse + Specular) * CosAngle) * Attenuation;
 		OutputColor.rgb = (DiffuseMap.rgb * Lighting) * GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
-		float3 Ambient = saturate(dot(Normals.xyz, SkyNormal)) * StaticSkyColor;
+		float3 SkyColor = (saturate(dot(Normals.xyz, SkyNormal)) * StaticSkyColor) * Lightmap.b;
 		float3 Lighting = ((Diffuse + Specular) * CosAngle) * Lightmap.g;
-		OutputColor.rgb = (DiffuseMap.rgb * ((Ambient * Lightmap.b) + Lighting)) * 2.0;
+		OutputColor.rgb = (DiffuseMap.rgb * (Ambient + SkyColor + Lighting)) * 2.0;
 	#endif
 
 	#if !_POINTLIGHT_
