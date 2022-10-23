@@ -299,7 +299,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#if _HASCOLORMAPGLOSS_ || _HASNORMALMAP_
 		float3 Lighting = ((Diffuse + Specular) * CosAngle) * LightFactors;
 	#else
-		float3 Lighting = (Diffuse * CosAngle) * LightFactors;
+		float3 Lighting = ((Diffuse + 0.0) * CosAngle) * LightFactors;
 	#endif
 	OutputColor.rgb = DiffuseTex.rgb * ((Ambient + Lighting) * GI.rgb);
 

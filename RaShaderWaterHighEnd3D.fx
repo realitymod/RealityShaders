@@ -1,5 +1,4 @@
 
-#define USE_SPECULAR
 #define USE_LIGHTMAP
 #define USE_3DTEXTURE
 #define USE_SHADOWS

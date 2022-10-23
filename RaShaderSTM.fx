@@ -125,9 +125,10 @@ float2 GetParallax(float2 TexCoords, float3 ViewVec)
 	return TexCoords + (ViewVec.xy * Height * HARDCODED_PARALLAX_BIAS);
 }
 
-float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec)
+float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 {
-	float4 Diffuse = 0.0;
+	float4 Diffuse = 1.0;
+	DiffuseGloss = StaticGloss;
 
 	#if _BASE_
 		Diffuse = tex2D(DiffuseMapSampler, Input.P_Base_Detail.xy);
@@ -143,6 +144,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec)
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
 		// tl: assumes base has .a = 1 (which should be the case)
 		Diffuse *= Detail;
+		DiffuseGloss = Detail.a;
 		#if (!_ALPHATEST_)
 			Diffuse.a = Transparency.a;
 		#else
@@ -167,7 +169,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec)
 // This also includes the composite Gloss map
 float4 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 {
-	float4 Normals = float4(0.0, 0.0, 1.0, StaticGloss);
+	float4 Normals = float4(0.0, 0.0, 1.0, 1.0);
 
 	#if	_NBASE_
 		Normals = tex2D(NormalMapSampler, Input.P_Base_Detail.xy);
@@ -182,7 +184,7 @@ float4 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 	#if _NCRACK_
 		float4 CrackNormal = tex2D(CrackNormalMapSampler, Input.P_Dirt_Crack.zw);
 		float CrackMask = tex2D(CrackMapSampler, Input.P_Dirt_Crack.zw).a;
-		Normals.xyz = lerp(Normals.xyz, CrackNormal.xyz, CrackMask);
+		Normals = lerp(Normals, CrackNormal, CrackMask);
 	#endif
 
 	#if defined(PERPIXEL)
@@ -224,20 +226,14 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float3 ViewVec = normalize(mul(ObjectTBN, ObjectSpaceCamPos - ObjectPos));
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
-	float4 DiffuseMap = GetDiffuseMap(Input, ViewVec);
-	float4 Normals = GetNormalMap(Input, ViewVec);
-
-	#if (_DETAIL_ || _PARALLAXDETAIL_) && (!_ALPHATEST_)
-		float Gloss = DiffuseMap.a;
-	#else
-		float Gloss = Normals.a;
-	#endif
-
 	float4 OutputColor = 1.0;
+	float Gloss;
+	float4 DiffuseMap = GetDiffuseMap(Input, ViewVec, Gloss);
+	float4 Normals = GetNormalMap(Input, ViewVec);
 
 	float3 CosAngle = GetLambert(Normals.xyz, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = (GetSpecular(Normals.xyz, HalfVec) * CosAngle) * (Gloss / 10.0) * Lights[0].color;
+	float3 Specular = (GetSpecular(Normals.xyz, HalfVec) * CosAngle) * (Gloss / 5.0) * Lights[0].color;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
@@ -254,7 +250,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			// tl: Jonas, disable once we know which materials are actually affected.
 			Diffuse = Ambient + ((Diffuse * Lightmap.g) + BumpedSky);
 		#else
-			float DotLN = saturate(dot(Normals.xyz * 0.2, -Lights[0].dir));
+			float DotLN = saturate(dot(Normals.xyz / 5.0, -Lights[0].dir));
 			float3 InvDot = saturate((1.0 - DotLN) * StaticSkyColor * SkyNormal.z);
 			#if _LIGHTMAP_
 				// Add ambient here as well to get correct ambient for surfaces parallel to the sun

@@ -222,9 +222,10 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	#endif
 
 	#if defined(TANGENTSPACE_NORMALS)
-		TangentNormal.rbg = normalize((TangentNormal.rgb * 2.0) - 1.0);
+		// We flip the Y and Z components because the water-plane faces at the Y direction in world-space
+		TangentNormal.xzy = normalize((TangentNormal.xyz * 2.0) - 1.0);
 	#else
-		TangentNormal.rgb = normalize((TangentNormal.rgb * 2.0) - 1.0);
+		TangentNormal.xyz = normalize((TangentNormal.xyz * 2.0) - 1.0);
 	#endif
 
 	#if defined(USE_FRESNEL)
@@ -236,29 +237,29 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	#endif
 
 	float3 WorldPos = Input.WorldPos;
+	float3 LightVec = normalize(-Lights[0].dir);
 	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
-	float3 Reflection = normalize(reflect(-ViewVec, TangentNormal));
-	float3 EnvColor = texCUBE(CubeMapSampler, Reflection);
+	float3 HalfVec = normalize(LightVec + ViewVec);
 
-	float ShadFac = LightMap.g;
+	float3 Reflection = normalize(reflect(ViewVec, TangentNormal));
+	float3 EnvColor = texCUBE(CubeMapSampler, -Reflection);
+
+	float ShadowFactor = LightMap.g;
 	#if defined(USE_SHADOWS)
-		ShadFac *= GetShadowFactor(ShadowMapSampler, Input.TexShadow);
+		ShadowFactor *= GetShadowFactor(ShadowMapSampler, Input.TexShadow);
 	#endif
 
-	float LerpMod = -(1.0 - saturate(ShadFac + SHADOW_FACTOR));
+	float LerpMod = -(1.0 - saturate(ShadowFactor + SHADOW_FACTOR));
 	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 
-	float LightFactors = SpecularColor.a * ShadFac;
-	float Specular = saturate(dot(Reflection, -Lights[0].dir));
-	Specular = pow(abs(Specular), SpecularPower) * LightFactors;
+	float LightFactors = SpecularColor.a * ShadowFactor;
+	float3 CosAngle = GetLambert(TangentNormal, LightVec);
+	float3 Diffuse = CosAngle * Lights[0].color;
+	float3 Specular = GetSpecular(TangentNormal, HalfVec) * SpecularColor.rgb;
 
 	float4 OutputColor = 0.0;
-
-	#if defined(USE_SPECULAR)
-		OutputColor.rgb = WaterLerp + (Specular * SpecularColor.rgb);
-	#else
-		OutputColor.rgb = WaterLerp;
-	#endif
+	float3 Lighting = ((Diffuse + Specular) * CosAngle) * LightFactors;
+	OutputColor.rgb = WaterLerp + Lighting;
 
 	#if defined(USE_FRESNEL)
 		float Fresnel = BASE_TRANSPARENCY - pow(dot(ViewVec, TangentNormal2.xyz), POW_TRANSPARENCY);
