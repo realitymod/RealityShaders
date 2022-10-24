@@ -140,7 +140,6 @@ VS2PS_ShadowedDecals ShadowedDecals_VS(APP2VS Input)
 	Output.Color.a = saturate(Alpha * Output.Color.a);
 
 	Output.ShadowTex = mul(float4(WorldPos, 1.0), _ShadowTransformations[Index]);
-	Output.ShadowTex.z -= 0.007;
 	Output.ViewPortMap = _ShadowViewPortMaps[Index];
 
 	return Output;

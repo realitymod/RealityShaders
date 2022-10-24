@@ -146,8 +146,7 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared_Default Input)
 
 float4 Shared_PointLight_PS(VS2PS_Shared_PointLight Input) : COLOR
 {
-	float3 WorldNormal = normalize(Input.WorldNormal);
-	return saturate(float4(GetTerrainLighting(Input.WorldPos, WorldNormal), 0.0)) * 0.5;
+	return saturate(float4(GetTerrainLighting(Input.WorldPos, Input.WorldNormal), 0.0)) * 0.5;
 }
 
 /*

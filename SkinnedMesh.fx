@@ -208,7 +208,6 @@ VS2PS_ShadowedPreSkin ShadowedPreSkin_VS(APP2VS Input, uniform int NumBones)
 	Output.ViewVec = normalize(_ObjectEyePos.xyz - Skin.Pos);
 
 	Output.ShadowTex = mul(float4(Skin.Pos, 1.0), _LightViewProj);
-	Output.ShadowTex.z -= 0.007;
 
 	return Output;
 }

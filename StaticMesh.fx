@@ -167,10 +167,10 @@ struct VS2PS_ShadowMap
 
 float4 GetShadowProjCoords(float4 Pos)
 {
- 	float4 shadowcoords = mul(Pos, _LightTrapezMat);
- 	float2 lightZW = mul(Pos, _LightMat).zw;
-	shadowcoords.z = (lightZW.x*shadowcoords.w) / lightZW.y; // (zL*wT)/wL == zL/wL post homo
-	return shadowcoords;
+ 	float4 ShadowCoords = mul(Pos, _LightTrapezMat);
+ 	float2 LightZW = mul(Pos, _LightMat).zw;
+	ShadowCoords.z = (LightZW.x * ShadowCoords.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
+	return ShadowCoords;
 }
 
 VS2PS_ShadowMap ShadowMap_VS(APP2VS_ShadowMap Input)
@@ -218,7 +218,7 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap_Alpha Input) : COLOR
 		return Alpha;
 	#else
 		clip(Alpha.a - AlphaRef);
-		return Input.PosZW.x/Input.PosZW.y;
+		return Input.PosZW.x / Input.PosZW.y;
 	#endif
 }
 

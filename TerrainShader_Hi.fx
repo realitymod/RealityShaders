@@ -576,7 +576,7 @@ VS2PS_Hi_PerPixelPointLight Hi_PerPixelPointLight_VS(APP2VS_Shared_Default Input
 
 float4 Hi_PerPixelPointLight_PS(VS2PS_Hi_PerPixelPointLight Input) : COLOR
 {
-	return float4(GetTerrainLighting(Input.WorldPos, normalize(Input.Normal)), 0) * 0.5;
+	return float4(GetTerrainLighting(Input.WorldPos, Input.Normal), 0) * 0.5;
 }
 
 float4 Hi_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input) : COLOR

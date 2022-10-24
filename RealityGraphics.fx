@@ -93,7 +93,7 @@
 		// Re-orthogonalize Tangent with respect to Normal
 		Tangent = normalize(Tangent - (Normal * dot(Tangent, Normal)));
 
-		// Cross product * flip to create BiNormal
+		// Cross product and flip to create BiNormal
 		float3 BiNormal = normalize(cross(Tangent, Normal)) * Flip;
 
 		return float3x3(Tangent, BiNormal, Normal);
@@ -116,6 +116,6 @@
 	// Gets radial light attenuation value for pointlights
 	float GetLightAttenuation(float3 LightVec, float Attenuation)
 	{
-		return saturate(1.0 - saturate(length(LightVec) * Attenuation));
+		return saturate(1.0 - (length(LightVec) * Attenuation));
 	}
 #endif

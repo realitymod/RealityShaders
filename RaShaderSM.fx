@@ -47,42 +47,18 @@ float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 	return MatBones[IndexArray[Bone]];
 }
 
+float4x3 GetSkinnedObjectMatrix(APP2VS Input)
+{
+	float4x3 BoneMatrix0 = GetBoneMatrix(Input, 0);
+	float4x3 BoneMatrix1 = GetBoneMatrix(Input, 1);
+	return lerp(BoneMatrix1, BoneMatrix0, Input.BlendWeights);
+}
+
 float GetBinormalFlipping(APP2VS Input)
 {
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
 	return 1.0 + IndexArray[2] * -2.0;
-}
-
-float3 SkinPosition(APP2VS Input, float4x3 BoneMats[2])
-{
-	float3 Vec0 = mul(Input.Pos, BoneMats[0]);
-	float3 Vec1 = mul(Input.Pos, BoneMats[1]);
-	return lerp(Vec1, Vec0, Input.BlendWeights);
-}
-
-float3 SkinNormal(APP2VS Input, float4x3 BoneMats[2])
-{
-	float3 Vec0 = mul(Input.Normal, (float3x3)BoneMats[0]);
-	float3 Vec1 = mul(Input.Normal, (float3x3)BoneMats[1]);
-	return lerp(Vec1, Vec0, Input.BlendWeights);
-}
-
-float3 SkinVecToObj(APP2VS Input, float3 Vec, float4x3 BoneMats[2])
-{
-	// mul(mat, vec) == mul(vec, transpose(mat))
-	float3 Vec0 = mul(BoneMats[0], Vec);
-	float3 Vec1 = mul(BoneMats[1], Vec);
-	return lerp(Vec1, Vec0, Input.BlendWeights);
-}
-
-float3 SkinVecToTan(APP2VS Input, float3 Vec, float4x3 BoneMats[2])
-{
-	// mul(mat, vec) == mul(vec, transpose(mat))
-	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
-	float3 Vec0 = mul(mul(ObjectTBN, (float3x3)BoneMats[0]), Vec);
-	float3 Vec1 = mul(mul(ObjectTBN, (float3x3)BoneMats[1]), Vec);
-	return lerp(Vec1, Vec0, Input.BlendWeights);
 }
 
 float2 GetGroundUV(float3 WorldPos, float3 WorldNormal)
@@ -103,6 +79,68 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 	return clamp((WorldNormal.y + Offset) * 0.5 + 0.5, 0.0, 0.9);
 }
 
+struct VS2PS
+{
+	float4 HPos : POSITION;
+
+	float4 P_ObjectPos_Lerp : TEXCOORD0; // .xyz = ObjectPos; .w = HemiLerp[]
+	float4 P_Tex0_GroundUV : TEXCOORD1; // .xy = Tex0; .zw = GroundUV;
+	float3 Tangent : TEXCOORD2;
+	float3 BiNormal : TEXCOORD3;
+	float3 Normal : TEXCOORD4;
+	float4 ShadowTex : TEXCOORD5;
+	float4 OccShadowTex : TEXCOORD6;
+};
+
+VS2PS SkinnedMesh_VS(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
+
+	// Get object-space properties
+	float4 ObjectPosition = Input.Pos;
+	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
+
+	// Get skinned object-space properties
+	float4x3 SkinnedObjectMatrix = GetSkinnedObjectMatrix(Input);
+	float4 SkinnedObjectPosition = float4(mul(ObjectPosition, SkinnedObjectMatrix), 1.0);
+	float3x3 SkinnedObjectTBN = mul(ObjectTBN, (float3x3)SkinnedObjectMatrix);
+
+	// Get world-space properties
+	float4 WorldPos = mul(SkinnedObjectPosition, World);
+	float3 WorldNormal = normalize(mul(SkinnedObjectTBN[2], World));
+
+	#if _OBJSPACENORMALMAP_ // (Object Space) -> (Skinned Object Space)
+		Output.Tangent = SkinnedObjectMatrix[0].xyz;
+		Output.BiNormal = SkinnedObjectMatrix[1].xyz;
+		Output.Normal = SkinnedObjectMatrix[2].xyz;
+	#else // (Tangent Space) -> (Skinned Object Space)
+		Output.Tangent = SkinnedObjectTBN[0].xyz;
+		Output.BiNormal = SkinnedObjectTBN[1].xyz;
+		Output.Normal = SkinnedObjectTBN[2].xyz;
+	#endif
+	
+	// Output HPos
+	Output.HPos = mul(SkinnedObjectPosition, WorldViewProjection);
+
+	Output.P_ObjectPos_Lerp.xyz = SkinnedObjectPosition.xyz;
+	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
+
+	#if _USEHEMIMAP_
+		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos.xyz, WorldNormal);
+		Output.P_ObjectPos_Lerp.w = GetHemiLerp(WorldPos.xyz, WorldNormal);
+	#endif
+
+	#if _HASSHADOW_
+		Output.ShadowTex = GetShadowProjection(WorldPos);
+	#endif
+
+	#if _HASSHADOWOCCLUSION_
+		Output.OccShadowTex = GetShadowProjection(WorldPos, true);
+	#endif
+
+	return Output;
+}
+
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
 float3 GetLightVec(float3 ObjectPos)
 {
@@ -113,101 +151,43 @@ float3 GetLightVec(float3 ObjectPos)
 	#endif
 }
 
-struct VS2PS
-{
-	float4 HPos : POSITION;
-
-	float3 ObjectPos : TEXCOORD0;
-	float4 P_Tex0_GroundUV : TEXCOORD1; // .xy = Tex0; .zw = GroundUV;
-	float4 P_LightVec_OccShadow : TEXCOORD2; // .xyz = LightVec; .w = OccShadow;
-	float4 P_EyeVec_HemiLerp : TEXCOORD3; // .xyz = ViewVec; .w = HemiLerp;
-
-	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
-		float4 ShadowMat : TEXCOORD4;
-	#endif
-};
-
-VS2PS SkinnedMesh_VS(APP2VS Input)
-{
-	VS2PS Output = (VS2PS)0;
-
-	// Get bone matrices
-	float4x3 BoneMats[2] = 
-	{
-		GetBoneMatrix(Input, 0),
-		GetBoneMatrix(Input, 1),
-	};
-
-	// Get object-space properties
-	float4 ObjectPosition = float4(SkinPosition(Input, BoneMats), 1.0);
-	float3 ObjectNormal = normalize(SkinNormal(Input, BoneMats));
-	float3 ObjectLightVec = GetLightVec(ObjectPosition.xyz);
-	float3 ObjectEyeVec = ObjectSpaceCamPos.xyz - ObjectPosition.xyz;
-
-	// Get world-space properties
-	float4 WorldPos = mul(ObjectPosition, World);
-	float3 WorldNormal = normalize(mul(ObjectNormal, World));
-
-	// Output HPos
-	Output.ObjectPos = ObjectPosition.xyz;
-	Output.HPos = mul(ObjectPosition, WorldViewProjection);
-
-	#if _OBJSPACENORMALMAP_ // Do object-space bumped lighting
-		Output.P_LightVec_OccShadow.xyz = SkinVecToObj(Input, ObjectLightVec, BoneMats);
-		Output.P_EyeVec_HemiLerp.xyz = SkinVecToObj(Input, ObjectEyeVec, BoneMats);
-	#else // Do tangent-space lighting
-		Output.P_LightVec_OccShadow.xyz = SkinVecToTan(Input, ObjectLightVec, BoneMats);
-		Output.P_EyeVec_HemiLerp.xyz = SkinVecToTan(Input, ObjectEyeVec, BoneMats);
-	#endif
-
-	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
-
-	#if _USEHEMIMAP_
-		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, WorldNormal);
-		Output.P_EyeVec_HemiLerp.w = GetHemiLerp(WorldPos, WorldNormal);
-	#endif
-
-	#if _HASSHADOWOCCLUSION_
-		Output.P_LightVec_OccShadow.w = GetShadowProjection(WorldPos, true).z;
-	#endif
-
-	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
-		Output.ShadowMat = GetShadowProjection(WorldPos);
-	#endif
-
-	return Output;
-}
-
 float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 {
-	float3 LightVec = normalize(Input.P_LightVec_OccShadow.xyz);
-	float3 ViewVec = normalize(Input.P_EyeVec_HemiLerp.xyz);
+	float3x3 ObjectTBN;
+	ObjectTBN[0] = normalize(Input.Tangent);
+	ObjectTBN[1] = normalize(Input.BiNormal);
+	ObjectTBN[2] = normalize(Input.Normal);
+
+	// mul(mat, vec) ==	mul(vec, transpose(mat))
+	float3 ObjectPos = normalize(Input.P_ObjectPos_Lerp.xyz);
+	float3 LightVec = normalize(mul(ObjectTBN, GetLightVec(ObjectPos)));
+	float3 ViewVec = normalize(mul(ObjectTBN, ObjectSpaceCamPos.xyz - ObjectPos.xyz));
 	float3 HalfVec = normalize(LightVec + ViewVec);
-	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
 
 	#if _HASNORMALMAP_
 		float4 NormalVec = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
 		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
 	#else
-		float4 NormalVec = float4(0.0, 0.0, 1.0, 0.1);
+		float4 NormalVec = float4(0.0, 0.0, 1.0, 0.15);
 	#endif
 
+	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
+
 	#if _HASSHADOW_
-		float ShadowDir = GetShadowFactor(ShadowMapSampler, Input.ShadowMat);
+		float ShadowDir = GetShadowFactor(ShadowMapSampler, Input.ShadowTex);
 	#else
 		float ShadowDir = 1.0;
 	#endif
 
 	#if _HASSHADOWOCCLUSION_
-		float4 ShadowOccMat = Input.ShadowMat;
-		ShadowOccMat.z = Input.P_LightVec_OccShadow.w;
-		float OccShadowDir = GetShadowFactor(ShadowOccluderMapSampler, ShadowOccMat);
-		ShadowDir *= OccShadowDir;
+		float OccShadowDir = GetShadowFactor(ShadowOccluderMapSampler, Input.OccShadowTex);
+	#else
+		float OccShadowDir = 1.0;
 	#endif
 
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
-		float HemiLerp = Input.P_EyeVec_HemiLerp.w;
+		float HemiLerp = Input.P_ObjectPos_Lerp.w;
 		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
 		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 	#else
@@ -215,7 +195,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _POINTLIGHT_
-		float Attenuation = GetLightAttenuation(Input.P_LightVec_OccShadow.xyz, Lights[0].attenuation);
+		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
 	#else
 		const float Attenuation = 1.0;
 	#endif
@@ -225,18 +205,17 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	float3 Diffuse = CosAngle * Lights[0].color;
 	float3 Specular = (GetSpecular(NormalVec.xyz, HalfVec) * Gloss) * Lights[0].color;
 
-	float3 LightFactors = Attenuation * ShadowDir;
+	float3 LightFactors = Attenuation * (ShadowDir * OccShadowDir);
 	float3 Lighting = ((Diffuse + Specular) * CosAngle) * LightFactors;
 
 	float4 OutColor = 1.0;
 	OutColor.rgb = DiffuseTex.rgb * (Ambient + Lighting);
-	OutColor.a = DiffuseTex.a * Transparency.a;
 
 	if (FogColor.r < 0.01)
 	{
 		#if _HASENVMAP_
 			// If EnvMap enabled, then should be hot on thermals
-			OutColor.rgb = float3(lerp(0.6, 0.3, DiffuseTex.b), 1.0, 0.0); // M // 0.61, 0.25
+			OutColor.rgb = float3(lerp(0.60, 0.30, DiffuseTex.b), 1.0, 0.0); // M // 0.61, 0.25
 		#else
 			// Else cold
 			OutColor.rgb = float3(lerp(0.43, 0.17, DiffuseTex.b), 1.0, 0.0);
@@ -244,8 +223,10 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	}
 
 	#if !_POINTLIGHT_
-		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.ObjectPos.xyz, ObjectSpaceCamPos.xyz));
+		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
 	#endif
+
+	OutColor.a = DiffuseTex.a * Transparency.a;
 
 	return OutColor;
 }

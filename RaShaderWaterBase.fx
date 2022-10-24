@@ -241,8 +241,8 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
-	float3 Reflection = normalize(reflect(ViewVec, TangentNormal));
-	float3 EnvColor = texCUBE(CubeMapSampler, -Reflection);
+	float3 Reflection = normalize(reflect(-ViewVec, TangentNormal));
+	float3 EnvColor = texCUBE(CubeMapSampler, Reflection);
 
 	float ShadowFactor = LightMap.g;
 	#if defined(USE_SHADOWS)

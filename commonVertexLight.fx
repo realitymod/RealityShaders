@@ -13,6 +13,8 @@
 		float3 col;
 	};
 
+	PointLightData _PointLight : POINTLIGHT;
+
 	struct SpotLightData
 	{
 		float3 pos;
@@ -23,7 +25,6 @@
 		float oneminusconeAngle;
 	};
 
-	PointLightData _PointLight : POINTLIGHT;
 	SpotLightData _SpotLight : SPOTLIGHT;
 
 	float4 _LightPosAndAttSqrInv : LightPositionAndAttSqrInv;
@@ -32,11 +33,11 @@
 	float3 GetTerrainLighting(float3 WorldPos, float3 WorldNormal)
 	{
 		float3 LightVec = _PointLight.pos - WorldPos;
-		float RadialAtt = saturate(1.0 - (length(LightVec) * _PointLight.attSqrInv));
+		float Attenuation = GetLightAttenuation(LightVec, _PointLight.attSqrInv);
 
 		LightVec = normalize(LightVec);
-
-		float Intensity = dot(LightVec, WorldNormal) * RadialAtt;
-		return Intensity * _PointLight.col;
+		float3 Normal = normalize(WorldNormal);
+		float3 CosAngle = dot(Normal, LightVec);
+		return (CosAngle * _PointLight.col) * Attenuation;
 	}
 #endif
