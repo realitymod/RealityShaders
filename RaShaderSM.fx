@@ -49,9 +49,10 @@ float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 
 float4x3 GetSkinnedObjectMatrix(APP2VS Input)
 {
-	float4x3 BoneMatrix0 = GetBoneMatrix(Input, 0);
-	float4x3 BoneMatrix1 = GetBoneMatrix(Input, 1);
-	return lerp(BoneMatrix1, BoneMatrix0, Input.BlendWeights);
+	float4x3 BoneMatrix = (float4x3)0;
+	BoneMatrix += (GetBoneMatrix(Input, 0) * (Input.BlendWeights));
+	BoneMatrix += (GetBoneMatrix(Input, 1) * (1.0 - Input.BlendWeights));
+	return BoneMatrix;
 }
 
 float GetBinormalFlipping(APP2VS Input)
