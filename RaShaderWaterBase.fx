@@ -258,7 +258,7 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float3 Specular = GetSpecular(TangentNormal, HalfVec) * SpecularColor.rgb;
 
 	float4 OutputColor = 0.0;
-	float3 Lighting = ((Diffuse + Specular) * CosAngle) * LightFactors;
+	float3 Lighting = (Diffuse + (Specular * CosAngle)) * LightFactors;
 	OutputColor.rgb = WaterLerp + Lighting;
 
 	#if defined(USE_FRESNEL)

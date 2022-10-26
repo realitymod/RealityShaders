@@ -271,7 +271,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	float3 CosAngle = GetLambert(NormalVec, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = (GetSpecular(NormalVec, HalfVec) * Gloss) * Lights[0].color;
+	float3 Specular = GetSpecular(NormalVec, HalfVec) * Gloss * Lights[0].color;
 
 	#if _POINTLIGHT_
 		#if !_HASCOLORMAPGLOSS_
@@ -297,9 +297,9 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	// Prevents non-detailed bundledmesh from looking shiny
 	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
 	#if _HASCOLORMAPGLOSS_ || _HASNORMALMAP_
-		float3 Lighting = ((Diffuse + Specular) * CosAngle) * LightFactors;
+		float3 Lighting = (Diffuse + (Specular * CosAngle)) * LightFactors;
 	#else
-		float3 Lighting = ((Diffuse + 0.0) * CosAngle) * LightFactors;
+		float3 Lighting = (Diffuse) * LightFactors;
 	#endif
 	OutputColor.rgb = DiffuseTex.rgb * ((Ambient + Lighting) * GI.rgb);
 

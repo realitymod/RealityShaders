@@ -233,7 +233,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 	float3 CosAngle = GetLambert(Normals.xyz, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = GetSpecular(Normals.xyz, HalfVec) * (Gloss / 5.0) * Lights[0].color;
+	float3 Specular = GetSpecular(Normals.xyz, HalfVec) * Gloss * Lights[0].color;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
@@ -242,7 +242,6 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
-		float3 Ambient = SinglePointColor * Lightmap.r;
 		Specular = Specular * Lightmap.g;
 
 		float DotLN = saturate(dot(Normals.xyz / 5.0, -Lights[0].dir));
@@ -250,6 +249,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 		#if _LIGHTMAP_
 			// Add ambient to get correct ambient for surfaces parallel to the sun
+			float3 Ambient = SinglePointColor * Lightmap.r;
 			float3 BumpedSky = InvDot * Lightmap.b;
 			float3 BumpedDiffuse = Diffuse + BumpedSky;
 			Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
