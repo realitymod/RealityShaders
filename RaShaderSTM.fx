@@ -233,39 +233,34 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 	float3 CosAngle = GetLambert(Normals.xyz, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = (GetSpecular(Normals.xyz, HalfVec) * CosAngle) * (Gloss / 5.0) * Lights[0].color;
+	float3 Specular = GetSpecular(Normals.xyz, HalfVec) * (Gloss / 5.0) * Lights[0].color;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
-		float3 Lighting = (Diffuse + Specular) * Attenuation;
+		float3 Lighting = (Diffuse + (Specular * CosAngle)) * Attenuation;
 		OutputColor.rgb = (DiffuseMap.rgb * Lighting) * GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
 		float3 Ambient = SinglePointColor * Lightmap.r;
+		Specular = Specular * Lightmap.g;
 
-		#if defined(PERPIXEL)
-			// Pre-calc: Lightmap.b *= InvDot
-			float3 BumpedSky = (dot(Normals.xyz, SkyNormal) * StaticSkyColor) * Lightmap.b;
-			// tl: Jonas, disable once we know which materials are actually affected.
-			Diffuse = Ambient + ((Diffuse * Lightmap.g) + BumpedSky);
+		float DotLN = saturate(dot(Normals.xyz / 5.0, -Lights[0].dir));
+		float3 InvDot = saturate((1.0 - DotLN) * StaticSkyColor * SkyNormal.z);
+
+		#if _LIGHTMAP_
+			// Add ambient to get correct ambient for surfaces parallel to the sun
+			float3 BumpedSky = InvDot * Lightmap.b;
+			float3 BumpedDiffuse = Diffuse + BumpedSky;
+			Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
+			float3 Lighting = Ambient + (Diffuse + (Specular * CosAngle));
 		#else
-			float DotLN = saturate(dot(Normals.xyz / 5.0, -Lights[0].dir));
-			float3 InvDot = saturate((1.0 - DotLN) * StaticSkyColor * SkyNormal.z);
-			#if _LIGHTMAP_
-				// Add ambient here as well to get correct ambient for surfaces parallel to the sun
-				float3 BumpedSky = InvDot * Lightmap.b;
-				float3 BumpedDiffuse = Diffuse + BumpedSky;
-				Diffuse = Ambient + lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
-			#else
-				float3 BumpedSky = InvDot;
-				Diffuse = (Diffuse * Lightmap.g) + BumpedSky;
-			#endif
+			float3 BumpedSky = InvDot;
+			Diffuse = (Diffuse * Lightmap.g);
+			float3 Lighting = BumpedSky + (Diffuse + (Specular * CosAngle));
 		#endif
 
-		Diffuse = Diffuse * 2.0;
-		Specular = Specular * Lightmap.g;
-		OutputColor.rgb = (DiffuseMap.rgb * Diffuse) + Specular;
+		OutputColor.rgb = (DiffuseMap.rgb * Lighting) * 2.0;
 	#endif
 
 	#if !_POINTLIGHT_
