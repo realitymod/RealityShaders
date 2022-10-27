@@ -84,7 +84,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float4 P_ObjectPos_Lerp : TEXCOORD0; // .xyz = ObjectPos; .w = HemiLerp[]
+	float3 ObjectPos : TEXCOORD0;
 	float4 P_Tex0_GroundUV : TEXCOORD1; // .xy = Tex0; .zw = GroundUV;
 	float3 Tangent : TEXCOORD2;
 	float3 BiNormal : TEXCOORD3;
@@ -107,28 +107,29 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	float3x3 SkinnedObjectTBN = mul(ObjectTBN, (float3x3)SkinnedObjectMatrix);
 
 	// Get world-space properties
+	float4x3 SkinnedWorldMatrix = mul(SkinnedObjectMatrix, World);
+	float3x3 SkinnedWorldTBN = mul(SkinnedObjectTBN, (float3x3)World);
 	float4 WorldPos = mul(SkinnedObjectPosition, World);
 	float3 WorldNormal = normalize(mul(SkinnedObjectTBN[2], World));
 
-	#if _OBJSPACENORMALMAP_ // (Object Space) -> (Skinned Object Space)
-		Output.Tangent = SkinnedObjectMatrix[0].xyz;
-		Output.BiNormal = SkinnedObjectMatrix[1].xyz;
-		Output.Normal = SkinnedObjectMatrix[2].xyz;
-	#else // (Tangent Space) -> (Skinned Object Space)
-		Output.Tangent = SkinnedObjectTBN[0].xyz;
-		Output.BiNormal = SkinnedObjectTBN[1].xyz;
-		Output.Normal = SkinnedObjectTBN[2].xyz;
+	#if _OBJSPACENORMALMAP_ // (Object Space) -> (Skinned Object Space) -> (Skinned World Space)
+		Output.Tangent = SkinnedWorldMatrix[0].xyz;
+		Output.BiNormal = SkinnedWorldMatrix[1].xyz;
+		Output.Normal = SkinnedWorldMatrix[2].xyz;
+	#else // (Tangent Space) -> (Object Space) -> (Skinned Object Space) -> (Skinned World Space)
+		Output.Tangent = SkinnedWorldTBN[0].xyz;
+		Output.BiNormal = SkinnedWorldTBN[1].xyz;
+		Output.Normal = SkinnedWorldTBN[2].xyz;
 	#endif
 	
 	// Output HPos
 	Output.HPos = mul(SkinnedObjectPosition, WorldViewProjection);
 
-	Output.P_ObjectPos_Lerp.xyz = SkinnedObjectPosition.xyz;
+	Output.ObjectPos.xyz = SkinnedObjectPosition.xyz;
 	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 
 	#if _USEHEMIMAP_
 		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos.xyz, WorldNormal);
-		Output.P_ObjectPos_Lerp.w = GetHemiLerp(WorldPos.xyz, WorldNormal);
 	#endif
 
 	#if _HASSHADOW_
@@ -154,22 +155,29 @@ float3 GetLightVec(float3 ObjectPos)
 
 float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 {
-	float3x3 ObjectTBN;
-	ObjectTBN[0] = normalize(Input.Tangent);
-	ObjectTBN[1] = normalize(Input.BiNormal);
-	ObjectTBN[2] = normalize(Input.Normal);
+	// Get object-space properties
+	float3 ObjectPos = Input.ObjectPos;
+
+	// Get world-space properties
+	float4 WorldPos = mul(float4(ObjectPos, 1.0), World);
+	float3x3 WorldTBN;
+	WorldTBN[0] = normalize(Input.Tangent);
+	WorldTBN[1] = normalize(Input.BiNormal);
+	WorldTBN[2] = normalize(Input.Normal);
 
 	// mul(mat, vec) ==	mul(vec, transpose(mat))
-	float3 ObjectPos = normalize(Input.P_ObjectPos_Lerp.xyz);
-	float3 LightVec = normalize(mul(ObjectTBN, GetLightVec(ObjectPos)));
-	float3 ViewVec = normalize(mul(ObjectTBN, ObjectSpaceCamPos.xyz - ObjectPos.xyz));
+	float3 WorldLightVec = mul(GetLightVec(ObjectPos), (float3x3)World);
+	float3 WorldViewVec = mul(ObjectSpaceCamPos.xyz - ObjectPos.xyz, (float3x3)World);
+	float3 LightVec = normalize(WorldLightVec);
+	float3 ViewVec = normalize(WorldViewVec);
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	#if _HASNORMALMAP_
 		float4 NormalVec = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
 		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
+		NormalVec.xyz = normalize(mul(NormalVec.xyz, WorldTBN));
 	#else
-		float4 NormalVec = float4(0.0, 0.0, 1.0, 0.15);
+		float4 NormalVec = float4(WorldTBN[2], 0.15);
 	#endif
 
 	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
@@ -188,7 +196,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
-		float HemiLerp = Input.P_ObjectPos_Lerp.w;
+		float HemiLerp = GetHemiLerp(WorldPos.xyz, NormalVec.xyz);
 		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
 		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 	#else

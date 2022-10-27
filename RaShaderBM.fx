@@ -137,7 +137,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float4 P_WorldPos_Lerp : TEXCOORD0; // .xyz = WorldPos; .w = HemiLerp;
+	float3 WorldPos : TEXCOORD0; // .xyz = WorldPos; .w = HemiLerp;
 	float3 WorldTangent : TEXCOORD1;
 	float3 WorldBiNormal : TEXCOORD2;
 	float3 WorldNormal : TEXCOORD3;
@@ -166,7 +166,7 @@ VS2PS BundledMesh_VS(APP2VS Input)
 	Output.HPos = mul(WorldPos, ViewProjection);
 
 	// Output world-space properties
-	Output.P_WorldPos_Lerp.xyz = WorldPos.xyz;
+	Output.WorldPos = WorldPos.xyz;
 	Output.WorldTangent = WorldTBN[0];
 	Output.WorldBiNormal = WorldTBN[1];
 	Output.WorldNormal = WorldTBN[2];
@@ -179,7 +179,6 @@ VS2PS BundledMesh_VS(APP2VS Input)
 
 	#if _USEHEMIMAP_
 		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, Output.WorldNormal);
-		Output.P_WorldPos_Lerp.w = GetHemiLerp(WorldPos, Output.WorldNormal);
 	#endif
 
 	#if _HASSHADOW_
@@ -206,7 +205,7 @@ float3 GetLightVec(float3 WorldPos)
 float4 BundledMesh_PS(VS2PS Input) : COLOR
 {
 	// Get world-space properties
-	float3 WorldPos = Input.P_WorldPos_Lerp.xyz;
+	float3 WorldPos = Input.WorldPos;
 	float3 WorldTangent = normalize(Input.WorldTangent);
 	float3 WorldBiNormal = normalize(Input.WorldBiNormal);
 	float3 WorldNormal = normalize(Input.WorldNormal);
@@ -246,7 +245,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
-		float HemiLerp = Input.P_WorldPos_Lerp.w;
+		float HemiLerp = GetHemiLerp(WorldPos, NormalVec);
 		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
 		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 	#else
@@ -266,7 +265,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#if _FRESNELVALUES_ && _HASENVMAP_
 		float3 Reflection = -reflect(ViewVec, NormalVec);
 		float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
-		DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss / 4.0);
+		DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss);
 	#endif
 
 	float3 CosAngle = GetLambert(NormalVec, LightVec);
