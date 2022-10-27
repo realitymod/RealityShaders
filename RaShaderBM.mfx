@@ -34,7 +34,7 @@ string GlobalParametersBase[] =
 	"SpecularPower",
 	"FogRange",
 	"FogColor",
-	"WorldSpaceCamPos" // should be as an "inverted specialized" instead
+	"WorldSpaceCamPos", // should be as an "inverted specialized" instead
 };
 
 // This is the common template parameters

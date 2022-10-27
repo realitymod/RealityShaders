@@ -23,7 +23,16 @@
 		#define DEFAULT_DIFFUSE_MAP_COLOR float4(1, 1, 1, 1)
 	#endif
 
-	// VARIABLES
+	/*
+		Cached shader variables
+	*/
+
+	/*
+		The Light struct stores the properties of the sun and/or point light
+		RaShaderBM: World-Space
+		RaShaderSM: Object-Space
+		RaShaderSTM: Object-Space
+	*/
 	struct Light
 	{
 		float3 pos;

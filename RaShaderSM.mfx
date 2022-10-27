@@ -33,6 +33,7 @@ string GlobalParametersBase[] =
 	"SpecularPower",
 	"FogRange",
 	"FogColor",
+	"WorldSpaceCamPos",
 };
 
 // This is the common template parameters

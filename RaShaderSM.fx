@@ -84,7 +84,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float3 ObjectPos : TEXCOORD0;
+	float3 WorldPos : TEXCOORD0;
 	float4 P_Tex0_GroundUV : TEXCOORD1; // .xy = Tex0; .zw = GroundUV;
 	float3 Tangent : TEXCOORD2;
 	float3 BiNormal : TEXCOORD3;
@@ -125,7 +125,7 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	// Output HPos
 	Output.HPos = mul(SkinnedObjectPosition, WorldViewProjection);
 
-	Output.ObjectPos.xyz = SkinnedObjectPosition.xyz;
+	Output.WorldPos.xyz = WorldPos.xyz;
 	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 
 	#if _USEHEMIMAP_
@@ -144,34 +144,31 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 }
 
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
-float3 GetLightVec(float3 ObjectPos)
+float3 GetLightVec(float3 WorldPos)
 {
 	#if _POINTLIGHT_
-		return Lights[0].pos - ObjectPos;
+		return mul(float4(Lights[0].pos, 1.0), World) - WorldPos;
 	#else
-		return -Lights[0].dir;
+		return mul(-Lights[0].dir, (float3x3)World);
 	#endif
 }
 
 float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 {
-	// Get object-space properties
-	float3 ObjectPos = Input.ObjectPos;
-
 	// Get world-space properties
-	float4 WorldPos = mul(float4(ObjectPos, 1.0), World);
+	float3 WorldPos = Input.WorldPos;
 	float3x3 WorldTBN;
 	WorldTBN[0] = normalize(Input.Tangent);
 	WorldTBN[1] = normalize(Input.BiNormal);
 	WorldTBN[2] = normalize(Input.Normal);
 
 	// mul(mat, vec) ==	mul(vec, transpose(mat))
-	float3 WorldLightVec = mul(GetLightVec(ObjectPos), (float3x3)World);
-	float3 WorldViewVec = mul(ObjectSpaceCamPos.xyz - ObjectPos.xyz, (float3x3)World);
+	float3 WorldLightVec = GetLightVec(WorldPos.xyz);
 	float3 LightVec = normalize(WorldLightVec);
-	float3 ViewVec = normalize(WorldViewVec);
+	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
+	// (.a) stores the glossmap
 	#if _HASNORMALMAP_
 		float4 NormalVec = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
 		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
@@ -204,7 +201,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _POINTLIGHT_
-		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
+		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 	#else
 		const float Attenuation = 1.0;
 	#endif
@@ -232,7 +229,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	}
 
 	#if !_POINTLIGHT_
-		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
+		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 
 	OutColor.a = DiffuseTex.a * Transparency.a;
