@@ -351,7 +351,8 @@ technique humanskin
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float4 P_Tex0_PosZW : TEXCOORD0; // .xy = Tex0; .zw = PosZW;
+	float2 PosZW : TEXCOORD0;
+	float2 Tex0 : TEXCOORD1;
 };
 
 VS2PS_ShadowMap ShadowMap_VS(APP2VS Input)
@@ -363,16 +364,14 @@ VS2PS_ShadowMap ShadowMap_VS(APP2VS Input)
 	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
 	int IndexArray[4] = (int[4])IndexVector;
 
-	float3 Bone0 = mul(Input.Pos, _BoneArray[IndexArray[0]]);
-	float3 Bone1 = mul(Input.Pos, _BoneArray[IndexArray[1]]);
-	float3 BonePos = lerp(Bone1, Bone0, BlendWeightsArray[0]);
+	float4x3 BoneMat = (float4x3)0.0;
+	BoneMat += (_BoneArray[IndexArray[0]] * (BlendWeightsArray[0]));
+	BoneMat += (_BoneArray[IndexArray[1]] * (1.0 - BlendWeightsArray[0]));
+	float4 BonePos = float4(mul(Input.Pos, BoneMat), 1.0);
 
-	Output.HPos = mul(float4(BonePos.xyz, 1.0), _vpLightTrapezMat);
-	float2 LightZW = mul(float4(BonePos.xyz, 1.0), _vpLightMat).zw;
-	Output.HPos.z = (LightZW.x * Output.HPos.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
-
-	Output.P_Tex0_PosZW.xy = Input.TexCoord0;
-	Output.P_Tex0_PosZW.zw = Output.HPos.zw;
+	Output.HPos = GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat);
+	Output.PosZW = Output.HPos.zw;
+	Output.Tex0 = Input.TexCoord0;
 
 	return Output;
 }
@@ -382,23 +381,23 @@ float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
 	#if NVIDIA
 		return 0.0;
 	#else
-		return Input.P_Tex0_PosZW.z / Input.P_Tex0_PosZW.w;
+		return Input.PosZW.x / Input.PosZW.y;
 	#endif
 }
 
-float4 ShadowMapAlpha_PS(VS2PS_ShadowMap Input) : COLOR
+float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 {
-	float Alpha = tex2D(Sampler_0, Input.P_Tex0_PosZW.xy).a - _ShadowAlphaThreshold;
+	float Alpha = tex2D(Sampler_0, Input.Tex0).a - _ShadowAlphaThreshold;
 	#if NVIDIA
 		return Alpha;
 	#else
 		clip(Alpha);
-		return Input.P_Tex0_PosZW.z / Input.P_Tex0_PosZW.w;
+		return Input.PosZW.x / Input.PosZW.y;
 	#endif
 }
 
-#define SHADOWMAP_RENDERSTATES(CULLMODE) \
-	CullMode = CULLMODE; \
+#define SHADOWMAP_RENDERSTATES \
+	CullMode = CW; \
 	AlphaBlendEnable = FALSE; \
 	ZEnable = TRUE; \
 	ZWriteEnable = TRUE; \
@@ -413,7 +412,7 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		SHADOWMAP_RENDERSTATES(CW)
+		SHADOWMAP_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -426,9 +425,9 @@ technique DrawShadowMap
 			AlphaRef = 0;
 		#endif
 
-		SHADOWMAP_RENDERSTATES(CCW)
+		SHADOWMAP_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_VS();
-		PixelShader = compile ps_3_0 ShadowMapAlpha_PS();
+		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 
 	}
 
@@ -438,7 +437,7 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		SHADOWMAP_RENDERSTATES(NONE)
+		SHADOWMAP_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -454,7 +453,7 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		SHADOWMAP_RENDERSTATES(CW)
+		SHADOWMAP_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -467,9 +466,9 @@ technique DrawShadowMapNV
 			AlphaRef = 0;
 		#endif
 
-		SHADOWMAP_RENDERSTATES(CCW)
+		SHADOWMAP_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_VS();
-		PixelShader = compile ps_3_0 ShadowMapAlpha_PS();
+		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 
 	}
 
@@ -479,7 +478,7 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		SHADOWMAP_RENDERSTATES(NONE)
+		SHADOWMAP_RENDERSTATES
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}

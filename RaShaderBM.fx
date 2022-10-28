@@ -265,7 +265,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#if _FRESNELVALUES_ && _HASENVMAP_
 		float3 Reflection = -reflect(ViewVec, NormalVec);
 		float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
-		DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss);
+		DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss / 4.0);
 	#endif
 
 	float3 CosAngle = GetLambert(NormalVec, LightVec);

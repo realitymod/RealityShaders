@@ -28,8 +28,8 @@ uniform float4 _LightmapOffset : LightmapOffset;
 uniform float _DropShadowClipheight : DROPSHADOWCLIPHEIGHT;
 uniform float4 _ParallaxScaleBias : PARALLAXSCALEBIAS;
 
-uniform float4x4 _LightMat : vpLightMat;
-uniform float4x4 _LightTrapezMat : vpLightTrapezMat;
+uniform float4x4 _vpLightMat : vpLightMat;
+uniform float4x4 _vpLightTrapezMat : vpLightTrapezMat;
 uniform float4 _PosUnpack : POSUNPACK;
 uniform float _TexUnpack : TEXUNPACK;
 
@@ -163,23 +163,20 @@ struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
 	float2 PosZW : TEXCOORD0;
+	float2 Tex0 : TEXCOORD1;
 };
-
-float4 GetShadowProjCoords(float4 Pos)
-{
- 	float4 ShadowCoords = mul(Pos, _LightTrapezMat);
- 	float2 LightZW = mul(Pos, _LightMat).zw;
-	ShadowCoords.z = (LightZW.x * ShadowCoords.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
-	return ShadowCoords;
-}
 
 VS2PS_ShadowMap ShadowMap_VS(APP2VS_ShadowMap Input)
 {
 	VS2PS_ShadowMap Output;
- 	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
- 	float4 WorldPos = mul(UnpackPos, _WorldMat);
-	Output.HPos = GetShadowProjCoords(float4(WorldPos.xyz, 1.0));
- 	Output.PosZW.xy = Output.HPos.zw;
+
+	float4 UnpackPos = Input.Pos * _PosUnpack;
+	float4 WorldPos = mul(float4(UnpackPos.xyz, 1.0), _WorldMat);
+
+	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
+	Output.PosZW = Output.HPos.zw;
+	Output.Tex0 = Input.Tex * _TexUnpack;
+
 	return Output;
 }
 
@@ -192,28 +189,10 @@ float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
 	#endif
 }
 
-struct VS2PS_ShadowMap_Alpha
-{
-	float4 HPos : POSITION;
-	float2 Tex : TEXCOORD0;
-	float2 PosZW : TEXCOORD1;
-};
-
-VS2PS_ShadowMap_Alpha ShadowMap_Alpha_VS(APP2VS_ShadowMap Input)
-{
-	VS2PS_ShadowMap_Alpha Output;
- 	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
- 	float4 WorldPos = mul(UnpackPos, _WorldMat);
-	Output.HPos = GetShadowProjCoords(WorldPos);
-	Output.Tex = Input.Tex * _TexUnpack;
- 	Output.PosZW.xy = Output.HPos.zw;
-	return Output;
-}
-
-float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap_Alpha Input) : COLOR
+float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 {
 	const float AlphaRef = 96.0f / 255.0f;
-	float4 Alpha = tex2D(Sampler_Shadow_Alpha, Input.Tex);
+	float4 Alpha = tex2D(Sampler_Shadow_Alpha, Input.Tex0);
 	#if NVIDIA
 		return Alpha;
 	#else
@@ -223,6 +202,7 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap_Alpha Input) : COLOR
 }
 
 #define STATICMESH_SHADOWMAP_RENDERSTATES \
+	CullMode = CW; \
 	AlphaBlendEnable = FALSE; \
 	ZEnable = TRUE; \
 	ZWriteEnable = TRUE; \
@@ -230,6 +210,7 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap_Alpha Input) : COLOR
 	ScissorTestEnable = TRUE; \
 
 #define STATICMESH_POINT_RENDERSTATES \
+	CullMode = CW; \
 	AlphaBlendEnable = FALSE; \
 	ZEnable = TRUE; \
 	ZWriteEnable = TRUE; \
@@ -257,9 +238,8 @@ technique DrawShadowMap
 			AlphaFunc = GREATER;
 		#endif
 
-		CullMode = CW;
 		STATICMESH_SHADOWMAP_RENDERSTATES
-		VertexShader = compile vs_3_0 ShadowMap_Alpha_VS();
+		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
 
@@ -299,9 +279,8 @@ technique DrawShadowMapNV
 			AlphaFunc = GREATER;
 		#endif
 
-		CullMode = CW;
 		STATICMESH_SHADOWMAP_RENDERSTATES
-		VertexShader = compile vs_3_0 ShadowMap_Alpha_VS();
+		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
 

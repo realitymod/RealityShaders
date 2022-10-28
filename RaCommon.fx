@@ -126,40 +126,19 @@
 		AddressW = CLAMP;
 	};
 
-	/*
-		Description: GetShadowProjection() transforms the vertex position's depth from World/Object space to light space
-		tl: Make sure Pos and matrices are in same space!
-	*/
-
+	// Description: Transforms the vertex position's depth from World/Object space to light space
+	// tl: Make sure Pos and matrices are in same space!
 	float4 GetShadowProjection(float4 Pos, uniform bool IsOccluder = false)
 	{
-		float4 TexShadow1 = mul(Pos, ShadowTrapMat);
-		float2 TexShadow2 = (IsOccluder) ? mul(Pos, ShadowOccProjMat).zw : mul(Pos, ShadowProjMat).zw;
+		float4 ShadowCoords = mul(Pos, ShadowTrapMat);
+		float2 LightZW = (IsOccluder) ? mul(Pos, ShadowOccProjMat).zw : mul(Pos, ShadowProjMat).zw;
 
 		#if NVIDIA
-			TexShadow1.z = (TexShadow2.x * TexShadow1.w) / TexShadow2.y; // (zL*wT)/wL == zL/wL post homo
+			ShadowCoords.z = (LightZW.x * ShadowCoords.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
 		#else
-			TexShadow1.z = TexShadow2.x;
+			ShadowCoords.z = LightZW.x;
 		#endif
 
-		return TexShadow1;
-	}
-
-	/*
-		Description: GetShadowFactor() compares the depth between the shadowmap's depth (ShadowSampler)
-		and the vertex position's transformed, light-space depth (ShadowCoords.z)
-	*/
-
-	float4 GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
-	{
-		float4 Texel = float4(0.5 / 1024.0, 0.5 / 1024.0, 0.0, 0.0);
-		float4 Samples = 0.0;
-		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords);
-		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, 0.0, 0.0, 0.0));
-		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(0.0, Texel.y, 0.0, 0.0));
-		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel);
-
-		float4 CMPBits = step(saturate(GetSlopedBasedBias(ShadowCoords.z)), Samples);
-		return dot(CMPBits, 0.25);
+		return ShadowCoords;
 	}
 #endif

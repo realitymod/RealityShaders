@@ -39,12 +39,10 @@
 
 	// Gets slope-scaled bias from depth
 	// Source: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
-	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.0001, uniform float Bias = -0.001)
+	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.001, uniform float Bias = -0.003)
 	{
-		float OutputDepth = Depth;
-		OutputDepth += (SlopeScaleBias * abs(ddx(Depth)));
-		OutputDepth += (SlopeScaleBias * abs(ddy(Depth)));
-		return OutputDepth + Bias;
+		float M = max(abs(ddx(Depth)), abs(ddy(Depth)));
+		return Depth + ((SlopeScaleBias * M) + Bias);
 	}
 
 	// Converts linear depth to logarithmic depth in the vertex shader
@@ -55,6 +53,30 @@
 		float FCoef = 2.0 / log2(FarPlane + 1.0);
 		HPos.z = log2(max(1e-6, 1.0 + HPos.w)) * FCoef - 1.0;
 		return HPos;
+	}
+
+	// Description: Transforms the vertex position's depth from World/Object space to light space
+	// tl: Make sure Pos and matrices are in same space!
+	float4 GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat)
+	{
+		float4 ShadowCoords = mul(Pos, LightTrapezMat);
+		float2 LightZW = mul(Pos, LightMat).zw;
+		ShadowCoords.z = (LightZW.x * ShadowCoords.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
+		return ShadowCoords;
+	}
+
+	// Description: Compares the depth between the shadowmap's depth (ShadowSampler)
+	// and the vertex position's transformed, light-space depth (ShadowCoords.z)
+	float4 GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
+	{
+		float4 Texel = float4(0.5 / 1024.0, 0.5 / 1024.0, 0.0, 0.0);
+		float4 Samples = 0.0;
+		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords);
+		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, 0.0, 0.0, 0.0));
+		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(0.0, Texel.y, 0.0, 0.0));
+		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel);
+		float4 CMPBits = step(saturate(GetSlopedBasedBias(ShadowCoords.z)), Samples);
+		return dot(CMPBits, 0.25);
 	}
 
 	/*
