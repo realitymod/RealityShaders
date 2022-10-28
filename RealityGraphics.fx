@@ -39,7 +39,7 @@
 
 	// Gets slope-scaled bias from depth
 	// Source: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
-	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.001, uniform float Bias = -0.003)
+	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.001, uniform float Bias = -0.005)
 	{
 		float M = max(abs(ddx(Depth)), abs(ddy(Depth)));
 		return Depth + ((SlopeScaleBias * M) + Bias);
@@ -60,8 +60,8 @@
 	float4 GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat)
 	{
 		float4 ShadowCoords = mul(Pos, LightTrapezMat);
-		float2 LightZW = mul(Pos, LightMat).zw;
-		ShadowCoords.z = (LightZW.x * ShadowCoords.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
+		float4 LightCoords = mul(Pos, LightMat);
+		ShadowCoords.z = (LightCoords.z * ShadowCoords.w) / LightCoords.w; // (zL*wT)/wL == zL/wL post homo
 		return ShadowCoords;
 	}
 

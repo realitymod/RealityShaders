@@ -493,7 +493,7 @@ struct HI_APP2VS_OccluderShadow
 struct HI_VS2PS_OccluderShadow
 {
 	float4 HPos : POSITION;
-	float2 PosZW : TEXCOORD0;
+	float4 DepthPos : TEXCOORD0;
 };
 
 HI_VS2PS_OccluderShadow Hi_OccluderShadow_VS(HI_APP2VS_OccluderShadow Input)
@@ -503,7 +503,7 @@ HI_VS2PS_OccluderShadow Hi_OccluderShadow_VS(HI_APP2VS_OccluderShadow Input)
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
 	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy);
 	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-	Output.PosZW = Output.HPos.zw;
+	Output.DepthPos = Output.HPos;
 	return Output;
 }
 
@@ -512,7 +512,7 @@ float4 Hi_OccluderShadow_PS(HI_VS2PS_OccluderShadow Input) : COLOR
 	#if NVIDIA
 		return 0.5;
 	#else
-		return Input.PosZW.x / Input.PosZW.y;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 

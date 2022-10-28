@@ -131,12 +131,12 @@
 	float4 GetShadowProjection(float4 Pos, uniform bool IsOccluder = false)
 	{
 		float4 ShadowCoords = mul(Pos, ShadowTrapMat);
-		float2 LightZW = (IsOccluder) ? mul(Pos, ShadowOccProjMat).zw : mul(Pos, ShadowProjMat).zw;
+		float4 LightCoords = (IsOccluder) ? mul(Pos, ShadowOccProjMat) : mul(Pos, ShadowProjMat);
 
 		#if NVIDIA
-			ShadowCoords.z = (LightZW.x * ShadowCoords.w) / LightZW.y; // (zL*wT)/wL == zL/wL post homo
+			ShadowCoords.z = (LightCoords.z * ShadowCoords.w) / LightCoords.w; // (zL*wT)/wL == zL/wL post homo
 		#else
-			ShadowCoords.z = LightZW.x;
+			ShadowCoords.z = LightCoords.z;
 		#endif
 
 		return ShadowCoords;
