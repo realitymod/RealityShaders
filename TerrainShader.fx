@@ -86,13 +86,13 @@ uniform float3 _MorphDeltaAdder[3] : MORPHDELTAADDER;
 	[Textures and samplers]
 */
 
-uniform texture Texture_0 : TEXLAYER0;
-uniform texture Texture_1 : TEXLAYER1;
-uniform texture Texture_2 : TEXLAYER2;
-uniform texture Texture_3 : TEXLAYER3;
-uniform texture Texture_4 : TEXLAYER4;
-uniform texture Texture_5 : TEXLAYER5;
-uniform texture Texture_6 : TEXLAYER6;
+uniform texture Tex0 : TEXLAYER0;
+uniform texture Tex1 : TEXLAYER1;
+uniform texture Tex2 : TEXLAYER2;
+uniform texture Tex3 : TEXLAYER3;
+uniform texture Tex4 : TEXLAYER4;
+uniform texture Tex5 : TEXLAYER5;
+uniform texture Tex6 : TEXLAYER6;
 
 #define CREATE_SAMPLER(SAMPLER_TYPE, NAME, TEXTURE, ADDRESS) \
 	SAMPLER_TYPE NAME = sampler_state \
@@ -105,16 +105,16 @@ uniform texture Texture_6 : TEXLAYER6;
 		AddressV = ADDRESS; \
 	}; \
 
-CREATE_SAMPLER(sampler, Sampler_0_Clamp, Texture_0, CLAMP)
-CREATE_SAMPLER(sampler, Sampler_1_Clamp, Texture_1, CLAMP)
-CREATE_SAMPLER(sampler, Sampler_2_Clamp, Texture_2, CLAMP)
-CREATE_SAMPLER(sampler, Sampler_5_Clamp, Texture_5, CLAMP)
+CREATE_SAMPLER(sampler, SampleTex0_Clamp, Tex0, CLAMP)
+CREATE_SAMPLER(sampler, SampleTex1_Clamp, Tex1, CLAMP)
+CREATE_SAMPLER(sampler, SampleTex2_Clamp, Tex2, CLAMP)
+CREATE_SAMPLER(sampler, SampleTex5_Clamp, Tex5, CLAMP)
 
-CREATE_SAMPLER(sampler, Sampler_3_Wrap, Texture_3, WRAP)
-CREATE_SAMPLER(sampler, Sampler_4_Wrap, Texture_4, WRAP)
-CREATE_SAMPLER(sampler, Sampler_6_Wrap, Texture_6, WRAP)
+CREATE_SAMPLER(sampler, SampleTex3_Wrap, Tex3, WRAP)
+CREATE_SAMPLER(sampler, SampleTex4_Wrap, Tex4, WRAP)
+CREATE_SAMPLER(sampler, SampleTex6_Wrap, Tex6, WRAP)
 
-CREATE_SAMPLER(samplerCUBE, Sampler_6_Cube, Texture_6, WRAP)
+CREATE_SAMPLER(samplerCUBE, SamplerTex6_Cube, Tex6, WRAP)
 
 #include "shaders/CommonVertexLight.fx"
 #include "shaders/TerrainShader_Shared.fx"

@@ -20,7 +20,7 @@ uniform float4 _DiffuseColor : DIFFUSE;
 
 uniform texture TexMap : TEXTURE;
 
-sampler Sampler_TexMap = sampler_state
+sampler SampleTexMap = sampler_state
 {
 	Texture = (TexMap);
 	AddressU = CLAMP;
@@ -30,7 +30,7 @@ sampler Sampler_TexMap = sampler_state
 	MipFilter = NONE;
 };
 
-sampler Sampler_TexMap_Bilinear = sampler_state
+sampler SampleTexMap_Linear = sampler_state
 {
 	Texture = (TexMap);
 	AddressU = CLAMP;
@@ -66,12 +66,12 @@ VS2PS_REGULAR Regular_VS(APP2VS Input)
 
 float4 Regular_PS(VS2PS_REGULAR Input) : COLOR
 {
-	return tex2D(Sampler_TexMap, Input.TexCoord) * Input.Diffuse;
+	return tex2D(SampleTexMap, Input.TexCoord) * Input.Diffuse;
 }
 
 float4 Regular_Scaled_PS(VS2PS_REGULAR Input) : COLOR
 {
-	return tex2D(Sampler_TexMap_Bilinear, Input.TexCoord) * Input.Diffuse;
+	return tex2D(SampleTexMap_Linear, Input.TexCoord) * Input.Diffuse;
 }
 
 float4 SelectionQuad_VS(float3 Pos : POSITION) : POSITION

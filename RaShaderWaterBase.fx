@@ -53,7 +53,7 @@ float4 PointColor;
 #endif
 
 texture CubeMap;
-sampler CubeMapSampler = sampler_state
+samplerCUBE SampleCubeMap = sampler_state
 {
 	Texture = (CubeMap);
 	MipFilter = LINEAR;
@@ -66,7 +66,7 @@ sampler CubeMapSampler = sampler_state
 
 #if defined(USE_3DTEXTURE)
 	texture WaterMap;
-	sampler WaterMapSampler = sampler_state
+	sampler SampleWaterMap = sampler_state
 	{
 		Texture = (WaterMap);
 		MipFilter = LINEAR;
@@ -78,7 +78,7 @@ sampler CubeMapSampler = sampler_state
 	};
 #else
 	texture WaterMapFrame0;
-	sampler WaterMapSampler0 = sampler_state
+	sampler SampleWaterMap0 = sampler_state
 	{
 		Texture = (WaterMapFrame0);
 		MipFilter = LINEAR;
@@ -89,7 +89,7 @@ sampler CubeMapSampler = sampler_state
 	};
 
 	texture WaterMapFrame1;
-	sampler WaterMapSampler1 = sampler_state
+	sampler SampleWaterMap1 = sampler_state
 	{
 		Texture = (WaterMapFrame1);
 		MipFilter = LINEAR;
@@ -101,7 +101,7 @@ sampler CubeMapSampler = sampler_state
 #endif
 
 texture LightMap;
-sampler LightMapSampler = sampler_state
+sampler SampleLightMap = sampler_state
 {
 	Texture = (LightMap);
 	MipFilter = LINEAR;
@@ -208,16 +208,16 @@ VS2PS Water_VS(APP2VS Input)
 float4 Water_PS(in VS2PS Input) : COLOR
 {
 	#if defined(USE_LIGHTMAP)
-		float4 LightMap = tex2D(LightMapSampler, Input.LightMapTex);
+		float4 LightMap = tex2D(SampleLightMap, Input.LightMapTex);
 	#else
 		float4 LightMap = PointColor;
 	#endif
 
 	#if defined(USE_3DTEXTURE)
-		float3 TangentNormal = tex3D(WaterMapSampler, Input.Tex);
+		float3 TangentNormal = tex3D(SampleWaterMap, Input.Tex);
 	#else
-		float3 Normal0 = tex2D(WaterMapSampler0, Input.Tex.xy).xyz;
-		float3 Normal1 = tex2D(WaterMapSampler1, Input.Tex.xy).xyz;
+		float3 Normal0 = tex2D(SampleWaterMap0, Input.Tex.xy).xyz;
+		float3 Normal1 = tex2D(SampleWaterMap1, Input.Tex.xy).xyz;
 		float3 TangentNormal = lerp(Normal0, Normal1, WaterCycleTime);
 	#endif
 
@@ -242,11 +242,11 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	float3 Reflection = normalize(reflect(-ViewVec, TangentNormal));
-	float3 EnvColor = texCUBE(CubeMapSampler, Reflection);
+	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
 
 	float ShadowFactor = LightMap.g;
 	#if defined(USE_SHADOWS)
-		ShadowFactor *= GetShadowFactor(ShadowMapSampler, Input.TexShadow);
+		ShadowFactor *= GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#endif
 
 	float LerpMod = -(1.0 - saturate(ShadowFactor + SHADOW_FACTOR));

@@ -84,8 +84,8 @@ VS2PS_Diffuse Diffuse_VS(APP2VS Input)
 
 float4 Diffuse_PS(VS2PS_Diffuse Input) : COLOR
 {
-	float4 Diffuse = tex2D(Diffuse_Sampler, Input.DiffuseMap_GroundUV.xy) * Input.Color; // Diffuse Map
-	float4 TLUT = tex2D(LUT_Sampler, Input.DiffuseMap_GroundUV.zw); // Hemi map
+	float4 Diffuse = tex2D(SampleDiffuseMap, Input.DiffuseMap_GroundUV.xy) * Input.Color; // Diffuse Map
+	float4 TLUT = tex2D(SampleLUT, Input.DiffuseMap_GroundUV.zw); // Hemi map
 	Diffuse.rgb *= GetParticleLighting(TLUT.a, Input.Lerp_LMapIntOffset, Input.LightFactor.a);
 
 	Diffuse.rgb = ApplyFog(Diffuse.rgb, GetFogValue(Input.VertexPos, 0.0));
@@ -132,7 +132,7 @@ technique DiffuseWithZWrite
 
 float4 Additive_PS(VS2PS_Diffuse Input) : COLOR
 {
-	float4 Diffuse = tex2D(Diffuse_Sampler, Input.DiffuseMap_GroundUV.xy) * Input.Color;
+	float4 Diffuse = tex2D(SampleDiffuseMap, Input.DiffuseMap_GroundUV.xy) * Input.Color;
 	Diffuse.rgb = (_EffectSunColor.bbb < -0.1) ? float3(1.0, 0.0, 0.0) : Diffuse.rgb;
 	Diffuse.rgb *= Diffuse.a; // Mask with alpha since were doing an add
 

@@ -68,11 +68,11 @@ uniform float4x3 _UVMatrix[8]: UVMatrix;
 	[Textures and Samplers]
 */
 
-uniform texture Texture_0: TEXLAYER0;
-uniform texture Texture_1: TEXLAYER1;
-uniform texture Texture_2: TEXLAYER2;
-uniform texture Texture_3: TEXLAYER3;
-uniform texture Texture_4: TEXLAYER4;
+uniform texture Tex0: TEXLAYER0;
+uniform texture Tex1: TEXLAYER1;
+uniform texture Tex2: TEXLAYER2;
+uniform texture Tex3: TEXLAYER3;
+uniform texture Tex4: TEXLAYER4;
 
 #define CREATE_SAMPLER(NAME, TEXTURE, ADDRESS, FILTER) \
 	sampler NAME = sampler_state \
@@ -85,17 +85,17 @@ uniform texture Texture_4: TEXLAYER4;
 		MipFilter = FILTER; \
 	};
 
-CREATE_SAMPLER(Sampler_0, Texture_0, CLAMP, LINEAR)
-CREATE_SAMPLER(Sampler_1, Texture_1, CLAMP, LINEAR)
-CREATE_SAMPLER(Sampler_2, Texture_2, CLAMP, LINEAR)
-CREATE_SAMPLER(Sampler_Cube_3, Texture_3, WRAP, LINEAR)
+CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, LINEAR)
+CREATE_SAMPLER(SampleTex1, Tex1, CLAMP, LINEAR)
+CREATE_SAMPLER(SampleTex2, Tex2, CLAMP, LINEAR)
+CREATE_SAMPLER(SampleCubeTex3, Tex3, WRAP, LINEAR)
 
-CREATE_SAMPLER(Sampler_Diffuse, Texture_0, WRAP, LINEAR)
-CREATE_SAMPLER(Sampler_Normal, Texture_1, WRAP, LINEAR)
+CREATE_SAMPLER(SampleDiffuseMap, Tex0, WRAP, LINEAR)
+CREATE_SAMPLER(SampleNormalMap, Tex1, WRAP, LINEAR)
 
-CREATE_SAMPLER(Sampler_ColorLUT, Texture_2, CLAMP, LINEAR)
+CREATE_SAMPLER(SampleColorLUT, Tex2, CLAMP, LINEAR)
 
-sampler Sampler_Dummy = sampler_state
+sampler SampleDummy = sampler_state
 {
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
@@ -106,11 +106,11 @@ sampler Sampler_Dummy = sampler_state
 /*
 	SHADOW BUFFER DATA
 
-	texture Texture_ShadowMap: ShadowMapTex;
-	texture Texture_ShadowMap_Occluder : ShadowMapOccluderTex;
+	texture ShadowMap: ShadowMapTex;
+	texture ShadowMapOccluder : ShadowMapOccluderTex;
 
-	CREATE_SAMPLER(Sampler_ShadowMap, Texture_ShadowMap, CLAMP, LINEAR)
-	CREATE_SAMPLER(Sampler_ShadowMap_Occluder, Texture_ShadowMap_Occluder, CLAMP, LINEAR)
+	CREATE_SAMPLER(SampleShadowMap, ShadowMap, CLAMP, LINEAR)
+	CREATE_SAMPLER(SampleShadowMapOccluder, ShadowMapOccluder, CLAMP, LINEAR)
 */
 
 struct APP2VS
@@ -181,8 +181,8 @@ float4 Lighting_PS(VS2PS_Specular Input) : COLOR
 	float3 TanEyeVec = normalize(mul(WorldEyeVec, WorldI));
 	float3 TanHalfVec = normalize(TanLightVec + TanEyeVec);
 
-	float4 NormalMap = tex2D(Sampler_Normal, Input.Tex);
-	float4 DiffuseMap = tex2D(Sampler_Diffuse, Input.Tex); // What should we do with .a channel now?
+	float4 NormalMap = tex2D(SampleNormalMap, Input.Tex);
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex); // What should we do with .a channel now?
 
 	float Gloss = NormalMap.a;
 	float4 Ambient = float4(0.4, 0.4, 0.4, 1.0);
@@ -258,7 +258,7 @@ float4 Diffuse_PS(VS2PS_Diffuse Input) : COLOR
 	float3 ObjSpaceLightDir = mul(-MatsLightDir, WorldI);
 	float3 LightVec = normalize(ObjSpaceLightDir);
 
-	float4 DiffuseMap = tex2D(Sampler_Diffuse, Input.TexCoord);
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.TexCoord);
 	float4 Diffuse = saturate(GetLambert(Normal, LightVec) + 0.8);
 	Diffuse.a = 1.0;
 
@@ -317,8 +317,8 @@ VS2PS_Alpha Alpha_VS(APP2VS Input)
 
 float4 Alpha_PS(VS2PS_Alpha Input) : COLOR
 {
-	float4 DiffuseMap = tex2D(Sampler_0, Input.DiffuseTex);
-	float4 ProjLight = tex2Dproj(Sampler_1, Input.ProjTex);
+	float4 DiffuseMap = tex2D(SampleTex0, Input.DiffuseTex);
+	float4 ProjLight = tex2Dproj(SampleTex1, Input.ProjTex);
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (DiffuseMap.rgb * ProjLight.rgb) + ProjLight.a;
 	return OutputColor;
@@ -377,15 +377,15 @@ float4 EnvMap_Alpha_PS(VS2PS_EnvMap_Alpha Input) : COLOR
 	float3 WorldViewVec = normalize(WorldPos.xyz - _EyePos.xyz);
 	float Reflection = _EyePos.w;
 
-	float4 AccumLight = tex2Dproj(Sampler_1, Input.ProjTex);
-	float4 DiffuseMap = tex2D(Sampler_0, Input.Tex);
-	float4 NormalMap = tex2D(Sampler_2, Input.Tex);
+	float4 AccumLight = tex2Dproj(SampleTex1, Input.ProjTex);
+	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex);
+	float4 NormalMap = tex2D(SampleTex2, Input.Tex);
 
 	float3 NormalVec = normalize((NormalMap.xyz * 2.0) - 1.0);
 	float3 WorldNormal = normalize(mul(TanToCubeSpace, NormalVec));
 
 	float3 Lookup = reflect(WorldViewVec, WorldNormal);
-	float3 EnvMapColor = texCUBE(Sampler_Cube_3, Lookup) * NormalMap.a * Reflection;
+	float3 EnvMapColor = texCUBE(SampleCubeTex3, Lookup) * NormalMap.a * Reflection;
 	return float4((DiffuseMap.rgb * AccumLight.rgb) + EnvMapColor + AccumLight.a, DiffuseMap.a);
 }
 
@@ -482,7 +482,7 @@ VS2PS_ShadowMap_Alpha ShadowMap_Alpha_VS(APP2VS Input)
 
 float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap_Alpha Input) : COLOR
 {
-	float Alpha = tex2D(Sampler_0, Input.Tex0).a - _ShadowAlphaThreshold;
+	float Alpha = tex2D(SampleTex0, Input.Tex0).a - _ShadowAlphaThreshold;
 	#if NVIDIA
 		return Alpha;
 	#else

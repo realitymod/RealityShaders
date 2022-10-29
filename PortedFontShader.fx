@@ -15,11 +15,11 @@ uniform float4 _Alpha : BLENDALPHA;
 	[Textures and samplers]
 */
 
-uniform texture Texture_0: TEXLAYER0;
+uniform texture Tex0: TEXLAYER0;
 
-sampler Sampler_0_Clamp = sampler_state
+sampler SampleTex0_Clamp = sampler_state
 {
-	Texture = (Texture_0);
+	Texture = (Tex0);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 	MinFilter = LINEAR;
@@ -27,9 +27,9 @@ sampler Sampler_0_Clamp = sampler_state
 	MipFilter = LINEAR;
 };
 
-sampler Sampler_0_Wrap = sampler_state
+sampler SampleTex0_Wrap = sampler_state
 {
-	Texture = (Texture_0);
+	Texture = (Tex0);
 	AddressU = WRAP;
 	AddressV = WRAP;
 	MinFilter = LINEAR;
@@ -62,7 +62,7 @@ VS2PS HPos_VS(APP2VS Input)
 
 float4 HPos_PS(VS2PS Input) : COLOR
 {
-	float4 OutputColor = tex2D(Sampler_0_Clamp, Input.TexCoord);
+	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord);
 	float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
 	OutputColor = dot(OutputColor, NoAlpha);
 	OutputColor.rgb = OutputColor.rgb * Input.Color;
@@ -118,7 +118,7 @@ technique Overlay_States <bool Restore = true;>
 
 float4 Overlay_HPos_PS(VS2PS Input) : COLOR
 {
-	float4 InputTexture0 = tex2D(Sampler_0_Wrap, Input.TexCoord);
+	float4 InputTexture0 = tex2D(SampleTex0_Wrap, Input.TexCoord);
 	return InputTexture0 * float4(1.0, 1.0, 1.0, _Alpha.a);
 }
 

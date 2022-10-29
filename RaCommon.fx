@@ -99,7 +99,7 @@
 	float4x4 ShadowTrapMat : ShadowTrapMatrix;
 
 	texture ShadowMap : SHADOWMAP;
-	sampler ShadowMapSampler
+	sampler SampleShadowMap
 	#if defined(_CUSTOMSHADOWSAMPLER_)
 		: register(_CUSTOMSHADOWSAMPLER_)
 	#endif

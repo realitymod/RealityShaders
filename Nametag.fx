@@ -42,27 +42,27 @@ uniform float _AspectComp = 4.0 / 3.0;
 	[Textures and samplers]
 */
 
-uniform texture Detail_0 : TEXLAYER0;
-uniform texture Detail_1 : TEXLAYER1;
+uniform texture Detail0 : TEXLAYER0;
+uniform texture Detail1 : TEXLAYER1;
 
-sampler Sampler_0 = sampler_state
+sampler SampleDetail0 = sampler_state
 {
-	Texture = (Detail_0);
+	Texture = (Detail0);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
-	MipFilter = NONE;
+	MipFilter = LINEAR;
 };
 
-sampler Sampler_1 = sampler_state
+sampler SampleDetail1 = sampler_state
 {
-	Texture = (Detail_1);
+	Texture = (Detail1);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
-	MipFilter = NONE;
+	MipFilter = LINEAR;
 };
 
 struct APP2VS
@@ -112,8 +112,8 @@ VS2PS Nametag_VS(APP2VS Input)
 
 float4 Nametag_PS(VS2PS Input) : COLOR0
 {
-	float4 Tx0 = tex2D(Sampler_0, Input.TexCoord0);
-	return Tx0 * Input.Color0;
+	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
+	return Tex0 * Input.Color0;
 }
 
 technique nametag
@@ -170,7 +170,7 @@ VS2PS Nametag_Arrow_VS(APP2VS Input)
 
 float4 Nametag_Arrow_PS(VS2PS Input) : COLOR0
 {
-	float4 Tex0 = tex2D(Sampler_0, Input.TexCoord0);
+	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
 	return Tex0 * Input.Color0;
 }
 
@@ -228,9 +228,9 @@ VS2PS_2TEX Nametag_Healthbar_VS(APP2VS Input)
 
 float4 Nametag_Healthbar_PS(VS2PS_2TEX Input) : COLOR0
 {
-	float4 Tx0 = tex2D(Sampler_0, Input.TexCoord0);
-	float4 Tx1 = tex2D(Sampler_1, Input.TexCoord1);
-	return lerp(Tx0, Tx1, _HealthValue < Input.Color0.b) * Input.Color0.a * Input.Color1;
+	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
+	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
+	return lerp(Tex0, Tex1, _HealthValue < Input.Color0.b) * Input.Color0.a * Input.Color1;
 }
 
 technique nametag_healthbar
@@ -309,8 +309,8 @@ VS2PS Nametag_Vehicle_Icons_VS(APP2VS Input)
 
 float4 Nametag_Vehicle_Icons_PS(VS2PS Input) : COLOR0
 {
-	float4 Tex0 = tex2D(Sampler_0, Input.TexCoord0);
-	float4 Tex1 = tex2D(Sampler_1, Input.TexCoord1);
+	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
+	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
 	return lerp(Tex0, Tex1, _CrossFadeValue) * Input.Color0;
 }
 

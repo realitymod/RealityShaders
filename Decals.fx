@@ -39,14 +39,14 @@ uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = fl
 		MipFilter = FILTER; \
 	};
 
-uniform texture Texture_0: TEXLAYER0;
-uniform texture Texture_1: HemiMapTexture;
-// uniform texture Texture_ShadowMap: ShadowMapTex;
-// uniform texture Texture_ShadowMap_Occluder: ShadowMapOccluderTex;
+uniform texture Tex0: TEXLAYER0;
+uniform texture Tex1: HemiMapTexture;
+// uniform texture ShadowMap: ShadowMapTex;
+// uniform texture ShadowMapOccluder: ShadowMapOccluderTex;
 
-CREATE_SAMPLER(Sampler_0, Texture_0, CLAMP, LINEAR)
-// CREATE_SAMPLER(Sampler_ShadowMap, Texture_ShadowMap, CLAMP, LINEAR)
-// CREATE_SAMPLER(Sampler_ShadowMap_Occluder, Texture_ShadowMap_Occluder, CLAMP, LINEAR)
+CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, LINEAR)
+// CREATE_SAMPLER(SampleShadowMap, ShadowMap, CLAMP, LINEAR)
+// CREATE_SAMPLER(SampleShadowMapOccluder, ShadowMapOccluder, CLAMP, LINEAR)
 
 struct APP2VS
 {
@@ -93,7 +93,7 @@ VS2PS_Decals Decals_VS(APP2VS Input)
 
 float4 Decals_PS(VS2PS_Decals Input) : COLOR
 {
-	float4 DiffuseMap = tex2D(Sampler_0, Input.Tex0);
+	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex0);
 	float3 Normals = normalize(Input.WorldNormal.xyz);
 	float3 Diffuse = GetLambert(Normals, -_SunDirection.xyz) * _SunColor;
 
@@ -151,16 +151,16 @@ float4 ShadowedDecals_PS(VS2PS_ShadowedDecals Input) : COLOR
 		float4 Samples;
 		float2 Texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
 		Input.ShadowTex.xy = clamp(Input.ShadowTex.xy,  Input.ViewPortMap.xy, Input.ViewPortMap.zw);
-		Samples.x = tex2D(Sampler_ShadowMap, Input.ShadowTex.xy);
-		Samples.y = tex2D(Sampler_ShadowMap, Input.ShadowTex.xy + float2(Texel.x, 0.0));
-		Samples.z = tex2D(Sampler_ShadowMap, Input.ShadowTex.xy + float2(0.0, Texel.y));
-		Samples.w = tex2D(Sampler_ShadowMap, Input.ShadowTex.xy + Texel);
+		Samples.x = tex2D(SampleShadowMap, Input.ShadowTex.xy);
+		Samples.y = tex2D(SampleShadowMap, Input.ShadowTex.xy + float2(Texel.x, 0.0));
+		Samples.z = tex2D(SampleShadowMap, Input.ShadowTex.xy + float2(0.0, Texel.y));
+		Samples.w = tex2D(SampleShadowMap, Input.ShadowTex.xy + Texel);
 		float4 Cmpbits = Samples >= saturate(Input.ShadowTex.z);
 		float DirShadow = dot(Cmpbits, 0.25);
 	*/
 
 	float DirShadow = 1.0;
-	float4 DiffuseMap = tex2D(Sampler_0, Input.Tex0);
+	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex0);
 	float3 Normals = normalize(Input.WorldNormal.xyz);
 	float3 Diffuse = GetLambert(Normals, -_SunDirection.xyz) * _SunColor * DirShadow;
 

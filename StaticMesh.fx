@@ -55,18 +55,18 @@ uniform float4 _EyePosObjectSpace : EyePosObjectSpace;
 	[Textures and Samplers]
 */
 
-uniform texture Texture_0: TEXLAYER0;
-uniform texture Texture_1: TEXLAYER1;
-uniform texture Texture_2: TEXLAYER2;
-uniform texture Texture_3: TEXLAYER3;
-uniform texture Texture_4: TEXLAYER4;
-uniform texture Texture_5: TEXLAYER5;
-uniform texture Texture_6: TEXLAYER6;
-uniform texture Texture_7: TEXLAYER7;
+uniform texture Tex0: TEXLAYER0;
+uniform texture Tex1: TEXLAYER1;
+uniform texture Tex2: TEXLAYER2;
+uniform texture Tex3: TEXLAYER3;
+uniform texture Tex4: TEXLAYER4;
+uniform texture Tex5: TEXLAYER5;
+uniform texture Tex6: TEXLAYER6;
+uniform texture Tex7: TEXLAYER7;
 
-sampler Sampler_Shadow_Alpha = sampler_state
+sampler SampleShadowAlpha = sampler_state
 {
-	Texture = (Texture_0);
+	Texture = (Tex0);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -74,9 +74,9 @@ sampler Sampler_Shadow_Alpha = sampler_state
 	AddressV = WRAP;
 };
 
-sampler Sampler_Wrap_0 = sampler_state
+sampler SampleTex0_Wrap = sampler_state
 {
-	Texture = (Texture_0);
+	Texture = (Tex0);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -84,9 +84,9 @@ sampler Sampler_Wrap_0 = sampler_state
 	AddressV = WRAP;
 };
 
-sampler Sampler_Color_LUT = sampler_state
+sampler SampleColorLUT = sampler_state
 {
-	Texture = (Texture_2);
+	Texture = (Tex2);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -124,7 +124,7 @@ VS2PS_Simple StaticMesh_Simple_VS(APP2VS Input)
 float4 StaticMesh_Simple_PS(VS2PS_Simple Input) : COLOR
 {
 	float4 Ambient = float4(1.0, 1.0, 1.0, 0.8);
-	float4 NormalMap = tex2D(Sampler_Wrap_0, Input.TexCoord);
+	float4 NormalMap = tex2D(SampleTex0_Wrap, Input.TexCoord);
 	return NormalMap * Ambient;
 }
 
@@ -192,7 +192,7 @@ float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
 float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 {
 	const float AlphaRef = 96.0f / 255.0f;
-	float4 Alpha = tex2D(Sampler_Shadow_Alpha, Input.Tex0);
+	float4 Alpha = tex2D(SampleShadowAlpha, Input.Tex0);
 	#if NVIDIA
 		return Alpha;
 	#else

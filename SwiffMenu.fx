@@ -12,7 +12,7 @@ uniform float4 TexGenT : TEXGENT;
 uniform texture TexMap : TEXTURE;
 uniform float Time : TIME;
 
-sampler Sampler_Clamp = sampler_state
+sampler SampleTexMap_Clamp = sampler_state
 {
 	Texture = (TexMap);
 	AddressU = CLAMP;
@@ -22,7 +22,7 @@ sampler Sampler_Clamp = sampler_state
 	MipFilter = NONE;
 };
 
-sampler Sampler_Wrap = sampler_state
+sampler SampleTexMap_Wrap = sampler_state
 {
 	Texture = (TexMap);
 	AddressU = WRAP;
@@ -84,7 +84,7 @@ VS2PS_ShapeTexture ShapeTexture_VS(float3 Position : POSITION)
 float4 RegularWrap_PS(VS2PS_ShapeTexture Input) : COLOR
 {
 	float4 OutputColor = 0.0;
-	float4 Tex = tex2D(Sampler_Wrap, Input.TexCoord);
+	float4 Tex = tex2D(SampleTexMap_Wrap, Input.TexCoord);
 	OutputColor.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
 	OutputColor.a = Tex.a * Input.Diffuse.a;
 	return OutputColor;
@@ -93,7 +93,7 @@ float4 RegularWrap_PS(VS2PS_ShapeTexture Input) : COLOR
 float4 RegularClamp_PS(VS2PS_ShapeTexture Input) : COLOR
 {
 	float4 OutputColor = 0.0;
-	float4 Tex = tex2D(Sampler_Clamp, Input.TexCoord);
+	float4 Tex = tex2D(SampleTexMap_Clamp, Input.TexCoord);
 	OutputColor.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
 	OutputColor.a = Tex.a * Input.Diffuse.a;
 	return OutputColor;

@@ -11,10 +11,10 @@
 
 float4 Low_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input) : COLOR
 {
-	float4 LightMap = tex2D(Sampler_0_Clamp, Input.Tex0);
+	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0);
 	float4 Light = saturate(LightMap.z * _GIColor * 2.0) * 0.5;
 
-	float AvgShadowValue = tex2Dproj(Sampler_2_Clamp, Input.ShadowTex);
+	float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex);
 	AvgShadowValue = AvgShadowValue == 1.0f;
 
 	if (AvgShadowValue < LightMap.y)

@@ -209,11 +209,11 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	float3 ViewVec = normalize(WorldSpaceCamPos - WorldPos);
 	float3 HalfVec = normalize(LightVec + ViewVec);
 
-	float4 ColorMap = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
+	float4 ColorMap = tex2D(SampleDiffuseMap, Input.P_Tex0_GroundUV.xy);
 
 	#if _HASNORMALMAP_
 		// Transform from tangent-space to world-space
-		float4 TangentNormal = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
+		float4 TangentNormal = tex2D(SampleNormalMap, Input.P_Tex0_GroundUV.xy);
 		float3 NormalVec = normalize(TangentNormal.xyz * 2.0 - 1.0);
 		NormalVec = normalize(mul(NormalVec, WorldTBN));
 	#else
@@ -221,7 +221,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _HASSHADOW_
-		float ShadowDir = GetShadowFactor(ShadowMapSampler, Input.ShadowTex);
+		float ShadowDir = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
 		float ShadowDir = 1.0f;
 	#endif
@@ -239,7 +239,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
 		float HemiLerp = GetHemiLerp(WorldPos, NormalVec);
-		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
+		float4 GroundColor = tex2D(SampleHemiMap, Input.P_Tex0_GroundUV.zw);
 		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 	#else
 		float3 Ambient = Lights[0].color.w;
@@ -255,7 +255,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	#if _HASENVMAP_
 		float3 Reflection = -reflect(ViewVec, NormalVec);
-		float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
+		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
 		ColorMap.rgb = lerp(ColorMap, EnvMapColor, Gloss / 4.0);
 	#endif
 
@@ -274,7 +274,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _HASGIMAP_
-		float4 GI = tex2D(GIMapSampler, Input.P_Tex0_GroundUV.xy);
+		float4 GI = tex2D(SampleGIMap, Input.P_Tex0_GroundUV.xy);
 		float4 GI_TIS = GI; // M
 		GI = (GI_TIS.a < 0.01) ? 1.0 : GI;
 	#else

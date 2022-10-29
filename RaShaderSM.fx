@@ -170,17 +170,17 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 
 	// (.a) stores the glossmap
 	#if _HASNORMALMAP_
-		float4 NormalVec = tex2D(NormalMapSampler, Input.P_Tex0_GroundUV.xy);
+		float4 NormalVec = tex2D(SampleNormalMap, Input.P_Tex0_GroundUV.xy);
 		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
 		NormalVec.xyz = normalize(mul(NormalVec.xyz, WorldTBN));
 	#else
 		float4 NormalVec = float4(WorldTBN[2], 0.15);
 	#endif
 
-	float4 DiffuseTex = tex2D(DiffuseMapSampler, Input.P_Tex0_GroundUV.xy);
+	float4 DiffuseTex = tex2D(SampleDiffuseMap, Input.P_Tex0_GroundUV.xy);
 
 	#if _HASSHADOW_
-		float ShadowDir = GetShadowFactor(ShadowMapSampler, Input.ShadowTex);
+		float ShadowDir = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
 		float ShadowDir = 1.0;
 	#endif
@@ -194,7 +194,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	#if _USEHEMIMAP_
 		// GoundColor.a has an occlusion factor that we can use for static shadowing
 		float HemiLerp = GetHemiLerp(WorldPos.xyz, NormalVec.xyz);
-		float4 GroundColor = tex2D(HemiMapSampler, Input.P_Tex0_GroundUV.zw);
+		float4 GroundColor = tex2D(SampleHemiMap, Input.P_Tex0_GroundUV.zw);
 		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 	#else
 		float3 Ambient = Lights[0].color.w;

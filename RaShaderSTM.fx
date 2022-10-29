@@ -119,7 +119,7 @@ VS2PS StaticMesh_VS(APP2VS Input)
 
 float2 GetParallax(float2 TexCoords, float3 ViewVec)
 {
-	float Height = tex2D(NormalMapSampler, TexCoords).a;
+	float Height = tex2D(SampleNormalMap, TexCoords).a;
 	Height = (Height * 2.0 - 1.0);
 	ViewVec.y = -ViewVec.y;
 	return TexCoords + (ViewVec.xy * Height * HARDCODED_PARALLAX_BIAS);
@@ -131,14 +131,14 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 	DiffuseGloss = StaticGloss;
 
 	#if _BASE_
-		Diffuse = tex2D(DiffuseMapSampler, Input.P_Base_Detail.xy);
+		Diffuse = tex2D(SampleDiffuseMap, Input.P_Base_Detail.xy);
 	#endif
 
 	#if _PARALLAXDETAIL_
-		Diffuse = tex2D(DiffuseMapSampler, GetParallax(Input.P_Base_Detail.xy, TanEyeVec));
-		float4 Detail = tex2D(DetailMapSampler, GetParallax(Input.P_Base_Detail.zw, TanEyeVec));
+		Diffuse = tex2D(SampleDiffuseMap, GetParallax(Input.P_Base_Detail.xy, TanEyeVec));
+		float4 Detail = tex2D(SampleDetailMap, GetParallax(Input.P_Base_Detail.zw, TanEyeVec));
 	#elif _DETAIL_
-		float4 Detail = tex2D(DetailMapSampler, Input.P_Base_Detail.zw);
+		float4 Detail = tex2D(SampleDetailMap, Input.P_Base_Detail.zw);
 	#endif
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
@@ -155,11 +155,11 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 	#endif
 
 	#if _DIRT_
-		Diffuse.rgb *= tex2D(DirtMapSampler, Input.P_Dirt_Crack.xy).rgb;
+		Diffuse.rgb *= tex2D(SampleDirtMap, Input.P_Dirt_Crack.xy).rgb;
 	#endif
 
 	#if _CRACK_
-		float4 Crack = tex2D(CrackMapSampler, Input.P_Dirt_Crack.zw);
+		float4 Crack = tex2D(SampleCrackMap, Input.P_Dirt_Crack.zw);
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
 
@@ -172,18 +172,18 @@ float4 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 	float4 Normals = float4(0.0, 0.0, 1.0, 1.0);
 
 	#if	_NBASE_
-		Normals = tex2D(NormalMapSampler, Input.P_Base_Detail.xy);
+		Normals = tex2D(SampleNormalMap, Input.P_Base_Detail.xy);
 	#endif
 
 	#if _PARALLAXDETAIL_
-		Normals = tex2D(NormalMapSampler, GetParallax(Input.P_Base_Detail.zw, TanEyeVec));
+		Normals = tex2D(SampleNormalMap, GetParallax(Input.P_Base_Detail.zw, TanEyeVec));
 	#elif _NDETAIL_
-		Normals = tex2D(NormalMapSampler, Input.P_Base_Detail.zw);
+		Normals = tex2D(SampleNormalMap, Input.P_Base_Detail.zw);
 	#endif
 
 	#if _NCRACK_
-		float4 CrackNormal = tex2D(CrackNormalMapSampler, Input.P_Dirt_Crack.zw);
-		float CrackMask = tex2D(CrackMapSampler, Input.P_Dirt_Crack.zw).a;
+		float4 CrackNormal = tex2D(SampleCrackNormalMap, Input.P_Dirt_Crack.zw);
+		float CrackMask = tex2D(SampleCrackMap, Input.P_Dirt_Crack.zw).a;
 		Normals = lerp(Normals, CrackNormal, CrackMask);
 	#endif
 
@@ -197,7 +197,7 @@ float4 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 float3 GetLightmap(VS2PS Input)
 {
 	#if _LIGHTMAP_
-		return tex2D(LightMapSampler, Input.LightMapTex.xy).rgb;
+		return tex2D(SampleLightMap, Input.LightMapTex.xy).rgb;
 	#else
 		return 1.0;
 	#endif

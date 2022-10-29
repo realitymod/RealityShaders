@@ -20,8 +20,7 @@ float TexUnpack;
 float4 ObjectSpaceCamPos;
 
 texture DetailMap;
-
-sampler DetailMapSampler = sampler_state
+sampler SampleDetailMap = sampler_state
 {
 	Texture = (DetailMap);
 	MipFilter = LINEAR;
@@ -32,8 +31,7 @@ sampler DetailMapSampler = sampler_state
 };
 
 texture DiffuseMap;
-
-sampler DiffuseMapSampler = sampler_state
+sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
 	MipFilter = LINEAR;
@@ -134,14 +132,14 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 float4 TrunkSTMDetail_PS(VS2PS Input) : COLOR
 {
 	float3 Normals = normalize(Input.Normals.xyz);
-	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.P_Tex0_Tex1.xy);
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
 	#if !defined(BASEDIFFUSEONLY)
-		DiffuseMap *= tex2D(DetailMapSampler, Input.P_Tex0_Tex1.zw);
+		DiffuseMap *= tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw);
 	#endif
 
 	float3 Diffuse = GetLambert(Normals.xyz, -Lights[0].dir) * Lights[0].color;
 	#if _HASSHADOW_
-		Diffuse = Diffuse * GetShadowFactor(ShadowMapSampler, Input.TexShadow);
+		Diffuse = Diffuse * GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#endif
 	Diffuse = saturate(OverGrowthAmbient.rgb + Diffuse);
 

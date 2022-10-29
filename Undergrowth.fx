@@ -34,13 +34,13 @@ string Category = "Effects\\Lighting";
 
 #include "shaders/RaCommon.fx"
 
-uniform texture Texture_0 : TEXLAYER0;
-uniform texture Texture_1 : TEXLAYER1;
-uniform texture Texture_2 : TEXLAYER2;
+uniform texture Tex0 : TEXLAYER0;
+uniform texture Tex1 : TEXLAYER1;
+uniform texture Tex2 : TEXLAYER2;
 
 sampler2D SampleColorMap = sampler_state
 {
-	Texture = (Texture_0);
+	Texture = (Tex0);
 	MipFilter = LINEAR;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
@@ -50,7 +50,7 @@ sampler2D SampleColorMap = sampler_state
 
 sampler2D SampleTerrainColorMap = sampler_state
 {
-	Texture = (Texture_1);
+	Texture = (Tex1);
 	MipFilter = LINEAR;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
@@ -60,7 +60,7 @@ sampler2D SampleTerrainColorMap = sampler_state
 
 sampler2D SampleTerrainLightMap = sampler_state
 {
-	Texture = (Texture_2);
+	Texture = (Tex2);
 	MipFilter = LINEAR;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
@@ -139,7 +139,7 @@ float4 Undergrowth_PS
 	float4 TerrainColor = (FogColor.r < 0.01) ? 0.333 : tex2D(SampleTerrainColorMap, Input.P_Tex0_Tex1.zw);
 	TerrainColor.rgb = lerp(TerrainColor.rgb, 1.0, Input.Color.a);
 	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.P_Tex0_Tex1.zw);
-	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(ShadowMapSampler, Input.TexShadow) : 1.0;
+	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.TexShadow) : 1.0;
 
 	float3 PointColor = (PointLightEnable) ? Input.Color.rgb * 0.125 : 0.0;
 	float3 TerrainLight = (TerrainLightMap.y * _SunColor.rgb * TerrainShadow.rgb + PointColor) * 2.0 + (TerrainLightMap.z * _GIColor.rgb);
@@ -382,7 +382,7 @@ float4 Undergrowth_Simple_PS
 
 	if (ShadowMapEnable)
 	{
-		float4 TerrainShadow = GetShadowFactor(ShadowMapSampler, Input.TexShadow);
+		float4 TerrainShadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
 		float3 Light = (Input.SunLight * TerrainShadow.xyz) + Input.P_Light_Scale.rgb;
 		LightColor = Base.rgb * Input.P_TerrainColor.rgb * Light * 2.0;
 	}

@@ -19,10 +19,10 @@ uniform float4 _GIColor : GICOLOR;
 uniform float4 _TexProjOffset : TEXPROJOFFSET;
 uniform float4 _TexProjScale : TEXPROJSCALE;
 
-uniform texture Lighting : TEXLAYER2;
-sampler Lighting_Sampler = sampler_state
+uniform texture LightMap : TEXLAYER2;
+sampler SampleLightMap = sampler_state
 {
-	Texture = (Lighting);
+	Texture = (LightMap);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 	MinFilter = LINEAR;
@@ -30,10 +30,10 @@ sampler Lighting_Sampler = sampler_state
 	MipFilter = LINEAR;
 };
 
-uniform texture Detail_0 : TEXLAYER3;
-sampler Detail_0_Sampler = sampler_state
+uniform texture DetailMap0 : TEXLAYER3;
+sampler SampleDetailMap0 = sampler_state
 {
-	Texture = (Detail_0);
+	Texture = (DetailMap0);
 	AddressU = CLAMP;
 	AddressV = WRAP;
 	MipFilter = LINEAR;
@@ -42,10 +42,10 @@ sampler Detail_0_Sampler = sampler_state
 	MaxAnisotropy = 16;
 };
 
-uniform texture Detail_1 : TEXLAYER4;
-sampler Detail_1_Sampler = sampler_state
+uniform texture DetailMap1 : TEXLAYER4;
+sampler SampleDetailMap1 = sampler_state
 {
-	Texture = (Detail_1);
+	Texture = (DetailMap1);
 	AddressU = WRAP;
 	AddressV = WRAP;
 	MipFilter = LINEAR;
@@ -100,14 +100,14 @@ VS2PS RoadCompiled_VS(APP2VS Input)
 float4 RoadCompiled_PS(VS2PS Input) : COLOR
 {
 	float ZFade = GetRoadZFade(Input.P_VertexPos_Alpha.xyz, _LocalEyePos.xyz, _FadeoutValues);
-	float4 Detail0 = tex2D(Detail_0_Sampler, Input.Tex_0_1.xy);
-	float4 Detail1 = tex2D(Detail_1_Sampler, Input.Tex_0_1.zw * 0.1);
+	float4 Detail0 = tex2D(SampleDetailMap0, Input.Tex_0_1.xy);
+	float4 Detail1 = tex2D(SampleDetailMap1, Input.Tex_0_1.zw * 0.1);
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
 	OutputColor.a = Detail0.a * saturate(ZFade * Input.P_VertexPos_Alpha.w);
 
-	float4 AccumLights = tex2Dproj(Lighting_Sampler, Input.PosTex);
+	float4 AccumLights = tex2Dproj(SampleLightMap, Input.PosTex);
 	float4 Light = 0.0;
 
 	if (FogColor.r < 0.01)
@@ -146,8 +146,8 @@ VS2PS_Dx9 RoadCompiled_Dx9_VS(APP2VS Input)
 float4 RoadCompiled_Dx9_PS(VS2PS_Dx9 Input) : COLOR
 {
 	float ZFade = GetRoadZFade(Input.VertexPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
-	float4 Detail0 = tex2D(Detail_0_Sampler, Input.Tex_0_1.xy);
-	float4 Detail1 = tex2D(Detail_1_Sampler, Input.Tex_0_1.zw);
+	float4 Detail0 = tex2D(SampleDetailMap0, Input.Tex_0_1.xy);
+	float4 Detail1 = tex2D(SampleDetailMap1, Input.Tex_0_1.zw);
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);

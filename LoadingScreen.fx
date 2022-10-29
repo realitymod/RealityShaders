@@ -17,7 +17,7 @@ uniform float4x4 _WorldViewProj : TRANSFORM;
 
 uniform texture TexMap : TEXTURE;
 
-sampler Sampler_TexMap = sampler_state
+sampler SampleTexMap = sampler_state
 {
     Texture = (TexMap);
     AddressU = WRAP;
@@ -52,7 +52,7 @@ VS2PS Screen_VS(APP2VS Input)
 
 float4 Screen_PS(VS2PS Input) : COLOR
 {
-	float4 InputTexture0 = tex2D(Sampler_TexMap, Input.Tex);
+	float4 InputTexture0 = tex2D(SampleTexMap, Input.Tex);
 	float4 OutputColor;
 	OutputColor.rgb = InputTexture0.rgb * Input.Color.rgb;
 	OutputColor.a = Input.Color.a;

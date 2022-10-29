@@ -16,10 +16,10 @@ uniform float4 _LightningColor: LIGHTNINGCOLOR = { 1.0, 1.0, 1.0, 1.0 };
 	[Textures and samplers]
 */
 
-uniform texture Texture_0 : TEXTURE;
-sampler Lightning_Sampler_0 = sampler_state
+uniform texture Tex0 : TEXTURE;
+sampler SampleLightning = sampler_state
 {
-	Texture = (Texture_0);
+	Texture = (Tex0);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -52,7 +52,7 @@ VS2PS Lightning_VS(APP2VS Input)
 
 float4 Lightning_PS(VS2PS Input) : COLOR
 {
-	float4 Color = tex2D(Lightning_Sampler_0, Input.TexCoords);
+	float4 Color = tex2D(SampleLightning, Input.TexCoords);
 	return float4(Color.rgb * _LightningColor.rgb, Color.a * _LightningColor.a * Input.Color.a);
 }
 

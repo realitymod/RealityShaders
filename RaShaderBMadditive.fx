@@ -69,7 +69,7 @@ VS2PS BM_Additive_VS(APP2VS Input)
 
 float4 BM_Additive_PS(VS2PS Input) : COLOR
 {
-	float4 OutputColor = tex2D(DiffuseMapSampler, Input.Tex);
+	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex);
 	OutputColor.rgb *= Transparency;
 	return OutputColor;
 }

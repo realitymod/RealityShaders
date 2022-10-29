@@ -13,7 +13,7 @@ float4 ObjectSpaceCamPos;
 float4 PosUnpack;
 
 texture DiffuseMap;
-sampler DiffuseMapSampler = sampler_state
+sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
 	MipFilter = LINEAR;
@@ -86,7 +86,7 @@ VS2PS TrunkOG_VS(APP2VS Input)
 // NOTE: could be an issue at some point.
 float4 TrunkOG_PS(VS2PS Input) : COLOR
 {
-	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.Tex0.xy);
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float3 Normals = normalize(Input.P_Normals_ScaleLN.xyz);
 	float Diffuse = GetLambert(Normals.xyz, -Lights[0].dir);
 

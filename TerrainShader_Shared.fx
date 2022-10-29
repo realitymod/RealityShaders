@@ -100,7 +100,7 @@ float4 ZFillLightMapColor : register(c0);
 
 float4 Shared_ZFillLightMap_1_PS(VS2PS_Shared_ZFillLightMap Input) : COLOR
 {
-	float4 Color = tex2D(Sampler_0_Clamp, Input.Tex0);
+	float4 Color = tex2D(SampleTex0_Clamp, Input.Tex0);
 	float4 OutputColor;
 	OutputColor.rgb = Color.b * _GIColor;
 	OutputColor.a = saturate(Color.g);
@@ -219,7 +219,7 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
 
 float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 {
-	float4 AccumLights = tex2Dproj(Sampler_1_Clamp, Input.LightTex);
+	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Light;
 	float4 ColorMap;
 
@@ -231,7 +231,7 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 	else
 	{
 		Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
-		ColorMap = tex2D(Sampler_0_Clamp, Input.ColorTex);
+		ColorMap = tex2D(SampleTex0_Clamp, Input.ColorTex);
 	}
 
 	#if LIGHTONLY
@@ -240,10 +240,10 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 	#endif
 
 	#if HIGHTERRAIN
-		float4 LowComponent = tex2D(Sampler_5_Clamp, Input.CompTex);
-		float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.YPlaneTex);
-		float4 XPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.XPlaneTex);
-		float4 ZPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.ZPlaneTex);
+		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.CompTex);
+		float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
+		float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex);
+		float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
 		float Mounten = (XPlaneLowDetailmap.y * Input.P_Blend_Water.x) +
 						(YPlaneLowDetailmap.x * Input.P_Blend_Water.y) +
 						(ZPlaneLowDetailmap.y * Input.P_Blend_Water.z);
@@ -253,7 +253,7 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos, _CameraPos));
 		return OutputColor;
 	#else
-		float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.YPlaneTex);
+		float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
 		float3 OutputColor = ColorMap * Light * 2.0;
 		OutputColor = OutputColor * lerp(YPlaneLowDetailmap.x, YPlaneLowDetailmap.z, Input.P_Blend_Water.y);
 		OutputColor = lerp(OutputColor * 2.0, _TerrainWaterColor, Input.P_Blend_Water.w);
@@ -292,9 +292,9 @@ VS2PS_Shared_DynamicShadowmap Shared_DynamicShadowmap_VS(APP2VS_Shared_Default I
 float4 Shared_DynamicShadowmap_PS(VS2PS_Shared_DynamicShadowmap Input) : COLOR
 {
 	#if NVIDIA
-		float AvgShadowValue = tex2Dproj(Sampler_2_Clamp, Input.ShadowTex);
+		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex);
 	#else
-		float AvgShadowValue = tex2Dproj(Sampler_2_Clamp, Input.ShadowTex) == 1.0;
+		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex) == 1.0;
 	#endif
 	return AvgShadowValue.x;
 }
@@ -440,13 +440,13 @@ float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 	}
 	else
 	{
-		ColorMap = tex2D(Sampler_0_Clamp, Input.ColorLightTex);
+		ColorMap = tex2D(SampleTex0_Clamp, Input.ColorLightTex);
 	}
 
-	float4 LowComponent = tex2D(Sampler_5_Clamp, Input.LowDetailTex);
-	float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.YPlaneTex);
-	float4 XPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.XPlaneTex);
-	float4 ZPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.ZPlaneTex);
+	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.LowDetailTex);
+	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
+	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex);
+	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
 
 	float4 LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x);
 	float Mounten = (XPlaneLowDetailmap.y * Input.BlendValue.x) +

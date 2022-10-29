@@ -10,16 +10,16 @@ float4x4 _World : World;
 
 string Category = "Effects\\Lighting";
 
-texture texture0 : TEXLAYER0;
-sampler sampler0 = sampler_state
+texture Tex0 : TEXLAYER0;
+sampler SampleTex0 = sampler_state
 {
-	Texture = (texture0);
+	Texture = (Tex0);
 	AddressU = WRAP;
 	AddressV = WRAP;
 	MinFilter = ANISOTROPIC;
 	MagFilter = ANISOTROPIC;
-	MaxAnisotropy = 16;
 	MipFilter = LINEAR;
+	MaxAnisotropy = 16;
 };
 
 float _TextureScale : TEXTURESCALE;
@@ -370,7 +370,7 @@ VS2PS_Grid Debug_Grid_VS(APP2VS Input)
 
 float4 Debug_Grid_PS(VS2PS_Grid Input) : COLOR
 {
-	float4 Tex = tex2D(sampler0, Input.Tex);
+	float4 Tex = tex2D(SampleTex0, Input.Tex);
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = Tex * Input.Diffuse;
 	OutputColor.a = (1.0 - Tex.b);// * Input.Diffuse.a;

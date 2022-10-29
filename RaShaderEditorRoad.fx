@@ -20,7 +20,7 @@ float4 PosUnpack;
 float TexUnpack;
 
 texture	LightMap;
-sampler LightMapSampler = sampler_state
+sampler SampleLightMap = sampler_state
 {
 	Texture = (LightMap);
 	MipFilter = LINEAR;
@@ -32,7 +32,7 @@ sampler LightMapSampler = sampler_state
 
 #if defined(USE_DETAIL)
 	texture	DetailMap;
-	sampler DetailMapSampler = sampler_state
+	sampler SampleDetailMap = sampler_state
 	{
 		Texture = (DetailMap);
 		MipFilter = LINEAR;
@@ -45,7 +45,7 @@ sampler LightMapSampler = sampler_state
 #endif
 
 texture DiffuseMap;
-sampler DiffuseMapSampler = sampler_state
+sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
 	MipFilter = LINEAR;
@@ -137,10 +137,10 @@ VS2PS Editor_Road_VS(APP2VS Input)
 
 float4 Editor_Road_PS(VS2PS Input) : COLOR
 {
-	float4 Diffuse = tex2D(DiffuseMapSampler, Input.P_Tex0_Tex1.xy);
+	float4 Diffuse = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
 
 	#if defined(USE_DETAIL)
-		float4 Detail = tex2D(DetailMapSampler, Input.P_Tex0_Tex1.zw);
+		float4 Detail = tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw);
 		float4 OutputColor = Diffuse * Detail;
 	#else
 		float4 OutputColor = Diffuse;

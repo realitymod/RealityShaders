@@ -18,10 +18,10 @@ uniform float2 _CloudLerpFactors : CLOUDLERPFACTORS;
 uniform float _LightingBlend : LIGHTINGBLEND;
 uniform float3 _LightingColor : LIGHTINGCOLOR;
 
-uniform texture Texture_0 : TEXLAYER0;
-sampler Texture_0_Sampler = sampler_state
+uniform texture Tex0 : TEXLAYER0;
+sampler SampleTex0 = sampler_state
 {
-	Texture = (Texture_0);
+	Texture = (Tex0);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -29,10 +29,10 @@ sampler Texture_0_Sampler = sampler_state
 	AddressV = CLAMP;
 };
 
-uniform texture Texture_1 : TEXLAYER1;
-sampler Texture_1_Sampler = sampler_state
+uniform texture Tex1 : TEXLAYER1;
+sampler SampleTex1 = sampler_state
 {
-	Texture = (Texture_1);
+	Texture = (Tex1);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -40,10 +40,10 @@ sampler Texture_1_Sampler = sampler_state
 	AddressV = WRAP;
 };
 
-uniform texture Texture_2 : TEXLAYER2;
-sampler Texture_2_Sampler = sampler_state
+uniform texture Tex2 : TEXLAYER2;
+sampler SampleTex2 = sampler_state
 {
-	Texture = (Texture_2);
+	Texture = (Tex2);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -111,16 +111,16 @@ float4 SkyDome_UnderWater_PS(VS2PS_SkyDome Input) : COLOR
 
 float4 SkyDome_PS(VS2PS_SkyDome Input) : COLOR
 {
-	float4 Sky = tex2D(Texture_0_Sampler, Input.UV_Sky_Cloud.xy);
-	float4 Cloud1 = tex2D(Texture_1_Sampler, Input.UV_Sky_Cloud.zw) * Input.FadeOut;
+	float4 Sky = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
+	float4 Cloud1 = tex2D(SampleTex1, Input.UV_Sky_Cloud.zw) * Input.FadeOut;
 	return float4(lerp(Sky.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 }
 
 float4 SkyDome_Lit_PS(VS2PS_SkyDome Input) : COLOR
 {
-	float4 Sky = tex2D(Texture_0_Sampler, Input.UV_Sky_Cloud.xy);
+	float4 Sky = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
 	Sky.rgb += _LightingColor.rgb * (Sky.a * _LightingBlend);
-	float4 Cloud1 = tex2D(Texture_1_Sampler, Input.UV_Sky_Cloud.zw) * Input.FadeOut;
+	float4 Cloud1 = tex2D(SampleTex1, Input.UV_Sky_Cloud.zw) * Input.FadeOut;
 	return float4(lerp(Sky.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 }
 
@@ -180,9 +180,9 @@ VS2PS_DualClouds SkyDome_DualClouds_VS(APP2VS Input)
 
 float4 SkyDome_DualClouds_PS(VS2PS_DualClouds Input) : COLOR
 {
-	float4 Sky = tex2D(Texture_0_Sampler, Input.SkyCoord);
-	float4 Cloud1 = tex2D(Texture_1_Sampler, Input.CloudCoords.xy);
-	float4 Cloud2 = tex2D(Texture_2_Sampler, Input.CloudCoords.zw);
+	float4 Sky = tex2D(SampleTex0, Input.SkyCoord);
+	float4 Cloud1 = tex2D(SampleTex1, Input.CloudCoords.xy);
+	float4 Cloud2 = tex2D(SampleTex2, Input.CloudCoords.zw);
 	float4 Temp = Cloud1 * _CloudLerpFactors.x + Cloud2 * _CloudLerpFactors.y;
 	Temp *= Input.FadeOut;
 	return lerp(Sky, Temp, Temp.a);
@@ -215,12 +215,12 @@ VS2PS_NoClouds SkyDome_NoClouds_VS(APP2VS_NoClouds Input)
 
 float4 SkyDome_NoClouds_PS(VS2PS_SkyDome Input) : COLOR
 {
-	return tex2D(Texture_0_Sampler, Input.UV_Sky_Cloud.xy);
+	return tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
 }
 
 float4 SkyDome_NoClouds_Lit_PS(VS2PS_SkyDome Input) : COLOR
 {
-	float4 Sky = tex2D(Texture_0_Sampler, Input.UV_Sky_Cloud.xy);
+	float4 Sky = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
 	Sky.rgb += _LightingColor.rgb * (Sky.a * _LightingBlend);
 	return Sky;
 }
@@ -266,13 +266,13 @@ float4 SkyDome_SunFlare_PS(VS2PS_SkyDome Input) : COLOR
 {
 	// return 1.0;
 	// return float4(_FlareParams[0], 0.0, 0.0, 1.0);
-	float3 OutputColor = tex2D(Texture_0_Sampler, Input.UV_Sky_Cloud.xy).rgb * _FlareParams[0];
+	float3 OutputColor = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy).rgb * _FlareParams[0];
 	return float4(OutputColor, 1.0);
 }
 
 float4 SkyDome_Flare_Occlude_PS(VS2PS_SkyDome Input) : COLOR
 {
-	float4 Value = tex2D(Texture_0_Sampler, Input.UV_Sky_Cloud.xy);
+	float4 Value = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
 	return float4(0.0, 1.0, 0.0, Value.a);
 }
 

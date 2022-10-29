@@ -22,8 +22,7 @@ float TexUnpack;
 vector textureFactor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 
 texture LightMap;
-
-sampler LightMapSampler = sampler_state
+sampler SampleLightMap = sampler_state
 {
 	Texture = (LightMap);
 	MipFilter = LINEAR;
@@ -35,8 +34,7 @@ sampler LightMapSampler = sampler_state
 
 #if defined(USE_DETAIL)
 	texture DetailMap;
-
-	sampler DetailMapSampler = sampler_state
+	sampler SampleDetailMap = sampler_state
 	{
 		Texture = (DetailMap);
 		MipFilter = LINEAR;
@@ -49,8 +47,7 @@ sampler LightMapSampler = sampler_state
 #endif
 
 texture DiffuseMap;
-
-sampler DiffuseMapSampler = sampler_state
+sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
 	MipFilter = LINEAR;
@@ -146,11 +143,11 @@ float4 Road_PS(VS2PS Input) : COLOR
 	float4 Light = 0.0;
 	float4 TerrainColor = float4(TerrainSunColor, 1.0);
 
-	float4 AccumLights = tex2Dproj(LightMapSampler, Input.LightTex);
-	float4 Diffuse = tex2D(DiffuseMapSampler, Input.P_Tex0_Tex1.xy);
+	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
+	float4 Diffuse = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
 
 	#if defined(USE_DETAIL)
-		float4 Detail = tex2D(DetailMapSampler, Input.P_Tex0_Tex1.zw);
+		float4 Detail = tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw);
 		#if defined(NO_BLEND)
 			Diffuse.rgb *= Detail.rgb;
 		#else

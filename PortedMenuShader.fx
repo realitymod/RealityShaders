@@ -26,12 +26,10 @@ uniform float4x4 _ProjMatrix : matPROJ;
 	[Textures and samplers]
 */
 
-uniform texture Texture_0: TEXLAYER0;
-uniform texture Texture_1: TEXLAYER1;
-
-sampler Sampler_0_Clamp = sampler_state
+uniform texture Tex0: TEXLAYER0;
+sampler SampleTex0 = sampler_state
 {
-	Texture = (Texture_0);
+	Texture = (Tex0);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 	MinFilter = LINEAR;
@@ -39,9 +37,10 @@ sampler Sampler_0_Clamp = sampler_state
 	MipFilter = LINEAR;
 };
 
-sampler Sampler_1_Clamp = sampler_state
+uniform texture Tex1: TEXLAYER1;
+sampler SampleTex1 = sampler_state
 {
-	Texture = (Texture_1);
+	Texture = (Tex1);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 	MinFilter = LINEAR;
@@ -54,7 +53,7 @@ struct APP2VS
 	float4 Pos : POSITION;
 	float4 Color : COLOR;
 	float2 TexCoord0 : TEXCOORD0;
-	float2 TexCoord2 : TEXCOORD1;
+	float2 TexCoord1 : TEXCOORD1;
 };
 
 struct VS2PS
@@ -62,7 +61,7 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Color : COLOR0;
 	float2 TexCoord0 : TEXCOORD0;
-	float2 TexCoord2 : TEXCOORD1;
+	float2 TexCoord1 : TEXCOORD1;
 };
 
 VS2PS Basic_VS(APP2VS Input)
@@ -72,7 +71,7 @@ VS2PS Basic_VS(APP2VS Input)
 	Output.HPos = mul(Input.Pos, WorldViewProj);
 	Output.Color = saturate(Input.Color);
  	Output.TexCoord0 = Input.TexCoord0;
- 	Output.TexCoord2 = Input.TexCoord2;
+ 	Output.TexCoord1 = Input.TexCoord1;
 	return Output;
 }
 
@@ -94,14 +93,14 @@ float4 Quad_WTex_NoTex_PS(VS2PS Input) : COLOR
 
 float4 Quad_WTex_Tex_PS(VS2PS Input) : COLOR
 {
-	return Input.Color * tex2D(Sampler_0_Clamp, Input.TexCoord0);
+	return Input.Color * tex2D(SampleTex0, Input.TexCoord0);
 }
 
 float4 Quad_WTex_Tex_Masked_PS(VS2PS Input) : COLOR
 {
-	float4 Color = Input.Color * tex2D(Sampler_0_Clamp, Input.TexCoord0);
-	// Color *= tex2D(Sampler_1_Clamp, Input.TexCoord2);
-	Color.a *= tex2D(Sampler_1_Clamp, Input.TexCoord2).a;
+	float4 Color = Input.Color * tex2D(SampleTex0, Input.TexCoord0);
+	// Color *= tex2D(SampleTex1, Input.TexCoord1);
+	Color.a *= tex2D(SampleTex1, Input.TexCoord1).a;
 	return Color;
 }
 
@@ -157,7 +156,7 @@ technique QuadWithTexture
 
 float4 Quad_Cache_PS(VS2PS Input) : COLOR
 {
-	float4 InputTexture = tex2D(Sampler_0_Clamp, Input.TexCoord0);
+	float4 InputTexture = tex2D(SampleTex0, Input.TexCoord0);
 	return (InputTexture + 1.0) * Input.Color;
 }
 

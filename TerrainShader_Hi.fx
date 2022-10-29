@@ -10,9 +10,9 @@
 */
 
 // Special samplers for dynamic filtering types
-sampler Dyn_Sampler_3_Wrap = sampler_state
+sampler SampleTex3_Dynamic_Wrap = sampler_state
 {
-	Texture = (Texture_3);
+	Texture = (Tex3);
 	AddressU = WRAP;
 	AddressV = WRAP;
 	MipFilter = LINEAR;
@@ -21,20 +21,9 @@ sampler Dyn_Sampler_3_Wrap = sampler_state
 	MaxAnisotropy = 16;
 };
 
-sampler Dyn_Sampler_4_Wrap = sampler_state
+sampler SampleTex6_Dynamic_Wrap = sampler_state
 {
-	Texture = (Texture_4);
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MipFilter = LINEAR;
-	MinFilter = FILTER_TRN_DIFF_MIN;
-	MagFilter = FILTER_TRN_DIFF_MAG;
-	MaxAnisotropy = 16;
-};
-
-sampler Dyn_Sampler_6_Wrap = sampler_state
-{
-	Texture = (Texture_6);
+	Texture = (Tex6);
 	AddressU = WRAP;
 	AddressV = WRAP;
 	MipFilter = LINEAR;
@@ -138,9 +127,9 @@ float4 Hi_FullDetail_PS(Hi_VS2PS_FullDetail Input) : COLOR
 {
 	//	return float4(0.0, 0.0, 0.25, 1.0);
 	#if LIGHTONLY
-		float4 AccumLights = tex2Dproj(Sampler_1_Clamp, Input.Tex1);
+		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
 		float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
-		float4 Component = tex2D(Sampler_2_Clamp, Input.Tex0.xy);
+		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.xy);
 		float ChartContrib = dot(_ComponentSelector, Component);
 		return ChartContrib * Light;
 	#else
@@ -151,7 +140,7 @@ float4 Hi_FullDetail_PS(Hi_VS2PS_FullDetail Input) : COLOR
 		float3 ColorMap;
 		float3 Light;
 
-		float4 AccumLights = tex2Dproj(Sampler_1_Clamp, Input.Tex1);
+		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
 
 		// tl: 2* moved later in shader to avoid clamping at -+2.0 in ps1.4
 		if (FogColor.r < 0.01)
@@ -164,21 +153,21 @@ float4 Hi_FullDetail_PS(Hi_VS2PS_FullDetail Input) : COLOR
 		else
 		{
 			Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
-			ColorMap = tex2D(Sampler_0_Clamp, Input.Tex0.xy);
+			ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 		}
 
-		float4 Component = tex2D(Sampler_2_Clamp, Input.Tex6);
+		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex6);
 		float ChartContrib = dot(_ComponentSelector, Component);
-		float3 DetailMap = tex2D(Dyn_Sampler_3_Wrap, Input.Tex3.xy);
+		float3 DetailMap = tex2D(SampleTex3_Dynamic_Wrap, Input.Tex3.xy);
 
 		#if HIGHTERRAIN
-			float4 LowComponent = tex2D(Sampler_5_Clamp, Input.Tex6);
-			float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex5.xy);
-			float4 XPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex3.xy);
-			float4 ZPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex0.wz);
+			float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex6);
+			float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
+			float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex3.xy);
+			float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex0.wz);
 			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x * Input.P_VertexPos_Fade.w);
 		#else
-			float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex5.xy);
+			float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
 
 			// tl: do lerp in 1 MAD by precalculating constant factor in vShader
 			float LowDetailMap = lerp(YPlaneLowDetailmap.x, YPlaneLowDetailmap.z, Input.BlendValueAndFade.y);
@@ -302,9 +291,9 @@ VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input
 float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 {
 	#if LIGHTONLY
-		float4 AccumLights = tex2Dproj(Sampler_1_Clamp, Input.Tex1);
+		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
 		float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
-		float4 Component = tex2D(Sampler_2_Clamp, Input.Tex0.xy);
+		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.xy);
 		float ChartContrib = dot(_ComponentSelector, Component);
 		return ChartContrib * Light;
 	#else
@@ -312,7 +301,7 @@ float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 			return float4(1,0, 0.0, 1.0);
 		#endif
 
-		float4 AccumLights = tex2Dproj(Sampler_1_Clamp, Input.Tex1);
+		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
 
 		// tl: 2* moved later in shader to avoid clamping at -+2.0 in ps1.4
 		float3 Light;
@@ -327,20 +316,20 @@ float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 		else
 		{
 			Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
-			ColorMap = tex2D(Sampler_0_Clamp, Input.Tex0.xy);
+			ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 		}
 
-		float4 Component = tex2D(Sampler_2_Clamp, Input.Tex7);
+		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex7);
 		float ChartContrib = dot(_ComponentSelector, Component);
 
 		#if HIGHTERRAIN
-			float3 YPlaneDetailmap = tex2D(Dyn_Sampler_3_Wrap, Input.Tex6.xy);
-			float3 XPlaneDetailmap = tex2D(Dyn_Sampler_6_Wrap, Input.Tex0.wz);
-			float3 ZPlaneDetailmap = tex2D(Dyn_Sampler_6_Wrap, Input.Tex6.wz);
-			float3 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex5.xy);
-			float3 XPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex3.xy);
-			float3 ZPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex3.wz);
-			float3 LowComponent = tex2D(Sampler_5_Clamp, Input.Tex7);
+			float3 YPlaneDetailmap = tex2D(SampleTex3_Dynamic_Wrap, Input.Tex6.xy);
+			float3 XPlaneDetailmap = tex2D(SampleTex6_Dynamic_Wrap, Input.Tex0.wz);
+			float3 ZPlaneDetailmap = tex2D(SampleTex6_Dynamic_Wrap, Input.Tex6.wz);
+			float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
+			float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex3.xy);
+			float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex3.wz);
+			float3 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex7);
 			float3 DetailMap = 	(XPlaneDetailmap * Input.BlendValueAndFade.x) +
 								(YPlaneDetailmap * Input.BlendValueAndFade.y) +
 								(ZPlaneDetailmap * Input.BlendValueAndFade.z);
@@ -354,8 +343,8 @@ float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 			float3 BothDetailmap = DetailMap * LowDetailMap;
 			float3 DetailOut = lerp(2.0 * BothDetailmap, LowDetailMap, Input.BlendValueAndFade.w);
 		#else
-			float3 YPlaneDetailmap = tex2D(Sampler_3_Wrap, Input.Tex6.xy);
-			float3 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex5.xy);
+			float3 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.Tex6.xy);
+			float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
 			float LowDetailMap = lerp(YPlaneLowDetailmap.x, YPlaneLowDetailmap.z, Input.BlendValueAndFade.y);
 			// tl: lerp optimized to handle 2*c*low + (2-2c)*detail, factors sent from vs
 			// tl: dont use detail mountains
@@ -471,9 +460,9 @@ Hi_VS2PS_FullDetail_EnvMap Hi_FullDetail_EnvMap_VS(APP2VS_Shared_Default Input)
 float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 {
 	#if LIGHTONLY
-		float4 AccumLights = tex2Dproj(Sampler_1_Clamp, Input.Tex1);
+		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
 		float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
-		float4 Component = tex2D(Sampler_2_Clamp, Input.Tex0.xy);
+		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.xy);
 		float ChartContrib = dot(_ComponentSelector, Component);
 		return ChartContrib * Light;
 	#else
@@ -481,7 +470,7 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 			return float4(0.0, 1.0, 0.0, 1.0);
 		#endif
 
-		float4 AccumLights = tex2Dproj(Sampler_1_Clamp, Input.Tex1);
+		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
 
 		float3 Light;
 		float3 ColorMap;
@@ -495,21 +484,21 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 		else
 		{
 			Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
-			ColorMap = tex2D(Sampler_0_Clamp, Input.Tex0.xy);
+			ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 		}
 
-		float4 Component = tex2D(Sampler_2_Clamp, Input.Tex6);
+		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex6);
 		float ChartContrib = dot(_ComponentSelector, Component);
-		float4 DetailMap = tex2D(Dyn_Sampler_3_Wrap, Input.Tex3.xy);
+		float4 DetailMap = tex2D(SampleTex3_Dynamic_Wrap, Input.Tex3.xy);
 
 		#if HIGHTERRAIN
-			float4 LowComponent = tex2D(Sampler_5_Clamp, Input.Tex6);
-			float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex5.xy);
-			float4 XPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex3.xy);
-			float4 ZPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex0.wz);
+			float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex6);
+			float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
+			float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex3.xy);
+			float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex0.wz);
 			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x * Input.P_VertexPos_Fade.w);
 		#else
-			float4 YPlaneLowDetailmap = tex2D(Sampler_4_Wrap, Input.Tex5.xy);
+			float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
 			float LowDetailMap = 2.0 * YPlaneLowDetailmap.z * Input.BlendValueAndFade.y + (Input.P_VertexPos_Fade.w * -0.5 + 0.5);
 		#endif
 
@@ -526,7 +515,7 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 		#endif
 
 		float3 OutputColor = DetailOut * ColorMap * Light;
-		float4 EnvMapColor = texCUBE(Sampler_6_Cube, Input.EnvMap);
+		float4 EnvMapColor = texCUBE(SamplerTex6_Cube, Input.EnvMap);
 
 		#if HIGHTERRAIN
 			OutputColor = lerp(OutputColor, EnvMapColor, DetailMap.w * (1.0 - Input.BlendValueAndFade.w)) * 2.0;
@@ -581,9 +570,9 @@ float4 Hi_PerPixelPointLight_PS(VS2PS_Hi_PerPixelPointLight Input) : COLOR
 
 float4 Hi_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input) : COLOR
 {
-	float4 LightMap = tex2D(Sampler_0_Clamp, Input.Tex0);
+	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0);
 
-	float4 AvgShadowValue = GetShadowFactor(ShadowMapSampler, Input.ShadowTex);
+	float4 AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 
 	float4 Light = saturate(LightMap.z * _GIColor * 2.0) * 0.5;
 	if (AvgShadowValue.z < LightMap.y)

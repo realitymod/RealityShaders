@@ -33,7 +33,7 @@ float4 ObjectSpaceCamPos;
 float ObjRadius = 2;
 
 texture DiffuseMap;
-sampler DiffuseMapSampler = sampler_state
+sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
 	MipFilter = LINEAR;
@@ -178,11 +178,11 @@ VS2PS Leaf_VS(APP2VS Input)
 
 float4 Leaf_PS(VS2PS Input) : COLOR
 {
-	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.Tex0.xy);
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 VertexColor = Input.Color;
 
 	#if _HASSHADOW_
-		VertexColor.rgb *= saturate(GetShadowFactor(ShadowMapSampler, Input.TexShadow) + (2.0 / 3.0));
+		VertexColor.rgb *= saturate(GetShadowFactor(SampleShadowMap, Input.TexShadow) + (2.0 / 3.0));
 		VertexColor.rgb += OverGrowthAmbient.rgb * 0.5;
 	#endif
 

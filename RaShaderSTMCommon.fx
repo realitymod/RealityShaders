@@ -3,7 +3,7 @@
 
 // common staticMesh samplers
 texture LightMap;
-sampler LightMapSampler = sampler_state
+sampler SampleLightMap = sampler_state
 {
 	Texture = (LightMap);
 	MipFilter = LINEAR;
@@ -14,7 +14,7 @@ sampler LightMapSampler = sampler_state
 };
 
 texture DetailMap;
-sampler DetailMapSampler = sampler_state
+sampler SampleDetailMap = sampler_state
 {
 	Texture = (DetailMap);
 	MipFilter = LINEAR;
@@ -26,7 +26,7 @@ sampler DetailMapSampler = sampler_state
 };
 
 texture DirtMap;
-sampler DirtMapSampler = sampler_state
+sampler SampleDirtMap = sampler_state
 {
 	Texture = (DirtMap);
 	MipFilter = LINEAR;
@@ -37,7 +37,7 @@ sampler DirtMapSampler = sampler_state
 };
 
 texture CrackMap;
-sampler CrackMapSampler = sampler_state
+sampler SampleCrackMap = sampler_state
 {
 	Texture = (CrackMap);
 	MipFilter = LINEAR;
@@ -49,7 +49,7 @@ sampler CrackMapSampler = sampler_state
 };
 
 texture CrackNormalMap;
-sampler CrackNormalMapSampler = sampler_state
+sampler SampleCrackNormalMap = sampler_state
 {
 	Texture = (CrackNormalMap);
 	MipFilter = LINEAR;
@@ -60,7 +60,7 @@ sampler CrackNormalMapSampler = sampler_state
 };
 
 texture DiffuseMap;
-sampler DiffuseMapSampler = sampler_state
+sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
 	MipFilter = LINEAR;
@@ -71,7 +71,7 @@ sampler DiffuseMapSampler = sampler_state
 };
 
 texture NormalMap;
-sampler NormalMapSampler = sampler_state
+sampler SampleNormalMap = sampler_state
 {
 	Texture = (NormalMap);
 	MipFilter = LINEAR;

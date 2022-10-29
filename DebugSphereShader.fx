@@ -21,7 +21,7 @@ texture BaseTex : TEXLAYER0
 	string TextureType = "2D";
 >;
 
-sampler2D SampleBase = sampler_state
+sampler2D SampleBaseTex = sampler_state
 {
 	Texture = (BaseTex);
 	MipFilter = LINEAR;
@@ -67,12 +67,12 @@ VS2PS Debug_Basic_VS(APP2VS Input)
 
 float4 Debug_Basic_PS(VS2PS Input) : COLOR
 {
-	return tex2D(SampleBase, Input.Tex0) * Input.Diffuse;
+	return tex2D(SampleBaseTex, Input.Tex0) * Input.Diffuse;
 }
 
 float4 Debug_Marked_PS(VS2PS Input) : COLOR
 {
-	return (tex2D(SampleBase, Input.Tex0) * Input.Diffuse) + float4(1.0f, 0.0f, 0.0f, 0.0f);
+	return (tex2D(SampleBaseTex, Input.Tex0) * Input.Diffuse) + float4(1.0f, 0.0f, 0.0f, 0.0f);
 }
 
 technique t0_States < bool Restore = false; >

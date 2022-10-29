@@ -17,7 +17,7 @@ float4x4 Bones[26];
 float4 ObjectSpaceCamPos;
 
 texture DiffuseMap;
-sampler DiffuseMapSampler = sampler_state
+sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
 	MipFilter = LINEAR;
@@ -76,7 +76,7 @@ VS2PS DiffuseBone_VS(APP2VS Input)
 
 float4 DiffuseBone_PS(VS2PS Input) : COLOR
 {
-	return tex2D(DiffuseMapSampler, Input.Tex) * float4(1.0, 0.0, 1.0, 1.0);
+	return tex2D(SampleDiffuseMap, Input.Tex) * float4(1.0, 0.0, 1.0, 1.0);
 };
 
 technique defaultTechnique

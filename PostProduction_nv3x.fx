@@ -46,10 +46,10 @@ uniform float _DeltaV : DELTAV;
 		MagFilter = FILTER; \
 	};
 
-uniform texture Texture_0 : TEXLAYER0;
-uniform texture Texture_1 : TEXLAYER1;
-uniform texture Texture_2 : TEXLAYER2;
-uniform texture Texture_3 : TEXLAYER3;
+uniform texture Tex0 : TEXLAYER0;
+uniform texture Tex1 : TEXLAYER1;
+uniform texture Tex2 : TEXLAYER2;
+uniform texture Tex3 : TEXLAYER3;
 
 /*
 	Unused?
@@ -58,15 +58,15 @@ uniform texture Texture_3 : TEXLAYER3;
 	texture Texture6 : TEXLAYER6;
 */
 
-CREATE_SAMPLER(Sampler_0_Bilinear, Texture_0, CLAMP, LINEAR)
+CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, LINEAR)
 
-CREATE_SAMPLER(Sampler_1_Bilinear, Texture_1, CLAMP, LINEAR)
-CREATE_SAMPLER(Sampler_1_Bilinear_Wrap, Texture_1, WRAP, LINEAR)
+CREATE_SAMPLER(SampleTex1, Tex1, CLAMP, LINEAR)
+CREATE_SAMPLER(SampleTex1_Wrap, Tex1, WRAP, LINEAR)
 
-CREATE_SAMPLER(Sampler_2_Bilinear, Texture_2, CLAMP, LINEAR)
-CREATE_SAMPLER(Sampler_2_Bilinear_Wrap, Texture_2, WRAP, LINEAR)
+CREATE_SAMPLER(SampleTex2, Tex2, CLAMP, LINEAR)
+CREATE_SAMPLER(SampleTex2_Wrap, Tex2, WRAP, LINEAR)
 
-CREATE_SAMPLER(Sampler_3_Bilinear, Texture_3, CLAMP, LINEAR)
+CREATE_SAMPLER(SampleTex3, Tex3, CLAMP, LINEAR)
 
 struct APP2VS_Quad
 {
@@ -126,10 +126,10 @@ float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 
 	for(int i = 0; i < 8; i++)
 	{
-		Blur += FilterKernel[i].w * tex2D(Sampler_0_Bilinear, Input.TexCoord0.xy + 0.02 * FilterKernel[i].xy);
+		Blur += FilterKernel[i].w * tex2D(SampleTex0, Input.TexCoord0.xy + 0.02 * FilterKernel[i].xy);
 	}
 
-	float4 Color = tex2D(Sampler_0_Bilinear, Input.TexCoord0);
+	float4 Color = tex2D(SampleTex0, Input.TexCoord0);
 	float2 UV = Input.TexCoord0;
 
 	// Parabolic function for x opacity to darken the edges, exponential function for opacity to darken the lower part of the screen
@@ -164,12 +164,12 @@ technique Tinnitus
 
 float4 Glow_PS(VS2PS_Quad Input) : COLOR
 {
-	return tex2D(Sampler_0_Bilinear, Input.TexCoord0);
+	return tex2D(SampleTex0, Input.TexCoord0);
 }
 
 float4 Glow_Material_PS(VS2PS_Quad Input) : COLOR
 {
-	float4 Diffuse = tex2D(Sampler_0_Bilinear, Input.TexCoord0);
+	float4 Diffuse = tex2D(SampleTex0, Input.TexCoord0);
 	// return (1.0 - Diffuse.a);
 	// temporary test, should be removed
 	return _GlowStrength * /* Diffuse + */ float4(Diffuse.rgb * (1.0 - Diffuse.a), 1.0);
@@ -214,11 +214,11 @@ technique GlowMaterial
 /*
 	float4 Fog_PS(VS2PS_Quad Input) : COLOR
 	{
-		float3 WorldPosition = tex2D(Sampler_0_Bilinear, Input.TexCoord0).xyz;
+		float3 WorldPosition = tex2D(SampleTex0, Input.TexCoord0).xyz;
 		float Coord = saturate((WorldPosition.z - _FogStartAndEnd.r) / _FogStartAndEnd.g); // fogColorandomViewDistance.a);
 		return saturate(float4(_FogColor.rgb, Coord));
 		// float2 FogCoords = float2(Coord, 0.0);
-		return tex2D(Sampler_1_Bilinear, float2(Coord, 0.0)) * _FogColor.rgbb;
+		return tex2D(SampleTex1, float2(Coord, 0.0)) * _FogColor.rgbb;
 	}
 
 	technique Fog
@@ -276,25 +276,25 @@ PS2FB_Combine Thermal_Vision_PS(VS2PS_Quad_3 Input)
 {
 	PS2FB_Combine Output;
 	float2 ImgCoord = Input.TexCoord2;
-	float4 Image = tex2D(Sampler_0_Bilinear, ImgCoord);
+	float4 Image = tex2D(SampleTex0, ImgCoord);
 
 	if (_Interference <= 1)
 	{
 		float2 Pos = Input.TexCoord0;
-		float Random = tex2D(Sampler_2_Bilinear_Wrap, Pos) - 0.2;
+		float Random = tex2D(SampleTex2_Wrap, Pos) - 0.2;
 		if (_Interference < 0) // thermal imaging
 		{
 			float HOffset = 0.001;
 			float VOffset = 0.0015;
 			Image *= 0.25;
-			Image += tex2D(Sampler_0_Bilinear, ImgCoord + float2( HOffset, VOffset)) * 0.0625;
-			Image += tex2D(Sampler_0_Bilinear, ImgCoord - float2( HOffset, VOffset)) * 0.0625;
-			Image += tex2D(Sampler_0_Bilinear, ImgCoord + float2(-HOffset, VOffset)) * 0.0625;
-			Image += tex2D(Sampler_0_Bilinear, ImgCoord + float2( HOffset, -VOffset)) * 0.0625;
-			Image += tex2D(Sampler_0_Bilinear, ImgCoord + float2( HOffset, 0.0)) * 0.125;
-			Image += tex2D(Sampler_0_Bilinear, ImgCoord - float2( HOffset, 0.0)) * 0.125;
-			Image += tex2D(Sampler_0_Bilinear, ImgCoord + float2( 0.0, VOffset)) * 0.125;
-			Image += tex2D(Sampler_0_Bilinear, ImgCoord - float2( 0.0, VOffset)) * 0.125;
+			Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, VOffset)) * 0.0625;
+			Image += tex2D(SampleTex0, ImgCoord - float2( HOffset, VOffset)) * 0.0625;
+			Image += tex2D(SampleTex0, ImgCoord + float2(-HOffset, VOffset)) * 0.0625;
+			Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, -VOffset)) * 0.0625;
+			Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, 0.0)) * 0.125;
+			Image += tex2D(SampleTex0, ImgCoord - float2( HOffset, 0.0)) * 0.125;
+			Image += tex2D(SampleTex0, ImgCoord + float2( 0.0, VOffset)) * 0.125;
+			Image += tex2D(SampleTex0, ImgCoord - float2( 0.0, VOffset)) * 0.125;
 			// Output.Col0.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75f, 0.50f, Image.b), Image.b), Image.r, Image.r); // M
 			Output.Col0.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
 			Output.Col0.r -= _Interference * Random; // Add -_Interference
@@ -302,7 +302,7 @@ PS2FB_Combine Thermal_Vision_PS(VS2PS_Quad_3 Input)
 		}
 		else // normal tv effect
 		{
-			float Noise = tex2D(Sampler_1_Bilinear_Wrap, Input.TexCoord1) - 0.5;
+			float Noise = tex2D(SampleTex1_Wrap, Input.TexCoord1) - 0.5;
 			float Distort = frac(Pos.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
 			Distort *= (1.0 - Distort);
 			Distort /= 1.0 + _DistortionScale * abs(Pos.y);
@@ -327,20 +327,20 @@ PS2FB_Combine Thermal_Vision_Gradient_PS(VS2PS_Quad_3 Input)
 	{
 		float2 Pos = Input.TexCoord0;
 		float2 ImgCoord = Input.TexCoord2;
-		float Random = tex2D(Sampler_2_Bilinear_Wrap, Pos) - 0.2;
-		float Noise = tex2D(Sampler_1_Bilinear_Wrap, Input.TexCoord1) - 0.5;
+		float Random = tex2D(SampleTex2_Wrap, Pos) - 0.2;
+		float Noise = tex2D(SampleTex1_Wrap, Input.TexCoord1) - 0.5;
 		float Distort = frac(Pos.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
 		Distort *= (1.0 - Distort);
 		Distort /= 1.0 + _DistortionScale * abs(Pos.y);
 		ImgCoord.x += _DistortionScale * Noise * Distort;
-		float4 Image = dot(float3(0.3, 0.59, 0.11), tex2D(Sampler_0_Bilinear, ImgCoord).rgb);
+		float4 Image = dot(float3(0.3, 0.59, 0.11), tex2D(SampleTex0, ImgCoord).rgb);
 		float4 Intensity = (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
-		float4 GradientColor = tex2D(Sampler_3_Bilinear, float2(Intensity.r, 0.0f));
+		float4 GradientColor = tex2D(SampleTex3, float2(Intensity.r, 0.0f));
 		Output.Col0 = float4( GradientColor.rgb, Intensity.a );
 	}
 	else
 	{
-		Output.Col0 = tex2D(Sampler_0_Bilinear, Input.TexCoord2);
+		Output.Col0 = tex2D(SampleTex0, Input.TexCoord2);
 	}
 
 	return Output;
@@ -424,10 +424,10 @@ technique WaveDistortion
 
 float4 Flashbang_PS(VS2PS_Quad Input) : COLOR
 {
-	float4 Sample0 = tex2D(Sampler_0_Bilinear, Input.TexCoord0);
-	float4 Sample1 = tex2D(Sampler_1_Bilinear, Input.TexCoord0);
-	float4 Sample2 = tex2D(Sampler_2_Bilinear, Input.TexCoord0);
-	float4 Sample3 = tex2D(Sampler_3_Bilinear, Input.TexCoord0);
+	float4 Sample0 = tex2D(SampleTex0, Input.TexCoord0);
+	float4 Sample1 = tex2D(SampleTex1, Input.TexCoord0);
+	float4 Sample2 = tex2D(SampleTex2, Input.TexCoord0);
+	float4 Sample3 = tex2D(SampleTex3, Input.TexCoord0);
 
 	float4 OutputColor = Sample0 * 0.5;
 	OutputColor += Sample1 * 0.25;

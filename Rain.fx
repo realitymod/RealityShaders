@@ -21,11 +21,11 @@ float3 _PointScale : POINTSCALE;
 float _ParticleSize : PARTICLESIZE;
 float _MaxParticleSize : PARTICLEMAXSIZE;
 
-texture Texture_0 : TEXTURE;
+texture Tex0 : TEXTURE;
 
-sampler Sampler_0 = sampler_state
+sampler SampleTex0 = sampler_state
 {
-	Texture = (Texture_0);
+	Texture = (Tex0);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -72,7 +72,7 @@ VS2PS_Point Point_VS(APP2PS Input)
 
 float4 Point_PS(VS2PS_Point Input) : COLOR
 {
-	float4 TexCol = tex2D(Sampler_0, Input.TexCoord);
+	float4 TexCol = tex2D(SampleTex0, Input.TexCoord);
 	return TexCol * Input.Color;
 }
 

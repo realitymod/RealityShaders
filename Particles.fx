@@ -110,7 +110,7 @@ VS2PS_Particle Particle_VS(APP2VS Input)
 
 float4 Particle_Low_PS(VS2PS_Particle Input) : COLOR
 {
-	float4 Color = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
+	float4 Color = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
 	Color.rgb *= Input.Color.rgb * _EffectSunColor; // M
 	Color.a *= Input.LightFactorAndAlphaBlend.b;
 
@@ -120,8 +120,8 @@ float4 Particle_Low_PS(VS2PS_Particle Input) : COLOR
 
 float4 Particle_Medium_PS(VS2PS_Particle Input) : COLOR
 {
-	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
-	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.DiffuseCoords.zw);
+	float4 TDiffuse = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
 	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
 	OutputColor.rgb *= GetParticleLighting(1.0, Input.AnimBFactorAndLMapIntOffset.b, Input.LightFactorAndAlphaBlend.a);
 	OutputColor.rgb *= Input.Color.rgb;
@@ -133,9 +133,9 @@ float4 Particle_Medium_PS(VS2PS_Particle Input) : COLOR
 
 float4 Particle_High_PS(VS2PS_Particle Input) : COLOR
 {
-	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
-	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.DiffuseCoords.zw);
-	float4 TLUT = tex2D(LUT_Sampler, Input.HemiLUTCoord.xy);
+	float4 TDiffuse = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
+	float4 TLUT = tex2D(SampleLUT, Input.HemiLUTCoord.xy);
 	float4 Color = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
 	Color.rgb *= GetParticleLighting(TLUT.a, Input.AnimBFactorAndLMapIntOffset.b, Input.LightFactorAndAlphaBlend.a);
 	Color.rgb *= Input.Color.rgb;
@@ -207,7 +207,7 @@ float4 Particle_Show_Fill_PS(VS2PS_Particle Input) : COLOR
 
 float4 Particle_Additive_Low_PS(VS2PS_Particle Input) : COLOR
 {
-	float4 Color = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
+	float4 Color = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
 	Color.rgb *= Input.Color.rgb;
 
 	// Mask with alpha since were doing an add
@@ -219,8 +219,8 @@ float4 Particle_Additive_Low_PS(VS2PS_Particle Input) : COLOR
 
 float4 Particle_Additive_High_PS(VS2PS_Particle Input) : COLOR
 {
-	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
-	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.DiffuseCoords.zw);
+	float4 TDiffuse = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
 	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
 	OutputColor.rgb *= Input.Color.rgb;
 	// Mask with alpha since were doing an add

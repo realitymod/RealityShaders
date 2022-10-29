@@ -158,7 +158,7 @@ technique NSAParticleShowFill
 
 float4 Particle_Low_PS(VS2PS Input) : COLOR
 {
-	float4 OutputColor = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
+	float4 OutputColor = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.AnimBFactor.a;
 	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
@@ -191,8 +191,8 @@ technique NSAParticleLow
 
 float4 Particle_Medium_PS(VS2PS Input) : COLOR
 {
-	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
-	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.DiffuseCoords.zw);
+	float4 TDiffuse = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
 
 	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactor.b);
 	OutputColor.rgb *= Input.Color.rgb;
@@ -228,9 +228,9 @@ technique NSAParticleMedium
 
 float4 Particle_High_PS(VS2PS Input) : COLOR
 {
-	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.DiffuseCoords.xy);
-	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.DiffuseCoords.zw);
-	float4 TLut = tex2D(LUT_Sampler, Input.HemiLUTCoord.xy);
+	float4 TDiffuse = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
+	float4 TLut = tex2D(SampleLUT, Input.HemiLUTCoord.xy);
 
 	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactor.b);
 	OutputColor.rgb *= Input.Color.rgb;

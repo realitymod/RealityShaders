@@ -1,7 +1,7 @@
 // Common BundledMesh samplers
 
 texture HemiMap;
-sampler HemiMapSampler = sampler_state
+sampler SampleHemiMap = sampler_state
 {
 	Texture = (HemiMap);
 	MipFilter = LINEAR;
@@ -12,7 +12,7 @@ sampler HemiMapSampler = sampler_state
 };
 
 texture GIMap;
-sampler GIMapSampler = sampler_state
+sampler SampleGIMap = sampler_state
 {
 	Texture = (GIMap);
 	MipFilter = LINEAR;
@@ -23,7 +23,7 @@ sampler GIMapSampler = sampler_state
 };
 
 texture CubeMap;
-sampler CubeMapSampler = sampler_state
+samplerCUBE SampleCubeMap = sampler_state
 {
 	Texture = (CubeMap);
 	MipFilter = LINEAR;
@@ -35,7 +35,7 @@ sampler CubeMapSampler = sampler_state
 };
 
 texture DiffuseMap;
-sampler DiffuseMapSampler = sampler_state
+sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
 	MipFilter = LINEAR;
@@ -47,7 +47,7 @@ sampler DiffuseMapSampler = sampler_state
 };
 
 texture NormalMap;
-sampler NormalMapSampler = sampler_state
+sampler SampleNormalMap = sampler_state
 {
 	Texture = (NormalMap);
 	MipFilter = LINEAR;

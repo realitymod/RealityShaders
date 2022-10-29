@@ -55,11 +55,11 @@ uniform float4 _ParaboloidZValues : ParaboloidZValues;
 	[Textures and Samplers]
 */
 
-uniform texture Texture_0 : TEXLAYER0;
-uniform texture Texture_1 : TEXLAYER1;
-uniform texture Texture_2 : TEXLAYER2;
-uniform texture Texture_3 : TEXLAYER3;
-uniform texture Texture_4 : TEXLAYER4;
+uniform texture Tex0 : TEXLAYER0;
+uniform texture Tex1 : TEXLAYER1;
+uniform texture Tex2 : TEXLAYER2;
+uniform texture Tex3 : TEXLAYER3;
+uniform texture Tex4 : TEXLAYER4;
 
 #define CREATE_SAMPLER(NAME, TEXTURE, FILTER) \
 	sampler NAME = sampler_state \
@@ -70,10 +70,10 @@ uniform texture Texture_4 : TEXLAYER4;
 		MipFilter = FILTER; \
 	};
 
-CREATE_SAMPLER(Sampler_0, Texture_0, LINEAR)
-CREATE_SAMPLER(Sampler_1, Texture_1, LINEAR)
-CREATE_SAMPLER(Sampler_2, Texture_2, LINEAR)
-CREATE_SAMPLER(Sampler_3, Texture_3, LINEAR)
+CREATE_SAMPLER(SampleTex0, Tex0, LINEAR)
+CREATE_SAMPLER(SampleTex1, Tex1, LINEAR)
+CREATE_SAMPLER(SampleTex2, Tex2, LINEAR)
+CREATE_SAMPLER(SampleTex3, Tex3, LINEAR)
 
 struct APP2VS
 {
@@ -172,8 +172,8 @@ float4 PreSkin_PS(VS2PS_PreSkin Input) : COLOR
 	float3 ViewVec = normalize(Input.P_ViewVec_Lerp.xyz);
 	float3 LightVec = normalize(Input.LightVec);
 
-	float4 GroundColor = tex2D(Sampler_1, Input.P_Tex0_GroundUV.zw);
-	float4 NormalMap = tex2D(Sampler_0, Input.P_Tex0_GroundUV.xy);
+	float4 GroundColor = tex2D(SampleTex1, Input.P_Tex0_GroundUV.zw);
+	float4 NormalMap = tex2D(SampleTex0, Input.P_Tex0_GroundUV.xy);
 	NormalMap.rgb = normalize((NormalMap * 2.0) - 1.0);
 
 	float WrapDiffuse = dot(NormalMap.xyz, Input.LightVec) + 0.5;
@@ -220,23 +220,23 @@ float4 ShadowedPreSkin_PS(VS2PS_ShadowedPreSkin Input) : COLOR
 	float2 Texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
 	float4 Samples;
 	// Input.ShadowTex.xy = clamp(Input.ShadowTex.xy, _ViewportMap.xy, _ViewportMap.zw);
-	Samples.x = tex2D(Sampler_2, Input.ShadowTex.xy);
-	Samples.y = tex2D(Sampler_2, Input.ShadowTex.xy + float2(Texel.x, 0.0));
-	Samples.z = tex2D(Sampler_2, Input.ShadowTex.xy + float2(0.0, Texel.y));
-	Samples.w = tex2D(Sampler_2, Input.ShadowTex.xy + Texel);
+	Samples.x = tex2D(SampleTex2, Input.ShadowTex.xy);
+	Samples.y = tex2D(SampleTex2, Input.ShadowTex.xy + float2(Texel.x, 0.0));
+	Samples.z = tex2D(SampleTex2, Input.ShadowTex.xy + float2(0.0, Texel.y));
+	Samples.w = tex2D(SampleTex2, Input.ShadowTex.xy + Texel);
 
 	float4 StaticSamples;
-	StaticSamples.x = tex2D(Sampler_1, Input.ShadowTex.xy + float2(-Texel.x, -Texel.y * 2.0)).b;
-	StaticSamples.y = tex2D(Sampler_1, Input.ShadowTex.xy + float2(Texel.x, -Texel.y * 2.0)).b;
-	StaticSamples.z = tex2D(Sampler_1, Input.ShadowTex.xy + float2(-Texel.x, Texel.y * 2.0)).b;
-	StaticSamples.w = tex2D(Sampler_1, Input.ShadowTex.xy + float2(Texel.x, Texel.y * 2.0)).b;
+	StaticSamples.x = tex2D(SampleTex1, Input.ShadowTex.xy + float2(-Texel.x, -Texel.y * 2.0)).b;
+	StaticSamples.y = tex2D(SampleTex1, Input.ShadowTex.xy + float2(Texel.x, -Texel.y * 2.0)).b;
+	StaticSamples.z = tex2D(SampleTex1, Input.ShadowTex.xy + float2(-Texel.x, Texel.y * 2.0)).b;
+	StaticSamples.w = tex2D(SampleTex1, Input.ShadowTex.xy + float2(Texel.x, Texel.y * 2.0)).b;
 	StaticSamples.x = dot(StaticSamples.xyzw, 0.25);
 
 	float4 CMPBits = Samples > saturate(Input.ShadowTex.z);
 	float AvgShadowValue = dot(CMPBits, 0.25);
 	float TotalShadow = AvgShadowValue.x * StaticSamples.x;
 
-	float4 NormalMap = tex2D(Sampler_0, Input.Tex0);
+	float4 NormalMap = tex2D(SampleTex0, Input.Tex0);
 	NormalMap.rgb = normalize((NormalMap * 2.0) - 1.0);
 
 	float WrapDiffuse = dot(NormalMap.xyz, LightVec) + 0.5;
@@ -294,13 +294,13 @@ float4 ApplySkin_PS(VS2PS_ApplySkin Input) : COLOR
 	float3 HalfVec = normalize(Input.HalfVec);
 	float HemiLerp = Input.P_LightVec_Lerp.w;
 
-	float4 GroundColor = tex2D(Sampler_0, Input.P_Tex0_GroundUV.zw);
+	float4 GroundColor = tex2D(SampleTex0, Input.P_Tex0_GroundUV.zw);
 	float4 HemiColor = lerp(GroundColor, _SkyColor, HemiLerp);
 
-	float4 NormalMap = tex2D(Sampler_1, Input.P_Tex0_GroundUV.xy);
+	float4 NormalMap = tex2D(SampleTex1, Input.P_Tex0_GroundUV.xy);
 	NormalMap.xyz = normalize((NormalMap * 2.0) - 1.0);
-	float4 DiffuseMap = tex2D(Sampler_2, Input.P_Tex0_GroundUV.xy);
-	float4 DiffuseLight = tex2D(Sampler_3, Input.P_Tex0_GroundUV.xy);
+	float4 DiffuseMap = tex2D(SampleTex2, Input.P_Tex0_GroundUV.xy);
+	float4 DiffuseLight = tex2D(SampleTex3, Input.P_Tex0_GroundUV.xy);
 
 	// Glossmap is in the Diffuse alpha channel.
 	float4 Ambient = _AmbientColor * HemiColor;
@@ -387,7 +387,7 @@ float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
 
 float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 {
-	float Alpha = tex2D(Sampler_0, Input.Tex0).a - _ShadowAlphaThreshold;
+	float Alpha = tex2D(SampleTex0, Input.Tex0).a - _ShadowAlphaThreshold;
 	#if NVIDIA
 		return Alpha;
 	#else

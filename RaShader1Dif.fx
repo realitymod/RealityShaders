@@ -10,7 +10,7 @@
 float4 ObjectSpaceCamPos;
 
 texture DiffuseMap;
-sampler DiffuseMapSampler = sampler_state
+sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
 	MipFilter = LINEAR;
@@ -73,7 +73,7 @@ VS2PS Diffuse_VS(APP2VS Input)
 
 float4 Diffuse_PS(VS2PS Input) : COLOR
 {
-	float4 DiffuseMap = tex2D(DiffuseMapSampler, Input.Tex0);
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
 	DiffuseMap.rgb = ApplyFog(DiffuseMap.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	return DiffuseMap;
 };

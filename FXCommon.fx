@@ -9,10 +9,10 @@
 	#include "shaders/RaCommon.fx"
 
 	// Particle Texture
-	uniform texture Texture_0: Texture0;
+	uniform texture Tex0: Texture0;
 
 	// Groundhemi Texture
-	uniform texture Texture_1: Texture1;
+	uniform texture Tex1: Texture1;
 
 	// commonparams
 	uniform float4x4 _ViewMat : ViewMat;
@@ -25,29 +25,19 @@
 
 	const float _OneOverShort = 1.0 / 32767.0;
 
-	sampler Diffuse_Sampler = sampler_state
+	sampler SampleDiffuseMap = sampler_state
 	{
-		Texture = (Texture_0);
+		Texture = (Tex0);
 		MinFilter = LINEAR;
 		MagFilter = LINEAR;
 		MipFilter = LINEAR;
-		AddressU = Clamp;
-		AddressV = Clamp;
+		AddressU = CLAMP;
+		AddressV = CLAMP;
 	};
 
-	sampler Diffuse_Sampler_2 = sampler_state
+	sampler SampleLUT = sampler_state
 	{
-		Texture = (Texture_0);
-		MinFilter = LINEAR;
-		MagFilter = LINEAR;
-		MipFilter = LINEAR;
-		AddressU = Clamp;
-		AddressV = Clamp;
-	};
-
-	sampler LUT_Sampler = sampler_state
-	{
-		Texture = (Texture_1);
+		Texture = (Tex1);
 		MinFilter = LINEAR;
 		MagFilter = LINEAR;
 		MipFilter = LINEAR;

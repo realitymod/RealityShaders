@@ -7,7 +7,7 @@
 
 uniform float4x4 _WorldViewProj : WorldViewProjection;
 
-uniform texture Base_Texture: TEXLAYER0
+uniform texture BaseTex: TEXLAYER0
 <
 	string File = "aniso2.dds";
 	string TextureType = "2D";
@@ -15,7 +15,7 @@ uniform texture Base_Texture: TEXLAYER0
 
 struct APP2VS
 {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 Tex0 : TEXCOORD0;
 };
 
@@ -25,9 +25,9 @@ struct VS2PS
     float2 Tex0 : TEXCOORD0;
 };
 
-sampler Diffuse_Sampler = sampler_state
+sampler SampleBaseTex = sampler_state
 {
-	Texture = (Base_Texture);
+	Texture = (BaseTex);
 	// Target = Texture2D;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
@@ -46,7 +46,7 @@ VS2PS Shader_VS(APP2VS Input)
 
 float4 Shader_PS(VS2PS Input) : COLOR
 {
-	return tex2D(Diffuse_Sampler, Input.Tex0);
+	return tex2D(SampleBaseTex, Input.Tex0);
 }
 
 technique t0_States <bool Restore = true;>
