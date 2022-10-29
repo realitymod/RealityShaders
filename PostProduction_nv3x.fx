@@ -133,10 +133,10 @@ float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 	float2 UV = Input.TexCoord0;
 
 	// Parabolic function for x opacity to darken the edges, exponential function for opacity to darken the lower part of the screen
-	float Darkness = max(4.0 * UV.x * UV.x - 4.0 * UV.x + 1.0, saturate((pow(2.5, UV.y) - UV.y / 2.0 - 1.0)));
+	float Darkness = max(2.0 * UV.x * UV.x - 2.0 * UV.x + 1.0, saturate((pow(1.5, UV.y) - UV.y / 2.0 - 1.0)));
 
 	// Weight the blurred version more heavily as you go lower on the screen
-	float4 OutputColor = lerp(Color, Blur, saturate(2.0 * (pow(4.0, UV.y) - UV.y - 1.0)));
+	float4 OutputColor = lerp(Color, Blur, saturate(2.0 * (pow(2.0, UV.y) - UV.y - 1.0)));
 
 	// Darken the left, right, and bottom edges of the final product
 	OutputColor = lerp(OutputColor, float4(0.0, 0.0, 0.0, 1.0), Darkness);

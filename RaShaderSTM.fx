@@ -242,10 +242,13 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
-		Specular = Specular * Lightmap.g;
+		#if _SHADOW_ && _LIGHTMAP_
+			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+		#endif
 
 		float DotLN = saturate(dot(Normals.xyz / 5.0, -Lights[0].dir));
 		float3 InvDot = saturate((1.0 - DotLN) * StaticSkyColor * SkyNormal.z);
+		Specular = Specular * Lightmap.g;
 
 		#if _LIGHTMAP_
 			// Add ambient to get correct ambient for surfaces parallel to the sun
