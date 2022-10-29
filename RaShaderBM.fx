@@ -29,12 +29,6 @@
 	#define _HASENVMAP_ 0
 #endif
 
-#if _HASENVMAP_
-	#define _FRESNELVALUES_ 1
-#else
-	#define _FRESNELVALUES_ 0
-#endif
-
 #if !defined(_USEHEMIMAP_)
 	#define _USEHEMIMAP_ 0
 #endif
@@ -72,7 +66,6 @@
 		#define _HASSHADOW_ 1
 		#define _HASSHADOWOCCLUSION_ 1
 		#define _HASNORMALMAP_ 1
-		#define _FRESNELVALUES_ 1
 		#define _HASGIMAP_ 1
 	#endif
 */
@@ -260,12 +253,10 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		float Gloss = StaticGloss;
 	#endif
 
-	float4 DiffuseTex = ColorMap;
-
-	#if _FRESNELVALUES_ && _HASENVMAP_
+	#if _HASENVMAP_
 		float3 Reflection = -reflect(ViewVec, NormalVec);
 		float3 EnvMapColor = texCUBE(CubeMapSampler, Reflection);
-		DiffuseTex.rgb = lerp(DiffuseTex, EnvMapColor, Gloss / 4.0);
+		ColorMap.rgb = lerp(ColorMap, EnvMapColor, Gloss / 2.0);
 	#endif
 
 	float3 CosAngle = GetLambert(NormalVec, LightVec);
@@ -300,7 +291,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#else
 		float3 Lighting = (Diffuse) * LightFactors;
 	#endif
-	OutputColor.rgb = DiffuseTex.rgb * ((Ambient + Lighting) * GI.rgb);
+	OutputColor.rgb = ColorMap.rgb * ((Ambient + Lighting) * GI.rgb);
 
 	/*
 		Calculate fogging and other occluders
@@ -347,11 +338,8 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	float Alpha = 1.0;
 
-	#if _FRESNELVALUES_
-		float RefractionIndexRatio = 0.15;
-		float F0 = pow(1.0 - RefractionIndexRatio, 2.0) / pow(1.0 + RefractionIndexRatio, 4.0);
-		float FresnelValue = pow(F0 + (1.0 - F0) * (1.0 - dot(NormalVec, ViewVec)), 2.0);
-		Alpha = lerp(ColorMap.a, 1.0, FresnelValue);
+	#if _HASENVMAP_
+		Alpha = lerp(ColorMap.a, 1.0, saturate(1.0 - dot(NormalVec, ViewVec)));
 	#endif
 
 	#if _HASDOT3ALPHATEST_
@@ -360,11 +348,11 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		#if _HASCOLORMAPGLOSS_
 			Alpha = 1.0f;
 		#else
-			Alpha = DiffuseTex.a;
+			Alpha = ColorMap.a;
 		#endif
 	#endif
 
-	return float4(OutputColor.rgb, saturate(Alpha * Transparency.a));
+	return float4(OutputColor.rgb, Alpha * Transparency.a);
 }
 
 technique Variable
