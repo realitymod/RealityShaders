@@ -3,7 +3,7 @@
 	Description:
 	- Renders lighting for skinnedmesh (objects that are dynamic, human-like with bones)
 	- Skinning function currently for 2 bones
-	- Calculates tangent-space lighting (object-space lighting for obj normalmap)
+	- Calculates world-space lighting
 */
 
 #include "shaders/RealityGraphics.fx"
