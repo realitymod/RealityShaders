@@ -108,28 +108,31 @@ VS2PS_Quad Basic_VS(APP2VS_Quad Input)
 	return Output;
 }
 
-static const float4 FilterKernel[8] =
-{
-	-1.0, 1.0, 0, 0.125,
-	0.0, 1.0, 0, 0.125,
-	1.0, 1.0, 0, 0.125,
-	-1.0, 0.0, 0, 0.125,
-	1.0, 0.0, 0, 0.125,
-	-1.0, -1.0, 0, 0.125,
-	0.0, -1.0, 0, 0.125,
-	1.0, -1.0, 0, 0.125,
-};
-
 float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 {
-	float4 Blur = 0.0;
+	const int BlurTaps = 9;
 
-	for(int i = 0; i < 8; i++)
+	// 0 3 6
+	// 1 4 7
+	// 2 5 8
+	float4 Tex[BlurTaps];
+	Tex[0] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, 1.0) / 16.0));
+	Tex[1] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, 0.0) / 16.0));
+	Tex[2] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, -1.0) / 16.0));
+	Tex[3] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, 1.0) / 16.0));
+	Tex[4] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, 0.0) / 16.0));
+	Tex[5] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, -1.0) / 16.0));
+	Tex[6] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, 1.0) / 16.0));
+	Tex[7] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, 0.0) / 16.0));
+	Tex[8] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, -1.0) / 16.0));
+
+	float4 Blur = 0.0;
+	for(int i = 0; i < BlurTaps; i++)
 	{
-		Blur += FilterKernel[i].w * tex2D(SampleTex0, Input.TexCoord0.xy + 0.02 * FilterKernel[i].xy);
+		Blur += (Tex[i] * (1.0 / float(BlurTaps)));
 	}
 
-	float4 Color = tex2D(SampleTex0, Input.TexCoord0);
+	float4 Color = Tex[4];
 	float2 UV = Input.TexCoord0;
 
 	// Parabolic function for x opacity to darken the edges, exponential function for opacity to darken the lower part of the screen

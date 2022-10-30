@@ -116,8 +116,8 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMa
 
 	for (int i = 0; i < LightCount; i++)
 	{
-		float3 LightVec = Pos.xyz - _PointLightPosAtten[i].xyz;
-		LocalLight += saturate(1.0 - pow(length(LightVec), 2.0) * _PointLightPosAtten[i].w) * _PointLightColor[i];
+		float4 Dist = pow(length(Pos.xyz - _PointLightPosAtten[i].xyz), 2.0);
+		LocalLight += saturate(1.0 - (Dist * _PointLightPosAtten[i].w)) * _PointLightColor[i];
 	}
 
 	Output.Color = saturate(LocalLight);
@@ -345,8 +345,8 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 
 	for (int i = 0; i < LightCount; i++)
 	{
-		float3 LightVec = Pos.xyz - _PointLightPosAtten[i].xyz;
-		Light += saturate(1.0 - pow(length(LightVec), 2.0) * _PointLightPosAtten[i].w) * _PointLightColor[i];
+		float4 Dist = pow(length(Pos.xyz - _PointLightPosAtten[i].xyz), 2.0);
+		Light += saturate(1.0 - (Dist * _PointLightPosAtten[i].w)) * _PointLightColor[i];
 	}
 
 	if (ShadowMapEnable)
