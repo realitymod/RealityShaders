@@ -535,7 +535,7 @@ struct VS2PS_Hi_PerPixelPointLight
 {
 	float4 HPos : POSITION;
 	float3 WorldPos : TEXCOORD0;
-	float3 Normal : TEXCOORD1;
+	float3 WorldNormal : TEXCOORD1;
 };
 
 VS2PS_Hi_PerPixelPointLight Hi_PerPixelPointLight_VS(APP2VS_Shared_Default Input)
@@ -555,9 +555,7 @@ VS2PS_Hi_PerPixelPointLight Hi_PerPixelPointLight_VS(APP2VS_Shared_Default Input
  	Output.HPos = mul(WorldPos, _ViewProj);
 
  	// tl: uncompress normal
- 	Input.Normal = Input.Normal * 2.0 - 1.0;
-
- 	Output.Normal = Input.Normal;
+ 	Output.WorldNormal = normalize(Input.Normal * 2.0 - 1.0);
  	Output.WorldPos = WorldPos.xyz;
 
 	return Output;
@@ -565,7 +563,7 @@ VS2PS_Hi_PerPixelPointLight Hi_PerPixelPointLight_VS(APP2VS_Shared_Default Input
 
 float4 Hi_PerPixelPointLight_PS(VS2PS_Hi_PerPixelPointLight Input) : COLOR
 {
-	return float4(GetTerrainLighting(Input.WorldPos, Input.Normal), 0) * 0.5;
+	return float4(GetTerrainLighting(Input.WorldPos, Input.WorldNormal), 0.0);
 }
 
 float4 Hi_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input) : COLOR

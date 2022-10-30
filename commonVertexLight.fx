@@ -38,6 +38,6 @@
 		LightVec = normalize(LightVec);
 		float3 Normal = normalize(WorldNormal);
 		float3 CosAngle = dot(Normal, LightVec);
-		return (CosAngle * _PointLight.col) * Attenuation;
+		return saturate((CosAngle * _PointLight.col) * Attenuation);
 	}
 #endif

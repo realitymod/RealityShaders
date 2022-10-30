@@ -112,15 +112,15 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMa
 
 	Output.TexShadow = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
-	float4 LocalLight = 0.0;
-
+	float4 Light = 0.0;
 	for (int i = 0; i < LightCount; i++)
 	{
-		float4 Dist = pow(length(Pos.xyz - _PointLightPosAtten[i].xyz), 2.0);
-		LocalLight += saturate(1.0 - (Dist * _PointLightPosAtten[i].w)) * _PointLightColor[i];
+		float3 LightVec = Pos.xyz - _PointLightPosAtten[i].xyz;
+		float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
+		Light += (Attenuation * _PointLightColor[i]);
 	}
 
-	Output.Color = saturate(LocalLight);
+	Output.Color = saturate(Light);
 	Output.Color.a = Input.Packed.w * 0.5;
 
 	Output.VertexPos = Pos.xyz;
@@ -342,11 +342,11 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 	}
 
 	float3 Light = Input.TerrainLightMap.z * _GIColor;
-
 	for (int i = 0; i < LightCount; i++)
 	{
-		float4 Dist = pow(length(Pos.xyz - _PointLightPosAtten[i].xyz), 2.0);
-		Light += saturate(1.0 - (Dist * _PointLightPosAtten[i].w)) * _PointLightColor[i];
+		float3 LightVec = Pos.xyz - _PointLightPosAtten[i].xyz;
+		float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
+		Light += (Attenuation * _PointLightColor[i]);
 	}
 
 	if (ShadowMapEnable)

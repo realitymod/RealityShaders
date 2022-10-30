@@ -191,13 +191,17 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 		float OccShadowDir = 1.0;
 	#endif
 
-	#if _USEHEMIMAP_
-		// GoundColor.a has an occlusion factor that we can use for static shadowing
-		float HemiLerp = GetHemiLerp(WorldPos.xyz, NormalVec.xyz);
-		float4 GroundColor = tex2D(SampleHemiMap, Input.P_Tex0_GroundUV.zw);
-		float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
+	#if _POINTLIGHT_
+		float3 Ambient = 0.0;
 	#else
-		float3 Ambient = Lights[0].color.w;
+		#if _USEHEMIMAP_
+			// GoundColor.a has an occlusion factor that we can use for static shadowing
+			float HemiLerp = GetHemiLerp(WorldPos.xyz, NormalVec.xyz);
+			float4 GroundColor = tex2D(SampleHemiMap, Input.P_Tex0_GroundUV.zw);
+			float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
+		#else
+			float3 Ambient = Lights[0].color.w;
+		#endif
 	#endif
 
 	#if _POINTLIGHT_
