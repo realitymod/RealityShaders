@@ -174,7 +174,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
 		NormalVec.xyz = normalize(mul(NormalVec.xyz, WorldTBN));
 	#else
-		float4 NormalVec = float4(WorldTBN[2], 0.15);
+		float4 NormalVec = float4(WorldTBN[2], 0.1);
 	#endif
 
 	float4 DiffuseTex = tex2D(SampleDiffuseMap, Input.P_Tex0_GroundUV.xy);
