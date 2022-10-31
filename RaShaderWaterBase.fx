@@ -135,11 +135,8 @@ string InstanceParameters[] =
 	"CubeMap",
 	"LightMap",
 	"LightMapOffset",
-	#if defined(USE_SPECULAR)
-		"SpecularColor",
-		"SpecularPower",
-	#endif
-
+	"SpecularColor",
+	"SpecularPower",
 	#if defined(USE_SHADOWS)
 		"ShadowProjMat",
 		"ShadowTrapMat",
@@ -230,9 +227,9 @@ float4 Water_PS(in VS2PS Input) : COLOR
 
 	#if defined(USE_FRESNEL)
 		#if defined(FRESNEL_NORMALMAP)
-			float4 TangentNormal2 = float4(TangentNormal, 1.0);
+			float4 FresnelNormal = float4(TangentNormal, 1.0);
 		#else
-			float4 TangentNormal2 = float4(0.0, 1.0, 0.0, 0.0);
+			float4 FresnelNormal = float4(0.0, 1.0, 0.0, 0.0);
 		#endif
 	#endif
 
@@ -253,16 +250,14 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 
 	float LightFactors = SpecularColor.a * ShadowFactor;
-	float3 CosAngle = GetLambert(TangentNormal, LightVec);
-	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = GetSpecular(TangentNormal, HalfVec) * SpecularColor.rgb;
+	float3 DotLR = saturate(dot(LightVec, Reflection));
+	float3 Specular = pow(abs(DotLR), SpecularPower) * SpecularColor.rgb;
 
 	float4 OutputColor = 0.0;
-	float3 Lighting = (Diffuse + (Specular * CosAngle)) * LightFactors;
-	OutputColor.rgb = WaterLerp + Lighting;
+	OutputColor.rgb = WaterLerp + (Specular * LightFactors);
 
 	#if defined(USE_FRESNEL)
-		float Fresnel = BASE_TRANSPARENCY - pow(dot(ViewVec, TangentNormal2.xyz), POW_TRANSPARENCY);
+		float Fresnel = BASE_TRANSPARENCY - pow(dot(FresnelNormal.xyz, ViewVec), POW_TRANSPARENCY);
 		OutputColor.a = LightMap.r * Fresnel + _WaterColor.w;
 	#else
 		OutputColor.a = LightMap.r + _WaterColor.w;

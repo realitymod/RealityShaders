@@ -233,7 +233,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 	float3 CosAngle = GetLambert(Normals.xyz, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = GetSpecular(Normals.xyz, HalfVec) * Gloss * Lights[0].color;
+	float3 Specular = GetSpecular(Normals.xyz, HalfVec, SpecularPower) * Gloss * Lights[0].color;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);

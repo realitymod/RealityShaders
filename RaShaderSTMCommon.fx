@@ -89,6 +89,7 @@ float4 LightMapOffset;
 bool AlphaBlendEnable;
 float4 StaticSkyColor;
 float4 StaticSpecularColor;
+float SpecularPower;
 float4 PointColor;
 float4 StaticSunColor;
 float4 SinglePointColor;

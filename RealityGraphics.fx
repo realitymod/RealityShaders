@@ -4,37 +4,51 @@
 	Author: [R-CON]papadanku
 */
 
-/*
-	https://github.com/microsoft/DirectX-Graphics-Samples
-
-	The MIT License (MIT)
-
-	Copyright (c) 2015 Microsoft
-
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-
-	The above copyright notice and this permission notice shall be included in all
-	copies or substantial portions of the Software.
-
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
-*/
-
 #if !defined(REALITYGRAPHICS_FX)
 	#define REALITYGRAPHICS_FX
 
 	/*
-		Shared depth functions
+		Shared color-based functions
+
+		https://github.com/microsoft/DirectX-Graphics-Samples
+
+		The MIT License (MIT)
+
+		Copyright (c) 2015 Microsoft
+
+		Permission is hereby granted, free of charge, to any person obtaining a copy
+		of this software and associated documentation files (the "Software"), to deal
+		in the Software without restriction, including without limitation the rights
+		to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+		copies of the Software, and to permit persons to whom the Software is
+		furnished to do so, subject to the following conditions:
+
+		The above copyright notice and this permission notice shall be included in all
+		copies or substantial portions of the Software.
+
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+		AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+		SOFTWARE.
+	*/
+
+	float3 RemoveSRGBCurve(float3 x)
+	{
+		float3 c = (x < 0.04045) ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4);
+		return c;
+	}
+
+	float3 ApplySRGBCurve(float3 x)
+	{
+		float3 c = (x < 0.0031308) ? 12.92 * x : 1.055 * pow(x, 1.0 / 2.4) - 0.055;
+		return c;
+	}
+
+	/*
+		Shared depth-based functions
 	*/
 
 	// Gets slope-scaled bias from depth
@@ -77,22 +91,6 @@
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel);
 		float4 CMPBits = step(saturate(GetSlopedBasedBias(ShadowCoords.z)), Samples);
 		return dot(CMPBits, 0.25);
-	}
-
-	/*
-		Shared color functions
-	*/
-
-	float3 RemoveSRGBCurve(float3 x)
-	{
-		float3 c = (x < 0.04045) ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4);
-		return c;
-	}
-
-	float3 ApplySRGBCurve(float3 x)
-	{
-		float3 c = (x < 0.0031308) ? 12.92 * x : 1.055 * pow(x, 1.0 / 2.4) - 0.055;
-		return c;
 	}
 
 	/*

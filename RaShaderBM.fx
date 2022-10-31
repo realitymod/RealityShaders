@@ -265,7 +265,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	float3 CosAngle = GetLambert(NormalVec, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = GetSpecular(NormalVec, HalfVec) * Gloss * Lights[0].color;
+	float3 Specular = GetSpecular(NormalVec, HalfVec, SpecularPower) * Gloss * Lights[0].color;
 
 	#if _POINTLIGHT_
 		#if !_HASCOLORMAPGLOSS_

@@ -29,6 +29,7 @@ string reqVertexElementBase[] =
 // This is the common global parameters
 string GlobalParametersBase[] =
 {
+	"SpecularPower",
 	"StaticSkyColor",
 	"StaticSpecularColor",
 	"FogRange",
