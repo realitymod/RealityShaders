@@ -95,7 +95,7 @@ float4 TrunkOG_PS(VS2PS Input) : COLOR
 	Color += ((Diffuse * ScaleLN) * (Lights[0].color * ScaleLN));
 
 	float4 OutputColor = float4((DiffuseMap.rgb * Color.rgb) * 2.0, Transparency.a);
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	return OutputColor;
 };
 

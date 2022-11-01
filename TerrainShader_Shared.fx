@@ -231,7 +231,7 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 	}
 
 	#if LIGHTONLY
-		Light.rgb = ApplyFog(Light.rgb, GetFogValue(Input.WorldPos, _CameraPos));
+		ApplyFog(Light.rgb, GetFogValue(Input.WorldPos, _CameraPos));
 		return Light;
 	#endif
 
@@ -246,7 +246,7 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 		float4 OutputColor = ColorMap * Light * 2.0 * lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x) * lerp(0.5, Mounten, LowComponent.z);
 		OutputColor = lerp(OutputColor * 4.0, _TerrainWaterColor, Input.P_Blend_Water.w);
 
-		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos, _CameraPos));
+		ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos, _CameraPos));
 		return OutputColor;
 	#else
 		float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
@@ -254,7 +254,7 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 		OutputColor = OutputColor * lerp(YPlaneLowDetailmap.x, YPlaneLowDetailmap.z, Input.P_Blend_Water.y);
 		OutputColor = lerp(OutputColor * 2.0, _TerrainWaterColor, Input.P_Blend_Water.w);
 
-		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos, _CameraPos));
+		ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos, _CameraPos));
 		return float4(OutputColor, 1.0);
 	#endif
 }
@@ -368,7 +368,9 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared_Default Input)
 
 float4 Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input) : COLOR
 {
-	return float4(ApplyFog(_TerrainWaterColor.rgb, GetFogValue(Input.P_WorldPos_Water.xyz, _CameraPos.xyz)), Input.P_WorldPos_Water.w);
+	float3 OutputColor = _TerrainWaterColor.rgb;
+	ApplyFog(OutputColor, GetFogValue(Input.P_WorldPos_Water.xyz, _CameraPos.xyz));
+	return float4(OutputColor, Input.P_WorldPos_Water.w);
 }
 
 /*
@@ -450,7 +452,7 @@ float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 	float4 OutputColor = LowDetailMap * ColorMap * 4.0;
 	OutputColor.rb = (_GIColor.r < 0.01) ? 0.0 : OutputColor.rb; // M (temporary fix)
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos.xyz, _CameraPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos.xyz, _CameraPos.xyz));
 
 	return OutputColor;
 }

@@ -333,7 +333,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if !_POINTLIGHT_
-		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+		ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 
 	/*

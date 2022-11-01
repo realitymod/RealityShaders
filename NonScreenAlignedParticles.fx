@@ -128,7 +128,7 @@ VS2PS Particle_VS(APP2VS Input)
 float4 Particle_Show_Fill_PS(VS2PS Input) : COLOR
 {
 	float4 OutputColor = _EffectSunColor.rrrr;
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutputColor;
 }
 
@@ -161,7 +161,7 @@ float4 Particle_Low_PS(VS2PS Input) : COLOR
 	float4 OutputColor = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.AnimBFactor.a;
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutputColor;
 }
 
@@ -198,7 +198,7 @@ float4 Particle_Medium_PS(VS2PS Input) : COLOR
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.rgb *= GetParticleLighting(1.0, Input.LMapIntOffsetAndLFactor.a, Input.LMapIntOffsetAndLFactor.b);
 	OutputColor.a *= Input.AnimBFactor.a;
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutputColor;
 }
 
@@ -236,7 +236,7 @@ float4 Particle_High_PS(VS2PS Input) : COLOR
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.rgb *= GetParticleLighting(TLut.a, Input.LMapIntOffsetAndLFactor.a, Input.LMapIntOffsetAndLFactor.b);
 	OutputColor.a *= Input.AnimBFactor.a;
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutputColor;
 }
 

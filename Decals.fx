@@ -99,7 +99,7 @@ float4 Decals_PS(VS2PS_Decals Input) : COLOR
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
 	float4 OutputColor = DiffuseMap * float4(Lighting, Input.Color.a);
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
 	return OutputColor;
 }
 
@@ -166,7 +166,7 @@ float4 ShadowedDecals_PS(VS2PS_ShadowedDecals Input) : COLOR
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
 	float4 OutputColor = DiffuseMap * float4(Lighting, Input.Color.a);
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
 	return OutputColor;
 }
 

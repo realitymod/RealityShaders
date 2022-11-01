@@ -234,7 +234,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	}
 
 	#if !_POINTLIGHT_
-		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+		ApplyFog(OutColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 
 	OutColor.a = DiffuseTex.a * Transparency.a;

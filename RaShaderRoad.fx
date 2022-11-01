@@ -175,7 +175,7 @@ float4 Road_PS(VS2PS Input) : COLOR
 		Diffuse.a *= ZFade;
 	#endif
 
-	Diffuse.rgb = ApplyFog(Diffuse.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
+	ApplyFog(Diffuse.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
 
 	return Diffuse;
 };

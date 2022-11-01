@@ -122,7 +122,7 @@ float4 RoadCompiled_PS(VS2PS Input) : COLOR
 		OutputColor.rgb *= Light.rgb;
 	}
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.P_VertexPos_Alpha.xyz, _LocalEyePos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.P_VertexPos_Alpha.xyz, _LocalEyePos.xyz));
 	return OutputColor;
 }
 

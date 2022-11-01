@@ -269,7 +269,7 @@ float4 Water_PS(in VS2PS Input) : COLOR
 		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	return OutputColor;
 }

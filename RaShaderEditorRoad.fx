@@ -146,7 +146,7 @@ float4 Editor_Road_PS(VS2PS Input) : COLOR
 		float4 OutputColor = Diffuse;
 	#endif
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
 	OutputColor.a *= GetRoadZFade(Input.VertexPos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
 	return OutputColor;
 };

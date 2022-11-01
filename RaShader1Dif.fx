@@ -74,7 +74,7 @@ VS2PS Diffuse_VS(APP2VS Input)
 float4 Diffuse_PS(VS2PS Input) : COLOR
 {
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
-	DiffuseMap.rgb = ApplyFog(DiffuseMap.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+	ApplyFog(DiffuseMap.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	return DiffuseMap;
 };
 

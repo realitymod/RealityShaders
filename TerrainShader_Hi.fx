@@ -178,8 +178,8 @@ float4 Hi_FullDetail_PS(Hi_VS2PS_FullDetail Input) : COLOR
 			float3 DetailOut = LowDetailMap*Input.BlendValueAndFade.x + DetailMap*Input.BlendValueAndFade.z;
 		#endif
 		float3 OutputColor = DetailOut * ColorMap * Light * 2.0;
-		float3 FogOutColor = ApplyFog(OutputColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
-		return float4(ChartContrib * FogOutColor, ChartContrib);
+		ApplyFog(OutputColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
+		return float4(ChartContrib * OutputColor, ChartContrib);
 	#endif
 }
 
@@ -339,8 +339,8 @@ float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 			// float3 DetailOut = LowDetailMap * 2.0;
 		#endif
 		float3 OutputColor = DetailOut * ColorMap * Light * 2.0;
-		float3 FogOutColor = ApplyFog(OutputColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
-		return float4(ChartContrib * FogOutColor, ChartContrib);
+		ApplyFog(OutputColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
+		return float4(ChartContrib * OutputColor, ChartContrib);
 	#endif
 }
 
@@ -504,7 +504,7 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 			OutputColor = lerp(OutputColor, EnvMapColor, DetailMap.w * (1.0 - Input.P_VertexPos_Fade.w)) * 2.0;
 		#endif
 
-		OutputColor = ApplyFog(OutputColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
+		ApplyFog(OutputColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
 		return float4(ChartContrib * OutputColor, ChartContrib);
 	#endif
 }

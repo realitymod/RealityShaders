@@ -79,9 +79,14 @@
 		return saturate(Close - Far);
 	}
 
-	float3 ApplyFog(float3 Color, float FogValue)
+	void ApplyFog(inout float3 Color, in float FogValue)
 	{
-		return lerp(FogColor.rgb, Color.rgb, FogValue);
+		Color = lerp(FogColor.rgb, Color, FogValue);
+	}
+
+	void ApplyLinearFog(inout float3 Color, in float FogValue)
+	{
+		Color = lerp(RemoveSRGBCurve(FogColor.rgb), Color, FogValue);
 	}
 
 	float GetRoadZFade(float3 ObjectPos, float3 CameraPos, float2 FadeValues)

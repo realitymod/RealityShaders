@@ -155,7 +155,7 @@ float4 Undergrowth_PS
 	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight.rgb * 2.0;
 	OutputColor.a = Base.a * _Transparency_x8.a * 8.0;
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 
 	return OutputColor;
 }
@@ -405,7 +405,7 @@ float4 Undergrowth_Simple_PS
 		OutputColor.rgb = float3(lerp(0.43, 0.17, LightColor.b), 1.0, 0.0);
 	}
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 
 	return OutputColor;
 }

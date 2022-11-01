@@ -199,7 +199,7 @@ float4 Leaf_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if !defined(_POINTLIGHT_)
-		OutColor.rgb = ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+		ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	#endif
 
 	return OutColor;

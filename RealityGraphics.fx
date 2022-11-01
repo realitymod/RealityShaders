@@ -41,7 +41,7 @@
 		return c;
 	}
 
-	float3 ApplySRGBCurve(float3 x)
+	float3 ApplySRGBCurve(inout float3 x)
 	{
 		float3 c = (x < 0.0031308) ? 12.92 * x : 1.055 * pow(x, 1.0 / 2.4) - 0.055;
 		return c;

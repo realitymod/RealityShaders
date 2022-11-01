@@ -267,7 +267,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if !_POINTLIGHT_
-		OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
+		ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
 	#endif
 
 	OutputColor.a = DiffuseMap.a;

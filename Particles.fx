@@ -114,7 +114,7 @@ float4 Particle_Low_PS(VS2PS_Particle Input) : COLOR
 	Color.rgb *= Input.Color.rgb * _EffectSunColor; // M
 	Color.a *= Input.LightFactorAndAlphaBlend.b;
 
-	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
+	ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return Color;
 }
 
@@ -127,7 +127,7 @@ float4 Particle_Medium_PS(VS2PS_Particle Input) : COLOR
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.LightFactorAndAlphaBlend.b;
 
-	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutputColor;
 }
 
@@ -141,7 +141,7 @@ float4 Particle_High_PS(VS2PS_Particle Input) : COLOR
 	Color.rgb *= Input.Color.rgb;
 	Color.a *= Input.LightFactorAndAlphaBlend.b;
 
-	Color.rgb = ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
+	ApplyFog(Color.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return Color;
 }
 
