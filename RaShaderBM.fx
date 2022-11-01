@@ -306,7 +306,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _HASGIMAP_
-		if (FogColor.r < 0.01)
+		if (length(FogColor.rgb) < 0.01)
 		{
 			if (GI_TIS.a < 0.01)
 			{
@@ -326,7 +326,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 			}
 		}
 	#else
-		if (FogColor.r < 0.01)
+		if (length(FogColor.rgb) < 0.01)
 		{
 			OutputColor.rgb = float3(lerp(0.64, 0.3, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
 		}

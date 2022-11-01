@@ -221,7 +221,8 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	float4 OutColor = 1.0;
 	OutColor.rgb = DiffuseTex.rgb * (Ambient + Lighting);
 
-	if (FogColor.r < 0.01)
+	// Thermals
+	if (length(FogColor.rgb) < 0.01)
 	{
 		#if _HASENVMAP_
 			// If EnvMap enabled, then should be hot on thermals

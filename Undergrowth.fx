@@ -136,7 +136,14 @@ float4 Undergrowth_PS
 ) : COLOR
 {
 	float4 Base = tex2D(SampleColorMap, Input.P_Tex0_Tex1.xy);
-	float4 TerrainColor = (FogColor.r < 0.01) ? 0.333 : tex2D(SampleTerrainColorMap, Input.P_Tex0_Tex1.zw);
+	float4 TerrainColor = tex2D(SampleTerrainColorMap, Input.P_Tex0_Tex1.zw);
+
+	// If thermals assume gray color
+	if (length(FogColor.rgb) < 0.01)
+	{
+		TerrainColor.rgb = 1.0 / 3.0;
+	}
+
 	TerrainColor.rgb = lerp(TerrainColor.rgb, 1.0, Input.Color.a);
 	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.P_Tex0_Tex1.zw);
 	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.TexShadow) : 1.0;
@@ -146,8 +153,7 @@ float4 Undergrowth_PS
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight.rgb * 2.0;
-	OutputColor.a = Base.a * _Transparency_x8.a * 4.0;
-	OutputColor.a = OutputColor.a + OutputColor.a;
+	OutputColor.a = Base.a * _Transparency_x8.a * 8.0;
 
 	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 
@@ -391,10 +397,13 @@ float4 Undergrowth_Simple_PS
 		LightColor = Base.rgb * Input.P_TerrainColor.rgb * 2.0;
 	}
 
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = (FogColor.r < 0.01) ? float3(lerp(0.43, 0.17, LightColor.b), 1.0, 0.0) : LightColor;
-	OutputColor.a = Base.a * _Transparency_x8.a * 4.0;
-	OutputColor.a = OutputColor.a + OutputColor.a;
+	float4 OutputColor = float4(LightColor, Base.a * _Transparency_x8.a * 8.0);
+
+	// Thermals
+	if (length(FogColor.rgb) < 0.01)
+	{
+		OutputColor.rgb = float3(lerp(0.43, 0.17, LightColor.b), 1.0, 0.0);
+	}
 
 	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 

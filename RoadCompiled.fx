@@ -108,19 +108,18 @@ float4 RoadCompiled_PS(VS2PS Input) : COLOR
 	OutputColor.a = Detail0.a * saturate(ZFade * Input.P_VertexPos_Alpha.w);
 
 	float4 AccumLights = tex2Dproj(SampleLightMap, Input.PosTex);
-	float4 Light = 0.0;
+	float4 Light = ((AccumLights.w * _SunColor * 2.0) + AccumLights) * 2.0;
 
-	if (FogColor.r < 0.01)
+	// On thermals no shadows
+	if (length(FogColor.rgb) < 0.01)
 	{
-		// On thermals no shadows
-		Light = (_SunColor * 2.0 + AccumLights) * 2.0;
-		OutputColor.rgb *= Light.xyz;
+		Light.rgb = (_SunColor * 2.0 + AccumLights) * 2.0;
+		OutputColor.rgb *= Light.rgb;
 		OutputColor.g = clamp(OutputColor.g, 0.0, 0.5);
 	}
 	else
 	{
-		Light = ((AccumLights.w * _SunColor * 2.0) + AccumLights) * 2.0;
-		OutputColor.rgb *= Light.xyz;
+		OutputColor.rgb *= Light.rgb;
 	}
 
 	OutputColor.rgb = ApplyFog(OutputColor.rgb, GetFogValue(Input.P_VertexPos_Alpha.xyz, _LocalEyePos.xyz));

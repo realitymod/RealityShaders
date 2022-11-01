@@ -220,18 +220,14 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
 float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 {
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
-	float4 Light;
-	float4 ColorMap;
+	float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
+	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorTex);
 
-	if (FogColor.r < 0.01)
+	// If thermals assume no shadows and gray color
+	if (length(FogColor.rgb) < 0.01)
 	{
-		Light = 2.0 * _SunColor + AccumLights; // On thermals no shadows
-		ColorMap = 1.0 / 3.0; // And gray color
-	}
-	else
-	{
-		Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
-		ColorMap = tex2D(SampleTex0_Clamp, Input.ColorTex);
+		Light.rgb = 2.0 * _SunColor + AccumLights;
+		ColorMap.rgb = 1.0 / 3.0;
 	}
 
 	#if LIGHTONLY
@@ -432,15 +428,12 @@ VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 
 float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 {
-	float4 ColorMap;
+	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorLightTex);
 
-	if (FogColor.r < 0.01)
+	// If thermals assume gray color
+	if (length(FogColor.rgb) < 0.01)
 	{
-		ColorMap = 1.0 / 3.0; // If thermals assume gray terrain
-	}
-	else
-	{
-		ColorMap = tex2D(SampleTex0_Clamp, Input.ColorLightTex);
+		ColorMap.rgb = 1.0 / 3.0;
 	}
 
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.LowDetailTex);

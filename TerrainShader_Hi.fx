@@ -137,23 +137,16 @@ float4 Hi_FullDetail_PS(Hi_VS2PS_FullDetail Input) : COLOR
 			return float4(0.0, 0.0, 1.0, 1.0);
 		#endif
 
-		float3 ColorMap;
-		float3 Light;
-
-		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
-
 		// tl: 2* moved later in shader to avoid clamping at -+2.0 in ps1.4
-		if (FogColor.r < 0.01)
+		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
+		float3 Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
+		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
+
+		// If thermals assume no shadows and gray color
+		if (length(FogColor.rgb) < 0.01)
 		{
-			// On thermals no shadows
-			Light = 2.0 * _SunColor.rgb + AccumLights.rgb;
-			// And gray color
-			ColorMap = 0.333;
-		}
-		else
-		{
-			Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
-			ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
+			Light.rgb = 2.0 * _SunColor.rgb + AccumLights.rgb;
+			ColorMap.rgb = 1.0 / 3.0;
 		}
 
 		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex6);
@@ -301,22 +294,16 @@ float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 			return float4(1,0, 0.0, 1.0);
 		#endif
 
-		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
-
 		// tl: 2* moved later in shader to avoid clamping at -+2.0 in ps1.4
-		float3 Light;
-		float3 ColorMap;
-		if (FogColor.r < 0.01)
+		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
+		float3 Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
+		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
+
+		// If thermals assume no shadows and gray color
+		if (length(FogColor.rgb) < 0.01)
 		{
-			// On thermals no shadows
-			Light = 2.0 * _SunColor.rgb + AccumLights.rgb;
-			// And gray color
-			ColorMap = 0.333;
-		}
-		else
-		{
-			Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
-			ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
+			Light.rgb = 2.0 * _SunColor.rgb + AccumLights.rgb;
+			ColorMap.rgb = 1.0 / 3.0;
 		}
 
 		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex7);
@@ -471,20 +458,14 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 		#endif
 
 		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
+		float3 Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
+		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 
-		float3 Light;
-		float3 ColorMap;
-		if (FogColor.r < 0.01)
+		// If thermals assume no shadows and gray color
+		if (length(FogColor.rgb) < 0.01)
 		{
-			// On thermals no shadows
-			Light = 2.0 * _SunColor.rgb + AccumLights.rgb;
-			// And gray color
-			ColorMap = 0.333;
-		}
-		else
-		{
-			Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
-			ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
+			Light.rgb = 2.0 * _SunColor.rgb + AccumLights.rgb;
+			ColorMap.rgb = 1.0 / 3.0;
 		}
 
 		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex6);

@@ -140,9 +140,6 @@ VS2PS Road_VS(APP2VS Input)
 
 float4 Road_PS(VS2PS Input) : COLOR
 {
-	float4 Light = 0.0;
-	float4 TerrainColor = float4(TerrainSunColor, 1.0);
-
 	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
 
@@ -155,17 +152,19 @@ float4 Road_PS(VS2PS Input) : COLOR
 		#endif
 	#endif
 
-	if (FogColor.r < 0.01)
+	float4 TerrainColor = float4(TerrainSunColor, 1.0);
+	float4 Light = ((TerrainColor * 2.0 * AccumLights.w) + AccumLights) * 2.0;
+
+	// On thermals no shadows
+	if (length(FogColor.rgb) < 0.01)
 	{
-		// On thermals no shadows
-		Light = (TerrainColor * 2.0 + AccumLights) * 2.0;
-		Diffuse.rgb *= Light.xyz;
+		Light.rgb = (TerrainColor * 2.0 + AccumLights) * 2.0;
+		Diffuse.rgb *= Light.rgb;
 		Diffuse.g = clamp(Diffuse.g, 0.0, 0.5);
 	}
 	else
 	{
-		Light = ((TerrainColor * 2.0 * AccumLights.w) + AccumLights) * 2.0;
-		Diffuse.rgb *= Light.xyz;
+		Diffuse.rgb *= Light.rgb;
 	}
 
 	float ZFade = GetRoadZFade(Input.VertexPos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);

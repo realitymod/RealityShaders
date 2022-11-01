@@ -214,42 +214,6 @@ technique GlowMaterial
 	}
 }
 
-/*
-	float4 Fog_PS(VS2PS_Quad Input) : COLOR
-	{
-		float3 WorldPosition = tex2D(SampleTex0, Input.TexCoord0).xyz;
-		float Coord = saturate((WorldPosition.z - _FogStartAndEnd.r) / _FogStartAndEnd.g); // fogColorandomViewDistance.a);
-		return saturate(float4(_FogColor.rgb, Coord));
-		// float2 FogCoords = float2(Coord, 0.0);
-		return tex2D(SampleTex1, float2(Coord, 0.0)) * _FogColor.rgbb;
-	}
-
-	technique Fog
-	{
-		pass p0
-		{
-			ZEnable = FALSE;
-			AlphaBlendEnable = TRUE;
-			//SrcBlend = SRCCOLOR;
-			//DestBlend = ZERO;
-			SrcBlend = SRCALPHA;
-			DestBlend = INVSRCALPHA;
-			//StencilEnable = FALSE;
-
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0x00;
-			StencilMask = 0xFF;
-			StencilFail = KEEP;
-			StencilZFail = KEEP;
-			StencilPass = KEEP;
-
-			VertexShader = compile vs_3_0 Basic_VS();
-			PixelShader = compile ps_3_0 Fog_PS();
-		}
-	}
-*/
-
 // TVEffect specific attributes
 
 uniform float _FracTime : FRACTIME;
