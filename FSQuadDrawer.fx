@@ -49,7 +49,7 @@ uniform float _BloomHorizOffsets[5] : BLOOMHORIZOFFSETS;
 uniform float _BloomVertOffsets[5] : BLOOMVERTOFFSETS;
 
 // Other attributes passed from the app (render.)
-uniform float _HighPassGate : HIGHPASSGATE; // 3d optics blur; xxxx.yyyy; x - aspect ratio(H/V), y - blur amount(0=no blur, 0.9=full blur)
+uniform float _HighPassGate : HIGHPASSGATE;
 uniform float _BlurStrength : BLURSTRENGTH; // 3d optics blur; xxxx.yyyy; x - inner radius, y - outer radius
 
 uniform float2 _TexelSize : TEXELSIZE;
@@ -217,12 +217,11 @@ float4 TR_OpticsMask_PS(VS2PS_Blit Input) : COLOR
 	ScreenSize.y = int(1.0 / abs(ddy(Input.TexCoord0.y)));
 	float AspectRatio = ScreenSize.x / ScreenSize.y;
 
-	float BlurAmountMod = frac(_HighPassGate) / 0.9; // used for the fade-in effect
 	float Radius1 = _BlurStrength / 1000.0; // 0.2 by default (floor() isn't used for perfomance reasons)
 	float Radius2 = frac(_BlurStrength); // 0.25 by default
 	float Distance = length((Input.TexCoord0 - 0.5) * float2(AspectRatio, 1.0)); // get distance from the Center of the screen
 
-	float BlurAmount = saturate((Distance - Radius1) / (Radius2 - Radius1)) * BlurAmountMod;
+	float BlurAmount = saturate((Distance - Radius1) / (Radius2 - Radius1));
 	float4 OutputColor = tex2D(SampleTex0_Aniso, Input.TexCoord0);
 	return float4(OutputColor.rgb, BlurAmount); // Alpha (.a) is the mask to be composited in the pixel shader's blend operation
 }

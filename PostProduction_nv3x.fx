@@ -28,6 +28,11 @@ uniform float _NightFilter_Mono : NIGHTFILTER_MONO;
 
 uniform float2 _Displacement : DISPLACEMENT; // Random <x, y> jitter
 
+float _NPixels : NPIXLES = 1.0;
+float2 _ScreenSize : VIEWPORTSIZE = { 800, 600 };
+float _Glowness : GLOWNESS = 3.0;
+float _Cutoff : cutoff = 0.8;
+
 // One pixel in screen texture units
 uniform float _DeltaU : DELTAU;
 uniform float _DeltaV : DELTAV;
@@ -80,14 +85,7 @@ struct VS2PS_Quad
 	float2 TexCoord0 : TEXCOORD0;
 };
 
-struct VS2PS_Quad_2
-{
-	float4 HPos : POSITION;
-	float2 TexCoord0 : TEXCOORD0;
-	float2 TexCoord1 : TEXCOORD1;
-};
-
-struct VS2PS_Quad_3
+struct VS2PS_ThermalVision
 {
 	float4 HPos : POSITION;
 	float2 TexCoord0 : TEXCOORD0;
@@ -116,15 +114,15 @@ float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 	// 1 4 7
 	// 2 5 8
 	float4 Tex[BlurTaps];
-	Tex[0] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, 1.0) / 16.0));
-	Tex[1] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, 0.0) / 16.0));
-	Tex[2] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, -1.0) / 16.0));
-	Tex[3] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, 1.0) / 16.0));
-	Tex[4] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, 0.0) / 16.0));
-	Tex[5] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, -1.0) / 16.0));
-	Tex[6] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, 1.0) / 16.0));
-	Tex[7] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, 0.0) / 16.0));
-	Tex[8] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, -1.0) / 16.0));
+	Tex[0] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, 1.0) / _ScreenSize));
+	Tex[1] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, 0.0) / _ScreenSize));
+	Tex[2] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, -1.0) / _ScreenSize));
+	Tex[3] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, 1.0) / _ScreenSize));
+	Tex[4] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, 0.0) / _ScreenSize));
+	Tex[5] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, -1.0) / _ScreenSize));
+	Tex[6] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, 1.0) / _ScreenSize));
+	Tex[7] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, 0.0) / _ScreenSize));
+	Tex[8] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, -1.0) / _ScreenSize));
 
 	float4 Blur = 0.0;
 	for(int i = 0; i < BlurTaps; i++)
@@ -136,10 +134,10 @@ float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 	float2 UV = Input.TexCoord0;
 
 	// Parabolic function for x opacity to darken the edges, exponential function for opacity to darken the lower part of the screen
-	float Darkness = max(2.0 * UV.x * UV.x - 2.0 * UV.x + 1.0, saturate((pow(1.5, UV.y) - UV.y / 2.0 - 1.0)));
+	float Darkness = max(4.0 * UV.x * UV.x - 4.0 * UV.x + 1.0, saturate((pow(2.5, UV.y) - UV.y / 2.0 - 1.0)));
 
 	// Weight the blurred version more heavily as you go lower on the screen
-	float4 OutputColor = lerp(Color, Blur, saturate(2.0 * (pow(2.0, UV.y) - UV.y - 1.0)));
+	float4 OutputColor = lerp(Color, Blur, saturate(2.0 * (pow(4.0, UV.y) - UV.y - 1.0)));
 
 	// Darken the left, right, and bottom edges of the final product
 	OutputColor = lerp(OutputColor, float4(0.0, 0.0, 0.0, 1.0), Darkness);
@@ -150,7 +148,7 @@ technique Tinnitus
 {
 	pass p0
 	{
-		ZEnable = TRUE;
+		ZEnable = FALSE;
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
@@ -228,9 +226,9 @@ uniform float _Granularity : TVGRANULARITY; // = 3.5;
 uniform float _TVAmbient : TVAMBIENT; // = 0.15
 uniform float3 _TVColor : TVCOLOR;
 
-VS2PS_Quad_3 Thermal_Vision_VS( APP2VS_Quad Input )
+VS2PS_ThermalVision ThermalVision_VS(APP2VS_Quad Input)
 {
-	VS2PS_Quad_3 Output;
+	VS2PS_ThermalVision Output;
 	Input.Pos.xy = sign(Input.Pos.xy);
 	Output.HPos = float4(Input.Pos.xy, 0, 1);
 	Output.TexCoord0 = Input.Pos.xy * _Granularity + _Displacement; // Outputs random jitter movement at [-x, x] range
@@ -239,46 +237,48 @@ VS2PS_Quad_3 Thermal_Vision_VS( APP2VS_Quad Input )
 	return Output;
 }
 
-PS2FB_Combine Thermal_Vision_PS(VS2PS_Quad_3 Input)
+PS2FB_Combine ThermalVision_PS(VS2PS_ThermalVision Input)
 {
 	PS2FB_Combine Output;
 	float2 ImgCoord = Input.TexCoord2;
 	float4 Image = tex2D(SampleTex0, ImgCoord);
 
-	if (_Interference <= 1)
+	if (_Interference < 0) // Thermals
 	{
 		float2 Pos = Input.TexCoord0;
 		float Random = tex2D(SampleTex2_Wrap, Pos) - 0.2;
-		if (_Interference < 0) // thermal imaging
-		{
-			float HOffset = 0.001;
-			float VOffset = 0.0015;
-			Image *= 0.25;
-			Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, VOffset)) * 0.0625;
-			Image += tex2D(SampleTex0, ImgCoord - float2( HOffset, VOffset)) * 0.0625;
-			Image += tex2D(SampleTex0, ImgCoord + float2(-HOffset, VOffset)) * 0.0625;
-			Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, -VOffset)) * 0.0625;
-			Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, 0.0)) * 0.125;
-			Image += tex2D(SampleTex0, ImgCoord - float2( HOffset, 0.0)) * 0.125;
-			Image += tex2D(SampleTex0, ImgCoord + float2( 0.0, VOffset)) * 0.125;
-			Image += tex2D(SampleTex0, ImgCoord - float2( 0.0, VOffset)) * 0.125;
-			// Output.Col0.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75f, 0.50f, Image.b), Image.b), Image.r, Image.r); // M
-			Output.Col0.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
-			Output.Col0.r -= _Interference * Random; // Add -_Interference
-			Output.Col0 = float4(_TVColor * Output.Col0.rrr, Image.a);
-		}
-		else // normal tv effect
-		{
-			float Noise = tex2D(SampleTex1_Wrap, Input.TexCoord1) - 0.5;
-			float Distort = frac(Pos.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
-			Distort *= (1.0 - Distort);
-			Distort /= 1.0 + _DistortionScale * abs(Pos.y);
-			ImgCoord.x += _DistortionScale * Noise * Distort;
-			Image = dot(float3(0.3, 0.59, 0.11), Image.rgb);
-			Output.Col0 = float4(_TVColor, 1.0) * (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
-		}
+		float HOffset = 0.001;
+		float VOffset = 0.0015;
+		Image *= 0.25;
+		Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, VOffset)) * 0.0625;
+		Image += tex2D(SampleTex0, ImgCoord - float2( HOffset, VOffset)) * 0.0625;
+		Image += tex2D(SampleTex0, ImgCoord + float2(-HOffset, VOffset)) * 0.0625;
+		Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, -VOffset)) * 0.0625;
+		Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, 0.0)) * 0.125;
+		Image += tex2D(SampleTex0, ImgCoord - float2( HOffset, 0.0)) * 0.125;
+		Image += tex2D(SampleTex0, ImgCoord + float2( 0.0, VOffset)) * 0.125;
+		Image += tex2D(SampleTex0, ImgCoord - float2( 0.0, VOffset)) * 0.125;
+		// Output.Col0.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75f, 0.50f, Image.b), Image.b), Image.r, Image.r); // M
+		Output.Col0.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
+		Output.Col0.r -= _Interference * Random; // Add -_Interference
+		Output.Col0 = float4(_TVColor * Output.Col0.rrr, Image.a);
 	}
-	else Output.Col0 = Image;
+	else if (_Interference > 0 && _Interference <= 1) // BF2 TV
+	{
+		float2 Pos = Input.TexCoord0;
+		float Random = tex2D(SampleTex2_Wrap, Pos) - 0.2;
+		float Noise = tex2D(SampleTex1_Wrap, Input.TexCoord1) - 0.5;
+		float Distort = frac(Pos.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
+		Distort *= (1.0 - Distort);
+		Distort /= 1.0 + _DistortionScale * abs(Pos.y);
+		ImgCoord.x += _DistortionScale * Noise * Distort;
+		Image = dot(float3(0.3, 0.59, 0.11), Image.rgb);
+		Output.Col0 = float4(_TVColor, 1.0) * (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
+	}
+	else // Passthrough
+	{
+		Output.Col0 = Image;
+	}
 	return Output;
 }
 
@@ -286,11 +286,11 @@ PS2FB_Combine Thermal_Vision_PS(VS2PS_Quad_3 Input)
 	TV Effect with usage of gradient texture
 */
 
-PS2FB_Combine Thermal_Vision_Gradient_PS(VS2PS_Quad_3 Input)
+PS2FB_Combine ThermalVision_Gradient_PS(VS2PS_ThermalVision Input)
 {
 	PS2FB_Combine Output;
 
-	if ( _Interference >= 0 && _Interference <= 1 )
+	if (_Interference > 0 && _Interference <= 1)
 	{
 		float2 Pos = Input.TexCoord0;
 		float2 ImgCoord = Input.TexCoord2;
@@ -321,8 +321,8 @@ technique TVEffect
 		AlphaBlendEnable = FALSE;
 		StencilEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Thermal_Vision_VS();
-        PixelShader = compile ps_3_0 Thermal_Vision_PS();
+		VertexShader = compile vs_3_0 ThermalVision_VS();
+		PixelShader = compile ps_3_0 ThermalVision_PS();
 	}
 }
 
@@ -334,8 +334,8 @@ technique TVEffect_Gradient_Tex
 		AlphaBlendEnable = FALSE;
 		StencilEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Thermal_Vision_VS();
-		PixelShader = compile ps_3_0 Thermal_Vision_Gradient_PS();
+		VertexShader = compile vs_3_0 ThermalVision_VS();
+		PixelShader = compile ps_3_0 ThermalVision_Gradient_PS();
 	}
 }
 
@@ -343,16 +343,23 @@ technique TVEffect_Gradient_Tex
 	Wave Distortion Shader
 */
 
-VS2PS_Quad_2 Wave_Distortion_VS(APP2VS_Quad Input)
+struct VS2PS_Distortion
 {
-	VS2PS_Quad_2 Output;
+	float4 HPos : POSITION;
+	float2 TexCoord0 : TEXCOORD0;
+	float2 TexCoord1 : TEXCOORD1;
+};
+
+VS2PS_Distortion WaveDistortion_VS(APP2VS_Quad Input)
+{
+	VS2PS_Distortion Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.TexCoord0 = Input.TexCoord0;
 	Output.TexCoord1 = Input.Pos.xy;
 	return Output;
 }
 
-float4 Wave_Distortion_PS(VS2PS_Quad_2 Input) : COLOR
+float4 WaveDistortion_PS(VS2PS_Distortion Input) : COLOR
 {
 	return 0.0;
 }
@@ -368,13 +375,8 @@ technique WaveDistortion
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		// PixelShaderConstant2[0] = <_FracTime>;
-		// PixelShaderConstant1[1] = <_DeltaU>;
-		// PixelShaderConstant1[2] = <_DeltaV>;
-		// TextureTransform[2] = <UpScaleTexBy8>;
-
-		VertexShader = compile vs_3_0 Wave_Distortion_VS();
-		PixelShader = compile ps_3_0 Wave_Distortion_PS();
+		VertexShader = compile vs_3_0 WaveDistortion_VS();
+		PixelShader = compile ps_3_0 WaveDistortion_PS();
 	}
 }
 

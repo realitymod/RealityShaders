@@ -174,7 +174,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
 		NormalVec.xyz = normalize(mul(NormalVec.xyz, WorldTBN));
 	#else
-		float4 NormalVec = float4(WorldTBN[2], 0.1);
+		float4 NormalVec = float4(WorldTBN[2], 0.0);
 	#endif
 
 	float4 DiffuseTex = tex2D(SampleDiffuseMap, Input.P_Tex0_GroundUV.xy);
@@ -214,9 +214,15 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	float CosAngle = GetLambert(NormalVec.xyz, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
 	float3 Specular = GetSpecular(NormalVec.xyz, HalfVec, SpecularPower) * Gloss * Lights[0].color;
-
 	float3 LightFactors = Attenuation * (ShadowDir * OccShadowDir);
-	float3 Lighting = (Diffuse + (Specular * CosAngle)) * LightFactors;
+
+	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
+	// Prevents non-detailed bundledmesh from looking shiny
+	#if _HASNORMALMAP_
+		float3 Lighting = (Diffuse + (Specular * CosAngle)) * LightFactors;
+	#else
+		float3 Lighting = (Diffuse) * LightFactors;
+	#endif
 
 	float4 OutColor = 1.0;
 	OutColor.rgb = DiffuseTex.rgb * (Ambient + Lighting);

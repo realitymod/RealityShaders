@@ -305,9 +305,10 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
 	#endif
 
-	#if _HASGIMAP_
-		if (length(FogColor.rgb) < 0.01)
-		{
+	// Thermals
+	if (length(FogColor.rgb) < 0.01)
+	{
+		#if _HASGIMAP_
 			if (GI_TIS.a < 0.01)
 			{
 				if (GI_TIS.g < 0.01)
@@ -324,13 +325,10 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 				// Normal Wrecks also cold
 				OutputColor.rgb = float3(lerp(0.43, 0.17, ColorMap.b), 1.0, 0.0);
 			}
-		}
-	#else
-		if (length(FogColor.rgb) < 0.01)
-		{
+		#else
 			OutputColor.rgb = float3(lerp(0.64, 0.3, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
-		}
-	#endif
+		#endif
+	}
 
 	#if !_POINTLIGHT_
 		ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
