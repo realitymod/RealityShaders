@@ -615,8 +615,7 @@ VS2PS_ZOnly Undergrowth_ZOnly_VS(APP2VS Input)
 float4 Undergrowth_ZOnly_PS(VS2PS_ZOnly Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleColorMap, Input.Tex0);
-	OutputColor.a *= _Transparency_x8.a * 4.0;
-	OutputColor.a += OutputColor.a;
+	OutputColor.a *= _Transparency_x8.a * 8.0;
 	return OutputColor;
 }
 

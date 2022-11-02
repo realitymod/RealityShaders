@@ -73,14 +73,12 @@ struct VS2PS
 
 float4 ProjToLighting(float4 HPos)
 {
-	float4 Tex;
 	// tl: This has been rearranged optimally (I believe) into 1 MUL and 1 MAD,
 	//     don't change this without thinking twice.
 	//     ProjOffset now includes screen-> texture bias as well as half-texel offset
 	//     ProjScale is screen-> texture scale/invert operation
 	// Tex = (HPos.x * 0.5 + 0.5 + HTexel, HPos.y * -0.5 + 0.5 + HTexel, HPos.z, HPos.w)
- 	Tex = HPos * _TexProjScale + (_TexProjOffset * HPos.w);
-	return Tex;
+	return HPos * _TexProjScale + (_TexProjOffset * HPos.w);
 }
 
 VS2PS RoadCompiled_VS(APP2VS Input)
