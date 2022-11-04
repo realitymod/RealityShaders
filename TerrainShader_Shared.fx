@@ -224,7 +224,7 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorTex);
 
 	// If thermals assume no shadows and gray color
-	if (length(FogColor.rgb) < 0.01)
+	if (FogColor.r < 0.01)
 	{
 		Light.rgb = 2.0 * _SunColor + AccumLights;
 		ColorMap.rgb = 1.0 / 3.0;
@@ -433,7 +433,7 @@ float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorLightTex);
 
 	// If thermals assume gray color
-	if (length(FogColor.rgb) < 0.01)
+	if (FogColor.r < 0.01)
 	{
 		ColorMap.rgb = 1.0 / 3.0;
 	}

@@ -139,7 +139,7 @@ float4 Undergrowth_PS
 	float4 TerrainColor = tex2D(SampleTerrainColorMap, Input.P_Tex0_Tex1.zw);
 
 	// If thermals assume gray color
-	if (length(FogColor.rgb) < 0.01)
+	if (FogColor.r < 0.01)
 	{
 		TerrainColor.rgb = 1.0 / 3.0;
 	}
@@ -400,7 +400,7 @@ float4 Undergrowth_Simple_PS
 	float4 OutputColor = float4(LightColor, Base.a * _Transparency_x8.a * 8.0);
 
 	// Thermals
-	if (length(FogColor.rgb) < 0.01)
+	if (FogColor.r < 0.01)
 	{
 		OutputColor.rgb = float3(lerp(0.43, 0.17, LightColor.b), 1.0, 0.0);
 	}

@@ -306,7 +306,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	// Thermals
-	if (length(FogColor.rgb) < 0.01)
+	if (FogColor.r < 0.01)
 	{
 		#if _HASGIMAP_
 			if (GI_TIS.a < 0.01)

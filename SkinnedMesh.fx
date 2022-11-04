@@ -95,7 +95,8 @@ struct SkinnedData
 	float3 LightVec;
 };
 
-SkinnedData SkinSoldier(in APP2VS Input, uniform int NumBones, in float3 LightVec)
+// Skin solders by blending between two bones
+SkinnedData SkinSoldier(in APP2VS Input, in float3 LightVec)
 {
 	SkinnedData Output = (SkinnedData)0;
 
@@ -104,29 +105,13 @@ SkinnedData SkinSoldier(in APP2VS Input, uniform int NumBones, in float3 LightVe
 	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
 	int IndexArray[4] = (int[4])IndexVector;
 
-	// Calculate the pos/normal using the "normal" weights
-	// and accumulate the weights to calculate the last weight
-	float LastWeight = 0.0;
+	float4x3 BoneMatrix = (float4x3)0;
+	BoneMatrix += (_BoneArray[IndexArray[0]] * (BlendWeightsArray[0]));
+	BoneMatrix += (_BoneArray[IndexArray[1]] * (1.0 - BlendWeightsArray[0]));
 
-	for (int BoneIndex = 0; BoneIndex < NumBones - 1; BoneIndex++)
-	{
-		float4x3 CurrentBone = _BoneArray[IndexArray[BoneIndex]];
-		float CurrentWeight = BlendWeightsArray[BoneIndex];
-		Output.Pos += mul(Input.Pos, CurrentBone) * CurrentWeight;
-		Output.Normal += mul(Input.Normal, (float3x3)CurrentBone) * CurrentWeight;
-		Output.LightVec += mul((float3x3)CurrentBone, LightVec) * CurrentWeight;
-		LastWeight += CurrentWeight;
-	}
-
-	// Now that we have the calculated weight, add in the final influence
-	LastWeight = 1.0 - LastWeight;
-	float4x3 LastBone = _BoneArray[IndexArray[NumBones - 1]];
-	Output.Pos += mul(Input.Pos, LastBone) * LastWeight;
-	Output.Normal += mul(Input.Normal, (float3x3)LastBone) * LastWeight;
-	Output.LightVec += mul((float3x3)LastBone, LightVec) * LastWeight;
-
-	// Normalize normals
-	Output.Normal = normalize(Output.Normal);
+	Output.Pos = mul(Input.Pos, BoneMatrix);
+	Output.Normal = normalize(mul(Input.Normal, (float3x3)BoneMatrix));
+	Output.LightVec = mul((float3x3)BoneMatrix, LightVec);
 
 	return Output;
 }
@@ -143,10 +128,10 @@ struct VS2PS_PreSkin
 	float3 LightVec : TEXCOORD2;
 };
 
-VS2PS_PreSkin PreSkin_VS(APP2VS Input, uniform int NumBones)
+VS2PS_PreSkin PreSkin_VS(APP2VS Input)
 {
 	VS2PS_PreSkin Output = (VS2PS_PreSkin)0;
-	SkinnedData Skin = SkinSoldier(Input, NumBones, -_SunLightDirection.xyz);
+	SkinnedData Skin = SkinSoldier(Input, -_SunLightDirection.xyz);
 
 	Output.HPos.xy = Input.TexCoord0 * float2(2.0, -2.0) - float2(1.0, -1.0);
 	Output.HPos.zw = float2(0.0, 1.0);
@@ -194,10 +179,10 @@ struct VS2PS_ShadowedPreSkin
 	float4 ShadowTex : TEXCOORD3;
 };
 
-VS2PS_ShadowedPreSkin ShadowedPreSkin_VS(APP2VS Input, uniform int NumBones)
+VS2PS_ShadowedPreSkin ShadowedPreSkin_VS(APP2VS Input)
 {
 	VS2PS_ShadowedPreSkin Output = (VS2PS_ShadowedPreSkin)0;
-	SkinnedData Skin = SkinSoldier(Input, NumBones, -_SunLightDirection.xyz);
+	SkinnedData Skin = SkinSoldier(Input, -_SunLightDirection.xyz);
 
 	Output.HPos.xy = Input.TexCoord0 * float2(2.0, -2.0) - float2(1.0, -1.0);
 	Output.HPos.zw = float2(0.0, 1.0);
@@ -262,10 +247,10 @@ struct VS2PS_ApplySkin
 	float3 HalfVec : TEXCOORD2;
 };
 
-VS2PS_ApplySkin ApplySkin_VS(APP2VS Input, uniform int NumBones)
+VS2PS_ApplySkin ApplySkin_VS(APP2VS Input)
 {
 	VS2PS_ApplySkin Output = (VS2PS_ApplySkin)0;
-	SkinnedData Skin = SkinSoldier(Input, NumBones, -_SunLightDirection.xyz);
+	SkinnedData Skin = SkinSoldier(Input, -_SunLightDirection.xyz);
 
 	// Transform position into view and then projection space
 	Output.HPos = mul(float4(Skin.Pos, 1.0f), _WorldViewProjection);
@@ -325,21 +310,21 @@ technique humanskin
 	pass pre
 	{
 		HUMANSKIN_RENDERSTATES(NONE)
-		VertexShader = compile vs_3_0 PreSkin_VS(2);
+		VertexShader = compile vs_3_0 PreSkin_VS();
 		PixelShader = compile ps_3_0 PreSkin_PS();
 	}
 
 	pass preshadowed
 	{
 		HUMANSKIN_RENDERSTATES(NONE)
-		VertexShader = compile vs_3_0 ShadowedPreSkin_VS(2);
+		VertexShader = compile vs_3_0 ShadowedPreSkin_VS();
 		PixelShader = compile ps_3_0 ShadowedPreSkin_PS();
 	}
 
 	pass apply
 	{
 		HUMANSKIN_RENDERSTATES(CCW)
-		VertexShader = compile vs_3_0 ApplySkin_VS(2);
+		VertexShader = compile vs_3_0 ApplySkin_VS();
 		PixelShader = compile ps_3_0 ApplySkin_PS();
 	}
 }

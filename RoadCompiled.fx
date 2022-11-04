@@ -109,7 +109,7 @@ float4 RoadCompiled_PS(VS2PS Input) : COLOR
 	float4 Light = ((AccumLights.w * _SunColor * 2.0) + AccumLights) * 2.0;
 
 	// On thermals no shadows
-	if (length(FogColor.rgb) < 0.01)
+	if (FogColor.r < 0.01)
 	{
 		Light.rgb = (_SunColor * 2.0 + AccumLights) * 2.0;
 		OutputColor.rgb *= Light.rgb;

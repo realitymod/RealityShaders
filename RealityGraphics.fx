@@ -47,6 +47,11 @@
 		return c;
 	}
 
+	float Max3(float3 c)
+	{
+		return max(max(c.r, c.g), c.b);
+	}
+
 	/*
 		Shared depth-based functions
 	*/
@@ -126,9 +131,9 @@
 	}
 
 	// Gets normalized modified Blinn-Phong specular value
-	float GetSpecular(float3 NormalVec, float3 HalfVec, uniform float N = 32.0)
+	float GetSpecular(float3 NormalVec, float3 HalfVec, uniform float N = 32.0, uniform bool NormSpec = false)
 	{
-		float NFactor = (N + 8.0) / 8.0;
+		float NFactor = (NormSpec) ? (N + 8.0) / 8.0 : 1.0;
 		float Specular = saturate(dot(NormalVec, HalfVec));
 		return NFactor * pow(abs(Specular), N);
 	}

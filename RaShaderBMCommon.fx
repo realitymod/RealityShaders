@@ -82,8 +82,7 @@ float4x3 GeomBones[26];
 struct
 {
 	float4x4 uvMatrix[7] : UVMatrix;
-}
-UserData;
+} UserData;
 
 Light Lights[1];
 float4 PosUnpack;

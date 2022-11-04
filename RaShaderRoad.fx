@@ -156,7 +156,7 @@ float4 Road_PS(VS2PS Input) : COLOR
 	float4 Light = ((TerrainColor * 2.0 * AccumLights.w) + AccumLights) * 2.0;
 
 	// On thermals no shadows
-	if (length(FogColor.rgb) < 0.01)
+	if (FogColor.r < 0.01)
 	{
 		Light.rgb = (TerrainColor * 2.0 + AccumLights) * 2.0;
 		Diffuse.rgb *= Light.rgb;

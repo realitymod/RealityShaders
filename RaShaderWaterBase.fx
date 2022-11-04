@@ -264,7 +264,7 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	#endif
 
 	// Thermals
-	if (length(FogColor.rgb) < 0.01)
+	if (FogColor.r < 0.01)
 	{
 		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}

@@ -143,7 +143,7 @@ float4 Hi_FullDetail_PS(Hi_VS2PS_FullDetail Input) : COLOR
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 
 		// If thermals assume no shadows and gray color
-		if (length(FogColor.rgb) < 0.01)
+		if (FogColor.r < 0.01)
 		{
 			Light.rgb = 2.0 * _SunColor.rgb + AccumLights.rgb;
 			ColorMap.rgb = 1.0 / 3.0;
@@ -300,7 +300,7 @@ float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 
 		// If thermals assume no shadows and gray color
-		if (length(FogColor.rgb) < 0.01)
+		if (FogColor.r < 0.01)
 		{
 			Light.rgb = 2.0 * _SunColor.rgb + AccumLights.rgb;
 			ColorMap.rgb = 1.0 / 3.0;
@@ -462,7 +462,7 @@ float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 
 		// If thermals assume no shadows and gray color
-		if (length(FogColor.rgb) < 0.01)
+		if (FogColor.r < 0.01)
 		{
 			Light.rgb = 2.0 * _SunColor.rgb + AccumLights.rgb;
 			ColorMap.rgb = 1.0 / 3.0;
