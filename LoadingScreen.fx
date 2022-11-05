@@ -3,7 +3,7 @@
 	Description: Renders loading screen at startup
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

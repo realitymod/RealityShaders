@@ -14,7 +14,7 @@
 	4. Redid coding conventions
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

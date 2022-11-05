@@ -3,7 +3,7 @@
 	Description: Shared functions for terrain shader
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 /*
 	Basic morphed technique

@@ -5,9 +5,9 @@
 	- Outputs used in RaShaderSTM.fx
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/CommonVertexLight.fx"
+#include "shaders/CommonPixelLight.fxh"
 
 /*
 	[Uniform data from app]

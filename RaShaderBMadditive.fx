@@ -3,9 +3,9 @@
 	Description: Renders additive lighting for bundledmesh (dynamic, nonhuman objects)
 */
 
-#include "shaders/RealityGraphics.fx"
-#include "shaders/RaCommon.fx"
-#include "shaders/RaShaderBMCommon.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#include "shaders/RaShaderBMCommon.fxh"
 
 string GenerateStructs[] =
 {

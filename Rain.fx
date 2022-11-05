@@ -3,7 +3,7 @@
 	Description: Renders rain effect
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 float4x4 _WorldViewProj : WORLDVIEWPROJ;
 

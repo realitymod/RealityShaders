@@ -3,7 +3,7 @@
 	Description: Basic shader that outputs a color
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 float4x4 World;
 float4x4 ViewProjection;

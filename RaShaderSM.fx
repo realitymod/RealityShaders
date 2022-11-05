@@ -6,9 +6,9 @@
 	- Calculates world-space lighting
 */
 
-#include "shaders/RealityGraphics.fx"
-#include "shaders/RaCommon.fx"
-#include "shaders/RaShaderSMCommon.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#include "shaders/RaShaderSMCommon.fxh"
 
 // Dep.checks, etc
 

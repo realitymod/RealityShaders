@@ -3,7 +3,7 @@
 	Description: Renders sky and skybox
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 uniform float4x4 _ViewProjMatrix : WorldViewProjection;
 uniform float4 _TexOffset : TEXOFFSET;

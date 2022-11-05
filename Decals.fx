@@ -3,9 +3,9 @@
 	Description: Renders decals such as bullet holes
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 /*
 	[Attributes from app]

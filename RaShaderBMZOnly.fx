@@ -3,7 +3,7 @@
 	Description: ZOnly shader for bundledmesh (dynamic, nonhuman objects)
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 string reqVertexElement[] =
 {
@@ -36,9 +36,9 @@ string InstanceParameters[] =
 #define NUM_TEXSETS 1
 #define TexBasePackedInd 0
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 #include "shaders/RaDefines.fx"
-#include "shaders/RaShaderBMCommon.fx"
+#include "shaders/RaShaderBMCommon.fxh"
 
 struct APP2VS
 {

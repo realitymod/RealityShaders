@@ -5,10 +5,10 @@
 	- Calculates world-space lighting
 */
 
-#include "shaders/RealityGraphics.fx"
-#include "shaders/RaCommon.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
 #include "shaders/RaDefines.fx"
-#include "shaders/RaShaderBMCommon.fx"
+#include "shaders/RaShaderBMCommon.fxh"
 
 // Dependencies and sanity checks
 
@@ -257,12 +257,12 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		float Gloss = StaticGloss;
 	#endif
 	
-	float FresnelFactor = ComputeFresnelFactor(NormalVec, ViewVec);
+	float FresnelFactor = ComputeFresnelFactor(NormalVec, ViewVec) * Gloss;
 
 	#if _HASENVMAP_
 		float3 Reflection = -reflect(ViewVec, NormalVec);
 		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
-		ColorMap.rgb = lerp(ColorMap, EnvMapColor, FresnelFactor / 4.0);
+		ColorMap.rgb = lerp(ColorMap, EnvMapColor, FresnelFactor);
 	#endif
 
 	#if _POINTLIGHT_

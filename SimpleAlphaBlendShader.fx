@@ -3,7 +3,7 @@
 	Description: Renders simple blendop shader
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 uniform float4x4 _WorldViewProj : WorldViewProjection;
 

@@ -3,9 +3,9 @@
 	Description: Renders static particles
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/FXCommon.fx"
+#include "shaders/FXCommon.fxh"
 
 // UNIFORM INPUTS
 // Constant array

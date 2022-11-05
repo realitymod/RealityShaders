@@ -3,9 +3,9 @@
 	Description: Renders game font
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 /*
 	[Attributes from app]

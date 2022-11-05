@@ -7,7 +7,7 @@
 	Author: Mats Dal
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 // Note: obj space light vectors
 uniform float4 _SunLightDirection : SunLightDirection;

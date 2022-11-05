@@ -3,9 +3,9 @@
 	Description: Renders lighting for tree-trunk overgrowth
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 Light Lights[1];
 float4 OverGrowthAmbient;

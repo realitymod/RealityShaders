@@ -3,7 +3,7 @@
 	Description: Renders circle for debug shaders
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 float4x4 _WorldViewProj : WorldViewProjection;
 bool _ZBuffer : ZBUFFER;

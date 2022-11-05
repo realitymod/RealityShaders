@@ -3,9 +3,9 @@
 	Description: Renders lighting for objects with characteristics of tree-trunks (poles)
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 #if !defined(_HASSHADOW_)
 	#define _HASSHADOW_ 0

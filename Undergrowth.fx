@@ -30,9 +30,9 @@ uniform float4 _Transparency_x8 : TRANSPARENCY_X8;
 
 string Category = "Effects\\Lighting";
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 uniform texture Tex0 : TEXLAYER0;
 uniform texture Tex1 : TEXLAYER1;

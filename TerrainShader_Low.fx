@@ -3,7 +3,7 @@
 	Description: Low-settings terrain shader
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 /*
 	Low Terrain

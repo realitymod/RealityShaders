@@ -3,9 +3,9 @@
 	Description: Renders lighting for ground terrain
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 /*
 	[Uniform data from app]
@@ -116,7 +116,7 @@ CREATE_SAMPLER(sampler, SampleTex6_Wrap, Tex6, WRAP)
 
 CREATE_SAMPLER(samplerCUBE, SamplerTex6_Cube, Tex6, WRAP)
 
-#include "shaders/CommonVertexLight.fx"
+#include "shaders/CommonPixelLight.fxh"
 #include "shaders/TerrainShader_Shared.fx"
 #if HIGHTERRAIN || MIDTERRAIN
 	#include "shaders/TerrainShader_Hi.fx"

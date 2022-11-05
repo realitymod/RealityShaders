@@ -9,7 +9,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

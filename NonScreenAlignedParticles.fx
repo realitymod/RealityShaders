@@ -3,9 +3,9 @@
 	Description: Renders non-flat particles
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/FXCommon.fx"
+#include "shaders/FXCommon.fxh"
 
 // constant array
 struct TemplateParameters

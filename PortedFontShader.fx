@@ -3,7 +3,7 @@
 	Description: Renders command-line font
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

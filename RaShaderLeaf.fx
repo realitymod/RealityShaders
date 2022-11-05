@@ -3,9 +3,9 @@
 	Description: Renders objects with leaf-like characteristics
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 // [Debug data]
 // #define OVERGROWTH

@@ -5,7 +5,7 @@
 	- Outputs used in RaShaderBM.fx
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

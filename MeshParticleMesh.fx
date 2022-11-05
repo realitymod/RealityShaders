@@ -3,9 +3,9 @@
 	Description: Renders particle lighting
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/FXCommon.fx"
+#include "shaders/FXCommon.fxh"
 
 /*
 	[Attributes from app]

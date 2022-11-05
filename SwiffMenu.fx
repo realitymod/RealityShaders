@@ -3,7 +3,7 @@
 	Description: Shaders for main menu
 */
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 uniform float4x4 WorldView : TRANSFORM;
 uniform float4 DiffuseColor : DIFFUSE;

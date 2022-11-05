@@ -3,9 +3,9 @@
 	Description: Renders object's diffuse map
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 float4 ObjectSpaceCamPos;
 

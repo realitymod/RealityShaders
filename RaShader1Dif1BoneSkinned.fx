@@ -8,9 +8,9 @@
 	initialized from the application.
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 bool AlphaBlendEnable = false;
 float4x4 Bones[26];

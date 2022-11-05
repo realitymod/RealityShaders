@@ -3,7 +3,7 @@
 	Description: Renders debug linegraph
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
 float2 _GraphPos : GRAPHSIZE;
 float2 _ViewportSize : VIEWPORTSIZE;

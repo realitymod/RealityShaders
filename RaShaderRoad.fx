@@ -3,9 +3,9 @@
 	Description: Renders road for game
 */
 
-#include "shaders/RealityGraphics.fx"
+#include "shaders/RealityGraphics.fxh"
 
-#include "shaders/RaCommon.fx"
+#include "shaders/RaCommon.fxh"
 
 #define LIGHT_MUL float3(0.8, 0.8, 0.4)
 #define LIGHT_ADD float3(0.4, 0.4, 0.4)

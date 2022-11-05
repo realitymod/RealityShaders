@@ -5,9 +5,9 @@
 	- Calculates tangent-space lighting
 */
 
-#include "shaders/RealityGraphics.fx"
-#include "shaders/RaCommon.fx"
-#include "shaders/RaShaderSTMCommon.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#include "shaders/RaShaderSTMCommon.fxh"
 
 #define SkyNormal float3(0.78, 0.52, 0.65)
 
