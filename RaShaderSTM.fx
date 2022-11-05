@@ -242,26 +242,19 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
-		#if _SHADOW_ && _LIGHTMAP_
+		#if _LIGHTMAP_ && _SHADOW_
 			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
 		float DotLN = saturate(dot(Normals.xyz / 5.0, -Lights[0].dir));
 		float3 InvDot = saturate((1.0 - DotLN) * StaticSkyColor * SkyNormal.z);
-		Specular = Specular * Lightmap.g;
 
-		#if _LIGHTMAP_
-			// Add ambient to get correct ambient for surfaces parallel to the sun
-			float3 Ambient = SinglePointColor * Lightmap.r;
-			float3 BumpedSky = InvDot * Lightmap.b;
-			float3 BumpedDiffuse = Diffuse + BumpedSky;
-			Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
-			float3 Lighting = Ambient + (Diffuse + (Specular * CosAngle));
-		#else
-			float3 BumpedSky = InvDot;
-			Diffuse = (Diffuse * Lightmap.g);
-			float3 Lighting = BumpedSky + (Diffuse + (Specular * CosAngle));
-		#endif
+		Specular = Specular * Lightmap.g;
+		float3 Ambient = SinglePointColor * Lightmap.r;
+		float3 BumpedSky = InvDot * Lightmap.b;
+		float3 BumpedDiffuse = Diffuse + BumpedSky;
+		Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
+		float3 Lighting = Ambient + (Diffuse + (Specular * CosAngle));
 
 		OutputColor.rgb = (DiffuseMap.rgb * Lighting) * 2.0;
 	#endif

@@ -256,11 +256,13 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#else
 		float Gloss = StaticGloss;
 	#endif
+	
+	float FresnelFactor = ComputeFresnelFactor(NormalVec, ViewVec);
 
 	#if _HASENVMAP_
 		float3 Reflection = -reflect(ViewVec, NormalVec);
 		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
-		ColorMap.rgb = lerp(ColorMap, EnvMapColor, Gloss / 4.0);
+		ColorMap.rgb = lerp(ColorMap, EnvMapColor, FresnelFactor / 4.0);
 	#endif
 
 	float3 CosAngle = GetLambert(NormalVec, LightVec);
@@ -341,7 +343,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	float Alpha = 1.0;
 
 	#if _HASENVMAP_
-		Alpha = lerp(ColorMap.a, 1.0, saturate(1.0 - dot(NormalVec, ViewVec)));
+		Alpha = lerp(ColorMap.a, 1.0, FresnelFactor);
 	#endif
 
 	#if _HASDOT3ALPHATEST_

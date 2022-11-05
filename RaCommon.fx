@@ -48,7 +48,7 @@
 
 	int alphaRef = 20;
 	int CullMode = 3; // D3DCULL_CCW
-	#define HARDCODED_PARALLAX_BIAS 0.003
+	#define HARDCODED_PARALLAX_BIAS 0.004
 
 	float GlobalTime;
 	float WindSpeed = 0;
@@ -86,7 +86,7 @@
 
 	void ApplyLinearFog(inout float3 Color, in float FogValue)
 	{
-		Color = lerp(RemoveSRGBCurve(FogColor.rgb), Color, FogValue);
+		Color = lerp(SRGBToLinearEst(FogColor.rgb), Color, FogValue);
 	}
 
 	float GetRoadZFade(float3 ObjectPos, float3 CameraPos, float2 FadeValues)

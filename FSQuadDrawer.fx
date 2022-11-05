@@ -249,14 +249,14 @@ VS2PS_Blit Blit_Magnified_PS(APP2VS_Blit Input)
 	return Output;
 }
 
-VS2PS_4Tap FSBMScaleDown4x4LinearFilter_VS(APP2VS_Blit Input, uniform float4 Offsets[4])
+VS2PS_4Tap FSBMScaleDown4x4LinearFilter_VS(APP2VS_Blit Input)
 {
 	VS2PS_4Tap Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
-	Output.FilterCoords[0] = Input.TexCoord0 + Offsets[0].xy;
-	Output.FilterCoords[1] = Input.TexCoord0 + Offsets[1].xy;
-	Output.FilterCoords[2] = Input.TexCoord0 + Offsets[2].xy;
-	Output.FilterCoords[3] = Input.TexCoord0 + Offsets[3].xy;
+	Output.FilterCoords[0] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[0].xy;
+	Output.FilterCoords[1] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[1].xy;
+	Output.FilterCoords[2] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[2].xy;
+	Output.FilterCoords[3] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[3].xy;
 	return Output;
 }
 
@@ -614,7 +614,7 @@ technique Blit
 	{
 		ZEnable = FALSE;
 		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 FSBMScaleDown4x4LinearFilter_VS(_ScaleDown4x4LinearSampleOffsets); // Blit_VS();
+		VertexShader = compile vs_3_0 FSBMScaleDown4x4LinearFilter_VS();
 		PixelShader = compile ps_3_0 FSBMScaleDown4x4LinearFilter_PS();
 	}
 

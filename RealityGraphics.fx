@@ -8,48 +8,46 @@
 	#define REALITYGRAPHICS_FX
 
 	/*
-		Shared color-based functions
-
-		https://github.com/microsoft/DirectX-Graphics-Samples
+		https://github.com/microsoft/DirectXTK
 
 		The MIT License (MIT)
 
-		Copyright (c) 2015 Microsoft
+		Copyright (c) 2012-2022 Microsoft Corp
 
-		Permission is hereby granted, free of charge, to any person obtaining a copy
-		of this software and associated documentation files (the "Software"), to deal
-		in the Software without restriction, including without limitation the rights
-		to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-		copies of the Software, and to permit persons to whom the Software is
-		furnished to do so, subject to the following conditions:
+		Permission is hereby granted, free of charge, to any person obtaining a copy of this
+		software and associated documentation files (the "Software"), to deal in the Software
+		without restriction, including without limitation the rights to use, copy, modify,
+		merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+		permit persons to whom the Software is furnished to do so, subject to the following
+		conditions:
 
-		The above copyright notice and this permission notice shall be included in all
-		copies or substantial portions of the Software.
+		The above copyright notice and this permission notice shall be included in all copies
+		or substantial portions of the Software.
 
-		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-		IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-		FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-		AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-		LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-		SOFTWARE.
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+		INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+		PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+		HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+		CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+		OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	*/
 
-	float3 RemoveSRGBCurve(float3 x)
+	// Apply the (approximate) sRGB curve to linear values
+	float3 LinearToSRGBEst(float3 color)
 	{
-		float3 c = (x < 0.04045) ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4);
-		return c;
+		return pow(abs(color), 1.0 / 2.2);
 	}
 
-	float3 ApplySRGBCurve(inout float3 x)
+	// (Approximate) sRGB to linear
+	float3 SRGBToLinearEst(float3 srgb)
 	{
-		float3 c = (x < 0.0031308) ? 12.92 * x : 1.055 * pow(x, 1.0 / 2.4) - 0.055;
-		return c;
+		return pow(abs(srgb), 2.2);
 	}
 
-	float Max3(float3 c)
+	float ComputeFresnelFactor(float3 WorldNormal, float3 ViewVec)
 	{
-		return max(max(c.r, c.g), c.b);
+		float ViewAngle = dot(WorldNormal, ViewVec);
+		return saturate(1.0 - abs(ViewAngle));
 	}
 
 	/*

@@ -177,7 +177,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 		float4 NormalVec = float4(WorldTBN[2], 0.0);
 	#endif
 
-	float4 DiffuseTex = tex2D(SampleDiffuseMap, Input.P_Tex0_GroundUV.xy);
+	float4 ColorMap = tex2D(SampleDiffuseMap, Input.P_Tex0_GroundUV.xy);
 
 	#if _HASSHADOW_
 		float ShadowDir = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
@@ -225,15 +225,15 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	float4 OutColor = 1.0;
-	OutColor.rgb = DiffuseTex.rgb * (Ambient + Lighting);
+	OutColor.rgb = ColorMap.rgb * (Ambient + Lighting);
 
 	// Thermals
 	if (FogColor.r < 0.01)
 	{
 		#if _HASENVMAP_ // If EnvMap enabled, then should be hot on thermals
-			OutColor.rgb = float3(lerp(0.60, 0.30, DiffuseTex.b), 1.0, 0.0); // M // 0.61, 0.25
+			OutColor.rgb = float3(lerp(0.60, 0.30, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
 		#else // Else cold
-			OutColor.rgb = float3(lerp(0.43, 0.17, DiffuseTex.b), 1.0, 0.0);
+			OutColor.rgb = float3(lerp(0.43, 0.17, ColorMap.b), 1.0, 0.0);
 		#endif
 	}
 
@@ -241,7 +241,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 		ApplyFog(OutColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 
-	OutColor.a = DiffuseTex.a * Transparency.a;
+	OutColor.a = ColorMap.a * Transparency.a;
 
 	return OutColor;
 }
