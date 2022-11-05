@@ -266,8 +266,9 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	float3 CosAngle = GetLambert(NormalVec, LightVec);
-	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = GetSpecular(NormalVec, HalfVec, SpecularPower) * Gloss * Lights[0].color;
+	float3 Diffuse = (CosAngle * Lights[0].color);
+	float3 Specular = (GetSpecular(NormalVec, HalfVec, SpecularPower) * Gloss) * CosAngle;
+	Specular = (Specular * Lights[0].color);
 
 	#if _POINTLIGHT_
 		#if !_HASCOLORMAPGLOSS_
@@ -278,6 +279,10 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#else
 		const float Attenuation = 1.0;
 	#endif
+
+	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
+	Diffuse *= LightFactors;
+	Specular *= LightFactors;
 
 	#if _HASGIMAP_
 		float4 GI = tex2D(SampleGIMap, Input.P_Tex0_GroundUV.xy);
@@ -291,13 +296,11 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
 	// Prevents non-detailed bundledmesh from looking shiny
-	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
-	#if _HASCOLORMAPGLOSS_ || _HASNORMALMAP_
-		float3 Lighting = (Diffuse + (Specular * CosAngle)) * LightFactors;
-	#else
-		float3 Lighting = (Diffuse) * LightFactors;
+	#if !_HASCOLORMAPGLOSS_ && !_HASNORMALMAP_
+		Specular = 0.0;
 	#endif
-	OutputColor.rgb = ColorMap.rgb * ((Ambient + Lighting) * GI.rgb);
+	float3 Lighting = Ambient + Diffuse;
+	OutputColor.rgb = ((ColorMap.rgb * Lighting) + Specular) * GI.rgb;
 
 	/*
 		Calculate fogging and other occluders

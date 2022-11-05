@@ -294,7 +294,7 @@ float4 ApplySkin_PS(VS2PS_ApplySkin Input) : COLOR
 	float CosAngle = saturate(dot(NormalMap.xyz, LightVec));
 	float Specular = GetSpecular(NormalMap.xyz, HalfVec) * DiffuseMap.a * pow(ShadowIntensity, 2.0);
 
-	return DiffuseMap * (Ambient + Diffuse + (Specular * CosAngle));
+	return (DiffuseMap * (Ambient + Diffuse)) + (Specular * CosAngle);
 }
 
 #define HUMANSKIN_RENDERSTATES(CULLMODE) \

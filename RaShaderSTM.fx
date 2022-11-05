@@ -233,12 +233,15 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 	float3 CosAngle = GetLambert(Normals.xyz, LightVec);
 	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = GetSpecular(Normals.xyz, HalfVec, SpecularPower) * Gloss * Lights[0].color;
+	float3 Specular = (GetSpecular(Normals.xyz, HalfVec, SpecularPower) * Gloss) * CosAngle;
+	Specular = Specular * Lights[0].color;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
-		float3 Lighting = (Diffuse + (Specular * CosAngle)) * Attenuation;
-		OutputColor.rgb = (DiffuseMap.rgb * Lighting) * GetFogValue(ObjectPos, ObjectSpaceCamPos);
+		Diffuse *= Attenuation;
+		Specular *= Attenuation;
+		OutputColor.rgb = (DiffuseMap.rgb * Diffuse) + Specular;
+		OutputColor.rgb *= GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
@@ -248,15 +251,14 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 		float DotLN = saturate(dot(Normals.xyz / 5.0, -Lights[0].dir));
 		float3 InvDot = saturate((1.0 - DotLN) * StaticSkyColor * SkyNormal.z);
-
-		Specular = Specular * Lightmap.g;
-		float3 Ambient = SinglePointColor * Lightmap.r;
 		float3 BumpedSky = InvDot * Lightmap.b;
 		float3 BumpedDiffuse = Diffuse + BumpedSky;
-		Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
-		float3 Lighting = Ambient + (Diffuse + (Specular * CosAngle));
 
-		OutputColor.rgb = (DiffuseMap.rgb * Lighting) * 2.0;
+		float3 Ambient = SinglePointColor * Lightmap.r;
+		Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
+		Specular = Specular * Lightmap.g;
+		float3 Lighting = Ambient + Diffuse;
+		OutputColor.rgb = ((DiffuseMap.rgb * Lighting) + Specular) * 2.0;
 	#endif
 
 	#if !_POINTLIGHT_
