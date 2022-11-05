@@ -137,7 +137,7 @@ float4 TrunkSTMDetail_PS(VS2PS Input) : COLOR
 		DiffuseMap *= tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw);
 	#endif
 
-	float3 Diffuse = GetLambert(Normals.xyz, -Lights[0].dir) * Lights[0].color;
+	float3 Diffuse = LambertLighting(Normals.xyz, -Lights[0].dir) * Lights[0].color;
 	#if _HASSHADOW_
 		Diffuse = Diffuse * GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#endif

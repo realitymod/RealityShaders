@@ -166,7 +166,6 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	float3 WorldLightVec = GetLightVec(WorldPos.xyz);
 	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
-	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	// (.a) stores the glossmap
 	#if _HASNORMALMAP_
@@ -210,25 +209,23 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 		const float Attenuation = 1.0;
 	#endif
 
-	float3 LightFactors = Attenuation * (ShadowDir * OccShadowDir);
 	float Gloss = NormalVec.a;
-	float CosAngle = GetLambert(NormalVec.xyz, LightVec);
-	float3 Diffuse = (CosAngle * Lights[0].color);
-	float3 Specular = (GetSpecular(NormalVec.xyz, HalfVec, SpecularPower) * Gloss) * CosAngle;
-	Specular = (Specular * Lights[0].color);
+	ColorPair Light = ComputeLights(NormalVec, LightVec, ViewVec, SpecularPower);
+	Light.Diffuse = (Light.Diffuse * Lights[0].color);
+	Light.Specular = ((Light.Specular * Gloss) * Lights[0].color);
 
-	Diffuse *= LightFactors;
-	Specular *= LightFactors;
+	float3 LightFactors = Attenuation * (ShadowDir * OccShadowDir);
+	Light.Diffuse *= LightFactors;
+	Light.Specular *= LightFactors;
 
 	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
 	// Prevents non-detailed bundledmesh from looking shiny
 	#if !_HASNORMALMAP_
-		Specular = 0.0;
+		Light.Specular = 0.0;
 	#endif
 
 	float4 OutColor = 1.0;
-	float3 Lighting = (Ambient + Diffuse);
-	OutColor.rgb = (ColorMap.rgb * Lighting) + Specular;
+	OutColor.rgb = (ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular;
 
 	// Thermals
 	if (FogColor.r < 0.01)

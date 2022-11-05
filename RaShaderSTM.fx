@@ -222,25 +222,24 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float3x3 ObjectTBN = float3x3(ObjectTangent, ObjectBiNormal, ObjectNormal);
 
 	// mul(mat, vec) == mul(vec, transpose(mat))
-	float3 LightVec = normalize(mul(ObjectTBN, GetLightVec(ObjectPos)));
+	float3 ObjectLightVec = GetLightVec(ObjectPos);
+	float3 LightVec = normalize(mul(ObjectTBN, ObjectLightVec));
 	float3 ViewVec = normalize(mul(ObjectTBN, ObjectSpaceCamPos - ObjectPos));
-	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	float4 OutputColor = 1.0;
 	float Gloss;
 	float4 DiffuseMap = GetDiffuseMap(Input, ViewVec, Gloss);
-	float4 Normals = GetNormalMap(Input, ViewVec);
+	float4 NormalVec = GetNormalMap(Input, ViewVec);
 
-	float3 CosAngle = GetLambert(Normals.xyz, LightVec);
-	float3 Diffuse = CosAngle * Lights[0].color;
-	float3 Specular = (GetSpecular(Normals.xyz, HalfVec, SpecularPower) * Gloss) * CosAngle;
-	Specular = Specular * Lights[0].color;
+	ColorPair Light = ComputeLights(NormalVec, LightVec, ViewVec, SpecularPower);
+	Light.Diffuse = (Light.Diffuse * Lights[0].color);
+	Light.Specular = (Light.Specular * Gloss) * Lights[0].color;
 
 	#if _POINTLIGHT_
-		float Attenuation = GetLightAttenuation(GetLightVec(ObjectPos), Lights[0].attenuation);
-		Diffuse *= Attenuation;
-		Specular *= Attenuation;
-		OutputColor.rgb = (DiffuseMap.rgb * Diffuse) + Specular;
+		float Attenuation = GetLightAttenuation(ObjectLightVec, Lights[0].attenuation);
+		Light.Diffuse *= Attenuation;
+		Light.Specular *= Attenuation;
+		OutputColor.rgb = (DiffuseMap.rgb * Light.Diffuse) + Light.Specular;
 		OutputColor.rgb *= GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
@@ -249,16 +248,15 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
-		float DotLN = saturate(dot(Normals.xyz / 5.0, -Lights[0].dir));
+		float DotLN = saturate(dot(NormalVec.xyz / 5.0, -Lights[0].dir));
 		float3 InvDot = saturate((1.0 - DotLN) * StaticSkyColor * SkyNormal.z);
 		float3 BumpedSky = InvDot * Lightmap.b;
-		float3 BumpedDiffuse = Diffuse + BumpedSky;
+		float3 BumpedDiffuse = Light.Diffuse + BumpedSky;
 
 		float3 Ambient = SinglePointColor * Lightmap.r;
-		Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
-		Specular = Specular * Lightmap.g;
-		float3 Lighting = Ambient + Diffuse;
-		OutputColor.rgb = ((DiffuseMap.rgb * Lighting) + Specular) * 2.0;
+		Light.Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
+		Light.Specular = Light.Specular * Lightmap.g;
+		OutputColor.rgb = ((DiffuseMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular) * 2.0;
 	#endif
 
 	#if !_POINTLIGHT_

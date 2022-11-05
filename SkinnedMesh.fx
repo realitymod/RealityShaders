@@ -244,7 +244,7 @@ struct VS2PS_ApplySkin
 	float4 HPos : POSITION;
 	float4 P_Tex0_GroundUV : TEXCOORD0; // .xy = Tex0; .zw = GroundUV
 	float4 P_LightVec_Lerp : TEXCOORD1; // .xyz = ViewVec; .w = HemiLerp;
-	float3 HalfVec : TEXCOORD2;
+	float3 ViewVec : TEXCOORD2;
 };
 
 VS2PS_ApplySkin ApplySkin_VS(APP2VS Input)
@@ -262,13 +262,10 @@ VS2PS_ApplySkin ApplySkin_VS(APP2VS Input)
 	Output.P_Tex0_GroundUV.zw = ((WorldPos.xyz + (_HemiMapInfo.z / 2.0) + Skin.Normal).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
 	Output.P_Tex0_GroundUV.w = 1.0 - Output.P_Tex0_GroundUV.w;
 
-	float3 LightVec = normalize(Skin.LightVec);
-	float3 ViewVec = normalize(_ObjectEyePos.xyz - Skin.Pos);
-
-	Output.P_LightVec_Lerp.xyz = LightVec;
+	Output.P_LightVec_Lerp.xyz = Skin.LightVec;
 	Output.P_LightVec_Lerp.w = ((Skin.Normal.y * 0.5) + 0.5) - _HemiMapInfo.w;
 
-	Output.HalfVec = normalize(ViewVec + LightVec);
+	Output.ViewVec = _ObjectEyePos.xyz - Skin.Pos;
 
 	return Output;
 }
@@ -276,7 +273,7 @@ VS2PS_ApplySkin ApplySkin_VS(APP2VS Input)
 float4 ApplySkin_PS(VS2PS_ApplySkin Input) : COLOR
 {
 	float3 LightVec = normalize(Input.P_LightVec_Lerp.xyz);
-	float3 HalfVec = normalize(Input.HalfVec);
+	float3 ViewVec = normalize(Input.ViewVec);
 	float HemiLerp = Input.P_LightVec_Lerp.w;
 
 	float4 GroundColor = tex2D(SampleTex0, Input.P_Tex0_GroundUV.zw);
@@ -291,10 +288,11 @@ float4 ApplySkin_PS(VS2PS_ApplySkin Input) : COLOR
 	float4 Ambient = _AmbientColor * HemiColor;
 	float4 Diffuse = (DiffuseLight.r * DiffuseLight.b) * _SunColor;
 	float ShadowIntensity = saturate(DiffuseLight.g);
-	float CosAngle = saturate(dot(NormalMap.xyz, LightVec));
-	float Specular = GetSpecular(NormalMap.xyz, HalfVec) * DiffuseMap.a * pow(ShadowIntensity, 2.0);
+	ColorPair Light = ComputeLights(NormalMap.xyz, LightVec, ViewVec);
+	Light.Specular = Light.Specular * DiffuseMap.a * pow(ShadowIntensity, 2.0);
 
-	return (DiffuseMap * (Ambient + Diffuse)) + (Specular * CosAngle);
+	DiffuseMap.rgb = saturate((DiffuseMap * (Ambient + Diffuse)) + Light.Specular);
+	return DiffuseMap;
 }
 
 #define HUMANSKIN_RENDERSTATES(CULLMODE) \

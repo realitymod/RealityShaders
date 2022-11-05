@@ -4,44 +4,74 @@
 	Author: [R-CON]papadanku
 */
 
-#if !defined(REALITYGRAPHICS_FX)
-	#define REALITYGRAPHICS_FX
+/*
+	https://github.com/microsoft/DirectXTK
 
-	/*
-		https://github.com/microsoft/DirectXTK
+	The MIT License (MIT)
 
-		The MIT License (MIT)
+	Copyright (c) 2012-2022 Microsoft Corp
 
-		Copyright (c) 2012-2022 Microsoft Corp
+	Permission is hereby granted, free of charge, to any person obtaining a copy of this
+	software and associated documentation files (the "Software"), to deal in the Software
+	without restriction, including without limitation the rights to use, copy, modify,
+	merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+	permit persons to whom the Software is furnished to do so, subject to the following
+	conditions:
 
-		Permission is hereby granted, free of charge, to any person obtaining a copy of this
-		software and associated documentation files (the "Software"), to deal in the Software
-		without restriction, including without limitation the rights to use, copy, modify,
-		merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
-		permit persons to whom the Software is furnished to do so, subject to the following
-		conditions:
+	The above copyright notice and this permission notice shall be included in all copies
+	or substantial portions of the Software.
 
-		The above copyright notice and this permission notice shall be included in all copies
-		or substantial portions of the Software.
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
-		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-		INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-		PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-		HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-		CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
-		OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-	*/
+#if !defined(DIRECTXTK)
+	#define DIRECTXTK
 
 	// Apply the (approximate) sRGB curve to linear values
-	float3 LinearToSRGBEst(float3 color)
+	float3 LinearToSRGBEst(float3 Color)
 	{
-		return pow(abs(color), 1.0 / 2.2);
+		return pow(abs(Color), 1.0 / 2.2);
 	}
 
 	// (Approximate) sRGB to linear
-	float3 SRGBToLinearEst(float3 srgb)
+	float3 SRGBToLinearEst(float3 SRGB)
 	{
-		return pow(abs(srgb), 2.2);
+		return pow(abs(SRGB), 2.2);
+	}
+
+	struct ColorPair
+	{
+		float3 Diffuse;
+		float3 Specular;
+	};
+
+	ColorPair ComputeLights
+	(
+		float3 Normal, float3 LightVec, float3 ViewVec,
+		uniform float SpecPower = 32.0, uniform bool NormSpec = false
+	)
+	{
+		ColorPair Output = (ColorPair)0;
+
+		float3 HalfVec = normalize(LightVec + ViewVec);
+		float3 DotNL = saturate(dot(Normal, LightVec));
+		float3 DotNH = saturate(dot(Normal, HalfVec));
+		float3 ZeroNL = step(0.0, DotNL);
+
+		Output.Diffuse = DotNL * ZeroNL;
+		float Cons = (NormSpec) ? (SpecPower + 8.0) / 8.0 : 1.0;
+		Output.Specular = Cons * pow(abs(DotNH * ZeroNL), SpecPower) * DotNL;
+		return Output;
+	}
+
+	float LambertLighting(float3 Normal, float3 LightVec)
+	{
+		return saturate(dot(Normal, LightVec));
 	}
 
 	float ComputeFresnelFactor(float3 WorldNormal, float3 ViewVec)
@@ -49,10 +79,14 @@
 		float ViewAngle = dot(WorldNormal, ViewVec);
 		return saturate(1.0 - abs(ViewAngle));
 	}
+#endif
 
-	/*
-		Shared depth-based functions
-	*/
+/*
+	Third-party depth-based functions
+*/
+
+#if !defined(REALITYDEPTH)
+	#define REALITYDEPTH
 
 	// Gets slope-scaled bias from depth
 	// Source: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
@@ -95,18 +129,18 @@
 		float4 CMPBits = step(saturate(GetSlopedBasedBias(ShadowCoords.z)), Samples);
 		return dot(CMPBits, 0.25);
 	}
+#endif
 
-	/*
-		Shared lighting functions
+/*
+	Third-party math-based functions
+*/
 
-		Sources:
-		- GetTangentBasis(): https://en.wikipedia.org/wiki/Gram-Schmidt_process
-		- GetSpecular(): https://www.rorydriscoll.com/2009/01/25/energy-conservation-in-games/
-
-		License: https://creativecommons.org/licenses/by-sa/3.0/
-	*/
+#if !defined(REALITYMATH)
+	#define REALITYMATH
 
 	// Gets Orthonormal (TBN) matrix
+	// Source: https://en.wikipedia.org/wiki/Gram-Schmidt_process
+	// License: https://creativecommons.org/licenses/by-sa/3.0/
 	float3x3 GetTangentBasis(float3 Tangent, float3 Normal, float Flip)
 	{
 		// Get Tangent and Normal
@@ -120,20 +154,6 @@
 		float3 BiNormal = normalize(cross(Tangent, Normal)) * Flip;
 
 		return float3x3(Tangent, BiNormal, Normal);
-	}
-
-	// Gets Lambertian diffuse value
-	float GetLambert(float3 NormalVec, float3 LightVec)
-	{
-		return saturate(dot(NormalVec, LightVec));
-	}
-
-	// Gets normalized modified Blinn-Phong specular value
-	float GetSpecular(float3 NormalVec, float3 HalfVec, uniform float N = 32.0, uniform bool NormSpec = false)
-	{
-		float NFactor = (NormSpec) ? (N + 8.0) / 8.0 : 1.0;
-		float Specular = saturate(dot(NormalVec, HalfVec));
-		return NFactor * pow(abs(Specular), N);
 	}
 
 	// Gets radial light attenuation value for pointlights

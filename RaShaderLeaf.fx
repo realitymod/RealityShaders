@@ -146,7 +146,7 @@ VS2PS Leaf_VS(APP2VS Input)
 	float3 LightVec = Lights[0].pos.xyz - Input.Pos.xyz;
 
 	#if defined(_POINTLIGHT_)
-		float Diffuse = GetLambert(Input.Normal, normalize(LightVec));
+		float Diffuse = LambertLighting(Input.Normal, normalize(LightVec));
 	#else
 		float Diffuse = saturate((dot(Input.Normal.xyz, -Lights[0].dir.xyz) + 0.6) / 1.4);
 	#endif

@@ -205,9 +205,9 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	float3x3 WorldTBN = float3x3(WorldTangent, WorldBiNormal, WorldNormal);
 
 	// Get world-space vectors
-	float3 LightVec = normalize(GetLightVec(WorldPos));
+	float3 WorldLightVec = GetLightVec(WorldPos.xyz);
+	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos - WorldPos);
-	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	float4 ColorMap = tex2D(SampleDiffuseMap, Input.P_Tex0_GroundUV.xy);
 
@@ -265,24 +265,24 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		ColorMap.rgb = lerp(ColorMap, EnvMapColor, FresnelFactor / 4.0);
 	#endif
 
-	float3 CosAngle = GetLambert(NormalVec, LightVec);
-	float3 Diffuse = (CosAngle * Lights[0].color);
-	float3 Specular = (GetSpecular(NormalVec, HalfVec, SpecularPower) * Gloss) * CosAngle;
-	Specular = (Specular * Lights[0].color);
-
 	#if _POINTLIGHT_
-		#if !_HASCOLORMAPGLOSS_
-			// there is no Gloss map so alpha means transparency
-			Diffuse *= ColorMap.a;
-		#endif
-		float Attenuation = GetLightAttenuation(Lights[0].pos - WorldPos, Lights[0].attenuation);
+		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 	#else
 		const float Attenuation = 1.0;
 	#endif
 
+	ColorPair Light = ComputeLights(NormalVec, LightVec, ViewVec, SpecularPower);
+	Light.Diffuse = (Light.Diffuse * Lights[0].color);
+	Light.Specular = ((Light.Specular * Gloss) * Lights[0].color);
+
 	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
-	Diffuse *= LightFactors;
-	Specular *= LightFactors;
+	Light.Diffuse *= LightFactors;
+	Light.Specular *= LightFactors;
+
+	// there is no Gloss map so alpha means transparency
+	#if _POINTLIGHT_ && !_HASCOLORMAPGLOSS_
+		Light.Diffuse *= ColorMap.a;
+	#endif
 
 	#if _HASGIMAP_
 		float4 GI = tex2D(SampleGIMap, Input.P_Tex0_GroundUV.xy);
@@ -292,15 +292,13 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		const float4 GI = 1.0;
 	#endif
 
-	float4 OutputColor = 1.0;
-
 	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
 	// Prevents non-detailed bundledmesh from looking shiny
 	#if !_HASCOLORMAPGLOSS_ && !_HASNORMALMAP_
-		Specular = 0.0;
+		Light.Specular = 0.0;
 	#endif
-	float3 Lighting = Ambient + Diffuse;
-	OutputColor.rgb = ((ColorMap.rgb * Lighting) + Specular) * GI.rgb;
+	float4 OutputColor = 1.0;
+	OutputColor.rgb = ((ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular) * GI.rgb;
 
 	/*
 		Calculate fogging and other occluders

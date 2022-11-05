@@ -178,19 +178,16 @@ float4 Lighting_PS(VS2PS_Specular Input) : COLOR
 
 	// Transform vectors from world space to tangent space
 	float3 TanLightVec = normalize(mul(MatsLightDir, WorldI));
-	float3 TanEyeVec = normalize(mul(WorldEyeVec, WorldI));
-	float3 TanHalfVec = normalize(TanLightVec + TanEyeVec);
+	float3 TanViewVec = normalize(mul(WorldEyeVec, WorldI));
 
 	float4 NormalMap = tex2D(SampleNormalMap, Input.Tex);
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex); // What should we do with .a channel now?
 
 	float Gloss = NormalMap.a;
 	float4 Ambient = float4(0.4, 0.4, 0.4, 1.0);
-	float4 CosAngle = GetLambert(NormalMap.xyz, TanLightVec);
-	float4 Specular = (GetSpecular(NormalMap.xyz, TanHalfVec) * Gloss) * CosAngle;
-
-	float4 Lighting = Ambient + CosAngle;
-	return saturate((DiffuseMap * Lighting) + Specular);
+	ColorPair Light = ComputeLights(NormalMap.xyz, TanLightVec, TanViewVec);
+	DiffuseMap.rgb = saturate((DiffuseMap * (Ambient + Light.Diffuse)) + (Light.Specular * Gloss));
+	return DiffuseMap;
 }
 
 technique Full
@@ -259,7 +256,7 @@ float4 Diffuse_PS(VS2PS_Diffuse Input) : COLOR
 	float3 LightVec = normalize(ObjSpaceLightDir);
 
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.TexCoord);
-	float4 Diffuse = saturate(GetLambert(Normal, LightVec) + 0.8);
+	float4 Diffuse = saturate(LambertLighting(Normal, LightVec) + 0.8);
 	Diffuse.a = 1.0;
 
 	return DiffuseMap * Diffuse;
