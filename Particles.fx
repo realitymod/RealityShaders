@@ -120,9 +120,9 @@ float4 Particle_Low_PS(VS2PS_Particle Input) : COLOR
 
 float4 Particle_Medium_PS(VS2PS_Particle Input) : COLOR
 {
-	float4 TDiffuse = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
-	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
+	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
 	OutputColor.rgb *= GetParticleLighting(1.0, Input.AnimBFactorAndLMapIntOffset.b, Input.LightFactorAndAlphaBlend.a);
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.LightFactorAndAlphaBlend.b;
@@ -133,10 +133,10 @@ float4 Particle_Medium_PS(VS2PS_Particle Input) : COLOR
 
 float4 Particle_High_PS(VS2PS_Particle Input) : COLOR
 {
-	float4 TDiffuse = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
 	float4 TLUT = tex2D(SampleLUT, Input.HemiLUTCoord.xy);
-	float4 Color = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
+	float4 Color = lerp(TDiffuse1, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
 	Color.rgb *= GetParticleLighting(TLUT.a, Input.AnimBFactorAndLMapIntOffset.b, Input.LightFactorAndAlphaBlend.a);
 	Color.rgb *= Input.Color.rgb;
 	Color.a *= Input.LightFactorAndAlphaBlend.b;
@@ -219,9 +219,9 @@ float4 Particle_Additive_Low_PS(VS2PS_Particle Input) : COLOR
 
 float4 Particle_Additive_High_PS(VS2PS_Particle Input) : COLOR
 {
-	float4 TDiffuse = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
-	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
+	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.a);
 	OutputColor.rgb *= Input.Color.rgb;
 	// Mask with alpha since were doing an add
 	OutputColor.rgb *= OutputColor.a * Input.LightFactorAndAlphaBlend.b;

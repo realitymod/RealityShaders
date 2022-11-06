@@ -177,10 +177,10 @@ technique TrailLow
 
 float4 Trail_Medium_PS(VS2PS_Trail Input) : COLOR
 {
-	float4 TDiffuse = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
 
-	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.x);
+	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.x);
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.rgb *= GetParticleLighting(1, Input.AnimBFactorAndLMapIntOffset.z, Input.LightFactorAndAlpha.a);
 	OutputColor.a *= Input.LightFactorAndAlpha.b;
@@ -215,11 +215,11 @@ technique TrailMedium
 
 float4 Trail_High_PS(VS2PS_Trail Input) : COLOR
 {
-	float4 TDiffuse = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
 	float4 TLUT = tex2D(SampleLUT, Input.HemiLUTCoord.xy);
 
-	float4 OutputColor = lerp(TDiffuse, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.x);
+	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.AnimBFactorAndLMapIntOffset.x);
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.rgb *= GetParticleLighting(TLUT.a, Input.AnimBFactorAndLMapIntOffset.z, Input.LightFactorAndAlpha.a);
 	OutputColor.a *= Input.LightFactorAndAlpha.b;
