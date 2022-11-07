@@ -55,11 +55,9 @@ VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared_Default Input)
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
-	// tl: Trans is always 0, and MADs cost more than MULs in certain cards.
-	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;
+	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy); // tl: Trans is always 0
 
 	float YDelta, InterpVal;
-	// MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
@@ -134,9 +132,9 @@ float4 FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform
 		float3 HiDetail = 1.0;
 		if (UseMounten)
 		{
-			HiDetail =	(YPlaneDetailmap.xyz * BlendValue.y) +
-						(XPlaneDetailmap.xyz * BlendValue.x) +
-						(ZPlaneDetailmap.xyz * BlendValue.z);
+			HiDetail = (YPlaneDetailmap.xyz * BlendValue.y) +
+					   (XPlaneDetailmap.xyz * BlendValue.x) +
+					   (ZPlaneDetailmap.xyz * BlendValue.z);
 		}
 		else
 		{
@@ -146,7 +144,7 @@ float4 FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform
 		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw);
 		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw);
 		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw);
-		float Mounten =	(YPlaneLowDetailmap.x * BlendValue.y) +
+		float Mounten = (YPlaneLowDetailmap.x * BlendValue.y) +
 						(XPlaneLowDetailmap.y * BlendValue.x) +
 						(ZPlaneLowDetailmap.y * BlendValue.z);
 
@@ -193,16 +191,10 @@ float4 FullDetail_Hi_EnvMap_PS(VS2PS_FullDetail_Hi Input) : COLOR
 float4 Hi_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input) : COLOR
 {
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0);
-
 	float4 AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 
 	float4 Light = saturate(LightMap.z * _GIColor * 2.0) * 0.5;
-	if (AvgShadowValue.z < LightMap.y)
-		//Light.w = 1-saturate(4-Input.Z.x)+AvgShadowValue.x;
-		Light.w = AvgShadowValue.z;
-	else
-		Light.w = LightMap.y;
-
+	Light.w = (AvgShadowValue.z < LightMap.y) ? AvgShadowValue.z : LightMap.y;
 	return Light;
 }
 
