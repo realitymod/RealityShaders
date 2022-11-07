@@ -187,43 +187,6 @@ float4 FullDetail_Hi_EnvMap_PS(VS2PS_FullDetail_Hi Input) : COLOR
 }
 
 /*
-	Terrain pointlight shader
-*/
-
-struct VS2PS_Hi_PerPixelPointLight
-{
-	float4 HPos : POSITION;
-	float3 WorldPos : TEXCOORD0;
-	float3 WorldNormal : TEXCOORD1;
-};
-
-VS2PS_Hi_PerPixelPointLight Hi_PerPixelPointLight_VS(APP2VS_Shared_Default Input)
-{
-	VS2PS_Hi_PerPixelPointLight Output;
-
-	float4 WorldPos = 0.0;
-	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
-	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;	// tl: Trans is always 0, and MADs cost more than MULs in certain cards.
-
-	float YDelta, InterpVal;
-	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
-
-	// tl: output HPos as early as possible.
- 	Output.HPos = mul(WorldPos, _ViewProj);
-
- 	// tl: uncompress normal
- 	Output.WorldNormal = normalize(Input.Normal * 2.0 - 1.0);
- 	Output.WorldPos = WorldPos.xyz;
-
-	return Output;
-}
-
-float4 Hi_PerPixelPointLight_PS(VS2PS_Hi_PerPixelPointLight Input) : COLOR
-{
-	return float4(GetTerrainLighting(Input.WorldPos, Input.WorldNormal), 0.0);
-}
-
-/*
 	Terrain DirShadow shader
 */
 
@@ -273,7 +236,7 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 Shared_ZFillLightMap_1_PS();
 	}
 
-	pass pointlight		//p1
+	pass PointLight // p1
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -375,7 +338,7 @@ technique Hi_Terrain
 	pass DynamicShadowmap {} // Obsolete // p9
 	pass {} // p10
 
-	pass FullDetailWithEnvMap	//p11
+	pass FullDetailWithEnvMap // p11
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -413,11 +376,11 @@ technique Hi_Terrain
 			NV4X_RENDERSTATES
 		#endif
 
-		VertexShader = compile vs_3_0 Hi_PerPixelPointLight_VS();
-		PixelShader = compile ps_3_0 Hi_PerPixelPointLight_PS();
+		VertexShader = compile vs_3_0 Shared_PointLight_VS();
+		PixelShader = compile ps_3_0 Shared_PointLight_PS();
 	}
 
-	pass underWater // p14
+	pass UnderWater // p14
 	{
 		CullMode = CW;
 		ZEnable = TRUE;

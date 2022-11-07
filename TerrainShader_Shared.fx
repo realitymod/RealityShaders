@@ -119,9 +119,8 @@ float4 Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input) : COLOR
 struct VS2PS_Shared_PointLight
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float3 WorldPos : TEXCOORD1;
-	float3 WorldNormal : TEXCOORD2;
+	float3 WorldPos : TEXCOORD0;
+	float3 WorldNormal : TEXCOORD1;
 };
 
 VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared_Default Input)
@@ -136,7 +135,6 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared_Default Input)
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
 
 	Output.WorldPos = WorldPos.xyz;
 	Output.WorldNormal = normalize(Input.Normal * 2.0 - 1.0);

@@ -43,7 +43,7 @@ technique Low_Terrain
 		PixelShader = compile ps_3_0 Shared_ZFillLightMap_1_PS();
 	}
 
-	pass pointlight // p1
+	pass PointLight // p1
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -59,7 +59,7 @@ technique Low_Terrain
 
 	pass { } // spotlight (removed)
 
-	pass LowDetail //p3
+	pass LowDetail // p3
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -75,7 +75,7 @@ technique Low_Terrain
 	pass { } // mulDiffuseDetailMounten (Not used on Low) p5
 	pass { } // p6 tunnels (removed) p6
 
-	pass DirectionalLightShadows //p7
+	pass DirectionalLightShadows // p7
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -104,11 +104,33 @@ technique Low_Terrain
 	}
 
 	pass { } // p10
-	pass { } // mulDiffuseDetailWithEnvMap (Not used on Low)	p11
+	pass { } // mulDiffuseDetailWithEnvMap (Not used on Low) p11
 	pass { } // mulDiffuseFast (removed) p12
-	pass { } // PerPixelPointlight (Dont work on 1.4 shaders) // p13
+
+	pass PerPixelPointlight // p13
+	{
+		CullMode = CW;
+		ZEnable = TRUE;
+		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
+		AlphaBlendEnable = TRUE;
+		SrcBlend = ONE;
+		DestBlend = ONE;
+
+		#if IS_NV4X
+			StencilEnable = TRUE;
+			StencilFunc = NOTEQUAL;
+			StencilRef = 0xa;
+			StencilPass = KEEP;
+			StencilZFail = KEEP;
+			StencilFail = KEEP;
+		#endif
+
+		VertexShader = compile vs_3_0 Shared_PointLight_VS();
+		PixelShader = compile ps_3_0 Shared_PointLight_PS();
+	}
 	
-	pass underWater // p14
+	pass UnderWater // p14
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
