@@ -32,196 +32,31 @@ sampler SampleTex6_Dynamic_Wrap = sampler_state
 	MaxAnisotropy = 16;
 };
 
+/*
+	Terrainmapping shader
+*/
 
-
-
-struct Hi_VS2PS_FullDetail
+struct VS2PS_FullDetail_Hi
 {
 	float4 HPos : POSITION;
-	float4 Tex0 : TEXCOORD0;
-	float4 Tex1 : TEXCOORD1;
-	float4 Tex3 : TEXCOORD2;
-	float2 Tex5 : TEXCOORD3;
-	float2 Tex6 : TEXCOORD4;
-	float4 P_VertexPos_Fade : TEXCOORD5; // .xyz = VertexPos; .w = Fade;
-
-	float4 BlendValueAndFade : COLOR0; // tl: Don't clamp
+	float2 ColorTex : TEXCOORD0;
+	float2 DetailTex : TEXCOORD1;
+	float4 LightTex : TEXCOORD2;
+	float4 YPlaneTex : TEXCOORD3; // .xy = Near; .zw = Far;
+	float4 XPlaneTex : TEXCOORD4; // .xy = Near; .zw = Far;
+	float4 ZPlaneTex : TEXCOORD5; // .xy = Near; .zw = Far;
+	float3 WorldPos : TEXCOORD6;
+	float4 P_WorldNormal_Fade : TEXCOORD7; // .xyz = Normal; .w = InterpVal;
 };
 
-Hi_VS2PS_FullDetail Hi_FullDetail_VS(APP2VS_Shared_Default Input)
+VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared_Default Input)
 {
-	Hi_VS2PS_FullDetail Output = (Hi_VS2PS_FullDetail)0;
-
-	float4 WorldPos = 0.0;
-	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
-	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy); // + _ScaleTransY.zw;
-
-	#if DEBUGTERRAIN
-		Output.HPos = mul(WorldPos, _ViewProj);
-		Output.Tex0 = float4(0.0);
-		Output.Tex1 = float4(0.0);
-		Output.BlendValueAndFade = float4(0.0);
-		Output.Tex3 = float4(0.0);
-		Output.Tex5.xy = float2(0.0);
-		Output.P_VertexPos_Fade = float4(0.0);
-		return Output;
-	#endif
-
-	float YDelta, InterpVal;
-	// MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
-	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
-
-	// tl: output HPos as early as possible.
- 	Output.HPos = mul(WorldPos, _ViewProj);
-
- 	// tl: uncompress normal
- 	Input.Normal = Input.Normal * 2.0 - 1.0;
-
-	float3 Tex = float3(Input.Pos0.y * _TexScale.z, WorldPos.y * _TexScale.y, Input.Pos0.x * _TexScale.x);
-	float2 YPlaneTexCoord = Tex.zx;
-	#if HIGHTERRAIN
-		float2 XPlaneTexCoord = Tex.xy;
-		float2 ZPlaneTexCoord = Tex.zy;
-	#endif
-
- 	Output.Tex0.xy = (YPlaneTexCoord * _ColorLightTex.x) + _ColorLightTex.y;
- 	Output.Tex6 = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
-
-	Output.Tex3.xy = YPlaneTexCoord * _NearTexTiling.z;
- 	Output.Tex5.xy = YPlaneTexCoord * _FarTexTiling.z;
-
-	#if HIGHTERRAIN
-		Output.Tex0.wz = XPlaneTexCoord.xy * _FarTexTiling.xy;
-		Output.Tex0.z += _FarTexTiling.w;
-		Output.Tex3.wz = ZPlaneTexCoord.xy * _FarTexTiling.xy;
-		Output.Tex3.z += _FarTexTiling.w;
-	#endif
-
-	Output.P_VertexPos_Fade.xyz = WorldPos.xyz;
-	Output.P_VertexPos_Fade.w = saturate(0.5 + InterpVal * 0.5);
-
-	#if HIGHTERRAIN
-		Output.BlendValueAndFade.w = InterpVal;
-	#elif MIDTERRAIN
-		// tl: optimized so we can do more advanced lerp in same number of instructions
-		//     factors are 2c and (2-2c) which equals a lerp()*2
-		Output.BlendValueAndFade.xz = InterpVal * float2(2.0, -2.0) + float2(0.0, 2.0);
-	#endif
-
-	#if HIGHTERRAIN
-		Output.BlendValueAndFade.xyz = saturate(abs(Input.Normal) - _BlendMod);
-		Output.BlendValueAndFade.xyz /= dot(1.0, Output.BlendValueAndFade.xyz);
-	#elif MIDTERRAIN
-		// tl: use squared yNormal as blend val. pre-multiply with fade value.
-		Output.BlendValueAndFade.yw = pow(Input.Normal.y, 8.0) /* Input.Normal.y */ * Output.P_VertexPos_Fade.w;
-	#endif
-
-	Output.Tex1 = ProjToLighting(Output.HPos);
-
-	// Output.Tex1 = float4(_MorphDeltaAdder[Input.Pos0.z*256], 1) * 256.0 * 256.0;
-	return Output;
-}
-
-// #define LIGHTONLY 1
-float4 Hi_FullDetail_PS(Hi_VS2PS_FullDetail Input) : COLOR
-{
-	//	return float4(0.0, 0.0, 0.25, 1.0);
-	#if LIGHTONLY
-		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
-		float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
-		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.xy);
-		float ChartContrib = dot(_ComponentSelector, Component);
-		return ChartContrib * Light;
-	#else
-		#if DEBUGTERRAIN
-			return float4(0.0, 0.0, 1.0, 1.0);
-		#endif
-
-		// tl: 2* moved later in shader to avoid clamping at -+2.0 in ps1.4
-		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
-		float3 Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
-		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
-
-		// If thermals assume no shadows and gray color
-		if (FogColor.r < 0.01)
-		{
-			Light.rgb = 2.0 * _SunColor.rgb + AccumLights.rgb;
-			ColorMap.rgb = 1.0 / 3.0;
-		}
-
-		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex6);
-		float ChartContrib = dot(_ComponentSelector, Component);
-		float3 DetailMap = tex2D(SampleTex3_Dynamic_Wrap, Input.Tex3.xy);
-
-		#if HIGHTERRAIN
-			float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex6);
-			float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
-			float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex3.xy);
-			float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex0.wz);
-			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x * Input.P_VertexPos_Fade.w);
-		#else
-			float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
-
-			// tl: do lerp in 1 MAD by precalculating constant factor in vShader
-			float LowDetailMap = lerp(YPlaneLowDetailmap.x, YPlaneLowDetailmap.z, Input.BlendValueAndFade.y);
-		#endif
-
-		#if HIGHTERRAIN
-			float Mounten =	(XPlaneLowDetailmap.y * Input.BlendValueAndFade.x) +
-							(YPlaneLowDetailmap.x * Input.BlendValueAndFade.y) +
-							(ZPlaneLowDetailmap.y * Input.BlendValueAndFade.z);
-			LowDetailMap *= (4.0 * lerp(0.5, Mounten, LowComponent.z));
-			float3 BothDetailmap = DetailMap * LowDetailMap;
-			float3 DetailOut = lerp(2.0 * BothDetailmap, LowDetailMap, Input.BlendValueAndFade.w);
-		#else
-			// tl: lerp optimized to handle 2*c*low + (2-2c)*detail, factors sent from vs
-			float3 DetailOut = LowDetailMap*Input.BlendValueAndFade.x + DetailMap*Input.BlendValueAndFade.z;
-		#endif
-		float3 OutputColor = DetailOut * ColorMap * Light * 2.0;
-		ApplyFog(OutputColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
-		return float4(ChartContrib * OutputColor, ChartContrib);
-	#endif
-}
-
-
-
-
-struct VS2PS_Hi_FullDetail_Mounten
-{
-	float4 HPos : POSITION;
-	float4 Tex0 : TEXCOORD0;
-	float4 Tex1 : TEXCOORD1;
-	#if HIGHTERRAIN
-		float4 Tex3 : TEXCOORD2;
-	#endif
-	float2 Tex5 : TEXCOORD3;
-	float4 Tex6 : TEXCOORD4;
-	float2 Tex7 : TEXCOORD5;
-	float4 P_VertexPos_Fade : TEXCOORD6; // .xyz = VertexPos; .w = Fade;
-
-	float4 BlendValueAndFade : COLOR1; // tl: Don't clamp
-};
-
-VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input)
-{
-	VS2PS_Hi_FullDetail_Mounten Output;
+	VS2PS_FullDetail_Hi Output;
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
 	// tl: Trans is always 0, and MADs cost more than MULs in certain cards.
 	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;
-
-	#if DEBUGTERRAIN
-		Output.HPos = mul(WorldPos, _ViewProj);
-		Output.Tex0 = float4(0.0);
-		Output.Tex1 = float4(0.0);
-		Output.BlendValueAndFade = float4(0.0);
-		Output.Tex3 = float4(0.0);
-		Output.Tex5.xy = float2(0.0);
-		Output.Tex6 = float4(0.0);
-		Output.P_VertexPos_Fade = float4(0.0);
-		return Output;
-	#endif
 
 	float YDelta, InterpVal;
 	// MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
@@ -230,74 +65,59 @@ VS2PS_Hi_FullDetail_Mounten Hi_FullDetail_Mounten_VS(APP2VS_Shared_Default Input
 	// tl: output HPos as early as possible.
 	Output.HPos = mul(WorldPos, _ViewProj);
 
+	float3 Tex = 0.0;
+	Tex.x = Input.Pos0.x * _TexScale.x;
+	Tex.y = WorldPos.y * _TexScale.y;
+	Tex.z = Input.Pos0.y * _TexScale.z;
+	float2 XPlaneTexCoord = Tex.zy;
+	float2 YPlaneTexCoord = Tex.xz;
+	float2 ZPlaneTexCoord = Tex.xy;
+
+	Output.ColorTex = (YPlaneTexCoord * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.DetailTex = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
+
+	Output.LightTex = ProjToLighting(Output.HPos);
+
+	Output.YPlaneTex.xy = (YPlaneTexCoord * _NearTexTiling.z);
+	Output.YPlaneTex.zw = (YPlaneTexCoord * _FarTexTiling.z);
+
+	Output.XPlaneTex.xy = (XPlaneTexCoord * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
+	Output.XPlaneTex.zw = (XPlaneTexCoord * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+
+	Output.ZPlaneTex.xy = (ZPlaneTexCoord * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
+	Output.ZPlaneTex.zw = (ZPlaneTexCoord * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+
+	Output.WorldPos = WorldPos;
+
 	// tl: uncompress normal
-	Input.Normal = Input.Normal * 2.0 - 1.0;
-
-	float3 Tex = float3(Input.Pos0.y * _TexScale.z, WorldPos.y * _TexScale.y, Input.Pos0.x * _TexScale.x);
-	float2 XPlaneTexCoord = Tex.xy;
-	float2 YPlaneTexCoord = Tex.zx;
-	float2 ZPlaneTexCoord = Tex.zy;
-
-	Output.Tex0.xy = (YPlaneTexCoord * _ColorLightTex.x) + _ColorLightTex.y;
-	Output.Tex7 = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
-
-	Output.Tex6.xy = YPlaneTexCoord.xy * _NearTexTiling.z;
-	Output.Tex0.wz = XPlaneTexCoord.xy * _NearTexTiling.xy;
-	Output.Tex0.z += _NearTexTiling.w;
-	Output.Tex6.wz = ZPlaneTexCoord.xy * _NearTexTiling.xy;
-	Output.Tex6.z += _NearTexTiling.w;
-
-	Output.Tex5.xy = YPlaneTexCoord * _FarTexTiling.z;
-
-	Output.P_VertexPos_Fade.xyz = WorldPos.xyz;
-	Output.P_VertexPos_Fade.w = saturate(0.5 + InterpVal * 0.5);
-
-	#if HIGHTERRAIN
-		Output.Tex3.xy = XPlaneTexCoord.xy * _FarTexTiling.xy;
-		Output.Tex3.y += _FarTexTiling.w;
-		Output.Tex3.wz = ZPlaneTexCoord.xy * _FarTexTiling.xy;
-		Output.Tex3.z += _FarTexTiling.w;
-		Output.BlendValueAndFade.w = InterpVal;
-	#else
-		// tl: optimized so we can do more advanced lerp in same number of instructions
-		//     factors are 2c and (2-2c) which equals a lerp()*2
-		//     Don't use w, it's harder to access from ps1.4
-		// Output.BlendValueAndFade.xz = InterpVal * float2(2.0, -2.0) + float2(0.0, 2.0);
-		Output.BlendValueAndFade.xz = InterpVal * float2(1, -2) + float2(1, 2);
-		// Output.BlendValueAndFade = InterpVal * float4(2, 0, -2, 0) + float4(0, 0, 2, 0);
-		// Output.BlendValueAndFade.w = InterpVal;
-	#endif
-
-	#if HIGHTERRAIN
-		Output.BlendValueAndFade.xyz = saturate(abs(Input.Normal) - _BlendMod);
-		Output.BlendValueAndFade.xyz /= dot(1.0, Output.BlendValueAndFade.xyz);
-	#else
-		// tl: use squared yNormal as blend val. pre-multiply with fade value.
-		Output.BlendValueAndFade.yw = pow(Input.Normal.y, 8.0);
-	#endif
-
-	Output.Tex1 = ProjToLighting(Output.HPos);
+	Output.P_WorldNormal_Fade.xyz = normalize(Input.Normal.xyz * 2.0 - 1.0);
+	Output.P_WorldNormal_Fade.w = InterpVal;
 
 	return Output;
 }
 
-float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
+float4 FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform bool UseEnvMap)
 {
+	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
+
+	float3 WorldPos = Input.WorldPos;
+	float3 WorldNormal = normalize(Input.P_WorldNormal_Fade.xyz);
+	float InterpVal = Input.P_WorldNormal_Fade.w;
+	float ScaledInterpVal = saturate(InterpVal * 0.5 + 0.5);
+
+	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
+	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
+
 	#if LIGHTONLY
-		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
 		float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
-		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.xy);
+		float4 Component = tex2D(SampleTex2_Clamp, Input.ColorTex);
 		float ChartContrib = dot(_ComponentSelector, Component);
 		return ChartContrib * Light;
 	#else
-		#if DEBUGTERRAIN
-			return float4(1,0, 0.0, 1.0);
-		#endif
-
-		// tl: 2* moved later in shader to avoid clamping at -+2.0 in ps1.4
-		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
 		float3 Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
-		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
+		float4 Component = tex2D(SampleTex2_Clamp, Input.DetailTex);
+		float ChartContrib = dot(_ComponentSelector, Component);
+		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorTex);
 
 		// If thermals assume no shadows and gray color
 		if (FogColor.r < 0.01)
@@ -306,211 +126,69 @@ float4 Hi_FullDetail_Mounten_PS(VS2PS_Hi_FullDetail_Mounten Input) : COLOR
 			ColorMap.rgb = 1.0 / 3.0;
 		}
 
-		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex7);
-		float ChartContrib = dot(_ComponentSelector, Component);
+		float4 YPlaneDetailmap = tex2D(SampleTex3_Dynamic_Wrap, Input.YPlaneTex.xy);
+		float4 XPlaneDetailmap = tex2D(SampleTex6_Dynamic_Wrap, Input.XPlaneTex.xy);
+		float4 ZPlaneDetailmap = tex2D(SampleTex6_Dynamic_Wrap, Input.ZPlaneTex.xy);
+		float EnvMapScale = YPlaneDetailmap.a;
 
-		#if HIGHTERRAIN
-			float3 YPlaneDetailmap = tex2D(SampleTex3_Dynamic_Wrap, Input.Tex6.xy);
-			float3 XPlaneDetailmap = tex2D(SampleTex6_Dynamic_Wrap, Input.Tex0.wz);
-			float3 ZPlaneDetailmap = tex2D(SampleTex6_Dynamic_Wrap, Input.Tex6.wz);
-			float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
-			float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex3.xy);
-			float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex3.wz);
-			float3 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex7);
-			float3 DetailMap = 	(XPlaneDetailmap * Input.BlendValueAndFade.x) +
-								(YPlaneDetailmap * Input.BlendValueAndFade.y) +
-								(ZPlaneDetailmap * Input.BlendValueAndFade.z);
-
-			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x * Input.P_VertexPos_Fade.w);
-			float Mounten = (XPlaneLowDetailmap.y * Input.BlendValueAndFade.x) +
-							(YPlaneLowDetailmap.x * Input.BlendValueAndFade.y) +
-							(ZPlaneLowDetailmap.y * Input.BlendValueAndFade.z);
-			LowDetailMap *= (4.0 * lerp(0.5, Mounten, LowComponent.z));
-
-			float3 BothDetailmap = DetailMap * LowDetailMap;
-			float3 DetailOut = lerp(2.0 * BothDetailmap, LowDetailMap, Input.BlendValueAndFade.w);
-		#else
-			float3 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.Tex6.xy);
-			float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
-			float LowDetailMap = lerp(YPlaneLowDetailmap.x, YPlaneLowDetailmap.z, Input.BlendValueAndFade.y);
-			// tl: lerp optimized to handle 2*c*low + (2-2c)*detail, factors sent from vs
-			// tl: dont use detail mountains
-			float3 DetailOut = LowDetailMap * Input.BlendValueAndFade.x + LowDetailMap * YPlaneDetailmap * Input.BlendValueAndFade.z;
-			// float3 DetailOut = LowDetailMap * 2.0;
-		#endif
-		float3 OutputColor = DetailOut * ColorMap * Light * 2.0;
-		ApplyFog(OutputColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
-		return float4(ChartContrib * OutputColor, ChartContrib);
-	#endif
-}
-
-
-
-
-struct Hi_VS2PS_FullDetail_EnvMap
-{
-	float4 HPos : POSITION;
-	float4 Tex0 : TEXCOORD0;
-	float4 Tex1 : TEXCOORD1;
-	float4 Tex3 : TEXCOORD2;
-	float3 Tex5 : TEXCOORD3;
-	float2 Tex6 : TEXCOORD4;
-	float3 EnvMap : TEXCOORD5;
-	float4 P_VertexPos_Fade : TEXCOORD6; // .xyz = VertexPos; .w = Fade;
-
-	float4 BlendValueAndFade : COLOR0;
-};
-
-Hi_VS2PS_FullDetail_EnvMap Hi_FullDetail_EnvMap_VS(APP2VS_Shared_Default Input)
-{
-	Hi_VS2PS_FullDetail_EnvMap Output = (Hi_VS2PS_FullDetail_EnvMap)0;
-
-	float4 WorldPos = 0.0;
-	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
-	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy); // + _ScaleTransY.zw;
-
-	#if DEBUGTERRAIN
-		Output.HPos = mul(WorldPos, _ViewProj);
-		Output.Tex0 = float4(0.0);
-		Output.Tex1 = float4(0.0);
-		Output.BlendValueAndFade = float4(0.0);
-		Output.Tex3 = float4(0.0);
-		Output.Tex5.xy = float2(0.0);
-		Output.EnvMap = float3(0.0);
-		Output.P_VertexPos_Fade = float4(0.0);
-		return Output;
-	#endif
-
-	float YDelta, InterpVal;
-	// MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
-	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
-
-	// tl: output HPos as early as possible.
- 	Output.HPos = mul(WorldPos, _ViewProj);
-
- 	// tl: uncompress normal
- 	Input.Normal = Input.Normal * 2.0 - 1.0;
-
-	float3 Tex = float3(Input.Pos0.y * _TexScale.z, WorldPos.y * _TexScale.y, Input.Pos0.x * _TexScale.x);
-	float2 YPlaneTexCoord = Tex.zx;
-	#if HIGHTERRAIN
-		float2 XPlaneTexCoord = Tex.xy;
-		float2 ZPlaneTexCoord = Tex.zy;
-	#endif
-
- 	Output.Tex0.xy = (YPlaneTexCoord * _ColorLightTex.x) + _ColorLightTex.y;
- 	Output.Tex6 = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
-
-	// tl: Switched tex0.wz for tex3.xy to easier access it from 1.4
-	Output.Tex3.xy = YPlaneTexCoord.xy * _NearTexTiling.z;
-
- 	Output.Tex5.xy = YPlaneTexCoord * _FarTexTiling.z;
-
-	#if HIGHTERRAIN
-		Output.Tex0.wz = XPlaneTexCoord.xy * _FarTexTiling.xy;
-		Output.Tex0.z += _FarTexTiling.w;
-		Output.Tex3.wz = ZPlaneTexCoord.xy * _FarTexTiling.xy;
-		Output.Tex3.z += _FarTexTiling.w;
-	#endif
-
-	Output.P_VertexPos_Fade.xyz = WorldPos.xyz;
-	Output.P_VertexPos_Fade.w = saturate(0.5 + InterpVal * 0.5);
-
-	#if HIGHTERRAIN
-		Output.BlendValueAndFade.w = InterpVal;
-	#elif MIDTERRAIN
-		// tl: optimized so we can do more advanced lerp in same number of instructions
-		//    factors are 2c and (2-2c) which equals a lerp()*2.0
-		//    Don't use w, it's harder to access from ps1.4
-		Output.BlendValueAndFade.xz = InterpVal * float2(2.0, -2.0) + float2(0.0, 2.0);
-	#endif
-
-	#if HIGHTERRAIN
-		Output.BlendValueAndFade.xyz = saturate(abs(Input.Normal) - _BlendMod);
-		Output.BlendValueAndFade.xyz /= dot(1.0, Output.BlendValueAndFade.xyz);
-	#elif MIDTERRAIN
-		// tl: use squared yNormal as blend val. pre-multiply with fade value.
-		Output.BlendValueAndFade.yw = Input.Normal.y * Input.Normal.y * Output.P_VertexPos_Fade.w;
-		Output.P_VertexPos_Fade.w = InterpVal;
-	#endif
-
-	Output.BlendValueAndFade = saturate(Output.BlendValueAndFade);
-
-	Output.Tex1 = ProjToLighting(Output.HPos);
-
-	// Environment map
-	Output.EnvMap = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
-
-	return Output;
-}
-
-float4 Hi_FullDetail_EnvMap_PS(Hi_VS2PS_FullDetail_EnvMap Input) : COLOR
-{
-	#if LIGHTONLY
-		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
-		float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
-		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.xy);
-		float ChartContrib = dot(_ComponentSelector, Component);
-		return ChartContrib * Light;
-	#else
-		#if DEBUGTERRAIN
-			return float4(0.0, 1.0, 0.0, 1.0);
-		#endif
-
-		float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.Tex1);
-		float3 Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
-		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
-
-		// If thermals assume no shadows and gray color
-		if (FogColor.r < 0.01)
+		float3 HiDetail = 1.0;
+		if (UseMounten)
 		{
-			Light.rgb = 2.0 * _SunColor.rgb + AccumLights.rgb;
-			ColorMap.rgb = 1.0 / 3.0;
+			HiDetail =	(YPlaneDetailmap.xyz * BlendValue.y) +
+						(XPlaneDetailmap.xyz * BlendValue.x) +
+						(ZPlaneDetailmap.xyz * BlendValue.z);
+		}
+		else
+		{
+			HiDetail = YPlaneDetailmap.xyz;
 		}
 
-		float4 Component = tex2D(SampleTex2_Clamp, Input.Tex6);
-		float ChartContrib = dot(_ComponentSelector, Component);
-		float4 DetailMap = tex2D(SampleTex3_Dynamic_Wrap, Input.Tex3.xy);
+		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw);
+		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw);
+		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw);
+		float Mounten =	(YPlaneLowDetailmap.x * BlendValue.y) +
+						(XPlaneLowDetailmap.y * BlendValue.x) +
+						(ZPlaneLowDetailmap.y * BlendValue.z);
 
-		#if HIGHTERRAIN
-			float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex6);
-			float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
-			float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex3.xy);
-			float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex0.wz);
-			float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x * Input.P_VertexPos_Fade.w);
-		#else
-			float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.Tex5.xy);
-			float LowDetailMap = 2.0 * YPlaneLowDetailmap.z * Input.BlendValueAndFade.y + (Input.P_VertexPos_Fade.w * -0.5 + 0.5);
-		#endif
+		float3 LowComponent = tex2D(SampleTex5_Clamp, Input.DetailTex);
+		float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x * ScaledInterpVal);
+		LowDetailMap *= (4.0 * lerp(0.5, Mounten, LowComponent.z));
 
-		#if HIGHTERRAIN
-			float Mounten =	(XPlaneLowDetailmap.y * Input.BlendValueAndFade.x) +
-							(YPlaneLowDetailmap.x * Input.BlendValueAndFade.y) +
-							(ZPlaneLowDetailmap.y * Input.BlendValueAndFade.z);
-			LowDetailMap *= (4.0 * lerp(0.5, Mounten, LowComponent.z));
-			float3 BothDetailmap = DetailMap * LowDetailMap;
-			float3 DetailOut = lerp(2.0 * BothDetailmap, LowDetailMap, Input.BlendValueAndFade.w);
-		#else
-			// tl: lerp optimized to handle 2*c*low + (2-2c)*detail, factors sent from vs
-			float3 DetailOut = LowDetailMap * Input.BlendValueAndFade.x + 2.0 * DetailMap * Input.BlendValueAndFade.z;
-		#endif
+		float3 BothDetailmap = (HiDetail * LowDetailMap) * 2.0;
+		float3 DetailOut = lerp(BothDetailmap, LowDetailMap, InterpVal);
+		float3 OutputColor = (ColorMap * DetailOut) * Light;
 
-		float3 OutputColor = DetailOut * ColorMap * Light;
-		float4 EnvMapColor = texCUBE(SamplerTex6_Cube, Input.EnvMap);
+		if (UseEnvMap)
+		{
+			float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
+			float3 EnvMapColor = texCUBE(SamplerTex6_Cube, Reflection);
+			OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - InterpVal));
+		}
 
-		#if HIGHTERRAIN
-			OutputColor = lerp(OutputColor, EnvMapColor, DetailMap.w * (1.0 - Input.BlendValueAndFade.w)) * 2.0;
-		#else
-			OutputColor = lerp(OutputColor, EnvMapColor, DetailMap.w * (1.0 - Input.P_VertexPos_Fade.w)) * 2.0;
-		#endif
-
-		ApplyFog(OutputColor, GetFogValue(Input.P_VertexPos_Fade.xyz, _CameraPos.xyz));
-		return float4(ChartContrib * OutputColor, ChartContrib);
+		OutputColor = OutputColor * 2.0;
+		ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos.xyz));
+		return float4(OutputColor * ChartContrib, ChartContrib);
 	#endif
 }
 
+float4 FullDetail_Hi_PS(VS2PS_FullDetail_Hi Input) : COLOR
+{
+	return FullDetail_Hi(Input, false, false);
+}
 
+float4 FullDetail_Hi_Mounten_PS(VS2PS_FullDetail_Hi Input) : COLOR
+{
+	return FullDetail_Hi(Input, true, false);
+}
 
+float4 FullDetail_Hi_EnvMap_PS(VS2PS_FullDetail_Hi Input) : COLOR
+{
+	return FullDetail_Hi(Input, false, true);
+}
+
+/*
+	Terrain pointlight shader
+*/
 
 struct VS2PS_Hi_PerPixelPointLight
 {
@@ -525,11 +203,9 @@ VS2PS_Hi_PerPixelPointLight Hi_PerPixelPointLight_VS(APP2VS_Shared_Default Input
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
-	// tl: Trans is always 0, and MADs cost more than MULs in certain cards.
-	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;
+	WorldPos.yw = Input.Pos1.xw * _ScaleTransY.xy;	// tl: Trans is always 0, and MADs cost more than MULs in certain cards.
 
 	float YDelta, InterpVal;
-	// MorphPosition(WorldPos, Input.MorphDelta, YDelta, InterpVal);
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	// tl: output HPos as early as possible.
@@ -547,6 +223,10 @@ float4 Hi_PerPixelPointLight_PS(VS2PS_Hi_PerPixelPointLight Input) : COLOR
 	return float4(GetTerrainLighting(Input.WorldPos, Input.WorldNormal), 0.0);
 }
 
+/*
+	Terrain DirShadow shader
+*/
+
 float4 Hi_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input) : COLOR
 {
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0);
@@ -563,6 +243,18 @@ float4 Hi_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input)
 	return Light;
 }
 
+/*
+	High terrain technique
+*/
+
+#define NV4X_RENDERSTATES \
+	StencilEnable = TRUE; \
+	StencilFunc = NOTEQUAL; \
+	StencilRef = 0xa; \
+	StencilPass = KEEP; \
+	StencilZFail = KEEP; \
+	StencilFail = KEEP; \
+
 technique Hi_Terrain
 {
 	pass ZFillLightMap // p0
@@ -574,12 +266,7 @@ technique Hi_Terrain
 		AlphaBlendEnable = FALSE;
 
 		#if IS_NV4X
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0xa;
-			StencilPass = KEEP;
-			StencilZFail = KEEP;
-			StencilFail = KEEP;
+			NV4X_RENDERSTATES
 		#endif
 
 		VertexShader = compile vs_3_0 Shared_ZFillLightMap_VS();
@@ -597,12 +284,7 @@ technique Hi_Terrain
 		DestBlend = ONE;
 
 		#if IS_NV4X
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0xa;
-			StencilPass = KEEP;
-			StencilZFail = KEEP;
-			StencilFail = KEEP;
+			NV4X_RENDERSTATES
 		#endif
 
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();
@@ -622,12 +304,7 @@ technique Hi_Terrain
 		// FillMode = WireFrame;
 
 		#if IS_NV4X
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0xa;
-			StencilPass = KEEP;
-			StencilZFail = KEEP;
-			StencilFail = KEEP;
+			NV4X_RENDERSTATES
 		#endif
 
 		VertexShader = compile vs_3_0 Shared_LowDetail_VS();
@@ -650,16 +327,11 @@ technique Hi_Terrain
 		// FillMode = WireFrame;
 
 		#if IS_NV4X
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0xa;
-			StencilPass = KEEP;
-			StencilZFail = KEEP;
-			StencilFail = KEEP;
+			NV4X_RENDERSTATES
 		#endif
 
-		VertexShader = compile vs_3_0 Hi_FullDetail_VS();
-		PixelShader = compile ps_3_0 Hi_FullDetail_PS();
+		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
+		PixelShader = compile ps_3_0 FullDetail_Hi_PS();
 	}
 
 	pass FullDetailMounten // p5
@@ -673,16 +345,11 @@ technique Hi_Terrain
 		DestBlend = ONE;
 
 		#if IS_NV4X
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0xa;
-			StencilPass = KEEP;
-			StencilZFail = KEEP;
-			StencilFail = KEEP;
+			NV4X_RENDERSTATES
 		#endif
 
-		VertexShader = compile vs_3_0 Hi_FullDetail_Mounten_VS();
-		PixelShader = compile ps_3_0 Hi_FullDetail_Mounten_PS();
+		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
+		PixelShader = compile ps_3_0 FullDetail_Hi_Mounten_PS();
 	}
 
 	pass {} // p6 tunnels (removed)
@@ -697,12 +364,7 @@ technique Hi_Terrain
  		AlphaBlendEnable = FALSE;
 
 		#if IS_NV4X
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0xa;
-			StencilPass = KEEP;
-			StencilZFail = KEEP;
-			StencilFail = KEEP;
+			NV4X_RENDERSTATES
 		#endif
 
 		VertexShader = compile vs_3_0 Shared_DirectionalLightShadows_VS();
@@ -728,16 +390,11 @@ technique Hi_Terrain
 		// ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
 		#if IS_NV4X
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0xa;
-			StencilPass = KEEP;
-			StencilZFail = KEEP;
-			StencilFail = KEEP;
+			NV4X_RENDERSTATES
 		#endif
 
-		VertexShader = compile vs_3_0 Hi_FullDetail_EnvMap_VS();
-		PixelShader = compile ps_3_0 Hi_FullDetail_EnvMap_PS();
+		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
+		PixelShader = compile ps_3_0 FullDetail_Hi_EnvMap_PS();
 	}
 
 	pass {} // mulDiffuseFast (removed) p12
@@ -753,12 +410,7 @@ technique Hi_Terrain
 		DestBlend = ONE;
 
 		#if IS_NV4X
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0xa;
-			StencilPass = KEEP;
-			StencilZFail = KEEP;
-			StencilFail = KEEP;
+			NV4X_RENDERSTATES
 		#endif
 
 		VertexShader = compile vs_3_0 Hi_PerPixelPointLight_VS();
@@ -779,12 +431,7 @@ technique Hi_Terrain
 		DestBlend = INVSRCALPHA;
 
 		#if IS_NV4X
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0xa;
-			StencilPass = KEEP;
-			StencilZFail = KEEP;
-			StencilFail = KEEP;
+			NV4X_RENDERSTATES
 		#endif
 
 		VertexShader = compile vs_3_0 Shared_UnderWater_VS();
