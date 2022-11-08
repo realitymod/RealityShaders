@@ -88,7 +88,7 @@ VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared_Default Input)
 	Output.WorldPos = WorldPos;
 
 	// tl: uncompress normal
-	Output.P_WorldNormal_Fade.xyz = normalize(Input.Normal.xyz * 2.0 - 1.0);
+	Output.P_WorldNormal_Fade.xyz = normalize((Input.Normal * 2.0) - 1.0);
 	Output.P_WorldNormal_Fade.w = InterpVal;
 
 	return Output;
@@ -101,7 +101,7 @@ float4 FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform
 	float3 WorldPos = Input.WorldPos;
 	float3 WorldNormal = normalize(Input.P_WorldNormal_Fade.xyz);
 	float InterpVal = Input.P_WorldNormal_Fade.w;
-	float ScaledInterpVal = saturate(InterpVal * 0.5 + 0.5);
+	float ScaledInterpVal = saturate((InterpVal * 0.5) + 0.5);
 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));

@@ -362,7 +362,7 @@ VS2PS_Grid Debug_Grid_VS(APP2VS Input)
 	Output.Diffuse.xyz = _MaterialAmbient.rgb + Diffuse(Input.Normal, _LightDir) * _MaterialDiffuse.xyz;
 	Output.Diffuse.w = _MaterialAmbient.a;
 
-	Output.Tex = Input.Pos.xz * 0.5 + 0.5;
+	Output.Tex = (Input.Pos.xz * 0.5) + 0.5;
 	Output.Tex *= _TextureScale;
 
 	return Output;

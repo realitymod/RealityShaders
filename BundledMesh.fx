@@ -301,7 +301,7 @@ VS2PS_Alpha Alpha_VS(APP2VS Input)
 	float3 WorldPos = mul(Input.Pos, SkinWorldMat);
 	Output.HPos = mul(float4(WorldPos, 1.0), _ViewProjMatrix);
 
-	Output.ProjTex.xy = (Output.HPos.xy / Output.HPos.w) * 0.5 + 0.5;
+	Output.ProjTex.xy = ((Output.HPos.xy / Output.HPos.w) * 0.5) + 0.5;
 	Output.ProjTex.y = 1.0 - Output.ProjTex.y;
 	Output.ProjTex.xy = (Output.ProjTex.xy + _TexProjOffset) * Output.HPos.w;
 	Output.ProjTex.zw = Output.HPos.zw;
@@ -346,7 +346,7 @@ VS2PS_EnvMap_Alpha EnvMap_Alpha_VS(APP2VS Input)
 	float3 WorldPos = mul(Input.Pos, SkinWorldMat);
 	Output.HPos = mul(float4(WorldPos, 1.0), _ViewProjMatrix);
 
-	Output.ProjTex.xy = (Output.HPos.xy / Output.HPos.w) * 0.5 + 0.5;
+	Output.ProjTex.xy = ((Output.HPos.xy / Output.HPos.w) * 0.5) + 0.5;
 	Output.ProjTex.y = 1.0 - Output.ProjTex.y;
 	Output.ProjTex.xy = (Output.ProjTex.xy + _TexProjOffset) * Output.HPos.w;
 	Output.ProjTex.zw = Output.HPos.zw;

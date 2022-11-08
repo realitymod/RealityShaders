@@ -75,9 +75,9 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 {
 	// LocalHeight scale, 1 for top and 0 for bottom
 	float LocalHeight = (WorldPos.y - (World[3][1] - 0.5)) * 0.5;
-	float Offset = (LocalHeight * 2.0 - 1.0) + HeightOverTerrain;
+	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
 	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
-	return clamp((WorldNormal.y + Offset) * 0.5 + 0.5, 0.0, 0.9);
+	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
 }
 
 struct VS2PS
@@ -170,7 +170,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	// (.a) stores the glossmap
 	#if _HASNORMALMAP_
 		float4 NormalVec = tex2D(SampleNormalMap, Input.P_Tex0_GroundUV.xy);
-		NormalVec.xyz = normalize(NormalVec.xyz * 2.0 - 1.0);
+		NormalVec.xyz = normalize((NormalVec.xyz * 2.0) - 1.0);
 		NormalVec.xyz = normalize(mul(NormalVec.xyz, WorldTBN));
 	#else
 		float4 NormalVec = float4(WorldTBN[2], 0.0);

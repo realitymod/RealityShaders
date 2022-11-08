@@ -137,7 +137,7 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared_Default Input)
 	Output.HPos = mul(WorldPos, _ViewProj);
 
 	Output.WorldPos = WorldPos.xyz;
-	Output.WorldNormal = normalize(Input.Normal * 2.0 - 1.0);
+	Output.WorldNormal = normalize((Input.Normal * 2.0) - 1.0);
 
 	return Output;
 }
@@ -178,7 +178,7 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.WorldPos = WorldPos.xyz;
 
-	Input.Normal = Input.Normal * 2.0 - 1.0;
+	Input.Normal = normalize((Input.Normal * 2.0) - 1.0);
 	Output.ColorTex = (Input.Pos0.xy * _ScaleBaseUV *_ColorLightTex.x) + _ColorLightTex.y;
 
 	// tl: changed a few things with this factor:

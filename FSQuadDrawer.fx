@@ -302,13 +302,13 @@ float4 FSBMConvertPosTo8Bit_PS(VS2PS_Blit Input) : COLOR
 {
 	float4 ViewPosition = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	ViewPosition /= 50.0;
-	ViewPosition = ViewPosition * 0.5 + 0.5;
+	ViewPosition = (ViewPosition * 0.5) + 0.5;
 	return ViewPosition;
 }
 
 float4 FSBMConvertNormalTo8Bit_PS(VS2PS_Blit Input) : COLOR
 {
-	return normalize(tex2D(SampleTex0_Clamp, Input.TexCoord0)) * 0.5 + 0.5;
+	return (normalize(tex2D(SampleTex0_Clamp, Input.TexCoord0)) * 0.5) + 0.5;
 	// return tex2D(SampleTex0_Clamp, Input.TexCoord0).a;
 }
 

@@ -134,7 +134,7 @@ VS2PS Leaf_VS(APP2VS Input)
 	Output.VertexPos = LocalPos.xyz;
 
 	#if defined(OVERGROWTH)
-		Input.Normal = normalize(Input.Normal * 2.0 - 1.0);
+		Input.Normal = normalize((Input.Normal * 2.0) - 1.0);
 		Output.Tex0.xy /= 32767.0;
 	#else
 		Input.Normal = normalize(Input.Normal * NormalUnpack.x + NormalUnpack.y);

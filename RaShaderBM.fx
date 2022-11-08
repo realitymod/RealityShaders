@@ -121,9 +121,9 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 {
 	// LocalHeight scale, 1 for top and 0 for bottom
 	float LocalHeight = (WorldPos.y - GeomBones[0][3][1]) * InvHemiHeightScale;
-	float Offset = (LocalHeight * 2.0 - 1.0) + HeightOverTerrain;
+	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
 	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
-	return clamp((WorldNormal.y + Offset) * 0.5 + 0.5, 0.0, 0.9);
+	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
 }
 
 struct VS2PS
@@ -214,7 +214,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#if _HASNORMALMAP_
 		// Transform from tangent-space to world-space
 		float4 TangentNormal = tex2D(SampleNormalMap, Input.P_Tex0_GroundUV.xy);
-		float3 NormalVec = normalize(TangentNormal.xyz * 2.0 - 1.0);
+		float3 NormalVec = normalize((TangentNormal.xyz * 2.0) - 1.0);
 		NormalVec = normalize(mul(NormalVec, WorldTBN));
 	#else
 		float3 NormalVec = normalize(WorldNormal);
