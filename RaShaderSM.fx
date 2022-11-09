@@ -85,10 +85,11 @@ struct VS2PS
 	float4 HPos : POSITION;
 
 	float3 WorldPos : TEXCOORD0;
-	float4 P_Tex0_GroundUV : TEXCOORD1; // .xy = Tex0; .zw = GroundUV;
-	float3 Tangent : TEXCOORD2;
-	float3 BiNormal : TEXCOORD3;
-	float3 Normal : TEXCOORD4;
+	float3 Tangent : TEXCOORD1;
+	float3 BiNormal : TEXCOORD2;
+	float3 Normal : TEXCOORD3;
+
+	float2 Tex0 : TEXCOORD4;
 	float4 ShadowTex : TEXCOORD5;
 	float4 OccShadowTex : TEXCOORD6;
 };
@@ -126,11 +127,8 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	Output.HPos = mul(SkinnedObjectPosition, WorldViewProjection);
 
 	Output.WorldPos.xyz = WorldPos.xyz;
-	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 
-	#if _USEHEMIMAP_
-		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos.xyz, WorldNormal);
-	#endif
+	Output.Tex0 = Input.TexCoord0;
 
 	#if _HASSHADOW_
 		Output.ShadowTex = GetShadowProjection(WorldPos);
@@ -169,14 +167,14 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 
 	// (.a) stores the glossmap
 	#if _HASNORMALMAP_
-		float4 NormalVec = tex2D(SampleNormalMap, Input.P_Tex0_GroundUV.xy);
+		float4 NormalVec = tex2D(SampleNormalMap, Input.Tex0);
 		NormalVec.xyz = normalize((NormalVec.xyz * 2.0) - 1.0);
 		NormalVec.xyz = normalize(mul(NormalVec.xyz, WorldTBN));
 	#else
 		float4 NormalVec = float4(WorldTBN[2], 0.0);
 	#endif
 
-	float4 ColorMap = tex2D(SampleDiffuseMap, Input.P_Tex0_GroundUV.xy);
+	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
 
 	#if _HASSHADOW_
 		float ShadowDir = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
@@ -195,8 +193,9 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float HemiLerp = GetHemiLerp(WorldPos.xyz, NormalVec.xyz);
-			float4 GroundColor = tex2D(SampleHemiMap, Input.P_Tex0_GroundUV.zw);
+			float2 GroundUV = GetGroundUV(WorldPos, NormalVec);
+			float4 GroundColor = tex2D(SampleHemiMap, GroundUV);
+			float HemiLerp = GetHemiLerp(WorldPos, NormalVec);
 			float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 		#else
 			float3 Ambient = Lights[0].color.w;

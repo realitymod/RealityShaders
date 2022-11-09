@@ -101,6 +101,13 @@ float GetBinormalFlipping(APP2VS Input)
 	return 1.0 + IndexArray[2] * -2.0;
 }
 
+float4 GetUVRotation(APP2VS Input)
+{
+	// TODO: (ROD) Gotta rotate the tangent space as well as the uv
+	float2 UV = mul(float3(Input.TexUVRotCenter * TexUnpack, 1.0), GetSkinnedUVMatrix(Input)).xy;
+	return float4(UV.xy + (Input.TexDiffuse * TexUnpack), 0.0, 1.0);
+}
+
 float2 GetGroundUV(float3 WorldPos, float3 WorldNormal)
 {
 	// HemiMapConstants: Offset x/y heightmapsize z / hemilerpbias w
@@ -108,13 +115,6 @@ float2 GetGroundUV(float3 WorldPos, float3 WorldNormal)
 	GroundUV.xy = ((WorldPos + (HemiMapConstants.z / 2.0) + WorldNormal).xz - HemiMapConstants.xy) / HemiMapConstants.z;
 	GroundUV.y = 1.0 - GroundUV.y;
 	return GroundUV;
-}
-
-float4 GetUVRotation(APP2VS Input)
-{
-	// TODO: (ROD) Gotta rotate the tangent space as well as the uv
-	float2 UV = mul(float3(Input.TexUVRotCenter * TexUnpack, 1.0), GetSkinnedUVMatrix(Input)).xy;
-	return float4(UV.xy + (Input.TexDiffuse * TexUnpack), 0.0, 1.0);
 }
 
 float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
@@ -130,12 +130,12 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 
-	float3 WorldPos : TEXCOORD0; // .xyz = WorldPos; .w = HemiLerp;
+	float3 WorldPos : TEXCOORD0;
 	float3 WorldTangent : TEXCOORD1;
 	float3 WorldBiNormal : TEXCOORD2;
 	float3 WorldNormal : TEXCOORD3;
 
-	float4 P_Tex0_GroundUV : TEXCOORD4; // .xy = Tex0; .zw = GroundUV;
+	float2 Tex0 : TEXCOORD4;
 	float4 ShadowTex : TEXCOORD5;
 	float4 OccShadowTex : TEXCOORD6;
 };
@@ -165,13 +165,9 @@ VS2PS BundledMesh_VS(APP2VS Input)
 	Output.WorldNormal = WorldTBN[2];
 
 	#if _HASUVANIMATION_
-		Output.P_Tex0_GroundUV.xy = GetUVRotation(Input).xy; // pass-through rotate coords
+		Output.Tex0 = GetUVRotation(Input); // pass-through rotate coords
 	#else
-		Output.P_Tex0_GroundUV.xy = Input.TexDiffuse.xy * TexUnpack; // pass-through texcoord
-	#endif
-
-	#if _USEHEMIMAP_
-		Output.P_Tex0_GroundUV.zw = GetGroundUV(WorldPos, Output.WorldNormal);
+		Output.Tex0 = Input.TexDiffuse * TexUnpack; // pass-through texcoord
 	#endif
 
 	#if _HASSHADOW_
@@ -209,11 +205,11 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos - WorldPos);
 
-	float4 ColorMap = tex2D(SampleDiffuseMap, Input.P_Tex0_GroundUV.xy);
+	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
 
 	#if _HASNORMALMAP_
 		// Transform from tangent-space to world-space
-		float4 TangentNormal = tex2D(SampleNormalMap, Input.P_Tex0_GroundUV.xy);
+		float4 TangentNormal = tex2D(SampleNormalMap, Input.Tex0);
 		float3 NormalVec = normalize((TangentNormal.xyz * 2.0) - 1.0);
 		NormalVec = normalize(mul(NormalVec, WorldTBN));
 	#else
@@ -241,8 +237,9 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
+			float2 GroundUV = GetGroundUV(WorldPos, NormalVec);
+			float4 GroundColor = tex2D(SampleHemiMap, GroundUV);
 			float HemiLerp = GetHemiLerp(WorldPos, NormalVec);
-			float4 GroundColor = tex2D(SampleHemiMap, Input.P_Tex0_GroundUV.zw);
 			float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 		#else
 			float3 Ambient = Lights[0].color.w;
@@ -283,7 +280,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _HASGIMAP_
-		float4 GI = tex2D(SampleGIMap, Input.P_Tex0_GroundUV.xy);
+		float4 GI = tex2D(SampleGIMap, Input.Tex0);
 		float4 GI_TIS = GI; // M
 		GI = (GI_TIS.a < 0.01) ? 1.0 : GI;
 	#else
