@@ -98,33 +98,32 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	// Get object-space properties
-	float4 ObjectPosition = Input.Pos;
-	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
-
 	// Get skinned object-space properties
-	float4x3 SkinnedObjectMatrix = GetSkinnedObjectMatrix(Input);
-	float4 SkinnedObjectPosition = float4(mul(ObjectPosition, SkinnedObjectMatrix), 1.0);
-	float3x3 SkinnedObjectTBN = mul(ObjectTBN, (float3x3)SkinnedObjectMatrix);
+	float4 ObjectPosition = Input.Pos;
+	float4x3 SkinnedObjMat = GetSkinnedObjectMatrix(Input);
+
+	float4 SkinnedObjPos = float4(mul(ObjectPosition, SkinnedObjMat), 1.0);
+	float3 SkinnedObjTan = mul(Input.Tan, (float3x3)SkinnedObjMat);
+	float3 SkinnedObjNormal = mul(Input.Normal, (float3x3)SkinnedObjMat);
+	float3x3 SkinnedObjTBN = GetTangentBasis(SkinnedObjTan, SkinnedObjNormal, GetBinormalFlipping(Input));
 
 	// Get world-space properties
-	float4x3 SkinnedWorldMatrix = mul(SkinnedObjectMatrix, World);
-	float3x3 SkinnedWorldTBN = mul(SkinnedObjectTBN, (float3x3)World);
-	float4 WorldPos = mul(SkinnedObjectPosition, World);
-	float3 WorldNormal = normalize(mul(SkinnedObjectTBN[2], World));
+	float3x3 SkinnedWorldMat = mul(SkinnedObjMat, (float3x3)World);
+	float3x3 SkinnedWorldTBN = mul(SkinnedObjTBN, (float3x3)World);
+	float4 WorldPos = mul(SkinnedObjPos, World);
 
 	#if _OBJSPACENORMALMAP_ // (Object Space) -> (Skinned Object Space) -> (Skinned World Space)
-		Output.Tangent = SkinnedWorldMatrix[0].xyz;
-		Output.BiNormal = SkinnedWorldMatrix[1].xyz;
-		Output.Normal = SkinnedWorldMatrix[2].xyz;
+		Output.Tangent = SkinnedWorldMat[0];
+		Output.BiNormal = SkinnedWorldMat[1];
+		Output.Normal = SkinnedWorldMat[2];
 	#else // (Tangent Space) -> (Object Space) -> (Skinned Object Space) -> (Skinned World Space)
-		Output.Tangent = SkinnedWorldTBN[0].xyz;
-		Output.BiNormal = SkinnedWorldTBN[1].xyz;
-		Output.Normal = SkinnedWorldTBN[2].xyz;
+		Output.Tangent = SkinnedWorldTBN[0];
+		Output.BiNormal = SkinnedWorldTBN[1];
+		Output.Normal = SkinnedWorldTBN[2];
 	#endif
-	
+
 	// Output HPos
-	Output.HPos = mul(SkinnedObjectPosition, WorldViewProjection);
+	Output.HPos = mul(SkinnedObjPos, WorldViewProjection);
 
 	Output.WorldPos.xyz = WorldPos.xyz;
 
