@@ -8,12 +8,6 @@
 
 	#include "shaders/RaCommon.fxh"
 
-	// Particle Texture
-	uniform texture Tex0: Texture0;
-
-	// Groundhemi Texture
-	uniform texture Tex1: Texture1;
-
 	// commonparams
 	uniform float4x4 _ViewMat : ViewMat;
 	uniform float4x4 _ProjMat : ProjMat;
@@ -25,25 +19,25 @@
 
 	const float _OneOverShort = 1.0 / 32767.0;
 
-	sampler SampleDiffuseMap = sampler_state
-	{
-		Texture = (Tex0);
-		MinFilter = LINEAR;
-		MagFilter = LINEAR;
-		MipFilter = LINEAR;
-		AddressU = CLAMP;
-		AddressV = CLAMP;
-	};
+	#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, IS_SRGB) \
+		sampler SAMPLER_NAME = sampler_state \
+		{ \
+			Texture = (TEXTURE); \
+			MinFilter = LINEAR; \
+			MagFilter = LINEAR; \
+			MipFilter = LINEAR; \
+			AddressU = CLAMP; \
+			AddressV = CLAMP; \
+			SRGBTexture = IS_SRGB; \
+		}; \
 
-	sampler SampleLUT = sampler_state
-	{
-		Texture = (Tex1);
-		MinFilter = LINEAR;
-		MagFilter = LINEAR;
-		MipFilter = LINEAR;
-		AddressU = CLAMP;
-		AddressV = CLAMP;
-	};
+	// Particle Texture
+	uniform texture Tex0: Texture0;
+	CREATE_SAMPLER(SampleDiffuseMap, Tex0, FALSE)
+
+	// Groundhemi Texture
+	uniform texture Tex1: Texture1;
+	CREATE_SAMPLER(SampleLUT, Tex1, FALSE)
 
 	uniform float3 _EffectSunColor : EffectSunColor;
 	uniform float3 _EffectShadowColor : EffectShadowColor;

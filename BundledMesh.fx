@@ -68,32 +68,34 @@ uniform float4x3 _UVMatrix[8]: UVMatrix;
 	[Textures and Samplers]
 */
 
-uniform texture Tex0: TEXLAYER0;
-uniform texture Tex1: TEXLAYER1;
-uniform texture Tex2: TEXLAYER2;
-uniform texture Tex3: TEXLAYER3;
-uniform texture Tex4: TEXLAYER4;
-
-#define CREATE_SAMPLER(NAME, TEXTURE, ADDRESS, FILTER) \
-	sampler NAME = sampler_state \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESS, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
-		AddressU = ADDRESS; \
-		AddressV = ADDRESS; \
 		MinFilter = FILTER; \
 		MagFilter = FILTER; \
 		MipFilter = FILTER; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
 	};
 
-CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, LINEAR)
-CREATE_SAMPLER(SampleTex1, Tex1, CLAMP, LINEAR)
-CREATE_SAMPLER(SampleTex2, Tex2, CLAMP, LINEAR)
-CREATE_SAMPLER(SampleCubeTex3, Tex3, WRAP, LINEAR)
+uniform texture Tex0: TEXLAYER0;
+CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP, FALSE)
+CREATE_SAMPLER(SampleDiffuseMap, Tex0, LINEAR, WRAP, FALSE)
 
-CREATE_SAMPLER(SampleDiffuseMap, Tex0, WRAP, LINEAR)
-CREATE_SAMPLER(SampleNormalMap, Tex1, WRAP, LINEAR)
+uniform texture Tex1: TEXLAYER1;
+CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP, FALSE)
+CREATE_SAMPLER(SampleNormalMap, Tex1, LINEAR, WRAP, FALSE)
 
-CREATE_SAMPLER(SampleColorLUT, Tex2, CLAMP, LINEAR)
+uniform texture Tex2: TEXLAYER2;
+CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, CLAMP, FALSE)
+CREATE_SAMPLER(SampleColorLUT, Tex2, LINEAR, CLAMP, FALSE)
+
+uniform texture Tex3: TEXLAYER3;
+CREATE_SAMPLER(SampleCubeTex3, Tex3, LINEAR, WRAP, FALSE)
+
+uniform texture Tex4: TEXLAYER4;
 
 sampler SampleDummy = sampler_state
 {
@@ -106,11 +108,11 @@ sampler SampleDummy = sampler_state
 /*
 	SHADOW BUFFER DATA
 
-	texture ShadowMap: ShadowMapTex;
-	texture ShadowMapOccluder : ShadowMapOccluderTex;
+	uniform texture ShadowMap: ShadowMapTex;
+	uniform texture ShadowMapOccluder : ShadowMapOccluderTex;
 
-	CREATE_SAMPLER(SampleShadowMap, ShadowMap, CLAMP, LINEAR)
-	CREATE_SAMPLER(SampleShadowMapOccluder, ShadowMapOccluder, CLAMP, LINEAR)
+	CREATE_SAMPLER(SampleShadowMap, ShadowMap, LINEAR, CLAMP,  FALSE)
+	CREATE_SAMPLER(SampleShadowMapOccluder, ShadowMapOccluder, LINEAR, CLAMP,  FALSE)
 */
 
 struct APP2VS

@@ -11,35 +11,31 @@
 	#define _HASSHADOW_ 0
 #endif
 
-// float3 TreeSkyColor;
-float4 OverGrowthAmbient;
+// uniform float3 TreeSkyColor;
+uniform float4 OverGrowthAmbient;
+uniform float4 PosUnpack;
+uniform float2 NormalUnpack;
+uniform float TexUnpack;
+uniform float4 ObjectSpaceCamPos;
 Light Lights[1];
-float4 PosUnpack;
-float2 NormalUnpack;
-float TexUnpack;
-float4 ObjectSpaceCamPos;
 
-texture DetailMap;
-sampler SampleDetailMap = sampler_state
-{
-	Texture = (DetailMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MipFilter = LINEAR; \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		AddressU = WRAP; \
+		AddressV = WRAP; \
+		SRGBTexture = IS_SRGB; \
+	}; \
 
-texture DiffuseMap;
-sampler SampleDiffuseMap = sampler_state
-{
-	Texture = (DiffuseMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
+uniform texture DetailMap;
+CREATE_SAMPLER(SampleDetailMap, DetailMap, FALSE)
+
+uniform texture DiffuseMap;
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, FALSE)
 
 string GlobalParameters[] =
 {

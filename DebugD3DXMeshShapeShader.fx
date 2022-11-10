@@ -10,7 +10,7 @@ float4x4 _World : World;
 
 string Category = "Effects\\Lighting";
 
-texture Tex0 : TEXLAYER0;
+uniform texture Tex0 : TEXLAYER0;
 sampler SampleTex0 = sampler_state
 {
 	Texture = (Tex0);

@@ -36,8 +36,8 @@ Light Lights[1];
 
 // Common SkinnedMesh samplers
 
-#define CREATE_SAMPLER(NAME, TEXTURE, ADDRESS) \
-	sampler NAME = sampler_state \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
 		MipFilter = LINEAR; \
@@ -46,16 +46,17 @@ Light Lights[1];
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
 		AddressW = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture HemiMap;
-CREATE_SAMPLER(SampleHemiMap, HemiMap, CLAMP)
+CREATE_SAMPLER(SampleHemiMap, HemiMap, CLAMP, FALSE)
 
 uniform texture CubeMap;
-CREATE_SAMPLER(SampleCubeMap, CubeMap, WRAP)
+CREATE_SAMPLER(SampleCubeMap, CubeMap, WRAP, FALSE)
 
 uniform texture DiffuseMap;
-CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, CLAMP)
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, CLAMP, FALSE)
 
 uniform texture NormalMap;
-CREATE_SAMPLER(SampleNormalMap, NormalMap, CLAMP)
+CREATE_SAMPLER(SampleNormalMap, NormalMap, CLAMP, FALSE)

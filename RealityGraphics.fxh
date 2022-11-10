@@ -32,6 +32,8 @@
 #if !defined(DIRECTXTK)
 	#define DIRECTXTK
 
+	static const float PI = 3.14159265;
+
 	// (Approximate) sRGB to linear
 	float3 SRGBToLinearEst(float3 Color)
 	{

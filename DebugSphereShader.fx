@@ -15,7 +15,7 @@ float4 _LightDiffuse = { 1.0f, 1.0f, 1.0f, 1.0f }; // Light Diffuse
 float4 _MaterialAmbient : MATERIALAMBIENT = { 0.5f, 0.5f, 0.5f, 1.0f };
 float4 _MaterialDiffuse : MATERIALDIFFUSE = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-texture BaseTex : TEXLAYER0
+uniform texture BaseTex : TEXLAYER0
 <
 	string File = "aniso2.dds";
 	string TextureType = "2D";

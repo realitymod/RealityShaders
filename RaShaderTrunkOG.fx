@@ -7,12 +7,12 @@
 
 #include "shaders/RaCommon.fxh"
 
+uniform float4 OverGrowthAmbient;
+uniform float4 ObjectSpaceCamPos;
+uniform float4 PosUnpack;
 Light Lights[1];
-float4 OverGrowthAmbient;
-float4 ObjectSpaceCamPos;
-float4 PosUnpack;
 
-texture DiffuseMap;
+uniform texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
@@ -21,6 +21,7 @@ sampler SampleDiffuseMap = sampler_state
 	MagFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
+	SRGBTexture = FALSE;
 };
 
 string GlobalParameters[] =

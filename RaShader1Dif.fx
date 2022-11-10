@@ -7,9 +7,9 @@
 
 #include "shaders/RaCommon.fxh"
 
-float4 ObjectSpaceCamPos;
+uniform float4 ObjectSpaceCamPos;
 
-texture DiffuseMap;
+uniform texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
@@ -18,6 +18,7 @@ sampler SampleDiffuseMap = sampler_state
 	MagFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
+	SRGBTexture = FALSE;
 };
 
 string GlobalParameters[] =

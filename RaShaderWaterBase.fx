@@ -30,21 +30,19 @@
 // Wether to use normalmap for transparency calculation or not
 // #define FRESNEL_NORMALMAP
 
-float4 LightMapOffset;
-
-float WaterHeight;
-
+uniform float4 LightMapOffset;
 Light Lights[1];
 
-float4 WorldSpaceCamPos;
-float4 WaterScroll;
+uniform float WaterHeight;
+uniform float4 WaterScroll;
+uniform float WaterCycleTime;
+uniform float4 WaterColor;
 
-float WaterCycleTime;
+uniform float4 WorldSpaceCamPos;
 
-float4 SpecularColor;
-float SpecularPower;
-float4 WaterColor;
-float4 PointColor;
+uniform float4 SpecularColor;
+uniform float SpecularPower;
+uniform float4 PointColor;
 
 #if defined(DEBUG)
 	#define _WaterColor float4(1.0, 0.0, 0.0, 1.0)
@@ -52,64 +50,35 @@ float4 PointColor;
 	#define _WaterColor WaterColor
 #endif
 
-texture CubeMap;
-samplerCUBE SampleCubeMap = sampler_state
-{
-	Texture = (CubeMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-	AddressW = WRAP;
-};
+#define CREATE_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MipFilter = LINEAR; \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		AddressW = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
+uniform texture CubeMap;
+CREATE_SAMPLER(samplerCUBE, SampleCubeMap, CubeMap, WRAP, FALSE)
 
 #if defined(USE_3DTEXTURE)
-	texture WaterMap;
-	sampler SampleWaterMap = sampler_state
-	{
-		Texture = (WaterMap);
-		MipFilter = LINEAR;
-		MinFilter = LINEAR;
-		MagFilter = LINEAR;
-		AddressU = WRAP;
-		AddressV = WRAP;
-		AddressW = WRAP;
-	};
+	uniform texture WaterMap;
+	CREATE_SAMPLER(sampler, SampleWaterMap, WaterMap, WRAP, FALSE)
 #else
-	texture WaterMapFrame0;
-	sampler SampleWaterMap0 = sampler_state
-	{
-		Texture = (WaterMapFrame0);
-		MipFilter = LINEAR;
-		MinFilter = LINEAR;
-		MagFilter = LINEAR;
-		AddressU = WRAP;
-		AddressV = WRAP;
-	};
+	uniform texture WaterMapFrame0;
+	CREATE_SAMPLER(sampler, SampleWaterMap0, WaterMapFrame0, WRAP, FALSE)
 
-	texture WaterMapFrame1;
-	sampler SampleWaterMap1 = sampler_state
-	{
-		Texture = (WaterMapFrame1);
-		MipFilter = LINEAR;
-		MinFilter = LINEAR;
-		MagFilter = LINEAR;
-		AddressU = WRAP;
-		AddressV = WRAP;
-	};
+	uniform texture WaterMapFrame1;
+	CREATE_SAMPLER(sampler, SampleWaterMap1, WaterMapFrame1, WRAP, FALSE)
 #endif
 
-texture LightMap;
-sampler SampleLightMap = sampler_state
-{
-	Texture = (LightMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
+uniform texture LightMap;
+CREATE_SAMPLER(sampler, SampleLightMap, LightMap, CLAMP, FALSE)
 
 string GlobalParameters[] =
 {

@@ -3,6 +3,12 @@
 	Description: Renders lighting for undergrowth such as grass
 */
 
+string Category = "Effects\\Lighting";
+
+#include "shaders/RealityGraphics.fxh"
+
+#include "shaders/RaCommon.fxh"
+
 uniform float4x4 _WorldViewProj : WorldViewProjection;
 uniform float4x4 _WorldView : WorldView;
 uniform float4 _PosOffsetAndScale : PosOffsetAndScale;
@@ -28,45 +34,25 @@ uniform float4 _Transparency_x8 : TRANSPARENCY_X8;
 
 #define FH2_ALPHAREF 127
 
-string Category = "Effects\\Lighting";
-
-#include "shaders/RealityGraphics.fxh"
-
-#include "shaders/RaCommon.fxh"
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
+	sampler2D SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MipFilter = LINEAR; \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		AddressU = CLAMP; \
+		AddressV = CLAMP; \
+	}; \
 
 uniform texture Tex0 : TEXLAYER0;
+CREATE_SAMPLER(SampleColorMap, Tex0)
+
 uniform texture Tex1 : TEXLAYER1;
+CREATE_SAMPLER(SampleTerrainColorMap, Tex1)
+
 uniform texture Tex2 : TEXLAYER2;
-
-sampler2D SampleColorMap = sampler_state
-{
-	Texture = (Tex0);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
-
-sampler2D SampleTerrainColorMap = sampler_state
-{
-	Texture = (Tex1);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
-
-sampler2D SampleTerrainLightMap = sampler_state
-{
-	Texture = (Tex2);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
+CREATE_SAMPLER(SampleTerrainLightMap, Tex2)
 
 struct APP2VS
 {

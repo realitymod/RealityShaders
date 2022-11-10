@@ -13,6 +13,18 @@ uniform texture BaseTex: TEXLAYER0
 	string TextureType = "2D";
 >;
 
+sampler SampleBaseTex = sampler_state
+{
+	Texture = (BaseTex);
+	// Target = Texture2D;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+    AddressU = WRAP;
+    AddressV = WRAP;
+	SRGBTexture = FALSE;
+};
+
 struct APP2VS
 {
     float4 Pos : POSITION;
@@ -23,17 +35,6 @@ struct VS2PS
 {
     float4 HPos : POSITION;
     float2 Tex0 : TEXCOORD0;
-};
-
-sampler SampleBaseTex = sampler_state
-{
-	Texture = (BaseTex);
-	// Target = Texture2D;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-    AddressU = WRAP;
-    AddressV = WRAP;
 };
 
 VS2PS Shader_VS(APP2VS Input)

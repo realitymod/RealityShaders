@@ -18,38 +18,26 @@ uniform float2 _CloudLerpFactors : CLOUDLERPFACTORS;
 uniform float _LightingBlend : LIGHTINGBLEND;
 uniform float3 _LightingColor : LIGHTINGCOLOR;
 
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
 uniform texture Tex0 : TEXLAYER0;
-sampler SampleTex0 = sampler_state
-{
-	Texture = (Tex0);
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
+CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, FALSE)
 
 uniform texture Tex1 : TEXLAYER1;
-sampler SampleTex1 = sampler_state
-{
-	Texture = (Tex1);
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
+CREATE_SAMPLER(SampleTex1, Tex1, WRAP, FALSE)
 
 uniform texture Tex2 : TEXLAYER2;
-sampler SampleTex2 = sampler_state
-{
-	Texture = (Tex2);
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
+CREATE_SAMPLER(SampleTex2, Tex2, WRAP, FALSE)
 
 struct APP2VS
 {

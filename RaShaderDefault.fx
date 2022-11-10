@@ -5,10 +5,10 @@
 
 #include "shaders/RealityGraphics.fxh"
 
-float4x4 World;
-float4x4 ViewProjection;
-int textureFactor = 0xffAFFFaF;
-bool alphaBlendEnable = false;
+uniform float4x4 World;
+uniform float4x4 ViewProjection;
+uniform int textureFactor = 0xffAFFFaF;
+uniform bool alphaBlendEnable = false;
 
 string reqVertexElement[] =
 {

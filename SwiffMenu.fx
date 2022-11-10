@@ -9,8 +9,9 @@ uniform float4x4 WorldView : TRANSFORM;
 uniform float4 DiffuseColor : DIFFUSE;
 uniform float4 TexGenS : TEXGENS;
 uniform float4 TexGenT : TEXGENT;
-uniform texture TexMap : TEXTURE;
 uniform float Time : TIME;
+
+uniform texture TexMap : TEXTURE;
 
 sampler SampleTexMap_Clamp = sampler_state
 {

@@ -12,11 +12,11 @@
 
 #include "shaders/RaCommon.fxh"
 
-bool AlphaBlendEnable = false;
-float4x4 Bones[26];
-float4 ObjectSpaceCamPos;
+uniform bool AlphaBlendEnable = false;
+uniform float4x4 Bones[26];
+uniform float4 ObjectSpaceCamPos;
 
-texture DiffuseMap;
+uniform texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
@@ -25,6 +25,7 @@ sampler SampleDiffuseMap = sampler_state
 	MagFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
+	SRGBTexture = FALSE;
 };
 
 string TemplateParameters[] =

@@ -90,8 +90,8 @@ sampler SampleColorLUT = sampler_state
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
-	AddressU = Clamp;
-	AddressV = Clamp;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 /*

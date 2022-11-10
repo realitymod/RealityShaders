@@ -31,6 +31,7 @@ sampler SampleTex0 = sampler_state
 	MipFilter = LINEAR;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
+	SRGBTexture = FALSE;
 };
 
 struct APP2PS

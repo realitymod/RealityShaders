@@ -23,8 +23,8 @@ uniform float StaticGloss;
 
 // Common StaticMesh samplers
 
-#define CREATE_SAMPLER(NAME, TEXTURE) \
-	sampler NAME = sampler_state \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
 		MipFilter = LINEAR; \
@@ -33,25 +33,26 @@ uniform float StaticGloss;
 		MaxAnisotropy = 16; \
 		AddressU = WRAP; \
 		AddressV = WRAP; \
+		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture LightMap;
-CREATE_SAMPLER(SampleLightMap, LightMap)
+CREATE_SAMPLER(SampleLightMap, LightMap, FALSE)
 
 uniform texture DetailMap;
-CREATE_SAMPLER(SampleDetailMap, DetailMap)
+CREATE_SAMPLER(SampleDetailMap, DetailMap, FALSE)
 
 uniform texture DirtMap;
-CREATE_SAMPLER(SampleDirtMap, DirtMap)
+CREATE_SAMPLER(SampleDirtMap, DirtMap, FALSE)
 
 uniform texture CrackMap;
-CREATE_SAMPLER(SampleCrackMap, CrackMap)
+CREATE_SAMPLER(SampleCrackMap, CrackMap, FALSE)
 
 uniform texture CrackNormalMap;
-CREATE_SAMPLER(SampleCrackNormalMap, CrackNormalMap)
+CREATE_SAMPLER(SampleCrackNormalMap, CrackNormalMap, FALSE)
 
 uniform texture DiffuseMap;
-CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap)
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, FALSE)
 
 uniform texture NormalMap;
-CREATE_SAMPLER(SampleNormalMap, NormalMap)
+CREATE_SAMPLER(SampleNormalMap, NormalMap, FALSE)

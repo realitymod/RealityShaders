@@ -10,17 +10,17 @@
 #define LIGHT_MUL float3(0.8, 0.8, 0.4)
 #define LIGHT_ADD float3(0.4, 0.4, 0.4)
 
-float3 TerrainSunColor;
-float2 RoadFadeOut;
-float4 WorldSpaceCamPos;
-// float RoadDepthBias;
-// float RoadSlopeScaleDepthBias;
+uniform float3 TerrainSunColor;
+uniform float2 RoadFadeOut;
+uniform float4 WorldSpaceCamPos;
+// uniform float RoadDepthBias;
+// uniform float RoadSlopeScaleDepthBias;
 
-float4 PosUnpack;
-float TexUnpack;
+uniform float4 PosUnpack;
+uniform float TexUnpack;
 
-#define CREATE_SAMPLER(NAME, TEXTURE, ADDRESS) \
-	sampler NAME = sampler_state \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
 		MipFilter = LINEAR; \
@@ -30,18 +30,19 @@ float TexUnpack;
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
 		AddressW = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
 	}; \
 
-texture	LightMap;
-CREATE_SAMPLER(SampleLightMap, LightMap, WRAP)
+uniform texture LightMap;
+CREATE_SAMPLER(SampleLightMap, LightMap, WRAP, FALSE)
 
 #if defined(USE_DETAIL)
-	texture	DetailMap;
-	CREATE_SAMPLER(SampleDetailMap, DetailMap, WRAP)
+	uniform texture DetailMap;
+	CREATE_SAMPLER(SampleDetailMap, DetailMap, WRAP, FALSE)
 #endif
 
-texture DiffuseMap;
-CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP)
+uniform texture DiffuseMap;
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP, FALSE)
 
 string GlobalParameters[] =
 {
