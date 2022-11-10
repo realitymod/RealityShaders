@@ -161,7 +161,7 @@ struct VS2PS_Shared_LowDetail
 	float2 YPlaneTex : TEXCOORD4;
 	float2 XPlaneTex : TEXCOORD5;
 	float2 ZPlaneTex : TEXCOORD6;
-	float4 P_Blend_Water : COLOR0;
+	float3 WorldNormal : TEXCOORD7;
 };
 
 VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
@@ -178,45 +178,42 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.WorldPos = WorldPos.xyz;
 
-	Input.Normal = normalize((Input.Normal * 2.0) - 1.0);
 	Output.ColorTex = (Input.Pos0.xy * _ScaleBaseUV *_ColorLightTex.x) + _ColorLightTex.y;
 
-	// tl: changed a few things with this factor:
-	// - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.
-	// - by pre-multiplying the _WaterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
-	Output.P_Blend_Water.w = saturate((WorldPos.y / -3.0) + _WaterHeight);
+	float3 Tex = 0.0;
+	Tex.x = Input.Pos0.x * _TexScale.x;
+	Tex.y = WorldPos.y * _TexScale.y;
+	Tex.z = Input.Pos0.y * _TexScale.z;
 
-	#if HIGHTERRAIN
-		float3 Tex = float3(Input.Pos0.y * _TexScale.z, WorldPos.y * _TexScale.y, Input.Pos0.x * _TexScale.x);
-		float2 XPlaneTexCoord = Tex.xy;
-		float2 YPlaneTexCoord = Tex.zx;
-		float2 ZPlaneTexCoord = Tex.zy;
+	float2 YPlaneTexCoord = Tex.xz;
+	float2 XPlaneTexCoord = Tex.zy;
+	float2 ZPlaneTexCoord = Tex.xy;
 
-		Output.CompTex = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
-		Output.YPlaneTex = (YPlaneTexCoord * _FarTexTiling.z);
-		Output.XPlaneTex = (XPlaneTexCoord.xy * _FarTexTiling.xy);
-		Output.XPlaneTex.y += _FarTexTiling.w;
-		Output.ZPlaneTex = (ZPlaneTexCoord.xy * _FarTexTiling.xy);
-		Output.ZPlaneTex.y += _FarTexTiling.w;
-	#else
-		Output.YPlaneTex = Input.Pos0.xy * _YPlaneTexScaleAndFarTile.xz;
-	#endif
-
-	#if HIGHTERRAIN
-		Output.P_Blend_Water.xyz = saturate(abs(Input.Normal) - _BlendMod);
-		float Total = dot(1.0, Output.P_Blend_Water.xyz);
-		Output.P_Blend_Water.xyz = saturate(Output.P_Blend_Water.xyz / Total);
-	#else
-		Output.P_Blend_Water.xyz = saturate(pow(Input.Normal.y, 8.0));
-	#endif
+	Output.CompTex = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
+	Output.YPlaneTex = (YPlaneTexCoord * _FarTexTiling.z);
+	Output.XPlaneTex = (XPlaneTexCoord * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	Output.ZPlaneTex = (ZPlaneTexCoord * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
 
 	Output.LightTex = ProjToLighting(Output.HPos);
+
+	Output.WorldNormal = normalize((Input.Normal * 2.0) - 1.0);
 
 	return Output;
 }
 
 float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 {
+	float3 WorldPos = Input.WorldPos;
+	float3 Normals = normalize(Input.WorldNormal);
+	
+	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
+	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
+
+	// tl: changed a few things with this factor:
+	// - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.
+	// - by pre-multiplying the _WaterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
+	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
+
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorTex);
@@ -229,32 +226,25 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 	}
 
 	#if LIGHTONLY
-		ApplyFog(Light.rgb, GetFogValue(Input.WorldPos, _CameraPos));
+		ApplyFog(Light.rgb, GetFogValue(WorldPos, _CameraPos));
 		return Light;
 	#endif
 
-	#if HIGHTERRAIN
-		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.CompTex);
-		float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
-		float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex);
-		float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
-		float Mounten = (XPlaneLowDetailmap.y * Input.P_Blend_Water.x) +
-						(YPlaneLowDetailmap.x * Input.P_Blend_Water.y) +
-						(ZPlaneLowDetailmap.y * Input.P_Blend_Water.z);
-		float4 OutputColor = ColorMap * Light * 2.0 * lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x) * lerp(0.5, Mounten, LowComponent.z);
-		OutputColor = lerp(OutputColor * 4.0, _TerrainWaterColor, Input.P_Blend_Water.w);
+	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.CompTex);
+	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
+	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex);
+	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
+	float Mounten = (XPlaneLowDetailmap.y * BlendValue.x) +
+					(YPlaneLowDetailmap.x * BlendValue.y) +
+					(ZPlaneLowDetailmap.y * BlendValue.z);
 
-		ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos, _CameraPos));
-		return OutputColor;
-	#else
-		float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
-		float3 OutputColor = ColorMap * Light * 2.0;
-		OutputColor = OutputColor * lerp(YPlaneLowDetailmap.x, YPlaneLowDetailmap.z, Input.P_Blend_Water.y);
-		OutputColor = lerp(OutputColor * 2.0, _TerrainWaterColor, Input.P_Blend_Water.w);
+	float4 OutputColor = ColorMap * Light * 2.0;
+	OutputColor *= lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x);
+	OutputColor *= lerp(0.5, Mounten, LowComponent.z);
+	OutputColor = lerp(OutputColor * 4.0, _TerrainWaterColor, WaterLerp);
 
-		ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos, _CameraPos));
-		return float4(OutputColor, 1.0);
-	#endif
+	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
+	return OutputColor;
 }
 
 /*
@@ -278,7 +268,7 @@ VS2PS_Shared_DynamicShadowmap Shared_DynamicShadowmap_VS(APP2VS_Shared_Default I
 	Output.HPos = mul(WorldPos, _ViewProj);
 
 	Output.ShadowTex = mul(WorldPos, _LightViewProj);
-	Output.ShadowTex.z = 0.999 * Output.ShadowTex.w;
+	Output.ShadowTex.z = Output.ShadowTex.w;
 
 	return Output;
 }
@@ -319,12 +309,12 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 	Output.HPos = mul(WorldPos, _ViewProj);
 
 	Output.ShadowTex = mul(WorldPos, _LightViewProj);
-	float sZ = mul(WorldPos, _LightViewProjOrtho).z;
+	float LightZ = mul(WorldPos, _LightViewProjOrtho).z;
 	Output.Z.xy = Output.ShadowTex.z;
 	#if NVIDIA
-		Output.ShadowTex.z = sZ * Output.ShadowTex.w;
+		Output.ShadowTex.z = LightZ * Output.ShadowTex.w;
 	#else
-		Output.ShadowTex.z = sZ;
+		Output.ShadowTex.z = LightZ;
 	#endif
 
 	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
@@ -392,7 +382,7 @@ struct VS2PS_Shared_ST_Normal
 	float2 YPlaneTex : TEXCOORD3;
 	float2 XPlaneTex : TEXCOORD4;
 	float2 ZPlaneTex : TEXCOORD5;
-	float3 BlendValue : COLOR0;
+	float3 WorldNormal : TEXCOORD6;
 };
 
 VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
@@ -409,25 +399,31 @@ VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.WorldPos = WorldPos.xyz;
 
-	float3 Tex = float3(WorldPos.z * _STTexScale.z, -(Input.Pos1.x * _STTexScale.y), WorldPos.x * _STTexScale.x);
-	float2 YPlaneTexCoord = Tex.zx;
-	float2 XPlaneTexCoord = Tex.xy;
-	float2 ZPlaneTexCoord = Tex.zy;
+	float3 Tex = 0.0;
+	Tex.x = WorldPos.x * _STTexScale.x;
+	Tex.y = -(Input.Pos1.x * _STTexScale.y);
+	Tex.z = WorldPos.z * _STTexScale.z;
 
-	Output.YPlaneTex = YPlaneTexCoord * _STFarTexTiling.z;
-	Output.XPlaneTex = (XPlaneTexCoord * _STFarTexTiling.xy);
-	Output.XPlaneTex.y += _STFarTexTiling.w;
-	Output.ZPlaneTex = (ZPlaneTexCoord * _STFarTexTiling.xy);
-	Output.ZPlaneTex.y += _STFarTexTiling.w;
+	float2 YPlaneTexCoord = Tex.xz;
+	float2 XPlaneTexCoord = Tex.zy;
+	float2 ZPlaneTexCoord = Tex.xy;
 
-	Output.BlendValue = saturate(abs(Input.Normal) - _BlendMod);
-	Output.BlendValue /= dot(1.0, Output.BlendValue);
+	Output.YPlaneTex = (YPlaneTexCoord * _STFarTexTiling.z);
+	Output.XPlaneTex = (XPlaneTexCoord * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
+	Output.ZPlaneTex = (ZPlaneTexCoord * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
+
+	Output.WorldNormal = Input.Normal;
 
 	return Output;
 }
 
 float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 {
+	float3 WorldNormal = normalize(Input.WorldNormal);
+
+	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
+	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
+
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorLightTex);
 
 	// If thermals assume gray color
@@ -440,11 +436,11 @@ float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
 	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex);
 	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
+	float Mounten = (XPlaneLowDetailmap.y * BlendValue.x) +
+					(YPlaneLowDetailmap.x * BlendValue.y) +
+					(ZPlaneLowDetailmap.y * BlendValue.z);
 
 	float4 LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x);
-	float Mounten = (XPlaneLowDetailmap.y * Input.BlendValue.x) +
-					(YPlaneLowDetailmap.x * Input.BlendValue.y) +
-					(ZPlaneLowDetailmap.y * Input.BlendValue.z);
 	LowDetailMap *= lerp(0.5, Mounten, LowComponent.z);
 
 	float4 OutputColor = LowDetailMap * ColorMap * 4.0;
