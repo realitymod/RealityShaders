@@ -19,40 +19,27 @@ uniform float4 _GIColor : GICOLOR;
 uniform float4 _TexProjOffset : TEXPROJOFFSET;
 uniform float4 _TexProjScale : TEXPROJSCALE;
 
+#define CREATE_SAMPLER(NAME, TEXTURE, ADDRESS) \
+	sampler NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MipFilter = LINEAR; \
+		MinFilter = FILTER_ROAD_DIFF_MIN; \
+		MagFilter = FILTER_ROAD_DIFF_MAG; \
+		MaxAnisotropy = 16; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		AddressW = ADDRESS; \
+	}; \
+
 uniform texture LightMap : TEXLAYER2;
-sampler SampleLightMap = sampler_state
-{
-	Texture = (LightMap);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-};
+CREATE_SAMPLER(SampleLightMap, LightMap, CLAMP)
 
 uniform texture DetailMap0 : TEXLAYER3;
-sampler SampleDetailMap0 = sampler_state
-{
-	Texture = (DetailMap0);
-	AddressU = CLAMP;
-	AddressV = WRAP;
-	MipFilter = LINEAR;
-	MinFilter = FILTER_ROAD_DIFF_MIN;
-	MagFilter = FILTER_ROAD_DIFF_MAG;
-	MaxAnisotropy = 16;
-};
+CREATE_SAMPLER(SampleDetailMap0, DetailMap0, WRAP)
 
 uniform texture DetailMap1 : TEXLAYER4;
-sampler SampleDetailMap1 = sampler_state
-{
-	Texture = (DetailMap1);
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MipFilter = LINEAR;
-	MinFilter = FILTER_ROAD_DIFF_MIN;
-	MagFilter = FILTER_ROAD_DIFF_MAG;
-	MaxAnisotropy = 16;
-};
+CREATE_SAMPLER(SampleDetailMap1, DetailMap1, WRAP)
 
 struct APP2VS
 {

@@ -32,16 +32,16 @@
 #if !defined(DIRECTXTK)
 	#define DIRECTXTK
 
+	// (Approximate) sRGB to linear
+	float3 SRGBToLinearEst(float3 Color)
+	{
+		return pow(abs(Color), 2.2);
+	}
+
 	// Apply the (approximate) sRGB curve to linear values
 	float3 LinearToSRGBEst(float3 Color)
 	{
 		return pow(abs(Color), 1.0 / 2.2);
-	}
-
-	// (Approximate) sRGB to linear
-	float3 SRGBToLinearEst(float3 SRGB)
-	{
-		return pow(abs(SRGB), 2.2);
 	}
 
 	struct ColorPair
@@ -97,12 +97,11 @@
 
 	// Converts linear depth to logarithmic depth in the vertex shader
 	// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
-	float4 GetLogarithmicDepth(float4 HPos)
+	void ApplyLogarithmicDepth(inout float4 HPos)
 	{
-		const float FarPlane = 1000.0;
-		float FCoef = 2.0 / log2(FarPlane + 1.0);
-		HPos.z = log2(max(1e-6, 1.0 + HPos.w)) * FCoef - 1.0;
-		return HPos;
+		const float Far = 1000000000.0;
+		const float FCoef = 1.0 / log(Far + 1.0);
+		HPos.z = (log(HPos.z + 1.0) * FCoef) * HPos.w;
 	}
 
 	// Description: Transforms the vertex position's depth from World/Object space to light space

@@ -21,42 +21,29 @@ float TexUnpack;
 
 vector textureFactor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 
+#define CREATE_SAMPLER(NAME, TEXTURE, ADDRESS) \
+	sampler NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MipFilter = LINEAR; \
+		MinFilter = FILTER_STM_DIFF_MIN; \
+		MagFilter = FILTER_STM_DIFF_MAG; \
+		MaxAnisotropy = 16; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		AddressW = ADDRESS; \
+	}; \
+
 texture LightMap;
-sampler SampleLightMap = sampler_state
-{
-	Texture = (LightMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
+CREATE_SAMPLER(SampleLightMap, LightMap, WRAP)
 
 #if defined(USE_DETAIL)
 	texture DetailMap;
-	sampler SampleDetailMap = sampler_state
-	{
-		Texture = (DetailMap);
-		MipFilter = LINEAR;
-		MinFilter = FILTER_STM_DIFF_MIN;
-		MagFilter = FILTER_STM_DIFF_MAG;
-		MaxAnisotropy = 16;
-		AddressU = WRAP;
-		AddressV = WRAP;
-	};
+	CREATE_SAMPLER(SampleDetailMap, DetailMap, WRAP)
 #endif
 
 texture DiffuseMap;
-sampler SampleDiffuseMap = sampler_state
-{
-	Texture = (DiffuseMap);
-	MipFilter = LINEAR;
-	MinFilter = FILTER_STM_DIFF_MIN;
-	MagFilter = FILTER_STM_DIFF_MAG;
-	MaxAnisotropy = 16;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP)
 
 string GlobalParameters[] =
 {

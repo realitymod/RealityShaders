@@ -19,7 +19,6 @@ sampler SampleTex0 = sampler_state
 	MinFilter = ANISOTROPIC;
 	MagFilter = ANISOTROPIC;
 	MipFilter = LINEAR;
-	MaxAnisotropy = 16;
 };
 
 float _TextureScale : TEXTURESCALE;

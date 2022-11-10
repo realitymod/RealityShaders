@@ -49,7 +49,7 @@ technique Low_Terrain
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
 	}
 
-	pass { } // spotlight (removed)
+	pass { } // spotlight (removed) p2
 
 	pass LowDetail // p3
 	{

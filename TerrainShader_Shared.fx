@@ -443,7 +443,7 @@ float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 	float4 LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x);
 	LowDetailMap *= lerp(0.5, Mounten, LowComponent.z);
 
-	float4 OutputColor = LowDetailMap * ColorMap * 4.0;
+	float4 OutputColor = (ColorMap * LowDetailMap) * 4.0;
 	OutputColor.rb = (_GIColor.r < 0.01) ? 0.0 : OutputColor.rb; // M (temporary fix)
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos.xyz, _CameraPos.xyz));

@@ -1,61 +1,7 @@
-// Common BundledMesh samplers
 
-texture HemiMap;
-sampler SampleHemiMap = sampler_state
-{
-	Texture = (HemiMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
-
-texture GIMap;
-sampler SampleGIMap = sampler_state
-{
-	Texture = (GIMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
-
-texture CubeMap;
-samplerCUBE SampleCubeMap = sampler_state
-{
-	Texture = (CubeMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-	AddressW = WRAP;
-};
-
-texture DiffuseMap;
-sampler SampleDiffuseMap = sampler_state
-{
-	Texture = (DiffuseMap);
-	MipFilter = LINEAR;
-	MinFilter = FILTER_BM_DIFF_MIN;
-	MagFilter = FILTER_BM_DIFF_MAG;
-	MaxAnisotropy = 16;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
-
-texture NormalMap;
-sampler SampleNormalMap = sampler_state
-{
-	Texture = (NormalMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
+/*
+	Data for RaShaderBM
+*/
 
 float4 ObjectSpaceCamPos;
 float4 WorldSpaceCamPos;
@@ -88,3 +34,33 @@ Light Lights[1];
 float4 PosUnpack;
 float TexUnpack;
 float2 NormalUnpack;
+
+// Common BundledMesh samplers
+
+#define CREATE_SAMPLER(NAME, TEXTURE, ADDRESS) \
+	sampler NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MipFilter = LINEAR; \
+		MinFilter = FILTER_BM_DIFF_MIN; \
+		MagFilter = FILTER_BM_DIFF_MAG; \
+		MaxAnisotropy = 16; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		AddressW = ADDRESS; \
+	}; \
+
+texture HemiMap;
+CREATE_SAMPLER(SampleHemiMap, HemiMap, CLAMP)
+
+texture GIMap;
+CREATE_SAMPLER(SampleGIMap, GIMap, CLAMP)
+
+texture CubeMap;
+CREATE_SAMPLER(SampleCubeMap, CubeMap, WRAP)
+
+texture DiffuseMap;
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, CLAMP)
+
+texture NormalMap;
+CREATE_SAMPLER(SampleNormalMap, NormalMap, CLAMP)

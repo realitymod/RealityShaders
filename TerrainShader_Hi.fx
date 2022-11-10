@@ -6,33 +6,6 @@
 #include "shaders/RealityGraphics.fxh"
 
 /*
-	Hi Terrain
-*/
-
-// Special samplers for dynamic filtering types
-sampler SampleTex3_Dynamic_Wrap = sampler_state
-{
-	Texture = (Tex3);
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MipFilter = LINEAR;
-	MinFilter = FILTER_TRN_DIFF_MIN;
-	MagFilter = FILTER_TRN_DIFF_MAG;
-	MaxAnisotropy = 16;
-};
-
-sampler SampleTex6_Dynamic_Wrap = sampler_state
-{
-	Texture = (Tex6);
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MipFilter = LINEAR;
-	MinFilter = FILTER_TRN_DIFF_MIN;
-	MagFilter = FILTER_TRN_DIFF_MAG;
-	MaxAnisotropy = 16;
-};
-
-/*
 	Terrainmapping shader
 */
 
@@ -124,9 +97,9 @@ float4 FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform
 			ColorMap.rgb = 1.0 / 3.0;
 		}
 
-		float4 YPlaneDetailmap = tex2D(SampleTex3_Dynamic_Wrap, Input.YPlaneTex.xy);
-		float4 XPlaneDetailmap = tex2D(SampleTex6_Dynamic_Wrap, Input.XPlaneTex.xy);
-		float4 ZPlaneDetailmap = tex2D(SampleTex6_Dynamic_Wrap, Input.ZPlaneTex.xy);
+		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy);
+		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy);
+		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.ZPlaneTex.xy);
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		float3 HiDetail = 1.0;
@@ -256,7 +229,6 @@ technique Hi_Terrain
 		ZFunc = LESSEQUAL;
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
-		// FillMode = WireFrame;
 
 		#if IS_NV4X
 			NV4X_RENDERSTATES
@@ -307,7 +279,7 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 FullDetail_Hi_Mounten_PS();
 	}
 
-	pass {} // p6 tunnels (removed)
+	pass { } // p6 tunnels (removed)
 
 	pass DirectionalLightShadows // p7
 	{
@@ -326,9 +298,9 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 Hi_DirectionalLightShadows_PS();
 	}
 
-	pass {} // DirectionalLightShadowsNV (removed) //p8
+	pass { } // DirectionalLightShadowsNV (removed) //p8
 	pass DynamicShadowmap {} // Obsolete // p9
-	pass {} // p10
+	pass { } // p10
 
 	pass FullDetailWithEnvMap // p11
 	{
