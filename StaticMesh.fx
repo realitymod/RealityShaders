@@ -55,6 +55,18 @@ uniform float4 _EyePosObjectSpace : EyePosObjectSpace;
 	[Textures and Samplers]
 */
 
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
 uniform texture Tex0: TEXLAYER0;
 uniform texture Tex1: TEXLAYER1;
 uniform texture Tex2: TEXLAYER2;
@@ -64,35 +76,9 @@ uniform texture Tex5: TEXLAYER5;
 uniform texture Tex6: TEXLAYER6;
 uniform texture Tex7: TEXLAYER7;
 
-sampler SampleShadowAlpha = sampler_state
-{
-	Texture = (Tex0);
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
-
-sampler SampleTex0_Wrap = sampler_state
-{
-	Texture = (Tex0);
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
-
-sampler SampleColorLUT = sampler_state
-{
-	Texture = (Tex2);
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
+CREATE_SAMPLER(SampleShadowAlpha, Tex0, WRAP, FALSE)
+CREATE_SAMPLER(SampleTex0_Wrap, Tex0, WRAP, FALSE)
+CREATE_SAMPLER(SampleColorLUT, Tex2, CLAMP, FALSE)
 
 /*
 	Normalmap shaders

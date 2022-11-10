@@ -54,9 +54,9 @@ uniform float4 PointColor;
 	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
-		MipFilter = LINEAR; \
 		MinFilter = LINEAR; \
 		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
 		AddressW = ADDRESS; \

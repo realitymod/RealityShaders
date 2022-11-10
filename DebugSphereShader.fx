@@ -24,9 +24,9 @@ uniform texture BaseTex : TEXLAYER0
 sampler2D SampleBaseTex = sampler_state
 {
 	Texture = (BaseTex);
-	MipFilter = LINEAR;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
+	MipFilter = LINEAR;
 };
 
 struct APP2VS

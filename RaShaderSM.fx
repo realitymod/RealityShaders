@@ -182,7 +182,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _HASSHADOWOCCLUSION_
-		float OccShadowDir = GetShadowFactor(ShadowOccluderMapSampler, Input.OccShadowTex);
+		float OccShadowDir = GetShadowFactor(SampleShadowOccluderMap, Input.OccShadowTex);
 	#else
 		float OccShadowDir = 1.0;
 	#endif

@@ -23,21 +23,21 @@ uniform texture TexMap : TEXTURE;
 sampler SampleTexMap = sampler_state
 {
 	Texture = (TexMap);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
 	MinFilter = POINT;
 	MagFilter = POINT;
 	MipFilter = NONE;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler SampleTexMap_Linear = sampler_state
 {
 	Texture = (TexMap);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 struct APP2VS

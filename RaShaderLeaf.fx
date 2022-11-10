@@ -209,15 +209,13 @@ technique defaultTechnique
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 Leaf_VS();
-		PixelShader = compile ps_3_0 Leaf_PS();
-
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
 
 		AlphaTestEnable = TRUE;
 		AlphaRef = 127;
+
 		SrcBlend = <srcBlend>;
 		DestBlend = <destBlend>;
 
@@ -230,5 +228,8 @@ technique defaultTechnique
 		#endif
 
 		CullMode = NONE;
+
+		VertexShader = compile vs_3_0 Leaf_VS();
+		PixelShader = compile ps_3_0 Leaf_PS();
 	}
 }

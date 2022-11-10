@@ -84,17 +84,18 @@ technique defaultTechnique
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 DiffuseBone_VS();
-		PixelShader = compile ps_3_0 DiffuseBone_PS();
-
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
 
 		AlphaTestEnable = <AlphaTest>;
-		AlphaBlendEnable = <AlphaBlendEnable>;
 		AlphaRef = <alphaRef>;
+
+		AlphaBlendEnable = <AlphaBlendEnable>;
 		SrcBlend = <srcBlend>;
 		DestBlend = <destBlend>;
+
+		VertexShader = compile vs_3_0 DiffuseBone_VS();
+		PixelShader = compile ps_3_0 DiffuseBone_PS();
 	}
 }

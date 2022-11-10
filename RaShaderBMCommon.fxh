@@ -41,9 +41,9 @@ uniform float2 NormalUnpack;
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
-		MipFilter = LINEAR; \
 		MinFilter = FILTER_BM_DIFF_MIN; \
 		MagFilter = FILTER_BM_DIFF_MAG; \
+		MipFilter = LINEAR; \
 		MaxAnisotropy = 16; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \

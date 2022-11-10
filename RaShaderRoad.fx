@@ -25,9 +25,9 @@ uniform vector textureFactor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
-		MipFilter = LINEAR; \
 		MinFilter = FILTER_STM_DIFF_MIN; \
 		MagFilter = FILTER_STM_DIFF_MAG; \
+		MipFilter = LINEAR; \
 		MaxAnisotropy = 16; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
@@ -177,9 +177,9 @@ technique defaultTechnique
 		#endif
 
 		CullMode = CCW;
-		AlphaBlendEnable = TRUE;
 		AlphaTestEnable = FALSE;
 
+		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 

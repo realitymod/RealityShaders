@@ -11,27 +11,21 @@ uniform float4 TexGenS : TEXGENS;
 uniform float4 TexGenT : TEXGENT;
 uniform float Time : TIME;
 
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = NONE; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
 uniform texture TexMap : TEXTURE;
-
-sampler SampleTexMap_Clamp = sampler_state
-{
-	Texture = (TexMap);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = NONE;
-};
-
-sampler SampleTexMap_Wrap = sampler_state
-{
-	Texture = (TexMap);
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = NONE;
-};
+CREATE_SAMPLER(SampleTexMap_Clamp, TexMap, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTexMap_Wrap, TexMap, WRAP, FALSE)
 
 struct VS2PS_Shape
 {

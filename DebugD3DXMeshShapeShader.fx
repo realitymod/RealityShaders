@@ -14,11 +14,11 @@ uniform texture Tex0 : TEXLAYER0;
 sampler SampleTex0 = sampler_state
 {
 	Texture = (Tex0);
-	AddressU = WRAP;
-	AddressV = WRAP;
 	MinFilter = ANISOTROPIC;
 	MagFilter = ANISOTROPIC;
 	MipFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
 float _TextureScale : TEXTURESCALE;

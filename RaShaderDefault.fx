@@ -23,7 +23,7 @@ string InstanceParameters[] =
 
 float4 Default_VS(float3 Pos : POSITION0) : POSITION0
 {
-    return mul(float4(Pos.xyz, 1.0), mul(World, ViewProjection));
+	return mul(float4(Pos.xyz, 1.0), mul(World, ViewProjection));
 }
 
 float4 Default_PS() : COLOR
@@ -34,16 +34,19 @@ float4 Default_PS() : COLOR
 technique defaultShader
 {
 	pass P0
-    {
-        VertexShader = compile vs_3_0 Default_VS();
-        PixelShader = compile ps_3_0 Default_PS();
+	{
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
+
+		AlphaBlendEnable = <alphaBlendEnable>;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		CullMode = NONE;
-		AlphaBlendEnable = <alphaBlendEnable>;
 		AlphaTestEnable = FALSE;
+
+		VertexShader = compile vs_3_0 Default_VS();
+		PixelShader = compile ps_3_0 Default_PS();
 	}
 }

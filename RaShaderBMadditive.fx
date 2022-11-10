@@ -78,19 +78,22 @@ technique defaultTechnique
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 BM_Additive_VS();
-		PixelShader = compile ps_3_0 BM_Additive_PS();
-
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
-		ZFunc = ALWAYS;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE; // SRCALPHA;
 		DestBlend = ONE; // INVSRCALPHA;
+
+		ZFunc = ALWAYS;
 		ZWriteEnable = FALSE;
+
+		VertexShader = compile vs_3_0 BM_Additive_VS();
+		PixelShader = compile ps_3_0 BM_Additive_PS();
 	}
 }

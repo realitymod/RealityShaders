@@ -271,11 +271,14 @@ technique SkyDomeSunFlare
 		Zenable = FALSE;
 		ZWriteEnable = FALSE;
 		ZFunc = ALWAYS;
+
 		CullMode = NONE;
+		// ColorWriteEnable = 0;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
-		// ColorWriteEnable = 0;
+
 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_SunFlare_PS();
 	}
@@ -288,17 +291,18 @@ technique SkyDomeFlareOccludeCheck
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = ALWAYS;
+	
 		CullMode = NONE;
 		ColorWriteEnable = 0;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		AlphaTestEnable = TRUE;
-		AlphaRef = 50;
-		AlphaFunc = GREATER;
-		// AlphaRef = 255;
-		// AlphaFunc = LESS;
+		AlphaRef = 50; // 255
+		AlphaFunc = GREATER; // LESS
+
 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_Flare_Occlude_PS();
 	}
@@ -319,10 +323,9 @@ technique SkyDomeFlareOcclude
 		DestBlend = INVSRCALPHA;
 
 		AlphaTestEnable = TRUE;
-		AlphaRef = 50;
-		AlphaFunc = GREATER;
-		// AlphaRef = 255;
-		// AlphaFunc = LESS;
+		AlphaRef = 50; // 255
+		AlphaFunc = GREATER; // LESS
+
 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_Flare_Occlude_PS();
 	}

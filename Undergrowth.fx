@@ -34,25 +34,26 @@ uniform float4 _Transparency_x8 : TRANSPARENCY_X8;
 
 #define FH2_ALPHAREF 127
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, IS_SRGB) \
 	sampler2D SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
-		MipFilter = LINEAR; \
 		MinFilter = LINEAR; \
 		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
 		AddressU = CLAMP; \
 		AddressV = CLAMP; \
+		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture Tex0 : TEXLAYER0;
-CREATE_SAMPLER(SampleColorMap, Tex0)
+CREATE_SAMPLER(SampleColorMap, Tex0, FALSE)
 
 uniform texture Tex1 : TEXLAYER1;
-CREATE_SAMPLER(SampleTerrainColorMap, Tex1)
+CREATE_SAMPLER(SampleTerrainColorMap, Tex1, FALSE)
 
 uniform texture Tex2 : TEXLAYER2;
-CREATE_SAMPLER(SampleTerrainLightMap, Tex2)
+CREATE_SAMPLER(SampleTerrainLightMap, Tex2, FALSE)
 
 struct APP2VS
 {

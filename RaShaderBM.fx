@@ -223,7 +223,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#endif
 
 	#if _HASSHADOWOCCLUSION_
-		float ShadowOccDir = GetShadowFactor(ShadowOccluderMapSampler, Input.OccShadowTex);
+		float ShadowOccDir = GetShadowFactor(SampleShadowOccluderMap, Input.OccShadowTex);
 	#else
 		float ShadowOccDir = 1.0f;
 	#endif

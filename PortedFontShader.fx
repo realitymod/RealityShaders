@@ -25,6 +25,7 @@ sampler SampleTex0_Clamp = sampler_state
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	SRGBTexture = FALSE;
 };
 
 sampler SampleTex0_Wrap = sampler_state
@@ -35,6 +36,7 @@ sampler SampleTex0_Wrap = sampler_state
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	SRGBTexture = FALSE;
 };
 
 struct APP2VS

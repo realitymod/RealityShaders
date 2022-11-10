@@ -48,21 +48,23 @@ uniform texture Detail1 : TEXLAYER1;
 sampler SampleDetail0 = sampler_state
 {
 	Texture = (Detail0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+	SRGBTexture = FALSE;
 };
 
 sampler SampleDetail1 = sampler_state
 {
 	Texture = (Detail1);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+	SRGBTexture = FALSE;
 };
 
 struct APP2VS

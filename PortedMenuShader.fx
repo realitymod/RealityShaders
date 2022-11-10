@@ -35,6 +35,7 @@ sampler SampleTex0 = sampler_state
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	SRGBTexture = FALSE;
 };
 
 uniform texture Tex1: TEXLAYER1;
@@ -46,6 +47,7 @@ sampler SampleTex1 = sampler_state
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	SRGBTexture = FALSE;
 };
 
 struct APP2VS

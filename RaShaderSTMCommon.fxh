@@ -27,9 +27,9 @@ uniform float StaticGloss;
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
-		MipFilter = LINEAR; \
 		MinFilter = FILTER_STM_DIFF_MIN; \
 		MagFilter = FILTER_STM_DIFF_MAG; \
+		MipFilter = LINEAR; \
 		MaxAnisotropy = 16; \
 		AddressU = WRAP; \
 		AddressV = WRAP; \

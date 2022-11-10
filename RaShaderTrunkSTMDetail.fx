@@ -23,9 +23,9 @@ Light Lights[1];
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
-		MipFilter = LINEAR; \
 		MinFilter = LINEAR; \
 		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
 		AddressU = WRAP; \
 		AddressV = WRAP; \
 		SRGBTexture = IS_SRGB; \
@@ -149,13 +149,14 @@ technique defaultTechnique
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 TrunkSTMDetail_VS();
-		PixelShader = compile ps_3_0 TrunkSTMDetail_PS();
-
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
+
 		AlphaTestEnable = <AlphaTest>;
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
+
+		VertexShader = compile vs_3_0 TrunkSTMDetail_VS();
+		PixelShader = compile ps_3_0 TrunkSTMDetail_PS();
 	}
 }

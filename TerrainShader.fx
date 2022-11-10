@@ -90,9 +90,9 @@ uniform float3 _MorphDeltaAdder[3] : MORPHDELTAADDER;
 	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
-		MipFilter = LINEAR; \
 		MinFilter = FILTER_TRN_DIFF_MIN; \
 		MagFilter = FILTER_TRN_DIFF_MAG; \
+		MipFilter = LINEAR; \
 		MaxAnisotropy = 16; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \

@@ -83,19 +83,19 @@ technique defaultTechnique
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 Diffuse_VS();
-		PixelShader = compile ps_3_0 Diffuse_PS();
-
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
 
 		AlphaTestEnable = TRUE; // < AlphaTest >;
-		AlphaBlendEnable = <alphaBlendEnable>;
 		AlphaRef = <alphaRef>;
+		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
+
+		AlphaBlendEnable = <alphaBlendEnable>;
 		SrcBlend = <srcBlend>;
 		DestBlend = <destBlend>;
 
-		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
+		VertexShader = compile vs_3_0 Diffuse_VS();
+		PixelShader = compile ps_3_0 Diffuse_PS();
 	}
 }

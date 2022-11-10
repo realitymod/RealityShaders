@@ -19,12 +19,12 @@ uniform texture TexMap : TEXTURE;
 
 sampler SampleTexMap = sampler_state
 {
-    Texture = (TexMap);
-    AddressU = WRAP;
-    AddressV = WRAP;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
-    MipFilter = LINEAR;
+	Texture = (TexMap);
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
 struct APP2VS

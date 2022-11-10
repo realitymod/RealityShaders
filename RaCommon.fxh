@@ -9,20 +9,6 @@
 	#include "shaders/RaDefines.fx"
 	#include "shaders/RealityGraphics.fxh"
 
-	#if defined(DISABLE_DIFFUSEMAP)
-		#if defined(DISABLE_BUMPMAP)
-			#ifndef DISABLE_SPECULAR
-				#define DRAW_ONLY_SPEC
-			#endif
-		#endif
-	#endif
-
-	#if defined(DRAW_ONLY_SPEC)
-		#define DEFAULT_DIFFUSE_MAP_COLOR float4(0, 0, 0, 1)
-	#else
-		#define DEFAULT_DIFFUSE_MAP_COLOR float4(1, 1, 1, 1)
-	#endif
-
 	/*
 		Cached shader variables
 	*/
@@ -42,29 +28,27 @@
 		float attenuation;
 	};
 
-	int srcBlend = 5;
-	int destBlend = 6;
-	bool alphaBlendEnable = true;
+	uniform bool alphaBlendEnable = true;
+	uniform int srcBlend = 5;
+	uniform int destBlend = 6;
 
-	int alphaRef = 20;
-	int CullMode = 3; // D3DCULL_CCW
+	uniform bool AlphaTest = false;
+	uniform int alphaRef = 20;
+	uniform int CullMode = 3; // D3DCULL_CCW
 	#define HARDCODED_PARALLAX_BIAS 0.004
 
-	float GlobalTime;
-	float WindSpeed = 0;
+	uniform float GlobalTime;
+	uniform float WindSpeed = 0;
 
-	float4 HemiMapConstants;
+	uniform float4 HemiMapConstants;
+	uniform float4 Transparency = 1.0f;
 
-	float4 Transparency = 1.0f;
+	uniform float4x4 World;
+	uniform float4x4 ViewProjection;
+	uniform float4x4 WorldViewProjection;
 
-	float4x4 World;
-	float4x4 ViewProjection;
-	float4x4 WorldViewProjection;
-
-	bool AlphaTest = false;
-
-	float4 FogRange : fogRange;
-	float4 FogColor : fogColor;
+	uniform float4 FogRange : fogRange;
+	uniform float4 FogColor : fogColor;
 
 	/*
 		Shared fogging and fading functions
@@ -99,37 +83,32 @@
 	*/
 
 	// Common dynamic shadow stuff
-	float4x4 ShadowProjMat : ShadowProjMatrix;
-	float4x4 ShadowOccProjMat : ShadowOccProjMatrix;
-	float4x4 ShadowTrapMat : ShadowTrapMatrix;
+	uniform float4x4 ShadowProjMat : ShadowProjMatrix;
+	uniform float4x4 ShadowOccProjMat : ShadowOccProjMatrix;
+	uniform float4x4 ShadowTrapMat : ShadowTrapMatrix;
 
-	texture ShadowMap : SHADOWMAP;
-	sampler SampleShadowMap
+	#define CREATE_SHADOW_SAMPLER(SAMPLER_NAME, TEXTURE) \
+		sampler SAMPLER_NAME = sampler_state \
+		{ \
+			Texture = (TEXTURE); \
+			MinFilter = LINEAR; \
+			MagFilter = LINEAR; \
+			MipFilter = LINEAR; \
+			AddressU = CLAMP; \
+			AddressV = CLAMP; \
+			AddressW = CLAMP; \
+			SRGBTexture = FALSE; \
+		}; \
+
+	uniform texture ShadowMap : SHADOWMAP;
 	#if defined(_CUSTOMSHADOWSAMPLER_)
-		: register(_CUSTOMSHADOWSAMPLER_)
+		CREATE_SHADOW_SAMPLER(SampleShadowMap : register(_CUSTOMSHADOWSAMPLER_), ShadowMap)
+	#else
+		CREATE_SHADOW_SAMPLER(SampleShadowMap, ShadowMap)
 	#endif
-	= sampler_state
-	{
-		Texture = (ShadowMap);
-		MinFilter = LINEAR;
-		MagFilter = LINEAR;
-		MipFilter = LINEAR;
-		AddressU = CLAMP;
-		AddressV = CLAMP;
-		AddressW = CLAMP;
-	};
 
-	texture ShadowOccluderMap : SHADOWOCCLUDERMAP;
-	sampler ShadowOccluderMapSampler = sampler_state
-	{
-		Texture = (ShadowOccluderMap);
-		MinFilter = LINEAR;
-		MagFilter = LINEAR;
-		MipFilter = LINEAR;
-		AddressU = CLAMP;
-		AddressV = CLAMP;
-		AddressW = CLAMP;
-	};
+	uniform texture ShadowOccluderMap : SHADOWOCCLUDERMAP;
+	CREATE_SHADOW_SAMPLER(SampleShadowOccluderMap, ShadowOccluderMap)
 
 	// Description: Transforms the vertex position's depth from World/Object space to light space
 	// tl: Make sure Pos and matrices are in same space!

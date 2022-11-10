@@ -41,14 +41,15 @@ uniform float _DeltaV : DELTAV;
 	[Textures and samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, FILTER, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		MinFilter = FILTER; \
-		MagFilter = FILTER; \
 		SRGBTexture = IS_SRGB; \
 	}; \
 
@@ -61,18 +62,18 @@ uniform float _DeltaV : DELTAV;
 */
 
 uniform texture Tex0 : TEXLAYER0;
-CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, LINEAR, FALSE)
+CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, FALSE)
 
 uniform texture Tex1 : TEXLAYER1;
-CREATE_SAMPLER(SampleTex1, Tex1, CLAMP, LINEAR, FALSE)
-CREATE_SAMPLER(SampleTex1_Wrap, Tex1, WRAP, LINEAR, FALSE)
+CREATE_SAMPLER(SampleTex1, Tex1, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTex1_Wrap, Tex1, WRAP, FALSE)
 
 uniform texture Tex2 : TEXLAYER2;
-CREATE_SAMPLER(SampleTex2, Tex2, CLAMP, LINEAR, FALSE)
-CREATE_SAMPLER(SampleTex2_Wrap, Tex2, WRAP, LINEAR, FALSE)
+CREATE_SAMPLER(SampleTex2, Tex2, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTex2_Wrap, Tex2, WRAP, FALSE)
 
 uniform texture Tex3 : TEXLAYER3;
-CREATE_SAMPLER(SampleTex3, Tex3, CLAMP, LINEAR, FALSE)
+CREATE_SAMPLER(SampleTex3, Tex3, CLAMP, FALSE)
 
 struct APP2VS_Quad
 {

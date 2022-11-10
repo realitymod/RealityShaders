@@ -241,15 +241,19 @@ technique Hi_Terrain
 	pass FullDetail // p4
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
+
 		AlphaTestEnable = TRUE;
 		AlphaFunc = GREATER;
 		AlphaRef = 0;
+
 		// ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 		// FillMode = WireFrame;
 
@@ -264,9 +268,11 @@ technique Hi_Terrain
 	pass FullDetailMounten // p5
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
@@ -284,10 +290,13 @@ technique Hi_Terrain
 	pass DirectionalLightShadows // p7
 	{
 		CullMode = CW;
-		//ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
+
+		// ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
+
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+
  		AlphaBlendEnable = FALSE;
 
 		#if IS_NV4X
@@ -305,15 +314,19 @@ technique Hi_Terrain
 	pass FullDetailWithEnvMap // p11
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
+
 		AlphaTestEnable = TRUE;
 		AlphaFunc = GREATER;
 		AlphaRef = 0;
+
 		// ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
 		#if IS_NV4X
@@ -329,9 +342,11 @@ technique Hi_Terrain
 	pass PerPixelPointlight // p13
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
@@ -347,12 +362,15 @@ technique Hi_Terrain
 	pass UnderWater // p14
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = 15; // tl: leave cap above 0 for better results
 		AlphaFunc = GREATER;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
@@ -367,11 +385,13 @@ technique Hi_Terrain
 
 	pass ZFillLightMap2 // p15
 	{
-		//note: ColorWriteEnable is disabled in code for this
+		// Note: ColorWriteEnable is disabled in code for this
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESS;
+
 		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_ZFillLightMap_VS();

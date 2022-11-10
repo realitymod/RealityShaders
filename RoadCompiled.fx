@@ -23,9 +23,9 @@ uniform float4 _TexProjScale : TEXPROJSCALE;
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
-		MipFilter = LINEAR; \
 		MinFilter = FILTER_ROAD_DIFF_MIN; \
 		MagFilter = FILTER_ROAD_DIFF_MAG; \
+		MipFilter = LINEAR; \
 		MaxAnisotropy = 16; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \

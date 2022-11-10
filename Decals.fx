@@ -28,15 +28,15 @@ uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = fl
 	[Textures and samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, FILTER, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		MinFilter = FILTER; \
-		MagFilter = FILTER; \
-		MipFilter = FILTER; \
 		SRGBTexture = IS_SRGB; \
 	};
 
@@ -45,9 +45,9 @@ uniform texture Tex1: HemiMapTexture;
 // uniform texture ShadowMap: ShadowMapTex;
 // uniform texture ShadowMapOccluder: ShadowMapOccluderTex;
 
-CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, LINEAR, FALSE)
-// CREATE_SAMPLER(SampleShadowMap, ShadowMap, CLAMP, LINEAR, FALSE)
-// CREATE_SAMPLER(SampleShadowMapOccluder, ShadowMapOccluder, CLAMP, LINEAR, FALSE)
+CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, FALSE)
+// CREATE_SAMPLER(SampleShadowMap, ShadowMap, CLAMP, FALSE)
+// CREATE_SAMPLER(SampleShadowMapOccluder, ShadowMapOccluder, CLAMP, FALSE)
 
 struct APP2VS
 {

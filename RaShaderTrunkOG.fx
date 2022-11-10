@@ -104,11 +104,11 @@ technique defaultTechnique
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 TrunkOG_VS();
-		PixelShader = compile ps_3_0 TrunkOG_PS();
-
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
+
+		VertexShader = compile vs_3_0 TrunkOG_VS();
+		PixelShader = compile ps_3_0 TrunkOG_PS();
 	}
 }
