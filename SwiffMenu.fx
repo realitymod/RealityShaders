@@ -106,7 +106,7 @@ float4 Line_PS(VS2PS_Shape Input) : COLOR
 
 technique Shape
 {
-	pass P0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 Shape_VS();
 		PixelShader = compile ps_3_0 Diffuse_PS();
@@ -115,7 +115,7 @@ technique Shape
 
 technique ShapeTextureWrap
 {
-	pass P0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 ShapeTexture_VS();
 		PixelShader = compile ps_3_0 RegularWrap_PS();
@@ -124,7 +124,7 @@ technique ShapeTextureWrap
 
 technique ShapeTextureClamp
 {
-	pass P0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 ShapeTexture_VS();
 		PixelShader  = compile ps_3_0 RegularClamp_PS();
@@ -133,7 +133,7 @@ technique ShapeTextureClamp
 
 technique Line
 {
-	pass P0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 Line_VS();
 		PixelShader = compile ps_3_0 Line_PS();

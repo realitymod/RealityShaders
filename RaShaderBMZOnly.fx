@@ -77,7 +77,7 @@ VS2PS BM_ZOnly_VS(APP2VS Input)
 
 technique Variable
 {
-	pass p0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 BM_ZOnly_VS();
 		PixelShader = NULL;

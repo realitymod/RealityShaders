@@ -58,68 +58,32 @@ uniform float2 _TexelSize : TEXELSIZE;
 	[Textures and samplers]
 */
 
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESS, IS_SRGB) \
+sampler SAMPLER_NAME = sampler_state \
+{ \
+	Texture = (TEXTURE); \
+	MinFilter = FILTER; \
+	MagFilter = FILTER; \
+	MipFilter = LINEAR; \
+	MaxAnisotropy = 16; \
+	AddressU = ADDRESS; \
+	AddressV = ADDRESS; \
+	SRGBTexture = IS_SRGB; \
+}; \
+
 uniform texture Tex0 : TEXLAYER0;
+CREATE_SAMPLER(SampleTex0_Clamp, Tex0, LINEAR, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTex0_Mirror, Tex0, LINEAR, MIRROR, FALSE)
+CREATE_SAMPLER(SampleTex0_Aniso, Tex0, ANISOTROPIC, CLAMP, FALSE)
+
 uniform texture Tex1 : TEXLAYER1;
+CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP, FALSE)
 
 // uniform texture Tex2 : TEXLAYER2;
+// CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, FALSE)
+
 // uniform texture Tex3 : TEXLAYER3;
-
-/*
-	sampler SampleTex2 = sampler_state
-	{
-		Texture = (Tex2);
-		AddressU = CLAMP;
-		AddressV = CLAMP;
-		MinFilter = POINT;
-		MagFilter = POINT;
-	};
-
-	sampler SampleTex3 = sampler_state
-	{
-		Texture = (Tex3);
-		AddressU = CLAMP;
-		AddressV = CLAMP;
-		MinFilter = POINT;
-		MagFilter = POINT;
-	};
-*/
-
-sampler SampleTex0_Clamp = sampler_state
-{
-	Texture = (Tex0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
-
-sampler SampleTex0_Mirror = sampler_state
-{
-	Texture = (Tex0);
-	AddressU = MIRROR;
-	AddressV = MIRROR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
-
-sampler SampleTex0_Aniso = sampler_state
-{
-	Texture = (Tex0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = ANISOTROPIC;
-	MagFilter = ANISOTROPIC;
-	MaxAnisotropy = 16;
-};
-
-sampler SampleTex1 = sampler_state
-{
-	Texture = (Tex1);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
+// CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, FALSE)
 
 struct APP2VS_Blit
 {
@@ -337,13 +301,14 @@ float4 ScaleDown2x2_PS(VS2PS_Blit Input) : COLOR
 	return OutputColor * 0.25;
 }
 
-void ScaleDown4x4_PS(in VS2PS_Blit Input, out float4 OutputColor : COLOR)
+float4 ScaleDown4x4_PS(in VS2PS_Blit Input) : COLOR
 {
-	OutputColor = 0.0;
+	float4 OutputColor = 0.0;
 	for(int i = 0; i < 16; i++)
 	{
 		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown4x4SampleOffsets[i].xy) * 0.0625;
 	}
+	return OutputColor;
 }
 
 float4 ScaleDown4x4Linear_PS(VS2PS_4Tap Input) : COLOR
@@ -356,41 +321,45 @@ float4 ScaleDown4x4Linear_PS(VS2PS_4Tap Input) : COLOR
 	return OutputColor * 0.25;
 }
 
-void CheapGaussianBlur5x5_PS(in VS2PS_Blit Input, out float4 OutputColor : COLOR)
+float4 CheapGaussianBlur5x5_PS(in VS2PS_Blit Input) : COLOR
 {
-	OutputColor = 0.0;
+	float4 OutputColor = 0.0;
 	for(int i = 0; i < 13; i++)
 	{
 		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy) * _GaussianBlur5x5CheapSampleWeights[i];
 	}
+	return OutputColor;
 }
 
-void _Gaussian_Blur_5x5_Cheap_Filter_Blend_PS(VS2PS_Blit Input, out float4 OutputColor : COLOR)
+float4 _Gaussian_Blur_5x5_Cheap_Filter_Blend_PS(VS2PS_Blit Input) : COLOR
 {
-	OutputColor = 0.0;
+	float4 OutputColor = 0.0;
 	for(int i = 0; i < 13; i++)
 	{
 		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy) * _GaussianBlur5x5CheapSampleWeights[i];
 	}
 	OutputColor.a = _BlurStrength;
+	return OutputColor;
 }
 
-void GaussianBlur15x15H_PS(VS2PS_Blit Input, out float4 OutputColor : COLOR)
+float4 GaussianBlur15x15H_PS(VS2PS_Blit Input) : COLOR
 {
-	OutputColor = 0.0;
+	float4 OutputColor = 0.0;
 	for(int i = 0; i < 15; i++)
 	{
 		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur15x15HorizontalSampleOffsets[i].xy) * _GaussianBlur15x15HorizontalSampleWeights[i];
 	}
+	return OutputColor;
 }
 
-void GaussianBlur15x15V_PS(VS2PS_Blit Input, out float4 OutputColor : COLOR)
+float4 GaussianBlur15x15V_PS(VS2PS_Blit Input) : COLOR
 {
-	OutputColor = 0.0;
+	float4 OutputColor = 0.0;
 	for(int i = 0; i < 15; i++)
 	{
 		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur15x15VerticalSampleOffsets[i].xy) * _GaussianBlur15x15VerticalSampleWeights[i];
 	}
+	return OutputColor;
 }
 
 float4 Poisson13Blur_PS(VS2PS_Blit Input) : COLOR
@@ -525,28 +494,41 @@ float4 Blur_PS(VS2PS_Blit Input) : COLOR
 	return float4(tex2D(SampleTex0_Clamp, Input.TexCoord0).rgb, _BlurStrength);
 }
 
-//
-//	Techniques
-//
+/*
+	Techniques
+*/
+
+#define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, IS_SRGB) \
+	pass \
+	{ \
+		ZEnable = FALSE; \
+		AlphaBlendEnable = FALSE; \
+		StencilEnable = FALSE; \
+		AlphaTestEnable = FALSE; \
+		SRGBWriteEnable = IS_SRGB; \
+		VertexShader = compile vs_3_0 VERTEX_SHADER; \
+		PixelShader = compile ps_3_0 PIXEL_SHADER; \
+	} \
+
+#define CREATE_NULL_PASS \
+	pass \
+	{ \
+		VertexShader = NULL; \
+		PixelShader = NULL; \
+	} \
 
 technique Blit
 {
-	pass PassThrough
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		StencilEnable = FALSE;
-		AlphaTestEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 Passthrough_PS();
-	}
+	// Pass 0: PassThrough
+	CREATE_PASS(Blit_VS(), Passthrough_PS(), FALSE)
 
+	// Pass 1
 	pass Blend
 	{
 		ZEnable = FALSE;
-		AlphaBlendEnable = TRUE;
 		StencilEnable = FALSE;
 		AlphaTestEnable = FALSE;
+		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
@@ -554,367 +536,180 @@ technique Blit
 		PixelShader = compile ps_3_0 Passthrough_PS();
 	}
 
-	pass PosTo8Bit
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 PosTo8Bit_PS();
-	}
+	// Pass 2: PosTo8Bit
+	CREATE_PASS(Blit_VS(), PosTo8Bit_PS(), FALSE)
 
-	pass NormalTo8Bit
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 NormalTo8Bit_PS();
-	}
+	// Pass 3: NormalTo8Bit
+	CREATE_PASS(Blit_VS(), NormalTo8Bit_PS(), FALSE)
 
-	pass ShadowMapFrontTo8Bit
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 ShadowMapFrontTo8Bit_PS();
-	}
+	// Pass 4: ShadowMapFrontTo8Bit
+	CREATE_PASS(Blit_VS(), ShadowMapFrontTo8Bit_PS(), FALSE)
 
-	pass ShadowMapBackTo8Bit
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 ShadowMapBackTo8Bit_PS();
-	}
+	// Pass 5: ShadowMapBackTo8Bit
+	CREATE_PASS(Blit_VS(), ShadowMapBackTo8Bit_PS(), FALSE)
 
-	pass ScaleUp4x4
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 ScaleUp4x4_PS();
-	}
+	// Pass 6: ScaleUp4x4
+	CREATE_PASS(Blit_VS(), ScaleUp4x4_PS(), FALSE)
 
-	pass ScaleDown2x2
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 ScaleDown2x2_PS();
-	}
+	// Pass 7: ScaleDown2x2
+	CREATE_PASS(Blit_VS(), ScaleDown2x2_PS(), FALSE)
 
-	pass ScaleDown4x4
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 ScaleDown4x4_PS();
-	}
+	// Pass 8: ScaleDown4x4
+	CREATE_PASS(Blit_VS(), ScaleDown4x4_PS(), FALSE)
 
-	pass ScaleDown4x4Linear // pass 9, tinnitus
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 ScaleDown4x4_VS();
-		PixelShader = compile ps_3_0 ScaleDown4x4Linear_PS();
-	}
+	// Pass 9: ScaleDown4x4Linear (Tinnitus)
+	CREATE_PASS(ScaleDown4x4_VS(), ScaleDown4x4Linear_PS(), FALSE)
 
-	pass CheapGaussianBlur5x5
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 CheapGaussianBlur5x5_PS();
-	}
+	// Pass 10: CheapGaussianBlur5x5
+	CREATE_PASS(Blit_VS(), CheapGaussianBlur5x5_PS(), FALSE)
 
-	pass GaussianBlur15x15H
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 GaussianBlur15x15H_PS();
-	}
+	// Pass 11: GaussianBlur15x15H
+	CREATE_PASS(Blit_VS(), GaussianBlur15x15H_PS(), FALSE)
 
-	pass GaussianBlur15x15V
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 GaussianBlur15x15V_PS();
-	}
+	// Pass 12: GaussianBlur15x15V
+	CREATE_PASS(Blit_VS(), GaussianBlur15x15V_PS(), FALSE)
 
-	pass Poisson13Blur
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 Poisson13Blur_PS();
-	}
+	// Pass 13: Poisson13Blur
+	CREATE_PASS(Blit_VS(), Poisson13Blur_PS(), FALSE)
 
-	pass Poisson13AndDilation
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 Poisson13AndDilation_PS();
-	}
+	// Pass 14: Poisson13AndDilation
+	CREATE_PASS(Blit_VS(), Poisson13AndDilation_PS(), FALSE)
 
-	pass ScaleUpBloomFilter
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 ScaleUpBloomFilter_PS();
-	}
+	// Pass 15: ScaleUpBloomFilter
+	CREATE_PASS(Blit_VS(), ScaleUpBloomFilter_PS(), FALSE)
 
-	pass PassThroughSaturateAlpha
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		StencilEnable = FALSE;
-		AlphaTestEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 PassthroughSaturateAlpha_PS();
-	}
+	// Pass 16: PassThroughSaturateAlpha
+	CREATE_PASS(Blit_VS(), PassthroughSaturateAlpha_PS(), FALSE)
 
+	// Pass 17
 	pass CopyRGBToAlpha
 	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		StencilEnable = FALSE;
-		AlphaTestEnable = FALSE;
 		ColorWriteEnable = ALPHA;
-
 		VertexShader = compile vs_3_0 Blit_VS();
 		PixelShader = compile ps_3_0 CopyRGBToAlpha_PS();
 	}
 
-	// X-Pack additions
-	pass PassThroughBilinear
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		StencilEnable = FALSE;
-		AlphaTestEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 TR_PassthroughBilinear_PS();
-	}
+	/*
+		X-Pack additions
+	*/
 
+	// Pass 18: PassThroughBilinear
+	CREATE_PASS(Blit_VS(), TR_PassthroughBilinear_PS(), FALSE)
+
+	// Pass 19
 	pass PassThroughBilinearAdditive
 	{
-		/*
-			ZEnable = FALSE;
-			AlphaBlendEnable = TRUE;
-			SrcBlend = ONE;
-			DestBlend = ONE;
-			StencilEnable = FALSE;
-			AlphaTestEnable = FALSE;
-		*/
-
-		// VertexShader = compile vs_3_0 Blit_VS();
-		// PixelShader = compile ps_3_0 Passthrough_PS();
-
-		/*
-			ZEnable = FALSE;
-			AlphaBlendEnable = FALSE;
-			StencilEnable = FALSE;
-			AlphaTestEnable = FALSE;
-		*/
-
 		ZEnable = FALSE;
+		StencilEnable = FALSE;
+		AlphaTestEnable = FALSE;
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ZERO;
 		DestBlend = ONE;
-		StencilEnable = FALSE;
-		AlphaTestEnable = FALSE;
+
 		VertexShader = compile vs_3_0 Blit_VS();
 		PixelShader = compile ps_3_0 TR_PassthroughBilinear_PS();
 	}
 
-	pass Blur
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 20: Blur
+	CREATE_NULL_PASS
 
-	pass ScaleUp4x4Additive
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 21: ScaleUp4x4Additive
+	CREATE_NULL_PASS
 
-	pass CheapGaussianBlur5x5Blend
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 22: CheapGaussianBlur5x5Blend
+	CREATE_NULL_PASS
 
-	pass CheapGaussianBlur5x5Additive
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 23: CheapGaussianBlur5x5Additive
+	CREATE_NULL_PASS
 
-	pass ScaleUpBloomFilterAdditive
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 24: ScaleUpBloomFilterAdditive
+	CREATE_NULL_PASS
 
-	pass GlowHorizontalFilter // pass 25
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 TR_OpticsBlurH_PS();
-	}
+	// Pass 25: GlowHorizontalFilter
+	CREATE_PASS(Blit_VS(), TR_OpticsBlurH_PS(), FALSE)
 
-	pass GlowVerticalFilter // pass 26
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 TR_OpticsBlurV_PS();
-	}
+	// Pass 26: GlowVerticalFilter
+	CREATE_PASS(Blit_VS(), TR_OpticsBlurV_PS(), FALSE)
 
-	pass GlowVerticalFilterAdditive
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 27: GlowVerticalFilterAdditive
+	CREATE_NULL_PASS
 
-	pass HighPassFilter
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 28: HighPassFilter
+	CREATE_NULL_PASS
 
-	pass HighPassFilterFade  // pass 29
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 TR_PassthroughBilinear_PS();
-	}
+	// Pass 29: HighPassFilterFade
+	CREATE_PASS(Blit_VS(), TR_PassthroughBilinear_PS(), FALSE)
 
-	pass ExtractGlowFilter
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 30: ExtractGlowFilter
+	CREATE_NULL_PASS
 
-	pass ExtractHDRFilterFade
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 31: ExtractHDRFilterFade
+	CREATE_NULL_PASS
 
+	// Pass 32
 	pass ClearAlpha
 	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		StencilEnable = FALSE;
-		AlphaTestEnable = FALSE;
 		ColorWriteEnable = ALPHA;
-
 		VertexShader = compile vs_3_0 Blit_Magnified_PS(); // is this needed? -mosq
 		PixelShader = compile ps_3_0 Clear_PS();
 	}
 
-	pass Additive
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 33: Additive
+	CREATE_NULL_PASS
 
-	pass AdditiveBilinear  // pass 34
+	// Pass 34
+	pass AdditiveBilinear
 	{
 		ZEnable = FALSE;
-		AlphaBlendEnable = TRUE;
 		StencilEnable = FALSE;
 		AlphaTestEnable = FALSE;
+
+		AlphaBlendEnable = TRUE;
 		BlendOp = ADD;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		VertexShader = compile vs_3_0 Blit_VS();
 		PixelShader = compile ps_3_0 TR_OpticsMask_PS();
 	}
 
-	pass BloomHorizFilter // pass 35
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 TR_PassthroughBilinear_PS();
-	}
+	// Pass 35: BloomHorizFilter
+	CREATE_PASS(Blit_VS(), TR_PassthroughBilinear_PS(), FALSE)
 
-	pass BloomHorizFilterAdditive
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 36: BloomHorizFilterAdditive
+	CREATE_NULL_PASS
 
-	pass BloomVertFilter // pass 37
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 TR_PassthroughBilinear_PS();
-	}
+	// Pass 37: BloomVertFilter
+	CREATE_PASS(Blit_VS(), TR_PassthroughBilinear_PS(), FALSE)
 
-	pass BloomVAdditive
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 38: BloomVAdditive
+	CREATE_NULL_PASS
 
-	pass BloomVBlur
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 39: BloomVBlur
+	CREATE_NULL_PASS
 
-	pass BloomVAdditiveBlur
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 40: BloomVAdditiveBlur
+	CREATE_NULL_PASS
 
-	pass LumaAndBrightPass
-	{
-		VertexShader = NULL;
-		PixelShader = NULL;
-	}
+	// Pass 41: LumaAndBrightPass
+	CREATE_NULL_PASS
 
-	pass ScaleDown4x4H // pass 42
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 TR_PassthroughAnisotropy_PS();
-	}
+	// Pass 42: ScaleDown4x4H
+	CREATE_PASS(Blit_VS(), TR_PassthroughAnisotropy_PS(), FALSE)
 
-	pass ScaleDown4x4V // pass 43
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 TR_PassthroughAnisotropy_PS();
-	}
+	// Pass 43: ScaleDown4x4V
+	CREATE_PASS(Blit_VS(), TR_PassthroughAnisotropy_PS(), FALSE)
 
-	pass Clear
-	{
-		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 Clear_PS();
-	}
+	// Pass 44: Clear
+	CREATE_PASS(Blit_VS(), Clear_PS(), FALSE)
 
+	// Pass 45
 	pass BlendCustom
 	{
 		ZEnable = FALSE;
-		AlphaBlendEnable = TRUE;
 		StencilEnable = FALSE;
 		AlphaTestEnable = FALSE;
+		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
@@ -960,7 +755,6 @@ technique StencilPasses
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
 		StencilEnable = FALSE;
-
 		VertexShader = compile vs_3_0 Blit_VS();
 		PixelShader = compile ps_3_0 StencilMap_PS();
 	}

@@ -86,7 +86,7 @@ float4 SelectionQuad_PS() : COLOR
 
 technique Regular
 {
-	pass P0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 Regular_VS();
 		PixelShader = compile ps_3_0 Regular_PS();
@@ -99,7 +99,7 @@ technique Regular
 
 technique RegularScaled
 {
-	pass P0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 Regular_VS();
 		PixelShader = compile ps_3_0 Regular_Scaled_PS();
@@ -112,7 +112,7 @@ technique RegularScaled
 
 technique SelectionQuad
 {
-	pass P0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 SelectionQuad_VS();
 		PixelShader = compile ps_3_0 SelectionQuad_PS();

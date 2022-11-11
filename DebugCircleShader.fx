@@ -49,7 +49,7 @@ technique t0
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		AlphaBlendEnable = TRUE;
@@ -80,7 +80,7 @@ technique t0_usezbuffer
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		AlphaBlendEnable = FALSE;

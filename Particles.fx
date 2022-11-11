@@ -163,7 +163,7 @@ technique ParticleLow
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		COMMON_RENDERSTATES_PARTICLE
 		VertexShader = compile vs_3_0 Particle_VS();
@@ -175,7 +175,7 @@ technique ParticleMedium
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		COMMON_RENDERSTATES_PARTICLE
 		VertexShader = compile vs_3_0 Particle_VS();
@@ -187,7 +187,7 @@ technique ParticleHigh
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		COMMON_RENDERSTATES_PARTICLE
 		VertexShader = compile vs_3_0 Particle_VS();
@@ -248,7 +248,7 @@ technique ParticleShowFill
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		COMMON_RENDERSTATES_PARTICLE_ADDITIVE
 		VertexShader = compile vs_3_0 Particle_VS();
@@ -260,7 +260,7 @@ technique AdditiveLow
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		COMMON_RENDERSTATES_PARTICLE_ADDITIVE
 		VertexShader = compile vs_3_0 Particle_VS();
@@ -272,7 +272,7 @@ technique AdditiveHigh
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		COMMON_RENDERSTATES_PARTICLE_ADDITIVE
 		VertexShader = compile vs_3_0 Particle_VS();

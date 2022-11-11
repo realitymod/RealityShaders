@@ -194,7 +194,7 @@ float4 Lighting_PS(VS2PS_Specular Input) : COLOR
 
 technique Full
 {
-	pass p0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 Lighting_VS();
 		PixelShader = compile ps_3_0 Lighting_PS();
@@ -266,7 +266,7 @@ float4 Diffuse_PS(VS2PS_Diffuse Input) : COLOR
 
 technique t1
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
@@ -401,7 +401,7 @@ float4 EnvMap_Alpha_PS(VS2PS_EnvMap_Alpha Input) : COLOR
 
 technique Alpha
 {
-	pass p0
+	pass Pass0
 	{
 		ALPHA_RENDERSTATES
 		VertexShader = compile vs_3_0 Alpha_VS();
@@ -500,7 +500,7 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap_Alpha Input) : COLOR
 
 technique DrawShadowMap
 {
-	pass directionalspot
+	pass DirectionalSpot
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -511,7 +511,7 @@ technique DrawShadowMap
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 
-	pass directionalspotalpha
+	pass DirectionalSpotAlpha
 	{
 		#if NVIDIA
 			AlphaTestEnable = TRUE;
@@ -524,7 +524,7 @@ technique DrawShadowMap
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
 
-	pass point_
+	pass Point_
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -535,7 +535,7 @@ technique DrawShadowMap
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 
-	pass pointalpha
+	pass PointAlpha
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -553,7 +553,7 @@ technique DrawShadowMap
 // but it is kept for back-compatibility with original BF2
 technique DrawShadowMapNV
 {
-	pass directionalspot
+	pass DirectionalSpot
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0;//0x0000000F;
@@ -564,7 +564,7 @@ technique DrawShadowMapNV
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 
-	pass directionalspotalpha
+	pass DirectionalSpotAlpha
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0;//0x0000000F;
@@ -577,7 +577,7 @@ technique DrawShadowMapNV
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
 
-	pass point_
+	pass Point_
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -588,7 +588,7 @@ technique DrawShadowMapNV
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 
-	pass pointalpha
+	pass PointAlpha
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;

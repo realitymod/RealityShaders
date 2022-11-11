@@ -270,7 +270,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 technique defaultTechnique
 {
-	pass P0
+	pass Pass0
 	{
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;

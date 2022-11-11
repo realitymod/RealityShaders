@@ -155,7 +155,7 @@ technique TrailLow
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;
@@ -193,7 +193,7 @@ technique TrailMedium
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;
@@ -232,7 +232,7 @@ technique TrailHigh
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;
@@ -263,7 +263,7 @@ technique TrailShowFill
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;

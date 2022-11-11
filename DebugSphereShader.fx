@@ -100,7 +100,7 @@ technique t0
 
 >
 {
-	pass p0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 Debug_Basic_VS();
 		PixelShader = compile ps_3_0 Debug_Basic_PS();
@@ -122,7 +122,7 @@ technique marked
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		AlphaBlendEnable = FALSE;
@@ -166,7 +166,7 @@ technique lightsource
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ColorWriteEnable = 0;
@@ -179,7 +179,7 @@ technique lightsource
 		PixelShader = compile ps_3_0 Debug_LightSource_PS();
 	}
 
-	pass p1
+	pass Pass1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
 		AlphaBlendEnable = TRUE;
@@ -205,7 +205,7 @@ technique editor
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ColorWriteEnable = 0;
@@ -218,7 +218,7 @@ technique editor
 		PixelShader = compile ps_3_0 Debug_LightSource_PS();
 	}
 
-	pass p1
+	pass Pass1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
 		AlphaBlendEnable = TRUE;
@@ -235,7 +235,7 @@ technique editor
 
 technique EditorDebug
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		AlphaBlendEnable = TRUE;

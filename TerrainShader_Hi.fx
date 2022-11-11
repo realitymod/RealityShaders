@@ -185,7 +185,8 @@ float4 Hi_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input)
 
 technique Hi_Terrain
 {
-	pass ZFillLightMap // p0
+	// Pass 0
+	pass ZFillLightMap
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -201,7 +202,8 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 Shared_ZFillLightMap_1_PS();
 	}
 
-	pass PointLight // p1
+	// Pass 1
+	pass PointLight
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -219,9 +221,11 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
 	}
 
-	pass {} // spotlight (removed) p2
+	// Pass 2 (removed)
+	pass Spotlight { }
 
-	pass LowDiffuse //p3
+	// Pass 3
+	pass LowDiffuse
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -238,7 +242,8 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 Shared_LowDetail_PS();
 	}
 
-	pass FullDetail // p4
+	// Pass 4
+	pass FullDetail
 	{
 		CullMode = CW;
 
@@ -265,7 +270,8 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 FullDetail_Hi_PS();
 	}
 
-	pass FullDetailMounten // p5
+	// Pass 5
+	pass FullDetailMounten
 	{
 		CullMode = CW;
 
@@ -285,9 +291,11 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 FullDetail_Hi_Mounten_PS();
 	}
 
-	pass { } // p6 tunnels (removed)
+	// Pass 6 (removed)
+	pass Tunnels { }
 
-	pass DirectionalLightShadows // p7
+	// Pass 7
+	pass DirectionalLightShadows
 	{
 		CullMode = CW;
 
@@ -307,11 +315,17 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 Hi_DirectionalLightShadows_PS();
 	}
 
-	pass { } // DirectionalLightShadowsNV (removed) //p8
-	pass DynamicShadowmap {} // Obsolete // p9
-	pass { } // p10
+	// Pass 8 (removed)
+	pass DirectionalLightShadowsNV { }
 
-	pass FullDetailWithEnvMap // p11
+	// Pass 9 (obsolete)
+	pass DynamicShadowmap { }
+
+	// Pass 10
+	pass { }
+
+	// Pass 11
+	pass FullDetailWithEnvMap
 	{
 		CullMode = CW;
 
@@ -337,9 +351,11 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 FullDetail_Hi_EnvMap_PS();
 	}
 
-	pass {} // mulDiffuseFast (removed) p12
+	// Pass 12 (removed)
+	pass MulDiffuseFast { }
 
-	pass PerPixelPointlight // p13
+	// Pass 13
+	pass PerPixelPointlight
 	{
 		CullMode = CW;
 
@@ -359,7 +375,8 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
 	}
 
-	pass UnderWater // p14
+	// Pass 14
+	pass UnderWater
 	{
 		CullMode = CW;
 
@@ -383,7 +400,8 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 Shared_UnderWater_PS();
 	}
 
-	pass ZFillLightMap2 // p15
+	// Pass 15
+	pass ZFillLightMap2
 	{
 		// Note: ColorWriteEnable is disabled in code for this
 		CullMode = CW;

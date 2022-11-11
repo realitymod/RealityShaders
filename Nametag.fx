@@ -131,7 +131,7 @@ technique nametag
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass p0
+	pass Pass0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -189,7 +189,7 @@ technique nametag_arrow
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass p0
+	pass Pass0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -248,7 +248,7 @@ technique nametag_healthbar
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass p0
+	pass Pass0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -329,7 +329,7 @@ technique nametag_vehicleIcons
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass p0
+	pass Pass0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;

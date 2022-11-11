@@ -453,7 +453,8 @@ float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 
 technique Shared_SurroundingTerrain
 {
-	pass p0 // Normal
+	// Normal
+	pass Pass0
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -507,7 +508,8 @@ float4 Hi_OccluderShadow_PS(HI_VS2PS_OccluderShadow Input) : COLOR
 
 technique TerrainOccludershadow
 {
-	pass occludershadow // p16
+	// Pass 16
+	pass OccluderShadow
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;

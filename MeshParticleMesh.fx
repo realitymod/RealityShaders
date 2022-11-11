@@ -94,7 +94,7 @@ float4 Diffuse_PS(VS2PS_Diffuse Input) : COLOR
 
 technique Diffuse
 {
-	pass p0
+	pass Pass0
 	{
 		AlphaTestEnable = TRUE;
 		ZEnable = TRUE;
@@ -113,7 +113,7 @@ technique Diffuse
 
 technique DiffuseWithZWrite
 {
-	pass p0
+	pass Pass0
 	{
 		AlphaTestEnable = TRUE;
 		ZEnable = TRUE;
@@ -142,7 +142,7 @@ float4 Additive_PS(VS2PS_Diffuse Input) : COLOR
 
 technique Additive
 {
-	pass p0
+	pass Pass0
 	{
 		AlphaTestEnable = TRUE;
 		ZEnable = TRUE;

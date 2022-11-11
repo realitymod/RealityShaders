@@ -58,7 +58,7 @@ float4 Lightning_PS(VS2PS Input) : COLOR
 
 technique Lightning
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;

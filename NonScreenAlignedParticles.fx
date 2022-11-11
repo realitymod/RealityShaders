@@ -136,7 +136,7 @@ technique NSAParticleShowFill
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;
@@ -169,7 +169,7 @@ technique NSAParticleLow
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;
@@ -206,7 +206,7 @@ technique NSAParticleMedium
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;
@@ -244,7 +244,7 @@ technique NSAParticleHigh
 <
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;

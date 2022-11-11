@@ -97,7 +97,7 @@ technique Text <
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{		
 		VertexShader = compile vs_3_0 HPos_VS();
 		PixelShader = compile ps_3_0 HPos_PS(); 
@@ -136,7 +136,7 @@ technique Overlay <
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass p0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 HPos_VS();
 		PixelShader = compile ps_3_0 Overlay_HPos_PS();

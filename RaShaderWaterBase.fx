@@ -245,7 +245,7 @@ float4 Water_PS(in VS2PS Input) : COLOR
 
 technique defaultShader
 {
-	pass P0
+	pass Pass0
 	{
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;

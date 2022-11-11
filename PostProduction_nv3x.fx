@@ -148,7 +148,7 @@ float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 
 technique Tinnitus
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = FALSE;
 		AlphaBlendEnable = TRUE;
@@ -180,7 +180,7 @@ float4 Glow_Material_PS(VS2PS_Quad Input) : COLOR
 
 technique Glow
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = FALSE;
 		AlphaBlendEnable = TRUE;
@@ -194,7 +194,7 @@ technique Glow
 
 technique GlowMaterial
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = FALSE;
 		AlphaBlendEnable = FALSE;
@@ -317,7 +317,7 @@ PS2FB_Combine ThermalVision_Gradient_PS(VS2PS_ThermalVision Input)
 
 technique TVEffect
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = FALSE;
 		AlphaBlendEnable = FALSE;
@@ -330,7 +330,7 @@ technique TVEffect
 
 technique TVEffect_Gradient_Tex
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = FALSE;
 		AlphaBlendEnable = FALSE;
@@ -368,7 +368,7 @@ float4 WaveDistortion_PS(VS2PS_Distortion Input) : COLOR
 
 technique WaveDistortion
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = FALSE;
 		AlphaBlendEnable = TRUE;
@@ -409,7 +409,7 @@ float4 Flashbang_PS(VS2PS_Quad Input) : COLOR
 
 technique Flashbang
 {
-	pass P0
+	pass Pass0
 	{
 		ZEnable = FALSE;
 		AlphaBlendEnable = TRUE;

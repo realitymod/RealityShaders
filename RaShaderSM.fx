@@ -246,7 +246,7 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 
 technique VariableTechnique
 {
-	pass
+	pass Pass0
 	{
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (AlphaTestRef);

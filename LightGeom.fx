@@ -48,7 +48,7 @@ technique Pointlight
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;
@@ -103,7 +103,7 @@ technique Spotlight
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{
 		CullMode = NONE;
 		ZEnable = TRUE;

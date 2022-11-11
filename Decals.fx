@@ -195,14 +195,14 @@ technique Decal
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{
 		DECAL_RENDERSTATES
  		VertexShader = compile vs_3_0 Decals_VS();
 		PixelShader = compile ps_3_0 Decals_PS();
 	}
 
-	pass p1
+	pass Pass1
 	{
 		DECAL_RENDERSTATES
  		VertexShader = compile vs_3_0 Decals_VS();

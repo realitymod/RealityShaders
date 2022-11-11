@@ -18,24 +18,26 @@ float4 Low_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input
 	AvgShadowValue = AvgShadowValue == 1.0f;
 	Light.w = (AvgShadowValue < LightMap.y) ? 1.0 - saturate(4.0 - Input.Z.x) + AvgShadowValue.x : LightMap.y;
 
-	return Light; 
+	return Light;
 }
 
 technique Low_Terrain
 {
-	pass ZFillLightMap // p0
+	// Pass 0
+	pass ZFillLightMap
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		AlphaBlendEnable = FALSE;
-		
+
 		VertexShader = compile vs_3_0 Shared_ZFillLightMap_VS();
 		PixelShader = compile ps_3_0 Shared_ZFillLightMap_1_PS();
 	}
 
-	pass PointLight // p1
+	// Pass 1
+	pass PointLight
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -49,9 +51,11 @@ technique Low_Terrain
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
 	}
 
-	pass { } // spotlight (removed) p2
+	// Pass 2 (removed)
+	pass SpotLight { }
 
-	pass LowDetail // p3
+	// Pass 3
+	pass LowDetail
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -63,11 +67,17 @@ technique Low_Terrain
 		PixelShader = compile ps_3_0 Shared_LowDetail_PS();
 	}
 
-	pass { } // FullDetail p4
-	pass { } // mulDiffuseDetailMounten (Not used on Low) p5
-	pass { } // p6 tunnels (removed) p6
+	// Pass 4
+	pass FullDetail { }
 
-	pass DirectionalLightShadows // p7
+	// Pass 5 (not used on Low)
+	pass MulDiffuseDetailMounten { }
+
+	// Pass 6 (removed)
+	pass Tunnels { }
+
+	// Pass 7
+	pass DirectionalLightShadows
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -79,9 +89,10 @@ technique Low_Terrain
 		PixelShader = compile ps_3_0 Low_DirectionalLightShadows_PS();
 	}
 
-	pass { } // DirectionalLightShadowsNV (removed) // p8
+	// Pass 8 (removed)
+	pass DirectionalLightShadowsNV { }
 
-	pass DynamicShadowmap // p9
+	pass DynamicShadowmap // Pass9
 	{
 		CullMode = CW;
 		ZEnable = FALSE;
@@ -95,11 +106,17 @@ technique Low_Terrain
 		PixelShader = compile ps_3_0 Shared_DynamicShadowmap_PS();
 	}
 
-	pass { } // p10
-	pass { } // mulDiffuseDetailWithEnvMap (Not used on Low) p11
-	pass { } // mulDiffuseFast (removed) p12
+	// Pass 10
+	pass { }
 
-	pass PerPixelPointlight // p13
+	// Pass 11 (Not used on Low)
+	pass MulDiffuseDetailWithEnvMap { }
+
+	// Pass 12 (removed)
+	pass MulDiffuseFast { }
+
+	// Pass 13
+	pass PerPixelPointlight
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -121,8 +138,9 @@ technique Low_Terrain
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
 	}
-	
-	pass UnderWater // p14
+
+	// Pass 14
+	pass UnderWater
 	{
 		CullMode = CW;
 		ZEnable = TRUE;

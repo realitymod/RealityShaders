@@ -70,7 +70,7 @@ technique t0_States <bool Restore = true;>
 
 technique t0
 {
-	pass p0 
+	pass Pass0 
 	{
 		VertexShader = compile vs_3_0 Shader_VS();
 		PixelShader = compile ps_3_0 Shader_PS();
@@ -80,7 +80,7 @@ technique t0
 /*
 	technique marked
 	{
-		pass p0
+		pass Pass0
 		{
 			CullMode = NONE;
 			AlphaBlendEnable = FALSE;

@@ -79,7 +79,7 @@ float4 Point_PS(VS2PS_Point Input) : COLOR
 
 technique Point
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
@@ -133,7 +133,7 @@ float4 Line_PS(VS2PS_Line Input) : COLOR
 
 technique Line
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
@@ -183,7 +183,7 @@ float4 Cells_PS(VS2PS_Cell Input) : COLOR
 
 technique Cells
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;

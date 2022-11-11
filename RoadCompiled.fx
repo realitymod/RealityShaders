@@ -157,7 +157,7 @@ technique roadcompiledFull
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass NV3x
+	pass NV3X
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;

@@ -116,7 +116,7 @@ float4 StaticMesh_Simple_PS(VS2PS_Simple Input) : COLOR
 
 technique alpha_one
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
@@ -204,7 +204,7 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 
 technique DrawShadowMap
 {
-	pass directionalspot
+	pass DirectionalSpot
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -215,7 +215,7 @@ technique DrawShadowMap
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 
-	pass directionalspotalpha
+	pass DirectionalSpotAlpha
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -229,7 +229,7 @@ technique DrawShadowMap
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
 
-	pass point_
+	pass Point_
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -245,7 +245,7 @@ technique DrawShadowMap
 // but it is kept for back-compatibility with original BF2
 technique DrawShadowMapNV
 {
-	pass directionalspot
+	pass DirectionalSpot
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -256,7 +256,7 @@ technique DrawShadowMapNV
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 
-	pass directionalspotalpha
+	pass DirectionalSpotAlpha
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -270,7 +270,7 @@ technique DrawShadowMapNV
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
 
-	pass point_
+	pass Point_
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;

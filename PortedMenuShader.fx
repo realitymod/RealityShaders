@@ -131,7 +131,7 @@ technique QuadWithTexture
 	};
 >
 {
-	pass notex
+	pass NoTex
 	{
 		// App alpha/depth settings
 		APP_ALPHA_DEPTH_SETTINGS
@@ -139,7 +139,7 @@ technique QuadWithTexture
 		PixelShader = compile ps_3_0 Quad_WTex_NoTex_PS();
 	}
 
-	pass tex
+	pass Tex
 	{
 		// App alpha/depth settings
 		APP_ALPHA_DEPTH_SETTINGS
@@ -147,7 +147,7 @@ technique QuadWithTexture
 		PixelShader = compile ps_3_0 Quad_WTex_Tex_PS();
 	}
 
-	pass masked
+	pass Masked
 	{
 		// App alpha/depth settings
 		APP_ALPHA_DEPTH_SETTINGS
@@ -175,7 +175,7 @@ technique QuadCache
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = TRUE;

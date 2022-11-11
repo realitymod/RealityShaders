@@ -61,7 +61,7 @@ float4 Screen_PS(VS2PS Input) : COLOR
 
 technique Screen
 {
-	pass P0
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 Screen_VS();
 		PixelShader = compile ps_3_0 Screen_PS();

@@ -309,21 +309,21 @@ float4 ApplySkin_PS(VS2PS_ApplySkin Input) : COLOR
 
 technique humanskin
 {
-	pass pre
+	pass Pre
 	{
 		HUMANSKIN_RENDERSTATES(NONE)
 		VertexShader = compile vs_3_0 PreSkin_VS();
 		PixelShader = compile ps_3_0 PreSkin_PS();
 	}
 
-	pass preshadowed
+	pass PreShadowed
 	{
 		HUMANSKIN_RENDERSTATES(NONE)
 		VertexShader = compile vs_3_0 ShadowedPreSkin_VS();
 		PixelShader = compile ps_3_0 ShadowedPreSkin_PS();
 	}
 
-	pass apply
+	pass Apply
 	{
 		HUMANSKIN_RENDERSTATES(CCW)
 		VertexShader = compile vs_3_0 ApplySkin_VS();
@@ -393,7 +393,7 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 
 technique DrawShadowMap
 {
-	pass directionalspot
+	pass DirectionalSpot
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -404,7 +404,7 @@ technique DrawShadowMap
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 
-	pass directionalspotalpha
+	pass DirectionalSpotAlpha
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -418,7 +418,7 @@ technique DrawShadowMap
 
 	}
 
-	pass point_
+	pass Point_
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -434,7 +434,7 @@ technique DrawShadowMap
 // but it is kept for back-compatibility with original BF2
 technique DrawShadowMapNV
 {
-	pass directionalspot
+	pass DirectionalSpot
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -445,7 +445,7 @@ technique DrawShadowMapNV
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 
-	pass directionalspotalpha
+	pass DirectionalSpotAlpha
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;
@@ -459,7 +459,7 @@ technique DrawShadowMapNV
 
 	}
 
-	pass point_
+	pass Point_
 	{
 		#if NVIDIA
 			ColorWriteEnable = 0; // 0x0000000F;

@@ -358,7 +358,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 
 technique Variable
 {
-	pass p0
+	pass Pass0
 	{
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;

@@ -33,7 +33,7 @@ float4 Default_PS() : COLOR
 
 technique defaultShader
 {
-	pass P0
+	pass Pass0
 	{
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;

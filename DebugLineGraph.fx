@@ -50,7 +50,7 @@ technique Graph <
 	};
 >
 {
-	pass p0
+	pass Pass0
 	{
 		ZEnable = FALSE;
 
