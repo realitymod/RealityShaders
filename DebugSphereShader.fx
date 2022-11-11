@@ -182,6 +182,7 @@ technique lightsource
 	pass Pass1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
@@ -221,6 +222,7 @@ technique editor
 	pass Pass1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
@@ -238,13 +240,16 @@ technique EditorDebug
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		ZWriteEnable = 1;
 		ZEnable = TRUE;
-		ShadeMode = FLAT;
 		ZFunc = LESSEQUAL;
+
+		ShadeMode = FLAT;
 		FillMode = SOLID;
 
 		VertexShader = compile vs_3_0 Debug_LightSource_VS();

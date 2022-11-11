@@ -44,10 +44,8 @@ struct VS2PS_ShapeTexture
 VS2PS_Shape Shape_VS(float3 Position : POSITION, float4 VertexColor : COLOR0)
 {
 	VS2PS_Shape Output = (VS2PS_Shape)0;
-	// Output.HPos = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
-	Output.HPos = float4(Position.xy, 0.0f, 1.0);
-	// Output.Diffuse = saturate(DiffuseColor);
-	Output.Diffuse = saturate(VertexColor);
+	Output.HPos = float4(Position.xy, 0.0f, 1.0); // mul(float4(Position.xy, 0.0f, 1.0), WorldView);
+	Output.Diffuse = saturate(VertexColor); // saturate(DiffuseColor);
 	return Output;
 }
 
@@ -135,8 +133,8 @@ technique Line
 {
 	pass Pass0
 	{
+		AlphaTestEnable = FALSE;
 		VertexShader = compile vs_3_0 Line_VS();
 		PixelShader = compile ps_3_0 Line_PS();
-		AlphaTestEnable = FALSE;
 	}
 }

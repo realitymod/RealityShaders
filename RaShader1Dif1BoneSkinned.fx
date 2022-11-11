@@ -95,6 +95,8 @@ technique defaultTechnique
 		SrcBlend = <srcBlend>;
 		DestBlend = <destBlend>;
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 DiffuseBone_VS();
 		PixelShader = compile ps_3_0 DiffuseBone_PS();
 	}

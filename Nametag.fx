@@ -141,6 +141,8 @@ technique nametag
 		ZEnable = FALSE;
 		ZWriteEnable = FALSE;
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 Nametag_VS();
 		PixelShader = compile ps_3_0 Nametag_PS();
 	}
@@ -198,6 +200,8 @@ technique nametag_arrow
 		CullMode = NONE;
 		ZEnable = FALSE;
 		ZWriteEnable = FALSE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Nametag_Arrow_VS();
 		PixelShader = compile ps_3_0 Nametag_Arrow_PS();
@@ -257,6 +261,8 @@ technique nametag_healthbar
 		CullMode = NONE;
 		ZEnable = FALSE;
 		ZWriteEnable = FALSE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Nametag_Healthbar_VS();
 		PixelShader = compile ps_3_0 Nametag_Healthbar_PS();
@@ -338,6 +344,8 @@ technique nametag_vehicleIcons
 		CullMode = NONE;
 		ZEnable = FALSE;
 		ZWriteEnable = FALSE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Nametag_Vehicle_Icons_VS();
 		PixelShader = compile ps_3_0 Nametag_Vehicle_Icons_PS();

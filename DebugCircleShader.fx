@@ -52,13 +52,15 @@ technique t0
 	pass Pass0
 	{
 		CullMode = NONE;
+		DepthBias = -0.00001;
+		ShadeMode = FLAT;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		DepthBias = -0.00001;
+
 		ZWriteEnable = 1;
 		ZEnable = FALSE;
-		ShadeMode = FLAT;
 		ZFunc = LESSEQUAL;
 
 		VertexShader = compile vs_3_0 Debug_Circle_VS();

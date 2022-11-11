@@ -100,8 +100,8 @@ VS2PS Particle_VS(APP2VS Input)
 	Output.DiffuseCoords = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
 	// Hemi lookup table coords
- 	Output.HemiLUTCoord.xy = ((Input.Pos + (_HemiMapInfo.z/2)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
- 	Output.HemiLUTCoord.y = 1.0 - Output.HemiLUTCoord.y;
+	Output.HemiLUTCoord.xy = ((Input.Pos + (_HemiMapInfo.z/2)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
+	Output.HemiLUTCoord.y = 1.0 - Output.HemiLUTCoord.y;
 
 	Output.VertexPos = Pos.xyz;
 
@@ -139,19 +139,25 @@ technique NSAParticleShowFill
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+
 		StencilEnable = FALSE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = <_AlphaPixelTestRef>;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
 
- 		VertexShader = compile vs_3_0 Particle_VS();
+		SRGBWriteEnable = FALSE;
+
+		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Show_Fill_PS();
 	}
 }
@@ -172,19 +178,25 @@ technique NSAParticleLow
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+
 		StencilEnable = FALSE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = <_AlphaPixelTestRef>;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
- 		VertexShader = compile vs_3_0 Particle_VS();
+		SRGBWriteEnable = FALSE;
+
+		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Low_PS();
 	}
 }
@@ -209,19 +221,25 @@ technique NSAParticleMedium
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+
 		StencilEnable = FALSE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = <_AlphaPixelTestRef>;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
- 		VertexShader = compile vs_3_0 Particle_VS();
+		SRGBWriteEnable = FALSE;
+
+		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Medium_PS();
 	}
 }
@@ -247,19 +265,25 @@ technique NSAParticleHigh
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+
 		StencilEnable = FALSE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = <_AlphaPixelTestRef>;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
- 		VertexShader = compile vs_3_0 Particle_VS();
+		SRGBWriteEnable = FALSE;
+
+		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_High_PS();
 	}
 }

@@ -93,6 +93,8 @@ technique defaultTechnique
 		ZFunc = ALWAYS;
 		ZWriteEnable = FALSE;
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 BM_Additive_VS();
 		PixelShader = compile ps_3_0 BM_Additive_PS();
 	}

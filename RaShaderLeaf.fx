@@ -229,6 +229,8 @@ technique defaultTechnique
 
 		CullMode = NONE;
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 Leaf_VS();
 		PixelShader = compile ps_3_0 Leaf_PS();
 	}

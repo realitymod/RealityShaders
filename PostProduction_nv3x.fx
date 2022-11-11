@@ -151,10 +151,14 @@ technique Tinnitus
 	pass Pass0
 	{
 		ZEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		StencilEnable = FALSE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Tinnitus_PS();
@@ -183,9 +187,12 @@ technique Glow
 	pass Pass0
 	{
 		ZEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCCOLOR;
 		DestBlend = ONE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Glow_PS();
@@ -197,6 +204,7 @@ technique GlowMaterial
 	pass Pass0
 	{
 		ZEnable = FALSE;
+
 		AlphaBlendEnable = FALSE;
 		SrcBlend = SRCCOLOR;
 		DestBlend = ONE;
@@ -208,6 +216,8 @@ technique GlowMaterial
 		StencilFail = KEEP;
 		StencilZFail = KEEP;
 		StencilPass = KEEP;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Glow_Material_PS();
@@ -322,6 +332,7 @@ technique TVEffect
 		ZEnable = FALSE;
 		AlphaBlendEnable = FALSE;
 		StencilEnable = FALSE;
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 ThermalVision_VS();
 		PixelShader = compile ps_3_0 ThermalVision_PS();
@@ -335,6 +346,7 @@ technique TVEffect_Gradient_Tex
 		ZEnable = FALSE;
 		AlphaBlendEnable = FALSE;
 		StencilEnable = FALSE;
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 ThermalVision_VS();
 		PixelShader = compile ps_3_0 ThermalVision_Gradient_PS();
@@ -371,11 +383,14 @@ technique WaveDistortion
 	pass Pass0
 	{
 		ZEnable = FALSE;
-		AlphaBlendEnable = TRUE;
 		AlphaTestEnable = FALSE;
 		StencilEnable = FALSE;
+
+		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 WaveDistortion_VS();
 		PixelShader = compile ps_3_0 WaveDistortion_PS();
@@ -412,12 +427,14 @@ technique Flashbang
 	pass Pass0
 	{
 		ZEnable = FALSE;
-		AlphaBlendEnable = TRUE;
+		StencilEnable = FALSE;
 
+		AlphaBlendEnable = TRUE;
 		BlendOp = ADD;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		StencilEnable = FALSE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Flashbang_PS();

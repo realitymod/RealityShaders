@@ -152,6 +152,7 @@ technique occluder
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		ZWriteEnable = TRUE;
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
@@ -191,13 +192,15 @@ technique EditorDebug
 	pass Pass0
 	{
 		CullMode = NONE;
+		ShadeMode = FLAT;
+		FillMode = SOLID;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		FillMode = SOLID;
+
 		ZWriteEnable = 1;
 		ZEnable = TRUE;
-		ShadeMode = FLAT;
 		ZFunc = LESSEQUAL;
 
 		VertexShader = compile vs_3_0 Debug_Editor_VS();
@@ -238,15 +241,16 @@ technique collisionMesh
 	pass Pass0
 	{
 		CullMode = NONE;
+		ShadeMode = FLAT;
+		DepthBias = -0.00001;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		DepthBias = -0.00001;
+
 		ZWriteEnable = 1;
 		ZEnable = TRUE;
-		ShadeMode = FLAT;
 		ZFunc = LESSEQUAL;
-
 
 		VertexShader = compile vs_3_0 Debug_CollisionMesh_VS();
 		PixelShader = compile ps_3_0 Debug_Basic_PS();
@@ -254,14 +258,15 @@ technique collisionMesh
 
 	pass Pass1
 	{
+		DepthBias = -0.000018;
+		FillMode = WIREFRAME;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		ZWriteEnable = 1;
-		DepthBias = -0.000018;
 
 		ZEnable = TRUE;
-		FillMode = WIREFRAME;
+		ZWriteEnable = 1;
 
 		VertexShader = compile vs_3_0 Debug_CollisionMesh_VS(0.5);
 		PixelShader = compile ps_3_0 Debug_Basic_PS();
@@ -315,6 +320,7 @@ technique gamePlayObject
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		ZEnable = TRUE;
 
 		VertexShader = compile vs_3_0 Debug_Basic_2_VS();
@@ -340,8 +346,10 @@ technique bounding
 		AlphaBlendEnable = FALSE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		ZWriteEnable = 0;
 		ZEnable = FALSE;
+
 		CullMode = NONE;
 		FillMode = WIREFRAME;
 
@@ -479,9 +487,11 @@ technique spotlight
 	pass Pass1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
 
@@ -506,6 +516,7 @@ technique pivotBox
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		ZWriteEnable = 0;
 		ZEnable = FALSE;
 
@@ -515,9 +526,11 @@ technique pivotBox
 	pass Pass1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
 
@@ -542,6 +555,7 @@ technique pivot
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		ZWriteEnable = 0;
 		ZEnable = FALSE;
 
@@ -551,9 +565,11 @@ technique pivot
 	pass Pass1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
 
@@ -594,9 +610,11 @@ technique wirefrustum
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE;
+
 		ZEnable = TRUE;
 		ZFunc = GREATER;
 		ZWriteEnable = FALSE;
+
 		CullMode = NONE;
 		FillMode = SOLID;
 
@@ -607,9 +625,11 @@ technique wirefrustum
 	pass Pass1
 	{
 		AlphaBlendEnable = FALSE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+
 		CullMode = NONE;
 		FillMode = SOLID;
 
@@ -625,9 +645,11 @@ technique solidfrustum
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE;
+
 		ZEnable = TRUE;
 		ZFunc = GREATER;
 		ZWriteEnable = FALSE;
+
 		CullMode = NONE;
 		FillMode = SOLID;
 
@@ -638,9 +660,11 @@ technique solidfrustum
 	pass Pass1
 	{
 		AlphaBlendEnable = FALSE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+
 		CullMode = NONE;
 		FillMode = SOLID;
 

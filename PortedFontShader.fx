@@ -77,10 +77,8 @@ technique Text_States <bool Restore = true;>
 	{
 		ZEnable = FALSE;
 		AlphaBlendEnable = TRUE;
-		// SrcBlend = INVSRCCOLOR;
-		// DestBlend = SRCCOLOR;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
+		SrcBlend = SRCALPHA; // INVSRCCOLOR;
+		DestBlend = INVSRCALPHA; // SRCCOLOR;
 	}
 	
 	pass EndStates { }
@@ -138,6 +136,7 @@ technique Overlay <
 {
 	pass Pass0
 	{
+		SRGBWriteEnable = FALSE;
 		VertexShader = compile vs_3_0 HPos_VS();
 		PixelShader = compile ps_3_0 Overlay_HPos_PS();
 	}

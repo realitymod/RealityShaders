@@ -158,6 +158,7 @@ float4 Particle_High_PS(VS2PS_Particle Input) : COLOR
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCALPHA; \
 	DestBlend = INVSRCALPHA; \
+	SRGBWriteEnable = FALSE; \
 
 technique ParticleLow
 <
@@ -243,6 +244,7 @@ float4 Particle_Additive_High_PS(VS2PS_Particle Input) : COLOR
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = ONE; \
 	DestBlend = ONE; \
+	SRGBWriteEnable = FALSE; \
 
 technique ParticleShowFill
 <

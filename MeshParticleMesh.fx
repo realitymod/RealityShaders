@@ -97,14 +97,20 @@ technique Diffuse
 	pass Pass0
 	{
 		AlphaTestEnable = TRUE;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
+
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
+
 		CullMode = CCW;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Diffuse_VS();
 		PixelShader = compile ps_3_0 Diffuse_PS();
@@ -116,14 +122,20 @@ technique DiffuseWithZWrite
 	pass Pass0
 	{
 		AlphaTestEnable = TRUE;
+
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
+
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
+
 		CullMode = CCW;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Diffuse_VS();
 		PixelShader = compile ps_3_0 Diffuse_PS();
@@ -145,14 +157,20 @@ technique Additive
 	pass Pass0
 	{
 		AlphaTestEnable = TRUE;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
+
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
+
 		CullMode = NONE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Diffuse_VS();
 		PixelShader = compile ps_3_0 Additive_PS();

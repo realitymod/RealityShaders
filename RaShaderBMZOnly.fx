@@ -79,14 +79,16 @@ technique Variable
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_3_0 BM_ZOnly_VS();
-		PixelShader = NULL;
-
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
+
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+
 		ColorWriteEnable = 0;
 		CullMode = CCW;
+
+		VertexShader = compile vs_3_0 BM_ZOnly_VS();
+		PixelShader = NULL;
 	}
 }

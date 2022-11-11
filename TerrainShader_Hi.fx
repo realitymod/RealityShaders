@@ -189,9 +189,11 @@ technique Hi_Terrain
 	pass ZFillLightMap
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESS;
+
 		AlphaBlendEnable = FALSE;
 
 		#if IS_NV4X
@@ -206,9 +208,11 @@ technique Hi_Terrain
 	pass PointLight
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
@@ -216,6 +220,8 @@ technique Hi_Terrain
 		#if IS_NV4X
 			NV4X_RENDERSTATES
 		#endif
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
@@ -228,15 +234,19 @@ technique Hi_Terrain
 	pass LowDiffuse
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
 
 		#if IS_NV4X
 			NV4X_RENDERSTATES
 		#endif
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_LowDetail_VS();
 		PixelShader = compile ps_3_0 Shared_LowDetail_PS();
@@ -266,6 +276,8 @@ technique Hi_Terrain
 			NV4X_RENDERSTATES
 		#endif
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
 		PixelShader = compile ps_3_0 FullDetail_Hi_PS();
 	}
@@ -286,6 +298,8 @@ technique Hi_Terrain
 		#if IS_NV4X
 			NV4X_RENDERSTATES
 		#endif
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
 		PixelShader = compile ps_3_0 FullDetail_Hi_Mounten_PS();
@@ -347,6 +361,8 @@ technique Hi_Terrain
 			NV4X_RENDERSTATES
 		#endif
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
 		PixelShader = compile ps_3_0 FullDetail_Hi_EnvMap_PS();
 	}
@@ -370,6 +386,8 @@ technique Hi_Terrain
 		#if IS_NV4X
 			NV4X_RENDERSTATES
 		#endif
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
@@ -395,6 +413,8 @@ technique Hi_Terrain
 		#if IS_NV4X
 			NV4X_RENDERSTATES
 		#endif
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_UnderWater_VS();
 		PixelShader = compile ps_3_0 Shared_UnderWater_PS();

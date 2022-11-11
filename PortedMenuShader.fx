@@ -117,6 +117,7 @@ float4 Quad_WTex_Tex_Masked_PS(VS2PS Input) : COLOR
 	ZEnable = (_ZEnable); \
 	ZFunc = (_ZFunc); \
 	ZWriteEnable = (_ZWriteEnable); \
+	SRGBWriteEnable = FALSE; \
 
 technique QuadWithTexture
 <
@@ -178,12 +179,16 @@ technique QuadCache
 	pass Pass0
 	{
 		AlphaBlendEnable = FALSE;
+
 		AlphaTestEnable = TRUE;
 		AlphaFunc = GREATER;
 		AlphaRef = 0;
+
 		ZEnable = TRUE;
 		ZFunc = LESS;
 		ZWriteEnable = TRUE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Quad_Cache_PS();

@@ -51,12 +51,16 @@ technique Pointlight
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;
+
 		StencilEnable = TRUE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
+
+		SRGBWriteEnable = FALSE;
 
  		VertexShader = compile vs_3_0 PointLight_VS();
 		PixelShader = compile ps_3_0 PointLight_PS();
@@ -106,12 +110,16 @@ technique Spotlight
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;
+
 		StencilEnable = TRUE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
+
+		SRGBWriteEnable = FALSE;
 
  		VertexShader = compile vs_3_0 SpotLight_VS();
 		PixelShader = compile ps_3_0 SpotLight_PS();

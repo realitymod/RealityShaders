@@ -189,6 +189,8 @@ technique defaultTechnique
 		// DepthBias = < RoadDepthBias >;
 		// SlopeScaleDepthBias = < RoadSlopeScaleDepthBias >;
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 Road_VS();
 		PixelShader = compile ps_3_0 Road_PS();
 	}

@@ -46,6 +46,8 @@ technique defaultShader
 		CullMode = NONE;
 		AlphaTestEnable = FALSE;
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 Default_VS();
 		PixelShader = compile ps_3_0 Default_PS();
 	}

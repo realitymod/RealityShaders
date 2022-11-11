@@ -164,6 +164,7 @@ float4 Undergrowth_PS
 	AlphaRef = FH2_ALPHAREF; \
 	AlphaFunc = GREATER; \
 	ZFunc = LESS; \
+	SRGBWriteEnable = FALSE; \
 
 technique t0_l0
 <
@@ -416,6 +417,7 @@ float4 Undergrowth_Simple_PS
 	AlphaRef = FH2_ALPHAREF; \
 	AlphaFunc = GREATER; \
 	ZFunc = LESS; \
+	SRGBWriteEnable = FALSE; \
 
 technique t0_l0_simple
 <
@@ -624,6 +626,7 @@ float4 Undergrowth_ZOnly_PS(VS2PS_ZOnly Input) : COLOR
 	AlphaFunc = GREATER; \
 	ColorWriteEnable = 0; \
 	ZFunc = LESS; \
+	SRGBWriteEnable = FALSE; \
 
 technique ZOnly
 <

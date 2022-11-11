@@ -25,6 +25,7 @@ sampler SampleTexMap = sampler_state
 	MipFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
+	SRGBTexture = FALSE;
 };
 
 struct APP2VS
@@ -63,12 +64,14 @@ technique Screen
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_3_0 Screen_VS();
-		PixelShader = compile ps_3_0 Screen_PS();
-
 		AlphaBlendEnable = FALSE;
 		StencilEnable = FALSE;
 		AlphaTestEnable = FALSE;
 		CullMode = NONE;
+
+		SRGBWriteEnable = FALSE;
+
+		VertexShader = compile vs_3_0 Screen_VS();
+		PixelShader = compile ps_3_0 Screen_PS();
 	}
 }

@@ -258,6 +258,8 @@ technique VariableTechnique
 			AlphaBlendEnable = FALSE;
 		#endif
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 SkinnedMesh_VS();
 		PixelShader = compile ps_3_0 SkinnedMesh_PS();
 	}

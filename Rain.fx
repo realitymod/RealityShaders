@@ -84,10 +84,14 @@ technique Point
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE; // TRUE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE; // INVSRCALPHA;
+
 		CullMode = NONE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Point_VS();
 		PixelShader = compile ps_3_0 Point_PS();
@@ -138,10 +142,14 @@ technique Line
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE; // TRUE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE; // INVSRCALPHA;
+
 		CullMode = NONE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Line_VS();
 		PixelShader = compile ps_3_0 Line_PS();
@@ -188,10 +196,14 @@ technique Cells
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE; // TRUE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SrcAlpha;
 		DestBlend = ONE; // INVSRCALPHA;
+
 		CullMode = NONE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Cells_VS();
 		PixelShader = compile ps_3_0 Cells_PS();

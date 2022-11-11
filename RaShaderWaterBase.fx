@@ -259,6 +259,8 @@ technique defaultShader
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 Water_VS();
 		PixelShader = compile ps_3_0 Water_PS();
 	}

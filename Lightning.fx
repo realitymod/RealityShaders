@@ -25,6 +25,7 @@ sampler SampleLightning = sampler_state
 	MipFilter = LINEAR;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
+	SRGBTexture = FALSE;
 };
 
 struct APP2VS
@@ -63,11 +64,15 @@ technique Lightning
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;
+
 		AlphaBlendEnable = TRUE;
-		SrcBlend = SrcAlpha;
-		DestBlend = One;
+		SrcBlend = SRCALPHA;
+		DestBlend = ONE;
+
 		CullMode = NONE;
-		
+
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 Lightning_VS();
 		PixelShader = compile ps_3_0 Lightning_PS();
 	}

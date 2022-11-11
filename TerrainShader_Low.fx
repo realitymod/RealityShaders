@@ -27,9 +27,11 @@ technique Low_Terrain
 	pass ZFillLightMap
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_ZFillLightMap_VS();
@@ -40,12 +42,16 @@ technique Low_Terrain
 	pass PointLight
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
@@ -58,10 +64,14 @@ technique Low_Terrain
 	pass LowDetail
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = FALSE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_LowDetail_VS();
 		PixelShader = compile ps_3_0 Shared_LowDetail_PS();
@@ -80,9 +90,11 @@ technique Low_Terrain
 	pass DirectionalLightShadows
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_DirectionalLightShadows_VS();
@@ -95,9 +107,11 @@ technique Low_Terrain
 	pass DynamicShadowmap // Pass9
 	{
 		CullMode = CW;
+
 		ZEnable = FALSE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = DESTCOLOR;
 		DestBlend = ZERO;
@@ -119,9 +133,11 @@ technique Low_Terrain
 	pass PerPixelPointlight
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
@@ -135,6 +151,8 @@ technique Low_Terrain
 			StencilFail = KEEP;
 		#endif
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
 	}
@@ -143,12 +161,16 @@ technique Low_Terrain
 	pass UnderWater
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_UnderWater_VS();
 		PixelShader = compile ps_3_0 Shared_UnderWater_PS();

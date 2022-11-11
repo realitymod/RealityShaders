@@ -457,9 +457,11 @@ technique Shared_SurroundingTerrain
 	pass Pass0
 	{
 		CullMode = CW;
+
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+
 		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_ST_Normal_VS();
@@ -512,11 +514,14 @@ technique TerrainOccludershadow
 	pass OccluderShadow
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESS;
+
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
+
 		#if NVIDIA
 			ColorWriteEnable = 0;
 		#else

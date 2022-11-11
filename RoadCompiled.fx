@@ -162,8 +162,12 @@ technique roadcompiledFull
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
+
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 RoadCompiled_VS();
 		PixelShader = compile ps_3_0 RoadCompiled_PS();
 	}
@@ -173,6 +177,9 @@ technique roadcompiledFull
 		DepthBias = -0.0001f;
 		SlopeScaleDepthBias = -0.00001f;
 		ZEnable = FALSE;
+
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 RoadCompiled_Dx9_VS();
 		PixelShader = compile ps_3_0 RoadCompiled_Dx9_PS();
 	}

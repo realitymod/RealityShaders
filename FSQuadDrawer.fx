@@ -528,6 +528,7 @@ technique Blit
 		ZEnable = FALSE;
 		StencilEnable = FALSE;
 		AlphaTestEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
@@ -585,6 +586,7 @@ technique Blit
 	pass CopyRGBToAlpha
 	{
 		ColorWriteEnable = ALPHA;
+
 		VertexShader = compile vs_3_0 Blit_VS();
 		PixelShader = compile ps_3_0 CopyRGBToAlpha_PS();
 	}
@@ -602,6 +604,7 @@ technique Blit
 		ZEnable = FALSE;
 		StencilEnable = FALSE;
 		AlphaTestEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ZERO;
 		DestBlend = ONE;
@@ -709,6 +712,7 @@ technique Blit
 		ZEnable = FALSE;
 		StencilEnable = FALSE;
 		AlphaTestEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;

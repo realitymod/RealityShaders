@@ -97,14 +97,6 @@ CREATE_SAMPLER(SampleCubeTex3, Tex3, LINEAR, WRAP, FALSE)
 
 uniform texture Tex4: TEXLAYER4;
 
-sampler SampleDummy = sampler_state
-{
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
-
 /*
 	SHADOW BUFFER DATA
 
@@ -270,7 +262,9 @@ technique t1
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
+
 		AlphaBlendEnable = FALSE;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = 0;
 		AlphaFunc = GREATER;

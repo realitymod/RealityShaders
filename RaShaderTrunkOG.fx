@@ -108,6 +108,8 @@ technique defaultTechnique
 			FillMode = WireFrame;
 		#endif
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 TrunkOG_VS();
 		PixelShader = compile ps_3_0 TrunkOG_PS();
 	}

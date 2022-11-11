@@ -293,7 +293,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		Light.Specular = 0.0;
 	#endif
 	float4 OutputColor = 1.0;
-	OutputColor.rgb = ((ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular) * GI.rgb;
+	OutputColor.rgb = (ColorMap.rgb * ((Ambient + Light.Diffuse))+ Light.Specular) * GI.rgb;
 
 	/*
 		Calculate fogging and other occluders
@@ -377,6 +377,8 @@ technique Variable
 			DestBlend = INVSRCALPHA;
 			ZWriteEnable = (DepthWrite);
 		#endif
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 BundledMesh_VS();
 		PixelShader = compile ps_3_0 BundledMesh_PS();

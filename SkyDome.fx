@@ -107,45 +107,9 @@ float4 SkyDome_PS(VS2PS_SkyDome Input) : COLOR
 float4 SkyDome_Lit_PS(VS2PS_SkyDome Input) : COLOR
 {
 	float4 Sky = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
-	Sky.rgb += _LightingColor.rgb * (Sky.a * _LightingBlend);
 	float4 Cloud1 = tex2D(SampleTex1, Input.UV_Sky_Cloud.zw) * Input.FadeOut;
+	Sky.rgb += _LightingColor.rgb * (Sky.a * _LightingBlend);
 	return float4(lerp(Sky.rgb, Cloud1.rgb, Cloud1.a), 1.0);
-}
-
-technique SkyDomeUnderWater
-{
-	pass Sky
-	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		VertexShader = compile vs_3_0 SkyDome_VS();
-		PixelShader = compile ps_3_0 SkyDome_UnderWater_PS();
-	}
-}
-
-technique SkyDomeNV3x
-{
-	pass Sky
-	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		VertexShader = compile vs_3_0 SkyDome_VS();
-		PixelShader = compile ps_3_0 SkyDome_PS();
-	}
-}
-
-technique SkyDomeNV3xLit
-{
-	pass Sky
-	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		VertexShader = compile vs_3_0 SkyDome_VS();
-		PixelShader = compile ps_3_0 SkyDome_Lit_PS();
-	}
 }
 
 /*
@@ -169,23 +133,10 @@ VS2PS_DualClouds SkyDome_DualClouds_VS(APP2VS Input)
 float4 SkyDome_DualClouds_PS(VS2PS_DualClouds Input) : COLOR
 {
 	float4 Sky = tex2D(SampleTex0, Input.SkyCoord);
-	float4 Cloud1 = tex2D(SampleTex1, Input.CloudCoords.xy);
-	float4 Cloud2 = tex2D(SampleTex2, Input.CloudCoords.zw);
-	float4 Temp = Cloud1 * _CloudLerpFactors.x + Cloud2 * _CloudLerpFactors.y;
-	Temp *= Input.FadeOut;
+	float4 Cloud1 = tex2D(SampleTex1, Input.CloudCoords.xy) * _CloudLerpFactors.x;
+	float4 Cloud2 = tex2D(SampleTex2, Input.CloudCoords.zw) * _CloudLerpFactors.y;
+	float4 Temp = (Cloud1 + Cloud2) * Input.FadeOut;
 	return lerp(Sky, Temp, Temp.a);
-}
-
-technique SkyDomeNV3xDualClouds
-{
-	pass Sky
-	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		VertexShader = compile vs_3_0 SkyDome_DualClouds_VS();
-		PixelShader = compile ps_3_0 SkyDome_DualClouds_PS();
-	}
 }
 
 /*
@@ -213,6 +164,88 @@ float4 SkyDome_NoClouds_Lit_PS(VS2PS_SkyDome Input) : COLOR
 	return Sky;
 }
 
+
+/*
+	SkyDome with flare shaders
+*/
+
+VS2PS_NoClouds SkyDome_SunFlare_VS(APP2VS_NoClouds Input)
+{
+	VS2PS_NoClouds Output;
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+	Output.Tex0 = Input.TexCoord;
+	return Output;
+}
+
+float4 SkyDome_SunFlare_PS(VS2PS_SkyDome Input) : COLOR
+{
+	float3 OutputColor = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy).rgb * _FlareParams[0];
+	return float4(OutputColor, 1.0);
+}
+
+float4 SkyDome_Flare_Occlude_PS(VS2PS_SkyDome Input) : COLOR
+{
+	float4 Value = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
+	return float4(0.0, 1.0, 0.0, Value.a);
+}
+
+technique SkyDomeUnderWater
+{
+	pass Sky
+	{
+		AlphaBlendEnable = FALSE;
+		ZWriteEnable = TRUE;
+		ZFunc = LESSEQUAL;
+		SRGBWriteEnable = FALSE;
+
+		VertexShader = compile vs_3_0 SkyDome_VS();
+		PixelShader = compile ps_3_0 SkyDome_UnderWater_PS();
+	}
+}
+
+technique SkyDomeNV3x
+{
+	pass Sky
+	{
+		AlphaBlendEnable = FALSE;
+		ZWriteEnable = TRUE;
+		ZFunc = LESSEQUAL;
+		SRGBWriteEnable = FALSE;
+
+		VertexShader = compile vs_3_0 SkyDome_VS();
+		PixelShader = compile ps_3_0 SkyDome_PS();
+	}
+}
+
+technique SkyDomeNV3xLit
+{
+	pass Sky
+	{
+		AlphaBlendEnable = FALSE;
+		ZWriteEnable = TRUE;
+		ZFunc = LESSEQUAL;
+		SRGBWriteEnable = FALSE;
+
+		VertexShader = compile vs_3_0 SkyDome_VS();
+		PixelShader = compile ps_3_0 SkyDome_Lit_PS();
+	}
+}
+
+
+technique SkyDomeNV3xDualClouds
+{
+	pass Sky
+	{
+		AlphaBlendEnable = FALSE;
+		ZWriteEnable = TRUE;
+		ZFunc = LESSEQUAL;
+		SRGBWriteEnable = FALSE;
+
+		VertexShader = compile vs_3_0 SkyDome_DualClouds_VS();
+		PixelShader = compile ps_3_0 SkyDome_DualClouds_PS();
+	}
+}
+
 technique SkyDomeNV3xNoClouds
 {
 	pass Sky
@@ -220,6 +253,8 @@ technique SkyDomeNV3xNoClouds
 		AlphaBlendEnable = FALSE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 SkyDome_NoClouds_VS();
 		PixelShader = compile ps_3_0 SkyDome_NoClouds_PS();
 	}
@@ -232,36 +267,11 @@ technique SkyDomeNV3xNoCloudsLit
 		AlphaBlendEnable = FALSE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 SkyDome_NoClouds_VS();
 		PixelShader = compile ps_3_0 SkyDome_NoClouds_Lit_PS();
 	}
-}
-
-/*
-	SkyDome with flare shaders
-*/
-
-VS2PS_NoClouds SkyDome_SunFlare_VS(APP2VS_NoClouds Input)
-{
-	VS2PS_NoClouds Output;
-	// Output.HPos = Input.Pos * 10000.0;
-	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-	Output.Tex0 = Input.TexCoord;
-	return Output;
-}
-
-float4 SkyDome_SunFlare_PS(VS2PS_SkyDome Input) : COLOR
-{
-	// return 1.0;
-	// return float4(_FlareParams[0], 0.0, 0.0, 1.0);
-	float3 OutputColor = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy).rgb * _FlareParams[0];
-	return float4(OutputColor, 1.0);
-}
-
-float4 SkyDome_Flare_Occlude_PS(VS2PS_SkyDome Input) : COLOR
-{
-	float4 Value = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
-	return float4(0.0, 1.0, 0.0, Value.a);
 }
 
 technique SkyDomeSunFlare
@@ -278,6 +288,8 @@ technique SkyDomeSunFlare
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_SunFlare_PS();
@@ -303,6 +315,8 @@ technique SkyDomeFlareOccludeCheck
 		AlphaRef = 50; // 255
 		AlphaFunc = GREATER; // LESS
 
+		SRGBWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_Flare_Occlude_PS();
 	}
@@ -315,6 +329,7 @@ technique SkyDomeFlareOcclude
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESS;
+
 		CullMode = NONE;
 		ColorWriteEnable = 0;
 
@@ -325,6 +340,8 @@ technique SkyDomeFlareOcclude
 		AlphaTestEnable = TRUE;
 		AlphaRef = 50; // 255
 		AlphaFunc = GREATER; // LESS
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_Flare_Occlude_PS();

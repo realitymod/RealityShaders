@@ -302,10 +302,10 @@ float4 ApplySkin_PS(VS2PS_ApplySkin Input) : COLOR
 #define HUMANSKIN_RENDERSTATES(CULLMODE) \
 	CullMode = CULLMODE; \
 	AlphaBlendEnable = FALSE; \
+	StencilEnable = FALSE; \
 	ZEnable = FALSE; \
 	ZWriteEnable = FALSE; \
 	ZFunc = LESSEQUAL; \
-	StencilEnable = FALSE; \
 
 technique humanskin
 {

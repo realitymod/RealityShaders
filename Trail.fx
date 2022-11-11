@@ -120,7 +120,7 @@ VS2PS_Trail Trail_VS(APP2VS Input)
 	// Hemi lookup coords
  	Output.HemiLUTCoord.xy = ((Input.Pos + (_HemiMapInfo.z / 2.0)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
  	Output.HemiLUTCoord.y = 1.0 - Output.HemiLUTCoord.y;
-	
+
 	Output.VertexPos = Input.Pos.xyz;
 
 	return Output;
@@ -158,17 +158,23 @@ technique TrailLow
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+
 		StencilEnable = FALSE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = <_AlphaPixelTestRef>;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Trail_VS();
 		PixelShader = compile ps_3_0 Trail_Low_PS();
@@ -196,17 +202,23 @@ technique TrailMedium
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+
 		StencilEnable = FALSE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = <_AlphaPixelTestRef>;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Trail_VS();
 		PixelShader = compile ps_3_0 Trail_Medium_PS();
@@ -235,17 +247,23 @@ technique TrailHigh
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+
 		StencilEnable = FALSE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = <_AlphaPixelTestRef>;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
+		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Trail_VS();
 		PixelShader = compile ps_3_0 Trail_High_PS();
@@ -266,14 +284,18 @@ technique TrailShowFill
 	pass Pass0
 	{
 		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+
 		StencilEnable = FALSE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = <_AlphaPixelTestRef>;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;

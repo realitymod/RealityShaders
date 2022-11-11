@@ -55,14 +55,13 @@ technique t0_States <bool Restore = true;>
 	pass BeginStates
 	{
 		ZEnable = TRUE;
-		// MatsD 030903: Due to transparent isn't sorted yet. Write Z values
-		ZWriteEnable = TRUE;
+		ZWriteEnable = TRUE; // MatsD 030903: Due to transparent isn't sorted yet. Write Z values
+
 		CullMode = NONE;
+
 		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-		// SrcBlend = SRCALPHA;
-		// DestBlend = INVSRCALPHA;
+		SrcBlend = ONE; // SRCALPHA;
+		DestBlend = ONE; // INVSRCALPHA;
 	}
 	
 	pass EndStates { }
