@@ -250,13 +250,21 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 		float DotLN = saturate(dot(NormalVec.xyz / 5.0, -Lights[0].dir));
 		float3 InvDot = saturate((1.0 - DotLN) * StaticSkyColor * SkyNormal.z);
-		float3 BumpedSky = InvDot * Lightmap.b;
-		float3 BumpedDiffuse = Light.Diffuse + BumpedSky;
 
-		float3 Ambient = SinglePointColor * Lightmap.r;
-		Light.Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
-		Light.Specular = Light.Specular * Lightmap.g;
-		OutputColor.rgb = ((DiffuseMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular) * 2.0;
+		#if _LIGHTMAP_
+			// We add ambient (BumpedSky) here to get correct ambient for surfaces parallel to the sun
+			float3 BumpedSky = InvDot * Lightmap.b;
+			float3 BumpedDiffuse = BumpedSky + Light.Diffuse;
+
+			float3 PointColor = SinglePointColor * Lightmap.r;
+			Light.Diffuse = PointColor + lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
+			Light.Specular = Light.Specular * Lightmap.g;
+		#else
+			float3 BumpedSky = InvDot;
+			Light.Diffuse = BumpedSky + Light.Diffuse;
+		#endif
+
+		OutputColor.rgb = ((DiffuseMap.rgb * Light.Diffuse) + Light.Specular) * 2.0;
 	#endif
 
 	#if !_POINTLIGHT_
