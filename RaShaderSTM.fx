@@ -158,7 +158,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 		Diffuse.rgb *= tex2D(SampleDirtMap, Input.P_Dirt_Crack.xy).rgb;
 	#endif
 
-	#if _CRACK_
+	#if _CRACK_ && defined(PERPIXEL) // Only run if we have a normalmap
 		float4 Crack = tex2D(SampleCrackMap, Input.P_Dirt_Crack.zw);
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
