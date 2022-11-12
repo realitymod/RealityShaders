@@ -23,13 +23,24 @@ uniform float4 _TexProjScale : TEXPROJSCALE;
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
+#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
 		MinFilter = FILTER_ROAD_DIFF_MIN; \
 		MagFilter = FILTER_ROAD_DIFF_MAG; \
 		MipFilter = LINEAR; \
 		MaxAnisotropy = 16; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		AddressW = ADDRESS; \
 		SRGBTexture = IS_SRGB; \
 	}; \
 
@@ -37,10 +48,10 @@ uniform texture LightMap : TEXLAYER2;
 CREATE_SAMPLER(SampleLightMap, LightMap, CLAMP, FALSE)
 
 uniform texture DetailMap0 : TEXLAYER3;
-CREATE_SAMPLER(SampleDetailMap0, DetailMap0, WRAP, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleDetailMap0, DetailMap0, WRAP, FALSE)
 
 uniform texture DetailMap1 : TEXLAYER4;
-CREATE_SAMPLER(SampleDetailMap1, DetailMap1, WRAP, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleDetailMap1, DetailMap1, WRAP, FALSE)
 
 struct APP2VS
 {

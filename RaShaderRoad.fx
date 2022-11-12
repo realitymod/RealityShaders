@@ -25,13 +25,24 @@ uniform vector textureFactor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
+#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
 		MinFilter = FILTER_STM_DIFF_MIN; \
 		MagFilter = FILTER_STM_DIFF_MAG; \
 		MipFilter = LINEAR; \
 		MaxAnisotropy = 16; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		AddressW = ADDRESS; \
 		SRGBTexture = IS_SRGB; \
 	}; \
 
@@ -40,11 +51,11 @@ CREATE_SAMPLER(SampleLightMap, LightMap, WRAP, FALSE)
 
 #if defined(USE_DETAIL)
 	uniform texture DetailMap;
-	CREATE_SAMPLER(SampleDetailMap, DetailMap, WRAP, FALSE)
+	CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap, WRAP, FALSE)
 #endif
 
 uniform texture DiffuseMap;
-CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP, FALSE)
 
 string GlobalParameters[] =
 {

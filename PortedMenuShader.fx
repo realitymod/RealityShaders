@@ -26,29 +26,23 @@ uniform float4x4 _ProjMatrix : matPROJ;
 	[Textures and samplers]
 */
 
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = CLAMP; \
+		AddressV = CLAMP; \
+		SRGBTexture = FALSE; \
+	}; \
+
 uniform texture Tex0: TEXLAYER0;
-sampler SampleTex0 = sampler_state
-{
-	Texture = (Tex0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	SRGBTexture = FALSE;
-};
+CREATE_SAMPLER(SampleTex0, Tex0)
 
 uniform texture Tex1: TEXLAYER1;
-sampler SampleTex1 = sampler_state
-{
-	Texture = (Tex1);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	SRGBTexture = FALSE;
-};
+CREATE_SAMPLER(SampleTex1, Tex1)
 
 struct APP2VS
 {
@@ -95,12 +89,12 @@ float4 Quad_WTex_NoTex_PS(VS2PS Input) : COLOR
 
 float4 Quad_WTex_Tex_PS(VS2PS Input) : COLOR
 {
-	return Input.Color * tex2D(SampleTex0, Input.TexCoord0);
+	return tex2D(SampleTex0, Input.TexCoord0) * Input.Color;
 }
 
 float4 Quad_WTex_Tex_Masked_PS(VS2PS Input) : COLOR
 {
-	float4 Color = Input.Color * tex2D(SampleTex0, Input.TexCoord0);
+	float4 Color = tex2D(SampleTex0, Input.TexCoord0) * Input.Color;
 	// Color *= tex2D(SampleTex1, Input.TexCoord1);
 	Color.a *= tex2D(SampleTex1, Input.TexCoord1).a;
 	return Color;

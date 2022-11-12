@@ -36,9 +36,9 @@ uniform texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
-	MipFilter = LINEAR;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
+	MipFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
 };

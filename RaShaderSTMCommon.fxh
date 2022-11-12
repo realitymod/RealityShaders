@@ -27,6 +27,18 @@ uniform float StaticGloss;
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = WRAP; \
+		AddressV = WRAP; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
+#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
 		MinFilter = FILTER_STM_DIFF_MIN; \
 		MagFilter = FILTER_STM_DIFF_MAG; \
 		MipFilter = LINEAR; \
@@ -40,13 +52,13 @@ uniform texture LightMap;
 CREATE_SAMPLER(SampleLightMap, LightMap, FALSE)
 
 uniform texture DetailMap;
-CREATE_SAMPLER(SampleDetailMap, DetailMap, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap, FALSE)
 
 uniform texture DirtMap;
 CREATE_SAMPLER(SampleDirtMap, DirtMap, FALSE)
 
 uniform texture CrackMap;
-CREATE_SAMPLER(SampleCrackMap, CrackMap, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleCrackMap, CrackMap, FALSE)
 
 uniform texture CrackNormalMap;
 CREATE_SAMPLER(SampleCrackNormalMap, CrackNormalMap, FALSE)

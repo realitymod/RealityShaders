@@ -15,42 +15,34 @@ uniform float4 _Alpha : BLENDALPHA;
 	[Textures and samplers]
 */
 
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		SRGBTexture = FALSE; \
+	}; \
+
 uniform texture Tex0: TEXLAYER0;
-
-sampler SampleTex0_Clamp = sampler_state
-{
-	Texture = (Tex0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	SRGBTexture = FALSE;
-};
-
-sampler SampleTex0_Wrap = sampler_state
-{
-	Texture = (Tex0);
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	SRGBTexture = FALSE;
-};
+CREATE_SAMPLER(SampleTex0_Clamp, Tex0, CLAMP)
+CREATE_SAMPLER(SampleTex0_Wrap, Tex0, WRAP)
 
 struct APP2VS
 {
-    float4 HPos : POSITION;
-    float3 Color : COLOR;
-    float2 TexCoord0 : TEXCOORD0;
+	float4 HPos : POSITION;
+	float3 Color : COLOR;
+	float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-    float4 HPos : POSITION;
-    float3 Color : COLOR0;
-    float2 TexCoord : TEXCOORD0;
+	float4 HPos : POSITION;
+	float3 Color : COLOR0;
+	float2 TexCoord : TEXCOORD0;
 };
 
 VS2PS HPos_VS(APP2VS Input)
@@ -58,7 +50,7 @@ VS2PS HPos_VS(APP2VS Input)
 	VS2PS Output;
 	Output.HPos = Input.HPos;
 	Output.Color = saturate(Input.Color);
- 	Output.TexCoord = Input.TexCoord0;
+	Output.TexCoord = Input.TexCoord0;
 	return Output;
 }
 
@@ -80,12 +72,12 @@ technique Text_States <bool Restore = true;>
 		SrcBlend = SRCALPHA; // INVSRCCOLOR;
 		DestBlend = INVSRCALPHA; // SRCCOLOR;
 	}
-	
+
 	pass EndStates { }
 }
 
 technique Text <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_POSITION, 0,
@@ -96,9 +88,9 @@ technique Text <
 >
 {
 	pass Pass0
-	{		
+	{
 		VertexShader = compile vs_3_0 HPos_VS();
-		PixelShader = compile ps_3_0 HPos_PS(); 
+		PixelShader = compile ps_3_0 HPos_PS();
 	}
 }
 
@@ -112,7 +104,7 @@ technique Overlay_States <bool Restore = true;>
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 	}
-	
+
 	pass EndStates { }
 }
 
@@ -123,7 +115,7 @@ float4 Overlay_HPos_PS(VS2PS Input) : COLOR
 }
 
 technique Overlay <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_POSITION, 0,
