@@ -123,7 +123,7 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 	float LocalHeight = (WorldPos.y - GeomBones[0][3][1]) * InvHemiHeightScale;
 	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
 	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
-	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
+	return saturate(((WorldNormal.y + Offset) * 0.5) + 0.5);
 }
 
 struct VS2PS

@@ -151,7 +151,7 @@
 		Tangent = normalize(Tangent - (Normal * dot(Tangent, Normal)));
 
 		// Cross product and flip to create BiNormal
-		float3 BiNormal = normalize(cross(Tangent, Normal)) * Flip;
+		float3 BiNormal = normalize(cross(Tangent, Normal) * Flip);
 
 		return float3x3(Tangent, BiNormal, Normal);
 	}

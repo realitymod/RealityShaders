@@ -62,40 +62,42 @@ struct APP2VS
 	float4 Packed : COLOR;
 };
 
-struct APP2VS_Simple
-{
-	float4 Pos : POSITION;
-	float2 TexCoord : TEXCOORD0;
-	float4 Packed : COLOR;
-	float4 TerrainColorMap : COLOR1;
-	float4 TerrainLightMap : COLOR2;
-};
-
 struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1;
 	float4 TexShadow : TEXCOORD1;
-	float3 VertexPos : TEXCOORD2; // .x = LightScale; .y = Fog;
+	float3 VertexPos : TEXCOORD2;
 	float4 Color : COLOR0;
 };
+
+float4 GetUndergrowthPos(float4 InputPos, float4 InputPacked)
+{
+	float3 PosOffset = _PosOffsetAndScale.xyz;
+	float PosScale = _PosOffsetAndScale.w;
+
+	float4 UnpackedPos = (InputPos / 32767.0) * PosScale;
+	float4 Pos = float4(UnpackedPos.xyz, 1.0);
+	Pos.xz += _SwayOffsets[InputPacked.z * 255].xy * InputPacked.y * 3.0f;
+	Pos.xyz += PosOffset.xyz;
+
+	float ViewDistance = _FadeAndHeightScaleOffset.x;
+	float FadeFactor = _FadeAndHeightScaleOffset.y;
+	float HeightScale = saturate((ViewDistance - distance(Pos.xyz, _CameraPos.xyz)) * FadeFactor);
+	Pos.y = ((UnpackedPos.y * HeightScale) + PosOffset.y) + UnpackedPos.w;
+
+	return Pos;
+}
 
 VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMapEnable)
 {
 	VS2PS Output = (VS2PS)0;
 
-	float4 Pos = float4((Input.Pos.xyz / 32767.0 * _PosOffsetAndScale.w) + _PosOffsetAndScale.xyz, 1.0);
-	Pos.xz += _SwayOffsets[Input.Packed.z * 255].xy * Input.Packed.y * 3.0f;
-
-	float ViewDistance = _FadeAndHeightScaleOffset.x;
-	float FadeFactor = _FadeAndHeightScaleOffset.y;
-	float HeightScale = saturate((ViewDistance - distance(Pos.xyz, _CameraPos.xyz)) * FadeFactor);
-	Pos.y = (Input.Pos.y / 32767.0 * _PosOffsetAndScale.w) * HeightScale + _PosOffsetAndScale.y + (Input.Pos.w / 32767.0 * _PosOffsetAndScale.w);
-
+	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
 
 	Output.P_Tex0_Tex1.xy = Input.TexCoord / 32767.0;
-	Output.P_Tex0_Tex1.zw = Pos.xz * _TerrainTexCoordScaleAndOffset.xy + _TerrainTexCoordScaleAndOffset.zw;
+	Output.P_Tex0_Tex1.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
 
 	Output.TexShadow = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
@@ -115,15 +117,12 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMa
 	return Output;
 }
 
-float4 Undergrowth_PS
-(
-	VS2PS Input,
-	uniform bool PointLightEnable,
-	uniform bool ShadowMapEnable
-) : COLOR
+float4 Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool ShadowMapEnable) : COLOR
 {
 	float4 Base = tex2D(SampleColorMap, Input.P_Tex0_Tex1.xy);
 	float4 TerrainColor = tex2D(SampleTerrainColorMap, Input.P_Tex0_Tex1.zw);
+	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.P_Tex0_Tex1.zw);
+	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.TexShadow) : 1.0;
 
 	// If thermals assume gray color
 	if (FogColor.r < 0.01)
@@ -132,15 +131,13 @@ float4 Undergrowth_PS
 	}
 
 	TerrainColor.rgb = lerp(TerrainColor.rgb, 1.0, Input.Color.a);
-	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.P_Tex0_Tex1.zw);
-	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.TexShadow) : 1.0;
-
 	float3 PointColor = (PointLightEnable) ? Input.Color.rgb * 0.125 : 0.0;
-	float3 TerrainLight = (TerrainLightMap.y * _SunColor.rgb * TerrainShadow.rgb + PointColor) * 2.0 + (TerrainLightMap.z * _GIColor.rgb);
+	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
+	TerrainLight += ((_SunColor.rgb * (TerrainShadow.rgb * TerrainLightMap.y)) + PointColor) * 2.0;
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight.rgb * 2.0;
-	OutputColor.a = Base.a * _Transparency_x8.a * 8.0;
+	OutputColor.rgb = ((Base.rgb * TerrainColor.rgb) * TerrainLight.rgb) * 2.0;
+	OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 
@@ -296,12 +293,18 @@ technique t0_l4_ds
 	}
 }
 
-
-
-
 /*
 	Undergrowth simple shaders
 */
+
+struct APP2VS_Simple
+{
+	float4 Pos : POSITION;
+	float2 TexCoord : TEXCOORD0;
+	float4 Packed : COLOR;
+	float4 TerrainColorMap : COLOR1;
+	float4 TerrainLightMap : COLOR2;
+};
 
 struct VS2PS_Simple
 {
@@ -310,32 +313,21 @@ struct VS2PS_Simple
 	float4 TexShadow : TEXCOORD1;
 	float3 SunLight : TEXCOORD2;
 	float3 VertexPos : TEXCOORD3;
-	float4 P_Light_Scale : COLOR0; // .rgb = Light; .a = Scale;
-	float4 P_TerrainColor : COLOR1;
+	float3 LightColor : COLOR0;
+	float3 TerrainColor : COLOR1;
 };
 
 VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, uniform bool ShadowMapEnable)
 {
 	VS2PS_Simple Output = (VS2PS_Simple)0;
 
-	float4 Pos = float4((Input.Pos.xyz / 32767.0 * _PosOffsetAndScale.w) + _PosOffsetAndScale.xyz, 1.0);
-	Pos.xz += _SwayOffsets[Input.Packed.z * 255].xy * Input.Packed.y * 3.0f;
-
-	float ViewDistance = _FadeAndHeightScaleOffset.x;
-	float FadeFactor = _FadeAndHeightScaleOffset.y;
-	float HeightScale = saturate((ViewDistance - distance(Pos.xyz, _CameraPos)) * FadeFactor);
-	Pos.y = (Input.Pos.y / 32767.0 * _PosOffsetAndScale.w) * HeightScale + _PosOffsetAndScale.y + (Input.Pos.w / 32767.0 * _PosOffsetAndScale.w);
-
+	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
-
 	Output.Tex0 = Input.TexCoord / 32767.0;
 
-	if (ShadowMapEnable)
-	{
-		Output.TexShadow = GetShadowProjection(Pos);
-	}
+	Output.TexShadow = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
-	float3 Light = Input.TerrainLightMap.z * _GIColor;
+	float3 Light = _GIColor * Input.TerrainLightMap.z;
 	for (int i = 0; i < LightCount; i++)
 	{
 		float3 LightVec = Pos.xyz - _PointLightPosAtten[i].xyz;
@@ -345,47 +337,38 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 
 	if (ShadowMapEnable)
 	{
-		Output.P_Light_Scale.rgb = Light;
-		Output.P_Light_Scale.w = Input.Packed.w;
-		Output.SunLight = Input.TerrainLightMap.y * _SunColor * 2.0;
-		Output.P_TerrainColor.rgb = lerp(Input.TerrainColorMap, 1.0, Input.Packed.w);
+		Output.LightColor.rgb = Light;
+		Output.SunLight = (_SunColor * Input.TerrainLightMap.y) * 2.0;
+		Output.TerrainColor = lerp(Input.TerrainColorMap, 1.0, Input.Packed.w);
 	}
 	else
 	{
-		Light += Input.TerrainLightMap.y * _SunColor * 2.0;
-		Output.P_TerrainColor.rgb = lerp(Input.TerrainColorMap, 1.0, Input.Packed.w);
-		Output.P_TerrainColor.rgb *= Light;
+		Light += (_SunColor * Input.TerrainLightMap.y) * 2.0;
+		Output.TerrainColor = lerp(Input.TerrainColorMap.rgb, 1.0, Input.Packed.w) * Light;
 	}
 
-	Output.P_Light_Scale = saturate(Output.P_Light_Scale);
-	Output.P_TerrainColor.rgb = saturate(Output.P_TerrainColor.rgb);
+	Output.LightColor = saturate(Output.LightColor);
+	Output.TerrainColor = saturate(Output.TerrainColor);
 	Output.VertexPos = Pos.xyz;
 
 	return Output;
 }
 
-float4 Undergrowth_Simple_PS
-(
-	VS2PS_Simple Input,
-	uniform bool PointLightEnable,
-	uniform bool ShadowMapEnable
-) : COLOR
+float4 Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, uniform bool ShadowMapEnable) : COLOR
 {
 	float4 Base = tex2D(SampleColorMap, Input.Tex0);
-	float3 LightColor = 0.0;
+	float3 LightColor = (Base.rgb * Input.TerrainColor) * 2.0;
 
 	if (ShadowMapEnable)
 	{
 		float4 TerrainShadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
-		float3 Light = (Input.SunLight * TerrainShadow.xyz) + Input.P_Light_Scale.rgb;
-		LightColor = Base.rgb * Input.P_TerrainColor.rgb * Light * 2.0;
-	}
-	else
-	{
-		LightColor = Base.rgb * Input.P_TerrainColor.rgb * 2.0;
+		float3 Light = (Input.SunLight * TerrainShadow.rgb) + Input.LightColor.rgb;
+		LightColor = LightColor * Light;
 	}
 
-	float4 OutputColor = float4(LightColor, Base.a * _Transparency_x8.a * 8.0);
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = LightColor;
+	OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
 
 	// Thermals
 	if (FogColor.r < 0.01)
@@ -549,9 +532,6 @@ technique t0_l4_ds_simple
 	}
 }
 
-
-
-
 /*
 	Undergrowth ZOnly shaders
 */
@@ -562,49 +542,19 @@ struct VS2PS_ZOnly
 	float2 Tex0 : TEXCOORD0;
 };
 
-VS2PS_ZOnly Undergrowth_ZOnly_Simple_VS(APP2VS_Simple Input)
-{
-	VS2PS_ZOnly Output = (VS2PS_ZOnly)0;
-
-	float4 Pos = float4((Input.Pos.xyz / 32767.0 * _PosOffsetAndScale.w) + _PosOffsetAndScale.xyz, 1.0);
-	Pos.xz += _SwayOffsets[Input.Packed.z * 255].xy * Input.Packed.y * 3.0f;
-
-	float ViewDistance = _FadeAndHeightScaleOffset.x;
-	float FadeFactor = _FadeAndHeightScaleOffset.y;
-	float HeightScale = saturate((ViewDistance - distance(Pos.xyz, _CameraPos)) * FadeFactor);
-	Pos.y = (Input.Pos.y / 32767.0 * _PosOffsetAndScale.w) * HeightScale + _PosOffsetAndScale.y + (Input.Pos.w / 32767.0 * _PosOffsetAndScale.w);
-
-	Output.HPos = mul(Pos, _WorldViewProj);
-
- 	Output.Tex0 = Input.TexCoord / 32767.0;
-
-	return Output;
-}
-
 VS2PS_ZOnly Undergrowth_ZOnly_VS(APP2VS Input)
 {
 	VS2PS_ZOnly Output = (VS2PS_ZOnly)0;
-
-	float4 Pos = float4((Input.Pos.xyz / 32767.0 * _PosOffsetAndScale.w), 1.0);
-	Pos.xz += _SwayOffsets[Input.Packed.z * 255].xy * Input.Packed.y * 3.0f;
-	Pos.xyz += _PosOffsetAndScale.xyz;
-
-	float ViewDistance = _FadeAndHeightScaleOffset.x;
-	float FadeFactor = _FadeAndHeightScaleOffset.y;
-	float HeightScale = saturate((ViewDistance - distance(Pos.xyz, _CameraPos.xyz)) * FadeFactor);
-	Pos.y = (Input.Pos.y / 32767.0 * _PosOffsetAndScale.w) * HeightScale + _PosOffsetAndScale.y + (Input.Pos.w / 32767.0 * _PosOffsetAndScale.w);
-
+	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
-
 	Output.Tex0 = Input.TexCoord / 32767.0;
-
 	return Output;
 }
 
 float4 Undergrowth_ZOnly_PS(VS2PS_ZOnly Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleColorMap, Input.Tex0);
-	OutputColor.a *= _Transparency_x8.a * 8.0;
+	OutputColor.a *= (_Transparency_x8.a * 8.0);
 	return OutputColor;
 }
 
@@ -649,7 +599,7 @@ technique ZOnly_Simple
 	pass Normal
 	{
 		RENDERSTATES_UNDERGROWTH_ZONLY
-		VertexShader = compile vs_3_0 Undergrowth_ZOnly_Simple_VS();
+		VertexShader = compile vs_3_0 Undergrowth_ZOnly_VS();
 		PixelShader = compile ps_3_0 Undergrowth_ZOnly_PS();
 	}
 }
