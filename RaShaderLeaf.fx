@@ -41,6 +41,7 @@ sampler SampleDiffuseMap = sampler_state
 	MipFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
+	SRGBTexture = FALSE;
 };
 
 string GlobalParameters[] =

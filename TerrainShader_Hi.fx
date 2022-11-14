@@ -164,9 +164,9 @@ float4 FullDetail_Hi_EnvMap_PS(VS2PS_FullDetail_Hi Input) : COLOR
 float4 Hi_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input) : COLOR
 {
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0);
+	float4 Light = saturate(LightMap.z * _GIColor * 2.0) * 0.5;
 	float4 AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 
-	float4 Light = saturate(LightMap.z * _GIColor * 2.0) * 0.5;
 	Light.w = (AvgShadowValue.z < LightMap.y) ? AvgShadowValue.z : LightMap.y;
 	return Light;
 }

@@ -17,7 +17,6 @@ float4 Low_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input
 
 	AvgShadowValue = AvgShadowValue == 1.0f;
 	Light.w = (AvgShadowValue < LightMap.y) ? 1.0 - saturate(4.0 - Input.Z.x) + AvgShadowValue.x : LightMap.y;
-
 	return Light;
 }
 

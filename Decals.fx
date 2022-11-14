@@ -181,6 +181,7 @@ float4 ShadowedDecals_PS(VS2PS_ShadowedDecals Input) : COLOR
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCALPHA; \
 	DestBlend = INVSRCALPHA; \
+	SRGBWriteEnable = FALSE; \
 
 technique Decal
 <

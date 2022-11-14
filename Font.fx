@@ -18,27 +18,21 @@ uniform float4 _DiffuseColor : DIFFUSE;
 	[Textures and samplers]
 */
 
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = FILTER; \
+		MagFilter = FILTER; \
+		MipFilter = NONE; \
+		AddressU = CLAMP; \
+		AddressV = CLAMP; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
 uniform texture TexMap : TEXTURE;
-
-sampler SampleTexMap = sampler_state
-{
-	Texture = (TexMap);
-	MinFilter = POINT;
-	MagFilter = POINT;
-	MipFilter = NONE;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
-
-sampler SampleTexMap_Linear = sampler_state
-{
-	Texture = (TexMap);
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = NONE;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
+CREATE_SAMPLER(SampleTexMap, TexMap, POINT, FALSE)
+CREATE_SAMPLER(SampleTexMap_Linear, TexMap, LINEAR, FALSE)
 
 struct APP2VS
 {
