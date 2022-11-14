@@ -86,7 +86,7 @@ struct VS2PS
 
 	float3 WorldPos : TEXCOORD0;
 	float3 Tangent : TEXCOORD1;
-	float3 BiNormal : TEXCOORD2;
+	float3 Binormal : TEXCOORD2;
 	float3 Normal : TEXCOORD3;
 
 	float2 Tex0 : TEXCOORD4;
@@ -114,11 +114,11 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 
 	#if _OBJSPACENORMALMAP_ // (Object Space) -> (Skinned Object Space) -> (Skinned World Space)
 		Output.Tangent = SkinnedWorldMat[0];
-		Output.BiNormal = SkinnedWorldMat[1];
+		Output.Binormal = SkinnedWorldMat[1];
 		Output.Normal = SkinnedWorldMat[2];
 	#else // (Tangent Space) -> (Object Space) -> (Skinned Object Space) -> (Skinned World Space)
 		Output.Tangent = SkinnedWorldTBN[0];
-		Output.BiNormal = SkinnedWorldTBN[1];
+		Output.Binormal = SkinnedWorldTBN[1];
 		Output.Normal = SkinnedWorldTBN[2];
 	#endif
 
@@ -155,9 +155,9 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 	// Get world-space properties
 	float3 WorldPos = Input.WorldPos;
 	float3 WorldTangent = normalize(Input.Tangent);
-	float3 WorldBiNormal = normalize(Input.BiNormal);
+	float3 WorldBinormal = normalize(Input.Binormal);
 	float3 WorldNormal = normalize(Input.Normal);
-	float3x3 WorldTBN = float3x3(WorldTangent, WorldBiNormal, WorldNormal);
+	float3x3 WorldTBN = float3x3(WorldTangent, WorldBinormal, WorldNormal);
 
 	// mul(mat, vec) ==	mul(vec, transpose(mat))
 	float3 WorldLightVec = GetLightVec(WorldPos.xyz);

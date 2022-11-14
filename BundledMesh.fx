@@ -127,7 +127,7 @@ struct VS2PS_Specular
 	float2 Tex : TEXCOORD0;
 	float3 WorldPos : TEXCOORD1;
 	float3 Tangent : TEXCOORD2;
-	float3 BiNormal : TEXCOORD3;
+	float3 Binormal : TEXCOORD3;
 	float3 Normal : TEXCOORD4;
 };
 
@@ -151,7 +151,7 @@ VS2PS_Specular Lighting_VS(APP2VS Input)
 
 	Output.WorldPos = WorldPos;
 	Output.Tangent = WorldI[0];
-	Output.BiNormal = WorldI[1];
+	Output.Binormal = WorldI[1];
 	Output.Normal = WorldI[2];
 
 	return Output;
@@ -162,9 +162,9 @@ float4 Lighting_PS(VS2PS_Specular Input) : COLOR
 	// Get world-space properties
 	float3 WorldPos = Input.WorldPos;
 	float3 Tangent = normalize(Input.Tangent);
-	float3 BiNormal = normalize(Input.BiNormal);
+	float3 Binormal = normalize(Input.Binormal);
 	float3 Normal = normalize(Input.Normal);
-	float3x3 WorldI = float3x3(Tangent, BiNormal, Normal);
+	float3x3 WorldI = float3x3(Tangent, Binormal, Normal);
 
 	// Get world-space positions
 	float3 MatsLightDir = float3(0.5, 0.5, 0.0);

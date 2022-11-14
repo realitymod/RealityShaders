@@ -64,7 +64,7 @@ struct VS2PS
 
 	float3 ObjectPos : TEXCOORD0;
 	float3 ObjectTangent : TEXCOORD1;
-	float3 ObjectBiNormal : TEXCOORD2;
+	float3 ObjectBinormal : TEXCOORD2;
 	float3 ObjectNormal : TEXCOORD3;
 
 	float4 P_Base_Detail : TEXCOORD4; // .xy = TexBase; .zw = TexDetail;
@@ -89,7 +89,7 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	// Output object-space properties
 	Output.ObjectPos = ObjectPos.xyz;
 	Output.ObjectTangent = ObjectTBN[0];
-	Output.ObjectBiNormal = ObjectTBN[1];
+	Output.ObjectBinormal = ObjectTBN[1];
 	Output.ObjectNormal = ObjectTBN[2];
 
 	#if _BASE_
@@ -217,9 +217,9 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	// Get object-space properties
 	float3 ObjectPos = Input.ObjectPos;
 	float3 ObjectTangent = normalize(Input.ObjectTangent);
-	float3 ObjectBiNormal = normalize(Input.ObjectBiNormal);
+	float3 ObjectBinormal = normalize(Input.ObjectBinormal);
 	float3 ObjectNormal = normalize(Input.ObjectNormal);
-	float3x3 ObjectTBN = float3x3(ObjectTangent, ObjectBiNormal, ObjectNormal);
+	float3x3 ObjectTBN = float3x3(ObjectTangent, ObjectBinormal, ObjectNormal);
 
 	// mul(mat, vec) == mul(vec, transpose(mat))
 	float3 ObjectLightVec = GetLightVec(ObjectPos);

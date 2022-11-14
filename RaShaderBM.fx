@@ -132,7 +132,7 @@ struct VS2PS
 
 	float3 WorldPos : TEXCOORD0;
 	float3 WorldTangent : TEXCOORD1;
-	float3 WorldBiNormal : TEXCOORD2;
+	float3 WorldBinormal : TEXCOORD2;
 	float3 WorldNormal : TEXCOORD3;
 
 	float2 Tex0 : TEXCOORD4;
@@ -161,7 +161,7 @@ VS2PS BundledMesh_VS(APP2VS Input)
 	// Output world-space properties
 	Output.WorldPos = WorldPos.xyz;
 	Output.WorldTangent = WorldTBN[0];
-	Output.WorldBiNormal = WorldTBN[1];
+	Output.WorldBinormal = WorldTBN[1];
 	Output.WorldNormal = WorldTBN[2];
 
 	#if _HASUVANIMATION_
@@ -196,9 +196,9 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	// Get world-space properties
 	float3 WorldPos = Input.WorldPos;
 	float3 WorldTangent = normalize(Input.WorldTangent);
-	float3 WorldBiNormal = normalize(Input.WorldBiNormal);
+	float3 WorldBinormal = normalize(Input.WorldBinormal);
 	float3 WorldNormal = normalize(Input.WorldNormal);
-	float3x3 WorldTBN = float3x3(WorldTangent, WorldBiNormal, WorldNormal);
+	float3x3 WorldTBN = float3x3(WorldTangent, WorldBinormal, WorldNormal);
 
 	// Get world-space vectors
 	float3 WorldLightVec = GetLightVec(WorldPos.xyz);

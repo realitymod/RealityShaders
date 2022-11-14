@@ -150,10 +150,10 @@
 		// Re-orthogonalize Tangent with respect to Normal
 		Tangent = normalize(Tangent - (Normal * dot(Tangent, Normal)));
 
-		// Cross product and flip to create BiNormal
-		float3 BiNormal = normalize(cross(Tangent, Normal) * Flip);
+		// Cross product and flip to create Binormal
+		float3 Binormal = normalize(cross(Tangent, Normal) * Flip);
 
-		return float3x3(Tangent, BiNormal, Normal);
+		return float3x3(Tangent, Binormal, Normal);
 	}
 
 	// Gets radial light attenuation value for pointlights
