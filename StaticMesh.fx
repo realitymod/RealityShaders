@@ -187,7 +187,7 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 	#endif
 }
 
-#define STATICMESH_SHADOWMAP_RENDERSTATES \
+#define GET_RENDERSTATES_SHADOWMAP \
 	CullMode = CW; \
 	AlphaBlendEnable = FALSE; \
 	ZEnable = TRUE; \
@@ -195,7 +195,7 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 	ZFunc = LESSEQUAL; \
 	ScissorTestEnable = TRUE; \
 
-#define STATICMESH_POINT_RENDERSTATES \
+#define GET_RENDERSTATES_POINT \
 	CullMode = CW; \
 	AlphaBlendEnable = FALSE; \
 	ZEnable = TRUE; \
@@ -210,7 +210,7 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		STATICMESH_SHADOWMAP_RENDERSTATES
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -224,7 +224,7 @@ technique DrawShadowMap
 			AlphaFunc = GREATER;
 		#endif
 
-		STATICMESH_SHADOWMAP_RENDERSTATES
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
@@ -235,7 +235,7 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		STATICMESH_POINT_RENDERSTATES
+		GET_RENDERSTATES_POINT
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -251,7 +251,7 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		STATICMESH_SHADOWMAP_RENDERSTATES
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -265,7 +265,7 @@ technique DrawShadowMapNV
 			AlphaFunc = GREATER;
 		#endif
 
-		STATICMESH_SHADOWMAP_RENDERSTATES
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
@@ -276,7 +276,7 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		STATICMESH_POINT_RENDERSTATES
+		GET_RENDERSTATES_POINT
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}

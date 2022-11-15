@@ -299,7 +299,7 @@ float4 ApplySkin_PS(VS2PS_ApplySkin Input) : COLOR
 	return DiffuseMap;
 }
 
-#define HUMANSKIN_RENDERSTATES(CULLMODE) \
+#define GET_RENDERSTATES_SKIN(CULLMODE) \
 	CullMode = CULLMODE; \
 	AlphaBlendEnable = FALSE; \
 	StencilEnable = FALSE; \
@@ -311,21 +311,21 @@ technique humanskin
 {
 	pass Pre
 	{
-		HUMANSKIN_RENDERSTATES(NONE)
+		GET_RENDERSTATES_SKIN(NONE)
 		VertexShader = compile vs_3_0 PreSkin_VS();
 		PixelShader = compile ps_3_0 PreSkin_PS();
 	}
 
 	pass PreShadowed
 	{
-		HUMANSKIN_RENDERSTATES(NONE)
+		GET_RENDERSTATES_SKIN(NONE)
 		VertexShader = compile vs_3_0 ShadowedPreSkin_VS();
 		PixelShader = compile ps_3_0 ShadowedPreSkin_PS();
 	}
 
 	pass Apply
 	{
-		HUMANSKIN_RENDERSTATES(CCW)
+		GET_RENDERSTATES_SKIN(CCW)
 		VertexShader = compile vs_3_0 ApplySkin_VS();
 		PixelShader = compile ps_3_0 ApplySkin_PS();
 	}
@@ -383,7 +383,7 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 	#endif
 }
 
-#define SHADOWMAP_RENDERSTATES \
+#define GET_RENDERSTATES_SHADOWMAP \
 	CullMode = CW; \
 	AlphaBlendEnable = FALSE; \
 	ZEnable = TRUE; \
@@ -399,7 +399,7 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		SHADOWMAP_RENDERSTATES
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -412,7 +412,7 @@ technique DrawShadowMap
 			AlphaRef = 0;
 		#endif
 
-		SHADOWMAP_RENDERSTATES
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 
@@ -424,7 +424,7 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		SHADOWMAP_RENDERSTATES
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -440,7 +440,7 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		SHADOWMAP_RENDERSTATES
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -453,7 +453,7 @@ technique DrawShadowMapNV
 			AlphaRef = 0;
 		#endif
 
-		SHADOWMAP_RENDERSTATES
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 
@@ -465,7 +465,7 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		SHADOWMAP_RENDERSTATES
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}

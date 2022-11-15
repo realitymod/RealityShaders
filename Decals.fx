@@ -171,7 +171,7 @@ float4 ShadowedDecals_PS(VS2PS_ShadowedDecals Input) : COLOR
 	return OutputColor;
 }
 
-#define DECAL_RENDERSTATES \
+#define GET_RENDERSTATES_DECAL \
 	CullMode = CW; \
 	ZEnable = TRUE; \
 	ZWriteEnable = FALSE; \
@@ -198,15 +198,15 @@ technique Decal
 {
 	pass Pass0
 	{
-		DECAL_RENDERSTATES
- 		VertexShader = compile vs_3_0 Decals_VS();
+		GET_RENDERSTATES_DECAL
+		VertexShader = compile vs_3_0 Decals_VS();
 		PixelShader = compile ps_3_0 Decals_PS();
 	}
 
 	pass Pass1
 	{
-		DECAL_RENDERSTATES
- 		VertexShader = compile vs_3_0 Decals_VS();
+		GET_RENDERSTATES_DECAL
+		VertexShader = compile vs_3_0 Decals_VS();
 		PixelShader = compile ps_3_0 Decals_PS();
 	}
 }

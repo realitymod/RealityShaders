@@ -145,7 +145,7 @@ float4 Particle_High_PS(VS2PS_Particle Input) : COLOR
 	return Color;
 }
 
-#define COMMON_RENDERSTATES_PARTICLE \
+#define GET_RENDERSTATES_PARTICLES \
 	CullMode = NONE; \
 	ZEnable = TRUE; \
 	ZFunc = LESSEQUAL; \
@@ -166,7 +166,7 @@ technique ParticleLow
 {
 	pass Pass0
 	{
-		COMMON_RENDERSTATES_PARTICLE
+		GET_RENDERSTATES_PARTICLES
 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Low_PS();
 	}
@@ -178,7 +178,7 @@ technique ParticleMedium
 {
 	pass Pass0
 	{
-		COMMON_RENDERSTATES_PARTICLE
+		GET_RENDERSTATES_PARTICLES
 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Medium_PS();
 	}
@@ -190,7 +190,7 @@ technique ParticleHigh
 {
 	pass Pass0
 	{
-		COMMON_RENDERSTATES_PARTICLE
+		GET_RENDERSTATES_PARTICLES
 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_High_PS();
 	}
@@ -231,7 +231,7 @@ float4 Particle_Additive_High_PS(VS2PS_Particle Input) : COLOR
 	return OutputColor;
 }
 
-#define COMMON_RENDERSTATES_PARTICLE_ADDITIVE \
+#define GET_RENDERSTATES_PARTICLES_ADDITIVE \
 	CullMode = NONE; \
 	ZEnable = TRUE; \
 	ZFunc = LESSEQUAL; \
@@ -252,7 +252,7 @@ technique ParticleShowFill
 {
 	pass Pass0
 	{
-		COMMON_RENDERSTATES_PARTICLE_ADDITIVE
+		GET_RENDERSTATES_PARTICLES_ADDITIVE
 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Show_Fill_PS();
 	}
@@ -264,7 +264,7 @@ technique AdditiveLow
 {
 	pass Pass0
 	{
-		COMMON_RENDERSTATES_PARTICLE_ADDITIVE
+		GET_RENDERSTATES_PARTICLES_ADDITIVE
 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Additive_Low_PS();
 	}
@@ -276,7 +276,7 @@ technique AdditiveHigh
 {
 	pass Pass0
 	{
-		COMMON_RENDERSTATES_PARTICLE_ADDITIVE
+		GET_RENDERSTATES_PARTICLES_ADDITIVE
 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Additive_High_PS();
 	}

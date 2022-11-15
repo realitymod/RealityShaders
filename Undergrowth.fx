@@ -146,7 +146,7 @@ float4 Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool S
 
 // { StreamNo, DataType, Usage, UsageIdx }
 // DECLARATION_END => End macro
-#define VERTEX_DECLARATION_UNDERGROWTH \
+#define CREATE_VERTEX_DECLARATION_UNDERGROWTH \
 	int Declaration[] = \
 	{ \
 		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 }, \
@@ -155,7 +155,7 @@ float4 Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool S
 		DECLARATION_END \
 	}; \
 
-#define RENDERSTATES_UNDERGROWTH \
+#define GET_RENDERSTATES_UNDERGROWTH \
 	CullMode = CW; \
 	AlphaTestEnable = TRUE; \
 	AlphaRef = FH2_ALPHAREF; \
@@ -165,12 +165,12 @@ float4 Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool S
 
 technique t0_l0
 <
-	VERTEX_DECLARATION_UNDERGROWTH
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH
+		GET_RENDERSTATES_UNDERGROWTH
 		VertexShader = compile vs_3_0 Undergrowth_VS(0, false);
 		PixelShader = compile ps_3_0 Undergrowth_PS(false, false);
 	}
@@ -178,12 +178,12 @@ technique t0_l0
 
 technique t0_l1
 <
-	VERTEX_DECLARATION_UNDERGROWTH
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH
+		GET_RENDERSTATES_UNDERGROWTH
 		VertexShader = compile vs_3_0 Undergrowth_VS(1, false);
 		PixelShader = compile ps_3_0 Undergrowth_PS(true, false);
 	}
@@ -191,12 +191,12 @@ technique t0_l1
 
 technique t0_l2
 <
-	VERTEX_DECLARATION_UNDERGROWTH
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH
+		GET_RENDERSTATES_UNDERGROWTH
 		VertexShader = compile vs_3_0 Undergrowth_VS(2, false);
 		PixelShader = compile ps_3_0 Undergrowth_PS(true, false);
 	}
@@ -204,12 +204,12 @@ technique t0_l2
 
 technique t0_l3
 <
-	VERTEX_DECLARATION_UNDERGROWTH
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH
+		GET_RENDERSTATES_UNDERGROWTH
 		VertexShader = compile vs_3_0 Undergrowth_VS(3, false);
 		PixelShader = compile ps_3_0 Undergrowth_PS(true, false);
 	}
@@ -217,12 +217,12 @@ technique t0_l3
 
 technique t0_l4
 <
-	VERTEX_DECLARATION_UNDERGROWTH
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH
+		GET_RENDERSTATES_UNDERGROWTH
 		VertexShader = compile vs_3_0 Undergrowth_VS(4, false);
 		PixelShader = compile ps_3_0 Undergrowth_PS(true, false);
 	}
@@ -230,12 +230,12 @@ technique t0_l4
 
 technique t0_l0_ds
 <
-	VERTEX_DECLARATION_UNDERGROWTH
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH
+		GET_RENDERSTATES_UNDERGROWTH
 		VertexShader = compile vs_3_0 Undergrowth_VS(0, true);
 		PixelShader = compile ps_3_0 Undergrowth_PS(false, true);
 	}
@@ -243,12 +243,12 @@ technique t0_l0_ds
 
 technique t0_l1_ds
 <
-	VERTEX_DECLARATION_UNDERGROWTH
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH
+		GET_RENDERSTATES_UNDERGROWTH
 		VertexShader = compile vs_3_0 Undergrowth_VS(1, true);
 		PixelShader = compile ps_3_0 Undergrowth_PS(false, true);
 	}
@@ -256,12 +256,12 @@ technique t0_l1_ds
 
 technique t0_l2_ds
 <
-	VERTEX_DECLARATION_UNDERGROWTH
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH
+		GET_RENDERSTATES_UNDERGROWTH
 		VertexShader = compile vs_3_0 Undergrowth_VS(2, true);
 		PixelShader = compile ps_3_0 Undergrowth_PS(false, true);
 	}
@@ -269,12 +269,12 @@ technique t0_l2_ds
 
 technique t0_l3_ds
 <
-	VERTEX_DECLARATION_UNDERGROWTH
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH
+		GET_RENDERSTATES_UNDERGROWTH
 		VertexShader = compile vs_3_0 Undergrowth_VS(3, true);
 		PixelShader = compile ps_3_0 Undergrowth_PS(false, true);
 	}
@@ -282,12 +282,12 @@ technique t0_l3_ds
 
 technique t0_l4_ds
 <
-	VERTEX_DECLARATION_UNDERGROWTH
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH
+		GET_RENDERSTATES_UNDERGROWTH
 		VertexShader = compile vs_3_0 Undergrowth_VS(4, true);
 		PixelShader = compile ps_3_0 Undergrowth_PS(false, true);
 	}
@@ -383,7 +383,7 @@ float4 Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, 
 
 // { StreamNo, DataType, Usage, UsageIdx }
 // DECLARATION_END => End macro
-#define VERTEX_DECLARATION_UNDERGROWTH_SIMPLE \
+#define CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE \
 	int Declaration[] = \
 	{ \
 		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 }, \
@@ -394,7 +394,7 @@ float4 Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, 
 		DECLARATION_END \
 	}; \
 
-#define RENDERSTATES_UNDERGROWTH_SIMPLE \
+#define GET_RENDERSTATES_UNDERGROWTH_SIMPLE \
 	CullMode = CW; \
 	AlphaTestEnable = TRUE; \
 	AlphaRef = FH2_ALPHAREF; \
@@ -404,12 +404,12 @@ float4 Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, 
 
 technique t0_l0_simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_SIMPLE
+		GET_RENDERSTATES_UNDERGROWTH_SIMPLE
 		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(0, false);
 		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(false, false);
 	}
@@ -417,12 +417,12 @@ technique t0_l0_simple
 
 technique t0_l1_simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_SIMPLE
+		GET_RENDERSTATES_UNDERGROWTH_SIMPLE
 		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(1, false);
 		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, false);
 	}
@@ -430,12 +430,12 @@ technique t0_l1_simple
 
 technique t0_l2_simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_SIMPLE
+		GET_RENDERSTATES_UNDERGROWTH_SIMPLE
 		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(2, false);
 		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, false);
 	}
@@ -443,12 +443,12 @@ technique t0_l2_simple
 
 technique t0_l3_simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_SIMPLE
+		GET_RENDERSTATES_UNDERGROWTH_SIMPLE
 		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(3, false);
 		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, false);
 	}
@@ -456,12 +456,12 @@ technique t0_l3_simple
 
 technique t0_l4_simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_SIMPLE
+		GET_RENDERSTATES_UNDERGROWTH_SIMPLE
 		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(4, false);
 		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, false);
 	}
@@ -469,12 +469,12 @@ technique t0_l4_simple
 
 technique t0_l0_ds_simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_SIMPLE
+		GET_RENDERSTATES_UNDERGROWTH_SIMPLE
 		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(0, true);
 		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(false, true);
 	}
@@ -482,12 +482,12 @@ technique t0_l0_ds_simple
 
 technique t0_l1_ds_simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_SIMPLE
+		GET_RENDERSTATES_UNDERGROWTH_SIMPLE
 		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(1, true);
 		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, true);
 	}
@@ -495,12 +495,12 @@ technique t0_l1_ds_simple
 
 technique t0_l2_ds_simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_SIMPLE
+		GET_RENDERSTATES_UNDERGROWTH_SIMPLE
 		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(2, true);
 		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, true);
 	}
@@ -508,12 +508,12 @@ technique t0_l2_ds_simple
 
 technique t0_l3_ds_simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_SIMPLE
+		GET_RENDERSTATES_UNDERGROWTH_SIMPLE
 		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(3, true);
 		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, true);
 	}
@@ -521,12 +521,12 @@ technique t0_l3_ds_simple
 
 technique t0_l4_ds_simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_SIMPLE
+		GET_RENDERSTATES_UNDERGROWTH_SIMPLE
 		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(4, true);
 		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, true);
 	}
@@ -560,7 +560,7 @@ float4 Undergrowth_ZOnly_PS(VS2PS_ZOnly Input) : COLOR
 
 // { StreamNo, DataType, Usage, UsageIdx }
 // DECLARATION_END => End macro
-#define VERTEX_DECLARATION_UNDERGROWTH_ZONLY \
+#define CREATE_VERTEX_DECLARATION_UNDERGROWTH_ZONLY \
 	int Declaration[] = \
 	{ \
 		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 }, \
@@ -569,7 +569,7 @@ float4 Undergrowth_ZOnly_PS(VS2PS_ZOnly Input) : COLOR
 		DECLARATION_END \
 	}; \
 
-#define RENDERSTATES_UNDERGROWTH_ZONLY \
+#define GET_RENDERSTATES_UNDERGROWTH_ZONLY \
 	CullMode = CW; \
 	AlphaTestEnable = TRUE; \
 	AlphaRef = FH2_ALPHAREF; \
@@ -580,12 +580,12 @@ float4 Undergrowth_ZOnly_PS(VS2PS_ZOnly Input) : COLOR
 
 technique ZOnly
 <
-	VERTEX_DECLARATION_UNDERGROWTH_ZONLY
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_ZONLY
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_ZONLY
+		GET_RENDERSTATES_UNDERGROWTH_ZONLY
 		VertexShader = compile vs_3_0 Undergrowth_ZOnly_VS();
 		PixelShader = compile ps_3_0 Undergrowth_ZOnly_PS();
 	}
@@ -593,12 +593,12 @@ technique ZOnly
 
 technique ZOnly_Simple
 <
-	VERTEX_DECLARATION_UNDERGROWTH_ZONLY
+	CREATE_VERTEX_DECLARATION_UNDERGROWTH_ZONLY
 >
 {
 	pass Normal
 	{
-		RENDERSTATES_UNDERGROWTH_ZONLY
+		GET_RENDERSTATES_UNDERGROWTH_ZONLY
 		VertexShader = compile vs_3_0 Undergrowth_ZOnly_VS();
 		PixelShader = compile ps_3_0 Undergrowth_ZOnly_PS();
 	}

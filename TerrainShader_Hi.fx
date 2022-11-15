@@ -175,7 +175,7 @@ float4 Hi_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input)
 	High terrain technique
 */
 
-#define NV4X_RENDERSTATES \
+#define GET_RENDERSTATES_NV4X \
 	StencilEnable = TRUE; \
 	StencilFunc = NOTEQUAL; \
 	StencilRef = 0xa; \
@@ -197,7 +197,7 @@ technique Hi_Terrain
 		AlphaBlendEnable = FALSE;
 
 		#if IS_NV4X
-			NV4X_RENDERSTATES
+			GET_RENDERSTATES_NV4X
 		#endif
 
 		VertexShader = compile vs_3_0 Shared_ZFillLightMap_VS();
@@ -218,7 +218,7 @@ technique Hi_Terrain
 		DestBlend = ONE;
 
 		#if IS_NV4X
-			NV4X_RENDERSTATES
+			GET_RENDERSTATES_NV4X
 		#endif
 
 		SRGBWriteEnable = FALSE;
@@ -243,7 +243,7 @@ technique Hi_Terrain
 		AlphaTestEnable = FALSE;
 
 		#if IS_NV4X
-			NV4X_RENDERSTATES
+			GET_RENDERSTATES_NV4X
 		#endif
 
 		SRGBWriteEnable = FALSE;
@@ -273,7 +273,7 @@ technique Hi_Terrain
 		// FillMode = WireFrame;
 
 		#if IS_NV4X
-			NV4X_RENDERSTATES
+			GET_RENDERSTATES_NV4X
 		#endif
 
 		SRGBWriteEnable = FALSE;
@@ -296,7 +296,7 @@ technique Hi_Terrain
 		DestBlend = ONE;
 
 		#if IS_NV4X
-			NV4X_RENDERSTATES
+			GET_RENDERSTATES_NV4X
 		#endif
 
 		SRGBWriteEnable = FALSE;
@@ -322,7 +322,7 @@ technique Hi_Terrain
  		AlphaBlendEnable = FALSE;
 
 		#if IS_NV4X
-			NV4X_RENDERSTATES
+			GET_RENDERSTATES_NV4X
 		#endif
 
 		VertexShader = compile vs_3_0 Shared_DirectionalLightShadows_VS();
@@ -358,7 +358,7 @@ technique Hi_Terrain
 		// ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
 		#if IS_NV4X
-			NV4X_RENDERSTATES
+			GET_RENDERSTATES_NV4X
 		#endif
 
 		SRGBWriteEnable = FALSE;
@@ -384,7 +384,7 @@ technique Hi_Terrain
 		DestBlend = ONE;
 
 		#if IS_NV4X
-			NV4X_RENDERSTATES
+			GET_RENDERSTATES_NV4X
 		#endif
 
 		SRGBWriteEnable = FALSE;
@@ -411,7 +411,7 @@ technique Hi_Terrain
 		DestBlend = INVSRCALPHA;
 
 		#if IS_NV4X
-			NV4X_RENDERSTATES
+			GET_RENDERSTATES_NV4X
 		#endif
 
 		SRGBWriteEnable = FALSE;
