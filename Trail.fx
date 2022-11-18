@@ -126,21 +126,6 @@ VS2PS_Trail Trail_VS(APP2VS Input)
 	return Output;
 }
 
-// Ordinary technique
-
-/*	int Declaration[] =
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_NORMAL, 0 },
-		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_NORMAL, 1 },
-		{ 0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 2 },
-		DECLARATION_END	// End macro
-	};
-*/
-
 float4 Trail_Low_PS(VS2PS_Trail Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
@@ -149,36 +134,6 @@ float4 Trail_Low_PS(VS2PS_Trail Input) : COLOR
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
 	return OutputColor;
-}
-
-technique TrailLow
-<
->
-{
-	pass Pass0
-	{
-		CullMode = NONE;
-
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-
-		AlphaTestEnable = TRUE;
-		AlphaRef = <_AlphaPixelTestRef>;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
-		SRGBWriteEnable = FALSE;
-
-		VertexShader = compile vs_3_0 Trail_VS();
-		PixelShader = compile ps_3_0 Trail_Low_PS();
-	}
 }
 
 float4 Trail_Medium_PS(VS2PS_Trail Input) : COLOR
@@ -193,36 +148,6 @@ float4 Trail_Medium_PS(VS2PS_Trail Input) : COLOR
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
 	return OutputColor;
-}
-
-technique TrailMedium
-<
->
-{
-	pass Pass0
-	{
-		CullMode = NONE;
-
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-
-		AlphaTestEnable = TRUE;
-		AlphaRef = <_AlphaPixelTestRef>;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
-		SRGBWriteEnable = FALSE;
-
-		VertexShader = compile vs_3_0 Trail_VS();
-		PixelShader = compile ps_3_0 Trail_Medium_PS();
-	}
 }
 
 float4 Trail_High_PS(VS2PS_Trail Input) : COLOR
@@ -240,41 +165,77 @@ float4 Trail_High_PS(VS2PS_Trail Input) : COLOR
 	return OutputColor;
 }
 
+float4 Trail_Show_Fill_PS(VS2PS_Trail Input) : COLOR
+{
+	float4 OutputColor = _EffectSunColor.rrrr;
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
+	return OutputColor;
+}
+
+// Ordinary technique
+
+#define GET_RENDERSTATES_TRAIL(SRCBLEND, DESTBLEND) \
+	CullMode = NONE; \
+	ZEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
+	ZWriteEnable = FALSE; \
+	StencilEnable = FALSE; \
+	StencilFunc = ALWAYS; \
+	StencilPass = ZERO; \
+	AlphaTestEnable = TRUE; \
+	AlphaRef = <_AlphaPixelTestRef>; \
+	AlphaBlendEnable = TRUE; \
+	SrcBlend = SRCBLEND; \
+	DestBlend = DESTBLEND; \
+	SRGBWriteEnable = FALSE; \
+
+/*	int Declaration[] =
+	{
+		// StreamNo, DataType, Usage, UsageIdx
+		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_NORMAL, 0 },
+		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_NORMAL, 1 },
+		{ 0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 1 },
+		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 2 },
+		DECLARATION_END	// End macro
+	};
+*/
+
+technique TrailLow
+<
+>
+{
+	pass Pass0
+	{
+		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
+		VertexShader = compile vs_3_0 Trail_VS();
+		PixelShader = compile ps_3_0 Trail_Low_PS();
+	}
+}
+
+technique TrailMedium
+<
+>
+{
+	pass Pass0
+	{
+		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
+		VertexShader = compile vs_3_0 Trail_VS();
+		PixelShader = compile ps_3_0 Trail_Medium_PS();
+	}
+}
+
 technique TrailHigh
 <
 >
 {
 	pass Pass0
 	{
-		CullMode = NONE;
-
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-
-		AlphaTestEnable = TRUE;
-		AlphaRef = <_AlphaPixelTestRef>;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 Trail_VS();
 		PixelShader = compile ps_3_0 Trail_High_PS();
 	}
-}
-
-float4 Trail_Show_Fill_PS(VS2PS_Trail Input) : COLOR
-{
-	float4 OutputColor = _EffectSunColor.rrrr;
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _EyePos.xyz));
-	return OutputColor;
 }
 
 technique TrailShowFill
@@ -283,23 +244,7 @@ technique TrailShowFill
 {
 	pass Pass0
 	{
-		CullMode = NONE;
-
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-
-		AlphaTestEnable = TRUE;
-		AlphaRef = <_AlphaPixelTestRef>;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-
+		GET_RENDERSTATES_TRAIL(ONE, ONE)
 		VertexShader = compile vs_3_0 Trail_VS();
 		PixelShader = compile ps_3_0 Trail_Show_Fill_PS();
 	}

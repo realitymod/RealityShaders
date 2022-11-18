@@ -95,10 +95,6 @@ struct VS2PS_ThermalVision
 	float2 TexCoord2 : TEXCOORD2;
 };
 
-struct PS2FB_Combine
-{
-	float4 Col0 : COLOR0;
-};
 
 VS2PS_Quad Basic_VS(APP2VS_Quad Input)
 {
@@ -249,9 +245,9 @@ VS2PS_ThermalVision ThermalVision_VS(APP2VS_Quad Input)
 	return Output;
 }
 
-PS2FB_Combine ThermalVision_PS(VS2PS_ThermalVision Input)
+float4 ThermalVision_PS(VS2PS_ThermalVision Input) : COLOR
 {
-	PS2FB_Combine Output;
+	float4 OutputColor = 0.0;
 	float2 ImgCoord = Input.TexCoord2;
 	float4 Image = tex2D(SampleTex0, ImgCoord);
 
@@ -270,10 +266,10 @@ PS2FB_Combine ThermalVision_PS(VS2PS_ThermalVision Input)
 		Image += tex2D(SampleTex0, ImgCoord - float2( HOffset, 0.0)) * 0.125;
 		Image += tex2D(SampleTex0, ImgCoord + float2( 0.0, VOffset)) * 0.125;
 		Image += tex2D(SampleTex0, ImgCoord - float2( 0.0, VOffset)) * 0.125;
-		// Output.Col0.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75f, 0.50f, Image.b), Image.b), Image.r, Image.r); // M
-		Output.Col0.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
-		Output.Col0.r -= _Interference * Random; // Add -_Interference
-		Output.Col0 = float4(_TVColor * Output.Col0.rrr, Image.a);
+		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75f, 0.50f, Image.b), Image.b), Image.r, Image.r); // M
+		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
+		OutputColor.r -= _Interference * Random; // Add -_Interference
+		OutputColor = float4(_TVColor * OutputColor.rrr, Image.a);
 	}
 	else if (_Interference > 0 && _Interference <= 1) // BF2 TV
 	{
@@ -285,22 +281,23 @@ PS2FB_Combine ThermalVision_PS(VS2PS_ThermalVision Input)
 		Distort /= 1.0 + _DistortionScale * abs(Pos.y);
 		ImgCoord.x += _DistortionScale * Noise * Distort;
 		Image = dot(float3(0.3, 0.59, 0.11), Image.rgb);
-		Output.Col0 = float4(_TVColor, 1.0) * (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
+		OutputColor = float4(_TVColor, 1.0) * (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
 	}
 	else // Passthrough
 	{
-		Output.Col0 = Image;
+		OutputColor = Image;
 	}
-	return Output;
+
+	return OutputColor;
 }
 
 /*
 	TV Effect with usage of gradient texture
 */
 
-PS2FB_Combine ThermalVision_Gradient_PS(VS2PS_ThermalVision Input)
+float4 ThermalVision_Gradient_PS(VS2PS_ThermalVision Input) : COLOR
 {
-	PS2FB_Combine Output;
+	float4 OutputColor = 0.0;
 
 	if (_Interference > 0 && _Interference <= 1)
 	{
@@ -315,14 +312,14 @@ PS2FB_Combine ThermalVision_Gradient_PS(VS2PS_ThermalVision Input)
 		float4 Image = dot(float3(0.3, 0.59, 0.11), tex2D(SampleTex0, ImgCoord).rgb);
 		float4 Intensity = (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
 		float4 GradientColor = tex2D(SampleTex3, float2(Intensity.r, 0.0f));
-		Output.Col0 = float4( GradientColor.rgb, Intensity.a );
+		OutputColor = float4( GradientColor.rgb, Intensity.a );
 	}
 	else
 	{
-		Output.Col0 = tex2D(SampleTex0, Input.TexCoord2);
+		OutputColor = tex2D(SampleTex0, Input.TexCoord2);
 	}
 
-	return Output;
+	return OutputColor;
 }
 
 technique TVEffect

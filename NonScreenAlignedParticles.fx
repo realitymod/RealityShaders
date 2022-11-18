@@ -108,58 +108,11 @@ VS2PS Particle_VS(APP2VS Input)
 	return Output;
 }
 
-// Ordinary technique
-
-/*	int Declaration[] =
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_TEXCOORD, 2 },
-		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 3 },
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 4 },
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 5 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 6 },
-		DECLARATION_END	// End macro
-	};
-*/
-
 float4 Particle_Show_Fill_PS(VS2PS Input) : COLOR
 {
 	float4 OutputColor = _EffectSunColor.rrrr;
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutputColor;
-}
-
-technique NSAParticleShowFill
-<
->
-{
-	pass Pass0
-	{
-		CullMode = NONE;
-
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-
-		AlphaTestEnable = TRUE;
-		AlphaRef = <_AlphaPixelTestRef>;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-
-		SRGBWriteEnable = FALSE;
-
-		VertexShader = compile vs_3_0 Particle_VS();
-		PixelShader = compile ps_3_0 Particle_Show_Fill_PS();
-	}
 }
 
 float4 Particle_Low_PS(VS2PS Input) : COLOR
@@ -169,36 +122,6 @@ float4 Particle_Low_PS(VS2PS Input) : COLOR
 	OutputColor.a *= Input.AnimBFactor.a;
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutputColor;
-}
-
-technique NSAParticleLow
-<
->
-{
-	pass Pass0
-	{
-		CullMode = NONE;
-
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-
-		AlphaTestEnable = TRUE;
-		AlphaRef = <_AlphaPixelTestRef>;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
-		SRGBWriteEnable = FALSE;
-
-		VertexShader = compile vs_3_0 Particle_VS();
-		PixelShader = compile ps_3_0 Particle_Low_PS();
-	}
 }
 
 float4 Particle_Medium_PS(VS2PS Input) : COLOR
@@ -212,36 +135,6 @@ float4 Particle_Medium_PS(VS2PS Input) : COLOR
 	OutputColor.a *= Input.AnimBFactor.a;
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
 	return OutputColor;
-}
-
-technique NSAParticleMedium
-<
->
-{
-	pass Pass0
-	{
-		CullMode = NONE;
-
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-
-		AlphaTestEnable = TRUE;
-		AlphaRef = <_AlphaPixelTestRef>;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
-		SRGBWriteEnable = FALSE;
-
-		VertexShader = compile vs_3_0 Particle_VS();
-		PixelShader = compile ps_3_0 Particle_Medium_PS();
-	}
 }
 
 float4 Particle_High_PS(VS2PS Input) : COLOR
@@ -258,31 +151,81 @@ float4 Particle_High_PS(VS2PS Input) : COLOR
 	return OutputColor;
 }
 
+// Ordinary technique
+
+#define GET_RENDERSTATES_NSAP(SRCBLEND, DESTBLEND) \
+	CullMode = NONE; \
+	ZEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
+	ZWriteEnable = FALSE; \
+	StencilEnable = FALSE; \
+	StencilFunc = ALWAYS; \
+	StencilPass = ZERO; \
+	AlphaTestEnable = TRUE; \
+	AlphaRef = <_AlphaPixelTestRef>; \
+	AlphaBlendEnable = TRUE; \
+	SrcBlend = SRCBLEND; \
+	DestBlend = DESTBLEND; \
+	SRGBWriteEnable = FALSE; \
+
+/*	int Declaration[] =
+	{
+		// StreamNo, DataType, Usage, UsageIdx
+		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_TEXCOORD, 1 },
+		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_TEXCOORD, 2 },
+		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 3 },
+		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 4 },
+		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 5 },
+		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 6 },
+		DECLARATION_END	// End macro
+	};
+*/
+
+technique NSAParticleShowFill
+<
+>
+{
+	pass Pass0
+	{
+		GET_RENDERSTATES_NSAP(ONE, ONE)
+		VertexShader = compile vs_3_0 Particle_VS();
+		PixelShader = compile ps_3_0 Particle_Show_Fill_PS();
+	}
+}
+
+technique NSAParticleLow
+<
+>
+{
+	pass Pass0
+	{
+		GET_RENDERSTATES_NSAP(SRCALPHA, INVSRCALPHA)
+		VertexShader = compile vs_3_0 Particle_VS();
+		PixelShader = compile ps_3_0 Particle_Low_PS();
+	}
+}
+
+technique NSAParticleMedium
+<
+>
+{
+	pass Pass0
+	{
+		GET_RENDERSTATES_NSAP(SRCALPHA, INVSRCALPHA)
+		VertexShader = compile vs_3_0 Particle_VS();
+		PixelShader = compile ps_3_0 Particle_Medium_PS();
+	}
+}
+
 technique NSAParticleHigh
 <
 >
 {
 	pass Pass0
 	{
-		CullMode = NONE;
-
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-
-		AlphaTestEnable = TRUE;
-		AlphaRef = <_AlphaPixelTestRef>;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_NSAP(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_High_PS();
 	}

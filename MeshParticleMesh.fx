@@ -87,31 +87,38 @@ float4 Diffuse_PS(VS2PS_Diffuse Input) : COLOR
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.DiffuseMap_GroundUV.xy) * Input.Color; // Diffuse Map
 	float4 TLUT = tex2D(SampleLUT, Input.DiffuseMap_GroundUV.zw); // Hemi map
 	Diffuse.rgb *= GetParticleLighting(TLUT.a, Input.Lerp_LMapIntOffset, Input.LightFactor.a);
-
 	ApplyFog(Diffuse.rgb, GetFogValue(Input.VertexPos, 0.0));
+
 	return Diffuse;
 }
+
+float4 Additive_PS(VS2PS_Diffuse Input) : COLOR
+{
+	float4 Diffuse = tex2D(SampleDiffuseMap, Input.DiffuseMap_GroundUV.xy) * Input.Color;
+	Diffuse.rgb = (_EffectSunColor.bbb < -0.1) ? float3(1.0, 0.0, 0.0) : Diffuse.rgb;
+	Diffuse.rgb *= Diffuse.a; // Mask with alpha since were doing an add
+	Diffuse.rgb *= GetFogValue(Input.VertexPos, 0.0);
+
+	return Diffuse;
+}
+
+#define GET_RENDERSTATES_MESH_PARTICLES(ZWRITE, SRCBLEND, DESTBLEND) \
+	CullMode = CCW; \
+	ZEnable = TRUE; \
+	ZWriteEnable = ZWRITE; \
+	AlphaTestEnable = TRUE; \
+	AlphaRef = 0; \
+	AlphaFunc = GREATER; \
+	AlphaBlendEnable = TRUE; \
+	SrcBlend = SRCBLEND; \
+	DestBlend = DESTBLEND; \
+	SRGBWriteEnable = FALSE; \
 
 technique Diffuse
 {
 	pass Pass0
 	{
-		AlphaTestEnable = TRUE;
-
-		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
-
-		AlphaRef = 0;
-		AlphaFunc = GREATER;
-
-		CullMode = CCW;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_MESH_PARTICLES(FALSE, SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 Diffuse_VS();
 		PixelShader = compile ps_3_0 Diffuse_PS();
 	}
@@ -121,57 +128,17 @@ technique DiffuseWithZWrite
 {
 	pass Pass0
 	{
-		AlphaTestEnable = TRUE;
-
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-
-		AlphaRef = 0;
-		AlphaFunc = GREATER;
-
-		CullMode = CCW;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_MESH_PARTICLES(TRUE, SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 Diffuse_VS();
 		PixelShader = compile ps_3_0 Diffuse_PS();
 	}
-}
-
-float4 Additive_PS(VS2PS_Diffuse Input) : COLOR
-{
-	float4 Diffuse = tex2D(SampleDiffuseMap, Input.DiffuseMap_GroundUV.xy) * Input.Color;
-	Diffuse.rgb = (_EffectSunColor.bbb < -0.1) ? float3(1.0, 0.0, 0.0) : Diffuse.rgb;
-	Diffuse.rgb *= Diffuse.a; // Mask with alpha since were doing an add
-
-	Diffuse.rgb *= GetFogValue(Input.VertexPos, 0.0);
-	return Diffuse;
 }
 
 technique Additive
 {
 	pass Pass0
 	{
-		AlphaTestEnable = TRUE;
-
-		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
-
-		AlphaRef = 0;
-		AlphaFunc = GREATER;
-
-		CullMode = NONE;
-
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_MESH_PARTICLES(FALSE, ONE, ONE)
 		VertexShader = compile vs_3_0 Diffuse_VS();
 		PixelShader = compile ps_3_0 Additive_PS();
 	}
