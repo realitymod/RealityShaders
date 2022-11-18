@@ -19,7 +19,7 @@
 #define BASE_TRANSPARENCY 1.5F
 
 // Like Specular - higher values gives smaller, more distinct area of transparency
-#define POW_TRANSPARENCY 30.F
+#define POW_TRANSPARENCY 30.0F
 
 // How much of the texture color to use (vs envmap color)
 #define COLOR_ENVMAP_RATIO 0.4F
@@ -133,9 +133,7 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float3 Tex : TEXCOORD0;
 	float3 WorldPos : TEXCOORD1;
-	#if defined(USE_LIGHTMAP)
-		float2 LightMapTex : TEXCOORD2;
-	#endif
+	float2 LightMapTex : TEXCOORD2;
 	#if defined(USE_SHADOWS)
 		float4 TexShadow : TEXCOORD3;
 	#endif
@@ -159,7 +157,7 @@ VS2PS Water_VS(APP2VS Input)
 	Output.Tex = Tex;
 
 	#if defined(USE_LIGHTMAP)
-		Output.LightMapTex = Input.LightMap * LightMapOffset.xy + LightMapOffset.zw;
+		Output.LightMapTex = (Input.LightMap * LightMapOffset.xy) + LightMapOffset.zw;
 	#endif
 
 	#if defined(USE_SHADOWS)
@@ -179,6 +177,11 @@ float4 Water_PS(in VS2PS Input) : COLOR
 		float4 LightMap = PointColor;
 	#endif
 
+	float ShadowFactor = LightMap.g;
+	#if defined(USE_SHADOWS)
+		ShadowFactor *= GetShadowFactor(SampleShadowMap, Input.TexShadow);
+	#endif
+
 	#if defined(USE_3DTEXTURE)
 		float3 TangentNormal = tex3D(SampleWaterMap, Input.Tex);
 	#else
@@ -194,12 +197,6 @@ float4 Water_PS(in VS2PS Input) : COLOR
 		TangentNormal.xyz = normalize((TangentNormal.xyz * 2.0) - 1.0);
 	#endif
 
-	#if defined(FRESNEL_NORMALMAP)
-		float4 FresnelNormal = float4(TangentNormal, 1.0);
-	#else
-		float4 FresnelNormal = float4(0.0, 1.0, 0.0, 0.0);
-	#endif
-
 	float3 WorldPos = Input.WorldPos;
 	float3 LightVec = normalize(-Lights[0].dir);
 	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
@@ -207,11 +204,6 @@ float4 Water_PS(in VS2PS Input) : COLOR
 
 	float3 Reflection = normalize(reflect(-ViewVec, TangentNormal));
 	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
-
-	float ShadowFactor = LightMap.g;
-	#if defined(USE_SHADOWS)
-		ShadowFactor *= GetShadowFactor(SampleShadowMap, Input.TexShadow);
-	#endif
 
 	float LerpMod = -(1.0 - saturate(ShadowFactor + SHADOW_FACTOR));
 	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
@@ -223,9 +215,6 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = WaterLerp + (Specular * LightFactors);
 
-	float Fresnel = BASE_TRANSPARENCY - pow(dot(FresnelNormal.xyz, ViewVec), POW_TRANSPARENCY);
-	OutputColor.a = LightMap.r * Fresnel + _WaterColor.w;
-
 	// Thermals
 	if (FogColor.r < 0.01)
 	{
@@ -233,6 +222,15 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	}
 
 	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+
+	#if defined(FRESNEL_NORMALMAP)
+		float4 FresnelNormal = float4(TangentNormal, 1.0);
+	#else
+		float4 FresnelNormal = float4(0.0, 1.0, 0.0, 0.0);
+	#endif
+
+	float Fresnel = BASE_TRANSPARENCY - pow(dot(FresnelNormal.xyz, ViewVec), POW_TRANSPARENCY);
+	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.w);
 
 	return OutputColor;
 }
