@@ -41,13 +41,15 @@ uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = fl
 	};
 
 uniform texture Tex0: TEXLAYER0;
-uniform texture Tex1: HemiMapTexture;
-// uniform texture ShadowMap: ShadowMapTex;
-// uniform texture ShadowMapOccluder: ShadowMapOccluderTex;
-
 CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, FALSE)
-// CREATE_SAMPLER(SampleShadowMap, ShadowMap, CLAMP, FALSE)
-// CREATE_SAMPLER(SampleShadowMapOccluder, ShadowMapOccluder, CLAMP, FALSE)
+
+uniform texture Tex1: HemiMapTexture;
+
+uniform texture DecalShadowMap: ShadowMapTex;
+CREATE_SAMPLER(SampleDecalShadowMap, DecalShadowMap, CLAMP, FALSE)
+
+uniform texture DecalShadowMapOccluder: ShadowMapOccluderTex;
+CREATE_SAMPLER(SampleDecalShadowMapOccluder, DecalShadowMapOccluder, CLAMP, FALSE)
 
 struct APP2VS
 {
@@ -57,58 +59,7 @@ struct APP2VS
 	float4 Color : COLOR;
 };
 
-/*
-	Regular decals shader
-*/
-
-struct VS2PS_Decals
-{
-	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float3 ViewPos : TEXCOORD1;
-	float3 WorldNormal : TEXCOORD2;
-	float4 Color : TEXCOORD3;
-};
-
-VS2PS_Decals Decals_VS(APP2VS Input)
-{
-	VS2PS_Decals Output = (VS2PS_Decals)0;
-
-	Output.Tex0 = Input.P_Tex_Index_Alpha.xy;
-
-	float Index = Input.P_Tex_Index_Alpha.z;
-	float4x3 WorldMat = _InstanceTransformations[Index];
-	float3 WorldPos = mul(Input.Pos, WorldMat);
-
-	Output.HPos = mul(float4(WorldPos, 1.0f), _WorldViewProjection);
-	Output.ViewPos = Output.HPos.xyz;
-	Output.WorldNormal = normalize(mul(Input.Normal.xyz, (float3x3)WorldMat));
-
-	float Alpha = Input.P_Tex_Index_Alpha.w;
-	Output.Color.rgb = saturate(Input.Color.rgb);
-	Output.Color.a = 1.0f - saturate((Output.HPos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
-	Output.Color.a = saturate(Alpha * Output.Color.a);
-
-	return Output;
-}
-
-float4 Decals_PS(VS2PS_Decals Input) : COLOR
-{
-	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex0);
-	float3 Normals = normalize(Input.WorldNormal.xyz);
-	float3 Diffuse = LambertLighting(Normals, -_SunDirection.xyz) * _SunColor;
-
-	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
-	float4 OutputColor = DiffuseMap * float4(Lighting, Input.Color.a);
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
-	return OutputColor;
-}
-
-/*
-	Shadowed decals shader
-*/
-
-struct VS2PS_ShadowedDecals
+struct VS2PS
 {
 	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
@@ -121,9 +72,9 @@ struct VS2PS_ShadowedDecals
 	float4 ViewPortMap : TEXCOORD5;
 };
 
-VS2PS_ShadowedDecals ShadowedDecals_VS(APP2VS Input)
+VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 {
-	VS2PS_ShadowedDecals Output = (VS2PS_ShadowedDecals)0;
+	VS2PS Output = (VS2PS)0;
 
 	Output.Tex0 = Input.P_Tex_Index_Alpha.xy;
 
@@ -140,27 +91,32 @@ VS2PS_ShadowedDecals ShadowedDecals_VS(APP2VS Input)
 	Output.Color.a = 1.0f - saturate((Output.HPos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
 	Output.Color.a = saturate(Alpha * Output.Color.a);
 
-	Output.ShadowTex = mul(float4(WorldPos, 1.0), _ShadowTransformations[Index]);
-	Output.ViewPortMap = _ShadowViewPortMaps[Index];
+	if (UseShadow)
+	{
+		Output.ShadowTex = mul(float4(WorldPos, 1.0), _ShadowTransformations[Index]);
+		Output.ViewPortMap = _ShadowViewPortMaps[Index];
+	}
 
 	return Output;
 }
 
-float4 ShadowedDecals_PS(VS2PS_ShadowedDecals Input) : COLOR
+float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 {
-	/*
-		float4 Samples;
-		float2 Texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
-		Input.ShadowTex.xy = clamp(Input.ShadowTex.xy,  Input.ViewPortMap.xy, Input.ViewPortMap.zw);
-		Samples.x = tex2D(SampleShadowMap, Input.ShadowTex.xy);
-		Samples.y = tex2D(SampleShadowMap, Input.ShadowTex.xy + float2(Texel.x, 0.0));
-		Samples.z = tex2D(SampleShadowMap, Input.ShadowTex.xy + float2(0.0, Texel.y));
-		Samples.w = tex2D(SampleShadowMap, Input.ShadowTex.xy + Texel);
-		float4 Cmpbits = Samples >= saturate(Input.ShadowTex.z);
-		float DirShadow = dot(Cmpbits, 0.25);
-	*/
-
 	float DirShadow = 1.0;
+
+	if(UseShadow)
+	{
+		float4 Samples;
+		float2 Texel = 1.0 / 1024.0;
+		Input.ShadowTex.xy = clamp(Input.ShadowTex.xy,  Input.ViewPortMap.xy, Input.ViewPortMap.zw);
+		Samples.x = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy);
+		Samples.y = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy + float2(Texel.x, 0.0));
+		Samples.z = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy + float2(0.0, Texel.y));
+		Samples.w = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy + Texel);
+		float4 Cmpbits = Samples >= saturate(Input.ShadowTex.z);
+		DirShadow = dot(Cmpbits, 0.25);
+	}
+
 	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex0);
 	float3 Normals = normalize(Input.WorldNormal.xyz);
 	float3 Diffuse = LambertLighting(Normals, -_SunDirection.xyz) * _SunColor * DirShadow;
@@ -169,6 +125,16 @@ float4 ShadowedDecals_PS(VS2PS_ShadowedDecals Input) : COLOR
 	float4 OutputColor = DiffuseMap * float4(Lighting, Input.Color.a);
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
 	return OutputColor;
+}
+
+VS2PS Decals_VS(APP2VS Input)
+{
+	return GetVertexDecals(Input, false);
+}
+
+float4 Decals_PS(VS2PS Input) : COLOR
+{
+	return GetPixelDecals(Input, false);
 }
 
 #define GET_RENDERSTATES_DECAL \
