@@ -194,12 +194,10 @@ float4 Water_PS(in VS2PS Input) : COLOR
 		TangentNormal.xyz = normalize((TangentNormal.xyz * 2.0) - 1.0);
 	#endif
 
-	#if defined(USE_FRESNEL)
-		#if defined(FRESNEL_NORMALMAP)
-			float4 FresnelNormal = float4(TangentNormal, 1.0);
-		#else
-			float4 FresnelNormal = float4(0.0, 1.0, 0.0, 0.0);
-		#endif
+	#if defined(FRESNEL_NORMALMAP)
+		float4 FresnelNormal = float4(TangentNormal, 1.0);
+	#else
+		float4 FresnelNormal = float4(0.0, 1.0, 0.0, 0.0);
 	#endif
 
 	float3 WorldPos = Input.WorldPos;
@@ -225,12 +223,8 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = WaterLerp + (Specular * LightFactors);
 
-	#if defined(USE_FRESNEL)
-		float Fresnel = BASE_TRANSPARENCY - pow(dot(FresnelNormal.xyz, ViewVec), POW_TRANSPARENCY);
-		OutputColor.a = LightMap.r * Fresnel + _WaterColor.w;
-	#else
-		OutputColor.a = LightMap.r + _WaterColor.w;
-	#endif
+	float Fresnel = BASE_TRANSPARENCY - pow(dot(FresnelNormal.xyz, ViewVec), POW_TRANSPARENCY);
+	OutputColor.a = LightMap.r * Fresnel + _WaterColor.w;
 
 	// Thermals
 	if (FogColor.r < 0.01)

@@ -66,7 +66,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1;
-	float4 TexShadow : TEXCOORD1;
+	float4 ShadowTex : TEXCOORD1;
 	float3 VertexPos : TEXCOORD2;
 	float4 Color : COLOR0;
 };
@@ -99,9 +99,9 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMa
 	Output.P_Tex0_Tex1.xy = Input.TexCoord / 32767.0;
 	Output.P_Tex0_Tex1.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
 
-	Output.TexShadow = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
+	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
-	float4 Light = 0.0;
+	float3 Light = 0.0;
 	for (int i = 0; i < LightCount; i++)
 	{
 		float3 LightVec = Pos.xyz - _PointLightPosAtten[i].xyz;
@@ -109,7 +109,7 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMa
 		Light += (Attenuation * _PointLightColor[i]);
 	}
 
-	Output.Color = saturate(Light);
+	Output.Color.rgb = saturate(Light);
 	Output.Color.a = Input.Packed.w * 0.5;
 
 	Output.VertexPos = Pos.xyz;
@@ -122,7 +122,7 @@ float4 Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool S
 	float4 Base = tex2D(SampleColorMap, Input.P_Tex0_Tex1.xy);
 	float4 TerrainColor = tex2D(SampleTerrainColorMap, Input.P_Tex0_Tex1.zw);
 	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.P_Tex0_Tex1.zw);
-	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.TexShadow) : 1.0;
+	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
 	if (FogColor.r < 0.01)
@@ -131,7 +131,7 @@ float4 Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool S
 	}
 
 	TerrainColor.rgb = lerp(TerrainColor.rgb, 1.0, Input.Color.a);
-	float3 PointColor = (PointLightEnable) ? Input.Color.rgb * 0.125 : 0.0;
+	float3 PointColor = (PointLightEnable) ? Input.Color.rgb : 0.0;
 	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
 	TerrainLight += ((_SunColor.rgb * (TerrainShadow.rgb * TerrainLightMap.y)) + PointColor) * 2.0;
 
@@ -310,11 +310,12 @@ struct VS2PS_Simple
 {
 	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
-	float4 TexShadow : TEXCOORD1;
-	float3 SunLight : TEXCOORD2;
-	float3 VertexPos : TEXCOORD3;
-	float3 LightColor : COLOR0;
-	float3 TerrainColor : COLOR1;
+	float4 ShadowTex : TEXCOORD1;
+	float3 VertexPos : TEXCOORD2;
+
+	float4 Color : TEXCOORD3;
+	float4 TerrainLightMap : TEXCOORD4;
+	float4 TerrainColorMap : TEXCOORD5;
 };
 
 VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, uniform bool ShadowMapEnable)
@@ -323,11 +324,12 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
+
 	Output.Tex0 = Input.TexCoord / 32767.0;
 
-	Output.TexShadow = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
+	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
-	float3 Light = _GIColor * Input.TerrainLightMap.z;
+	float3 Light = 0.0;
 	for (int i = 0; i < LightCount; i++)
 	{
 		float3 LightVec = Pos.xyz - _PointLightPosAtten[i].xyz;
@@ -335,20 +337,11 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 		Light += (Attenuation * _PointLightColor[i]);
 	}
 
-	if (ShadowMapEnable)
-	{
-		Output.LightColor.rgb = Light;
-		Output.SunLight = (_SunColor * Input.TerrainLightMap.y) * 2.0;
-		Output.TerrainColor = lerp(Input.TerrainColorMap, 1.0, Input.Packed.w);
-	}
-	else
-	{
-		Light += (_SunColor * Input.TerrainLightMap.y) * 2.0;
-		Output.TerrainColor = lerp(Input.TerrainColorMap.rgb, 1.0, Input.Packed.w) * Light;
-	}
+	Output.Color.rgb = saturate(Light);
+	Output.Color.a = Input.Packed.w * 0.5;
 
-	Output.LightColor = saturate(Output.LightColor);
-	Output.TerrainColor = saturate(Output.TerrainColor);
+	Output.TerrainColorMap = saturate(Input.TerrainColorMap);
+	Output.TerrainLightMap = saturate(Input.TerrainLightMap);
 	Output.VertexPos = Pos.xyz;
 
 	return Output;
@@ -356,25 +349,25 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 
 float4 Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, uniform bool ShadowMapEnable) : COLOR
 {
-	float4 Base = tex2D(SampleColorMap, Input.Tex0);
-	float3 LightColor = (Base.rgb * Input.TerrainColor) * 2.0;
+	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
+	float4 TerrainColor = Input.TerrainColorMap;
+	float3 TerrainLightMap = Input.TerrainLightMap;
+	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
-	if (ShadowMapEnable)
-	{
-		float4 TerrainShadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
-		float3 Light = (Input.SunLight * TerrainShadow.rgb) + Input.LightColor.rgb;
-		LightColor = LightColor * Light;
-	}
-
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = LightColor;
-	OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
-
-	// Thermals
+	// If thermals assume gray color
 	if (FogColor.r < 0.01)
 	{
-		OutputColor.rgb = float3(lerp(0.43, 0.17, LightColor.b), 1.0, 0.0);
+		TerrainColor.rgb = 1.0 / 3.0;
 	}
+
+	TerrainColor.rgb = lerp(TerrainColor.rgb, 1.0, Input.Color.a);
+	float3 PointColor = (PointLightEnable) ? Input.Color.rgb : 0.0;
+	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
+	TerrainLight += ((_SunColor.rgb * (TerrainShadow.rgb * TerrainLightMap.y)) + PointColor) * 2.0;
+
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = ((Base.rgb * TerrainColor.rgb) * TerrainLight.rgb) * 2.0;
+	OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 
