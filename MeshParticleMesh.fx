@@ -115,6 +115,7 @@ float4 Additive_PS(VS2PS Input) : COLOR
 }
 
 #define GET_RENDERSTATES_MESH_PARTICLES(ZWRITE, SRCBLEND, DESTBLEND) \
+	ColorWriteEnable = RED|GREEN|BLUE; \
 	CullMode = CCW; \
 	ZEnable = TRUE; \
 	ZWriteEnable = ZWRITE; \
@@ -136,16 +137,6 @@ technique Diffuse
 	}
 }
 
-technique DiffuseWithZWrite
-{
-	pass Pass0
-	{
-		GET_RENDERSTATES_MESH_PARTICLES(TRUE, SRCALPHA, INVSRCALPHA)
-		VertexShader = compile vs_3_0 Diffuse_VS();
-		PixelShader = compile ps_3_0 Diffuse_PS();
-	}
-}
-
 technique Additive
 {
 	pass Pass0
@@ -153,5 +144,15 @@ technique Additive
 		GET_RENDERSTATES_MESH_PARTICLES(FALSE, ONE, ONE)
 		VertexShader = compile vs_3_0 Diffuse_VS();
 		PixelShader = compile ps_3_0 Additive_PS();
+	}
+}
+
+technique DiffuseWithZWrite
+{
+	pass Pass0
+	{
+		GET_RENDERSTATES_MESH_PARTICLES(TRUE, SRCALPHA, INVSRCALPHA)
+		VertexShader = compile vs_3_0 Diffuse_VS();
+		PixelShader = compile ps_3_0 Diffuse_PS();
 	}
 }

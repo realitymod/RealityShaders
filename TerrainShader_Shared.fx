@@ -524,7 +524,7 @@ technique TerrainOccludershadow
 		#if NVIDIA
 			ColorWriteEnable = 0;
 		#else
-			ColorWriteEnable = RED | BLUE | GREEN | ALPHA;
+			ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 		#endif
 
 		VertexShader = compile vs_3_0 Hi_OccluderShadow_VS();
