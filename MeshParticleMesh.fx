@@ -3,7 +3,7 @@
 	Description:
 	- Renders 3D particle debris in explosions
 	- Instanced to render up to to 26 particles in a drawcall
-	- TIP: Test the shader with PRBot4's Num6 weapon
+	- TIP: Test the shader with PRBot4/Num6 weapon
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -82,6 +82,7 @@ float GetLMOffset(float3 Pos)
 	return saturate(saturate((Pos.y - _HemiShadowAltitude) / 10.0f) + _LightmapIntensityOffset);
 }
 
+// Renders 3D debris found in explosions like in PRBot4/Num6
 float4 Diffuse_PS(VS2PS Input) : COLOR
 {
 	float2 GroundUV = GetGroundUV(Input.VertexPos);
@@ -97,15 +98,18 @@ float4 Diffuse_PS(VS2PS Input) : COLOR
 	return Diffuse;
 }
 
+// Renders circular shockwave found in explosions like in PRBot4/Num6
 float4 Additive_PS(VS2PS Input) : COLOR
 {
-	float4 HPos = mul(float4(Input.VertexPos.xyz, 1.0f), _WorldViewProj);
-
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color;
-	Diffuse.rgb = (_EffectSunColor.bbb < -0.1) ? float3(1.0, 0.0, 0.0) : Diffuse.rgb;
 
-	Diffuse.rgb *= Diffuse.a; // Mask with alpha since were doing an add
-	Diffuse.rgb *= GetFogValue(HPos, 0.0);
+	if(_EffectSunColor.bbb < -0.1)
+	{
+		Diffuse.rgb = float3(1.0, 0.0, 0.0);
+	}
+
+	// Mask with alpha since were doing an add
+	Diffuse.rgb *= Diffuse.a;
 
 	return Diffuse;
 }
