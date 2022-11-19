@@ -103,7 +103,7 @@ float4 Additive_PS(VS2PS Input) : COLOR
 {
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color;
 
-	if(_EffectSunColor.bbb < -0.1)
+	if(_EffectSunColor.b < -0.1)
 	{
 		Diffuse.rgb = float3(1.0, 0.0, 0.0);
 	}
