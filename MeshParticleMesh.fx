@@ -1,6 +1,9 @@
 
 /*
-	Description: Renders particle lighting
+	Description:
+	- Renders 3D particle debris in explosions
+	- Instanced to render up to to 26 particles in a drawcall
+	- TIP: Test the shader with PRBot4's Num6 weapon
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -35,69 +38,74 @@ struct APP2VS
    	float3 Binorm : BINORMAL;
 };
 
-struct VS2PS_Diffuse
+struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 DiffuseMap_GroundUV : TEXCOORD0; // .xy = DiffuseMap; .zw = GroundUV
-	float3 Lerp_LMapIntOffset: TEXCOORD1;
-	float3 VertexPos : TEXCOORD2;
-
+	float2 Tex0 : TEXCOORD0;
+	float3 VertexPos : TEXCOORD1;
 	float4 Color : COLOR0;
-	float4 LightFactor : COLOR1;
 };
 
-VS2PS_Diffuse Diffuse_VS(APP2VS Input)
+VS2PS Diffuse_VS(APP2VS Input)
 {
-	VS2PS_Diffuse Output = (VS2PS_Diffuse)0;
+	VS2PS Output = (VS2PS)0;
 
    	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
 
 	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
-
 	Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProj);
-	Output.VertexPos = Output.HPos.xyz;
+	Output.VertexPos = Pos.xyz;
 
 	// Compute Cubic polynomial factors.
 	float Age = _AgeAndAlphaArray[IndexArray[0]][0];
 	float4 PC = float4(pow(Age, float3(3.0, 2.0, 1.0)), 1.0);
-
 	float ColorBlendFactor = min(dot(m_colorBlendGraph, PC), 1.0);
-	float3 Color = ColorBlendFactor * m_color2.rgb;
-	Color += (1.0 - ColorBlendFactor) * m_color1AndLightFactor.rgb;
- 	Output.Color.rgb = Color;
+ 	Output.Color.rgb = lerp(m_color1AndLightFactor.rgb, m_color2.rgb, ColorBlendFactor);
  	Output.Color.a = _AgeAndAlphaArray[IndexArray[0]][1];
 	Output.Color = saturate(Output.Color);
 
-	Output.LightFactor = saturate(m_color1AndLightFactor.a);
-
 	// Pass-through texcoords
-	Output.DiffuseMap_GroundUV.xy = Input.TexCoord.xy;
-
-	// Hemi lookup coords
- 	Output.DiffuseMap_GroundUV.zw = ((Pos.xyz + (_HemiMapInfo.z / 2.0)).xz - _HemiMapInfo.xy)/ _HemiMapInfo.z;
- 	Output.Lerp_LMapIntOffset = saturate(saturate((Pos.y - _HemiShadowAltitude) / 10.0f) + _LightmapIntensityOffset);
+	Output.Tex0 = Input.TexCoord;
 
 	return Output;
 }
 
-float4 Diffuse_PS(VS2PS_Diffuse Input) : COLOR
+float2 GetGroundUV(float3 Pos)
 {
-	float4 Diffuse = tex2D(SampleDiffuseMap, Input.DiffuseMap_GroundUV.xy) * Input.Color; // Diffuse Map
-	float4 TLUT = tex2D(SampleLUT, Input.DiffuseMap_GroundUV.zw); // Hemi map
-	Diffuse.rgb *= GetParticleLighting(TLUT.a, Input.Lerp_LMapIntOffset, Input.LightFactor.a);
-	ApplyFog(Diffuse.rgb, GetFogValue(Input.VertexPos, 0.0));
+	return ((Pos.xyz + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
+}
+
+float GetLMOffset(float3 Pos)
+{
+	return saturate(saturate((Pos.y - _HemiShadowAltitude) / 10.0f) + _LightmapIntensityOffset);
+}
+
+float4 Diffuse_PS(VS2PS Input) : COLOR
+{
+	float2 GroundUV = GetGroundUV(Input.VertexPos);
+	float LMOffset = GetLMOffset(Input.VertexPos);
+	float4 HPos = mul(float4(Input.VertexPos.xyz, 1.0f), _WorldViewProj);
+
+	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color; // Diffuse map
+	float4 TLUT = tex2D(SampleLUT, GroundUV); // Hemi map
+	Diffuse.rgb *= GetParticleLighting(TLUT.a, LMOffset, saturate(m_color1AndLightFactor.a));
+
+	ApplyFog(Diffuse.rgb, GetFogValue(HPos, 0.0));
 
 	return Diffuse;
 }
 
-float4 Additive_PS(VS2PS_Diffuse Input) : COLOR
+float4 Additive_PS(VS2PS Input) : COLOR
 {
-	float4 Diffuse = tex2D(SampleDiffuseMap, Input.DiffuseMap_GroundUV.xy) * Input.Color;
+	float4 HPos = mul(float4(Input.VertexPos.xyz, 1.0f), _WorldViewProj);
+
+	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color;
 	Diffuse.rgb = (_EffectSunColor.bbb < -0.1) ? float3(1.0, 0.0, 0.0) : Diffuse.rgb;
+
 	Diffuse.rgb *= Diffuse.a; // Mask with alpha since were doing an add
-	Diffuse.rgb *= GetFogValue(Input.VertexPos, 0.0);
+	Diffuse.rgb *= GetFogValue(HPos, 0.0);
 
 	return Diffuse;
 }
