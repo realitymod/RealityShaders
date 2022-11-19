@@ -82,12 +82,12 @@ float4 FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform
 	#if LIGHTONLY
 		float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
 		float4 Component = tex2D(SampleTex2_Clamp, Input.ColorTex);
-		float ChartContrib = dot(_ComponentSelector, Component);
+		float ChartContrib = dot(_ComponentSelector.xyz, Component.xyz);
 		return ChartContrib * Light;
 	#else
 		float3 Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
 		float4 Component = tex2D(SampleTex2_Clamp, Input.DetailTex);
-		float ChartContrib = dot(_ComponentSelector, Component);
+		float ChartContrib = dot(_ComponentSelector.xyz, Component.xyz);
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorTex);
 
 		// If thermals assume no shadows and gray color

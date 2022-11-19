@@ -205,14 +205,13 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float3 Reflection = normalize(reflect(-ViewVec, TangentNormal));
 	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
 
-	float LerpMod = -(1.0 - saturate(ShadowFactor + SHADOW_FACTOR));
-	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
-
 	float LightFactors = SpecularColor.a * ShadowFactor;
 	float3 DotLR = saturate(dot(LightVec, Reflection));
 	float3 Specular = pow(abs(DotLR), SpecularPower) * SpecularColor.rgb;
 
 	float4 OutputColor = 0.0;
+	float LerpMod = -(1.0 - saturate(ShadowFactor + SHADOW_FACTOR));
+	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 	OutputColor.rgb = WaterLerp + (Specular * LightFactors);
 
 	// Thermals

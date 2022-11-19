@@ -102,7 +102,7 @@ float4 Shared_ZFillLightMap_1_PS(VS2PS_Shared_ZFillLightMap Input) : COLOR
 {
 	float4 Color = tex2D(SampleTex0_Clamp, Input.Tex0);
 	float4 OutputColor;
-	OutputColor.rgb = Color.b * _GIColor;
+	OutputColor.rgb = _GIColor * Color.b;
 	OutputColor.a = saturate(Color.g);
 	return OutputColor;
 }
@@ -209,11 +209,6 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	// tl: changed a few things with this factor:
-	// - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.
-	// - by pre-multiplying the _WaterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
-	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
-
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorTex);
@@ -241,6 +236,11 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 	float4 OutputColor = ColorMap * Light * 2.0;
 	OutputColor *= lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x);
 	OutputColor *= lerp(0.5, Mounten, LowComponent.z);
+
+	// tl: changed a few things with this factor:
+	// - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.
+	// - by pre-multiplying the _WaterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
+	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 	OutputColor = lerp(OutputColor * 4.0, _TerrainWaterColor, WaterLerp);
 
 	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
@@ -329,7 +329,7 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 struct VS2PS_Shared_UnderWater
 {
 	float4 HPos : POSITION;
-	float4 P_WorldPos_Water : TEXCOORD0; // .xyz = WorldPos; .w = Water;
+	float3 WorldPos : TEXCOORD0;
 };
 
 VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared_Default Input)
@@ -344,21 +344,20 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared_Default Input)
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-
-	Output.P_WorldPos_Water.xyz = WorldPos.xyz;
-
-	// tl: changed a few things with this factor:
-	// - by pre-multiplying the _WaterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
-	Output.P_WorldPos_Water.w = saturate((WorldPos.y / -3.0) + _WaterHeight);
+	Output.WorldPos = WorldPos;
 
 	return Output;
 }
 
 float4 Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input) : COLOR
 {
+	float3 WorldPos = Input.WorldPos;
 	float3 OutputColor = _TerrainWaterColor.rgb;
-	ApplyFog(OutputColor, GetFogValue(Input.P_WorldPos_Water.xyz, _CameraPos.xyz));
-	return float4(OutputColor, Input.P_WorldPos_Water.w);
+	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
+
+	ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos));
+
+	return float4(OutputColor, WaterLerp);
 }
 
 /*
