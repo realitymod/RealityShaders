@@ -4,10 +4,9 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/FXCommon.fxh"
 
-// constant array
+// Constant array
 struct TemplateParameters
 {
 	float4 m_uvRangeLMapIntensiyAndParticleMaxSize;
@@ -20,7 +19,7 @@ struct TemplateParameters
 };
 
 // TODO: change the value 10 to the approprite max value for the current hardware, need to make this a variable
-TemplateParameters _Temps[10] : TemplateParameters;
+TemplateParameters Template[10] : TemplateParameters;
 
 struct APP2VS
 {
@@ -37,73 +36,67 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Color : TEXCOORD0;
-	float4 DiffuseCoords : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
-	float2 HemiLUTCoord : TEXCOORD2; // Hemi look-up table coordinates
-	float3 VertexPos : TEXCOORD3;
-
-	float4 AnimBFactor : COLOR0;
-	float4 LMapIntOffsetAndLFactor : COLOR1;
+	float3 ViewPos : TEXCOORD0;
+	float4 Tex0 : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
+	float3 Color : TEXCOORD2;
+	float4 Maps : TEXCOORD3; // [Alpha, BlendFactor, LMOffset, LightFactor]
+							 // [LightFactor, Alpha, BlendFactor, LMOffset]
 };
 
 VS2PS Particle_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
+	// Unpack vertex attributes
+	float AgeFactor = Input.AgeFactorAndGraphIndex[0];
+	float ID = Input.AgeFactorAndGraphIndex[1];
+	float Intensity = Input.IntensityAndRandomIntensity[0];
+	float RandomIntensity = Input.IntensityAndRandomIntensity[1];
+	float RandomSize = Input.RandomSizeAlphaAndIntensityBlendFactor[0];
+	float Alpha = Input.RandomSizeAlphaAndIntensityBlendFactor[1];
+	float IntensityBlendFactor = Input.RandomSizeAlphaAndIntensityBlendFactor[2];
+
+	float4 Rotation = Input.RotationAndWaterSurfaceOffset * _OneOverShort;
+	float2 TexCoords = Input.TexCoords * _OneOverShort;
+	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
+
 	// Compute Cubic polynomial factors.
 	float4 PC = float4(pow(Input.AgeFactorAndGraphIndex[0], float3(3.0, 2.0, 1.0)), 1.0);
+	float ColorBlendFactor = min(dot(Template[ID].m_colorBlendGraph, PC), 1.0);
+	float AlphaBlendFactor = min(dot(Template[ID].m_transparencyGraph, PC), 1.0);
+	float SizeFactor = min(dot(Template[ID].m_sizeGraph, PC), 1.0);
 
-	float ColorBlendFactor = min(dot(_Temps[Input.AgeFactorAndGraphIndex.y].m_colorBlendGraph, PC), 1.0);
-	float3 Color = ColorBlendFactor * _Temps[Input.AgeFactorAndGraphIndex.y].m_color2.rgb;
-	Color += (1.0 - ColorBlendFactor) * _Temps[Input.AgeFactorAndGraphIndex.y].m_color1AndLightFactor.rgb;
+	float3 Color = lerp(Template[ID].m_color1AndLightFactor.rgb, Template[ID].m_color2.rgb, ColorBlendFactor);
+	Output.Color.rgb = (Color * Intensity) + RandomIntensity;
 
-	Output.Color.rgb = (Color * Input.IntensityAndRandomIntensity[0]) + Input.IntensityAndRandomIntensity[1];
-
-	float AlphaBlendFactor = min(dot(_Temps[Input.AgeFactorAndGraphIndex.y].m_transparencyGraph, PC), 1.0);
-	// Output.Color.a = AlphaBlendFactor * Input.RandomSizeAlphaAndIntensityBlendFactor[1];
-
-	Output.AnimBFactor.a = AlphaBlendFactor * Input.RandomSizeAlphaAndIntensityBlendFactor[1];
-	Output.AnimBFactor.b = Input.RandomSizeAlphaAndIntensityBlendFactor[2];
-	Output.AnimBFactor = saturate(Output.AnimBFactor);
-
-	Output.LMapIntOffsetAndLFactor.a = saturate(saturate((Input.Pos.y - _HemiShadowAltitude) / 10.0f) + _Temps[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.z);
-	Output.LMapIntOffsetAndLFactor.b = _Temps[Input.AgeFactorAndGraphIndex.y].m_color1AndLightFactor.a;
-	Output.LMapIntOffsetAndLFactor = saturate(Output.LMapIntOffsetAndLFactor);
-
-	// Compute size of particle using the constants of the _Temps[Input.AgeFactorAndGraphIndex.y]ate (mSizeGraph)
-	float Size = min(dot(_Temps[Input.AgeFactorAndGraphIndex.y].m_sizeGraph, PC), 1.0) * _Temps[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.w;
-	Size += Input.RandomSizeAlphaAndIntensityBlendFactor.x;
-
-	// Unpack verts
-	float4 Rotation = Input.RotationAndWaterSurfaceOffset * _OneOverShort;
-	float2 TexCoords = Input.TexCoords*_OneOverShort;
+	Output.Maps[0] = Template[ID].m_color1AndLightFactor.a;
+	Output.Maps[1] = AlphaBlendFactor * Alpha;
+	Output.Maps[2] = IntensityBlendFactor;
+	Output.Maps[3] = saturate((Input.Pos.y - _HemiShadowAltitude) / 10.0f) + Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.z;
+	Output.Maps = saturate(Output.Maps);
 
 	// Displace vertex
-	float3 ScaledPos = Input.DisplaceCoords * Size + Input.Pos.xyz;
+	float Size = (SizeFactor * Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.w) + RandomSize;
+	float3 ScaledPos = (Input.DisplaceCoords * Size) + Input.Pos.xyz;
 	ScaledPos.y += Rotation.w;
 
 	float4 Pos = mul(float4(ScaledPos, 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
+	Output.ViewPos = Pos.xyz;
 
 	// Compute texcoords
-	// Rotate and scale to correct uv space and zoom in.
-	float2 RotatedTexCoords = float2(TexCoords.x * Rotation.y - TexCoords.y * Rotation.x, TexCoords.x * Rotation.x + TexCoords.y * Rotation.y);
-	RotatedTexCoords *= _Temps[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.xy * _UVScale;
+	// Rotate and scale to correct u,v space and zoom in.
+	float2x2 RotationMat = { Rotation.y, Rotation.x, -Rotation.x, Rotation.y };
+	float2 RotatedTexCoords = mul(TexCoords.xy, RotationMat);
+	RotatedTexCoords *= Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.xy * _UVScale;
 
 	// Bias texcoords
-	RotatedTexCoords.x += _Temps[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.x;
-	RotatedTexCoords.y = _Temps[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.y - RotatedTexCoords.y;
+	RotatedTexCoords.y = -RotatedTexCoords.y;
+	RotatedTexCoords = RotatedTexCoords + Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.xy;
 	RotatedTexCoords *= 0.5f;
 
 	// Offset texcoords for particle diffuse
-	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
-	Output.DiffuseCoords = RotatedTexCoords.xyxy + UVOffsets.xyzw;
-
-	// Hemi lookup table coords
-	Output.HemiLUTCoord.xy = ((Input.Pos + (_HemiMapInfo.z/2)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
-	Output.HemiLUTCoord.y = 1.0 - Output.HemiLUTCoord.y;
-
-	Output.VertexPos = Pos.xyz;
+	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
 	return Output;
 }
@@ -111,62 +104,56 @@ VS2PS Particle_VS(APP2VS Input)
 float4 Particle_Show_Fill_PS(VS2PS Input) : COLOR
 {
 	float4 OutputColor = _EffectSunColor.rrrr;
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
+
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
 	return OutputColor;
 }
 
 float4 Particle_Low_PS(VS2PS Input) : COLOR
 {
-	float4 OutputColor = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
+	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.a *= Input.AnimBFactor.a;
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
+	OutputColor.a *= Input.Maps[1];
+
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
 	return OutputColor;
 }
 
 float4 Particle_Medium_PS(VS2PS Input) : COLOR
 {
-	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
-	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
+	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
 
-	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.AnimBFactor.b);
+	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.Maps[2]);
+	OutputColor.rgb *= GetParticleLighting(1.0, Input.Maps[3], Input.Maps[0]);
 	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.rgb *= GetParticleLighting(1.0, Input.LMapIntOffsetAndLFactor.a, Input.LMapIntOffsetAndLFactor.b);
-	OutputColor.a *= Input.AnimBFactor.a;
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
+	OutputColor.a *= Input.Maps[1];
+
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
 	return OutputColor;
 }
 
 float4 Particle_High_PS(VS2PS Input) : COLOR
 {
-	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.xy);
-	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.DiffuseCoords.zw);
-	float4 TLut = tex2D(SampleLUT, Input.HemiLUTCoord.xy);
+	// Hemi lookup table coords
+	float3 Pos = Input.ViewPos;
+	float2 HemiTex = ((Pos + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
+	HemiTex.y = 1.0 - HemiTex.y;
 
-	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.AnimBFactor.b);
+	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
+	float4 TLut = tex2D(SampleLUT, HemiTex);
+
+	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.Maps[2]);
+	OutputColor.rgb *= GetParticleLighting(TLut.a, Input.Maps[3], Input.Maps[0]);
 	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.rgb *= GetParticleLighting(TLut.a, Input.LMapIntOffsetAndLFactor.a, Input.LMapIntOffsetAndLFactor.b);
-	OutputColor.a *= Input.AnimBFactor.a;
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, 0.0));
+	OutputColor.a *= Input.Maps[1];
+
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
 	return OutputColor;
 }
 
 // Ordinary technique
-
-#define GET_RENDERSTATES_NSAP(SRCBLEND, DESTBLEND) \
-	CullMode = NONE; \
-	ZEnable = TRUE; \
-	ZFunc = LESSEQUAL; \
-	ZWriteEnable = FALSE; \
-	StencilEnable = FALSE; \
-	StencilFunc = ALWAYS; \
-	StencilPass = ZERO; \
-	AlphaTestEnable = TRUE; \
-	AlphaRef = <_AlphaPixelTestRef>; \
-	AlphaBlendEnable = TRUE; \
-	SrcBlend = SRCBLEND; \
-	DestBlend = DESTBLEND; \
-	SRGBWriteEnable = FALSE; \
 
 /*	int Declaration[] =
 	{
@@ -182,6 +169,21 @@ float4 Particle_High_PS(VS2PS Input) : COLOR
 		DECLARATION_END	// End macro
 	};
 */
+
+#define GET_RENDERSTATES_NSAP(SRCBLEND, DESTBLEND) \
+	CullMode = NONE; \
+	ZEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
+	ZWriteEnable = FALSE; \
+	StencilEnable = FALSE; \
+	StencilFunc = ALWAYS; \
+	StencilPass = ZERO; \
+	AlphaTestEnable = TRUE; \
+	AlphaRef = <_AlphaPixelTestRef>; \
+	AlphaBlendEnable = TRUE; \
+	SrcBlend = SRCBLEND; \
+	DestBlend = DESTBLEND; \
+	SRGBWriteEnable = FALSE; \
 
 technique NSAParticleShowFill
 <
