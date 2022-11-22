@@ -60,10 +60,10 @@ VS2PS Diffuse_VS(APP2VS Input)
 
 	// Compute Cubic polynomial factors.
 	float Age = _AgeAndAlphaArray[IndexArray[0]][0];
-	float4 PC = float4(pow(Age, float3(3.0, 2.0, 1.0)), 1.0);
-	float ColorBlendFactor = min(dot(m_colorBlendGraph, PC), 1.0);
- 	Output.Color.rgb = lerp(m_color1AndLightFactor.rgb, m_color2.rgb, ColorBlendFactor);
- 	Output.Color.a = _AgeAndAlphaArray[IndexArray[0]][1];
+	float4 CubicPolynomial = float4(pow(Age, float3(3.0, 2.0, 1.0)), 1.0);
+	float ColorBlendFactor = min(dot(m_colorBlendGraph, CubicPolynomial), 1.0);
+	Output.Color.rgb = lerp(m_color1AndLightFactor.rgb, m_color2.rgb, ColorBlendFactor);
+	Output.Color.a = _AgeAndAlphaArray[IndexArray[0]][1];
 	Output.Color = saturate(Output.Color);
 
 	// Pass-through texcoords

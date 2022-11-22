@@ -36,9 +36,9 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Color : TEXCOORD0;
+	float3 ViewPos : TEXCOORD0;
 	float4 Tex0 : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
-	float3 ViewPos : TEXCOORD2;
+	float3 Color : TEXCOORD2;
 	float4 Maps : TEXCOORD3; // [LightFactor, Alpha, BlendFactor, LMOffset]
 };
 
@@ -59,11 +59,11 @@ VS2PS Particle_VS(APP2VS Input)
 	float2 Rotation = Input.Rotation * _OneOverShort;
 	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
 
-	// Compute Cubic polynomial factors.
-	float4 PC = float4(pow(AgeFactor, float3(3.0, 2.0, 1.0)), 1.0);
-	float ColorBlendFactor = min(dot(Template[ID].m_colorBlendGraph, PC), 1.0);
-	float AlphaBlendFactor = min(dot(Template[ID].m_transparencyGraph, PC), 1.0);
-	float SizeFactor = min(dot(Template[ID].m_sizeGraph, PC), 1.0);
+	// Compute cubic polynomial factors.
+	float4 CubicPolynomial = float4(pow(AgeFactor, float3(3.0, 2.0, 1.0)), 1.0);
+	float ColorBlendFactor = min(dot(Template[ID].m_colorBlendGraph, CubicPolynomial), 1.0);
+	float AlphaBlendFactor = min(dot(Template[ID].m_transparencyGraph, CubicPolynomial), 1.0);
+	float SizeFactor = min(dot(Template[ID].m_sizeGraph, CubicPolynomial), 1.0);
 
 	float3 Color = lerp(Template[ID].m_color1AndLightFactor.rgb, Template[ID].m_color2.rgb, ColorBlendFactor);
 	Output.Color.rgb = (Color * Intensity) + RandomIntensity;
@@ -147,11 +147,9 @@ float4 Particle_High_PS(VS2PS Input) : COLOR
 	return Color;
 }
 
-float4 Particle_Show_Fill_PS(VS2PS Input) : COLOR
+float4 Particle_ShowFill_PS(VS2PS Input) : COLOR
 {
-	float4 OutputColor = _EffectSunColor.rrrr;
-	OutputColor.rgb *= GetFogValue(Input.ViewPos, 0.0);
-	return OutputColor;
+	return _EffectSunColor.rrrr;
 }
 
 float4 Particle_Low_Additive_PS(VS2PS Input) : COLOR
@@ -230,7 +228,7 @@ technique ParticleShowFill
 	{
 		GET_RENDERSTATES_PARTICLES(ONE, ONE)
 		VertexShader = compile vs_3_0 Particle_VS();
-		PixelShader = compile ps_3_0 Particle_Show_Fill_PS();
+		PixelShader = compile ps_3_0 Particle_ShowFill_PS();
 	}
 }
 
