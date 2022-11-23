@@ -3,11 +3,10 @@
 	Description: Renders lighting for undergrowth such as grass
 */
 
-string Category = "Effects\\Lighting";
-
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/RaCommon.fxh"
+
+string Category = "Effects\\Lighting";
 
 uniform float4x4 _WorldViewProj : WorldViewProjection;
 uniform float4x4 _WorldView : WorldView;

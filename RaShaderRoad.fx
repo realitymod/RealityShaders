@@ -4,7 +4,6 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/RaCommon.fxh"
 
 #define LIGHT_MUL float3(0.8, 0.8, 0.4)
@@ -20,42 +19,6 @@ uniform float4 PosUnpack;
 uniform float TexUnpack;
 
 uniform vector textureFactor = float4(1.0f, 1.0f, 1.0f, 1.0f);
-
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
-	sampler SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = LINEAR; \
-		MagFilter = LINEAR; \
-		MipFilter = LINEAR; \
-		AddressU = ADDRESS; \
-		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
-	}; \
-
-#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
-	sampler SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = FILTER_STM_DIFF_MIN; \
-		MagFilter = FILTER_STM_DIFF_MAG; \
-		MipFilter = LINEAR; \
-		MaxAnisotropy = 16; \
-		AddressU = ADDRESS; \
-		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
-	}; \
-
-uniform texture LightMap;
-CREATE_SAMPLER(SampleLightMap, LightMap, WRAP, FALSE)
-
-#if defined(USE_DETAIL)
-	uniform texture DetailMap;
-	CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap, WRAP, FALSE)
-#endif
-
-uniform texture DiffuseMap;
-CREATE_DYNAMIC_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP, FALSE)
 
 string GlobalParameters[] =
 {
@@ -95,6 +58,42 @@ string reqVertexElement[] =
 		"TDetailPacked2D",
 	#endif
 };
+
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
+#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = FILTER_STM_DIFF_MIN; \
+		MagFilter = FILTER_STM_DIFF_MAG; \
+		MipFilter = LINEAR; \
+		MaxAnisotropy = 16; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
+uniform texture LightMap;
+CREATE_SAMPLER(SampleLightMap, LightMap, WRAP, FALSE)
+
+#if defined(USE_DETAIL)
+	uniform texture DetailMap;
+	CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap, WRAP, FALSE)
+#endif
+
+uniform texture DiffuseMap;
+CREATE_DYNAMIC_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP, FALSE)
 
 struct APP2VS
 {

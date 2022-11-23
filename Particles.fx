@@ -1,6 +1,6 @@
 
 /*
-	Description: Renders static particles
+	Description: Renders 2D particles
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -103,6 +103,11 @@ VS2PS Particle_VS(APP2VS Input)
 	Ordinary techniques
 */
 
+float4 Particle_ShowFill_PS(VS2PS Input) : COLOR
+{
+	return _EffectSunColor.rrrr;
+}
+
 float4 Particle_Low_PS(VS2PS Input) : COLOR
 {
 	float4 Color = tex2D(SampleDiffuseMap, Input.Tex0.xy);
@@ -147,11 +152,6 @@ float4 Particle_High_PS(VS2PS Input) : COLOR
 	return Color;
 }
 
-float4 Particle_ShowFill_PS(VS2PS Input) : COLOR
-{
-	return _EffectSunColor.rrrr;
-}
-
 float4 Particle_Low_Additive_PS(VS2PS Input) : COLOR
 {
 	// Mask with alpha since were doing an add
@@ -192,6 +192,16 @@ float4 Particle_High_Additive_PS(VS2PS Input) : COLOR
 	DestBlend = DESTBLEND; \
 	SRGBWriteEnable = FALSE; \
 
+technique ParticleShowFill
+{
+	pass Pass0
+	{
+		GET_RENDERSTATES_PARTICLES(ONE, ONE)
+		VertexShader = compile vs_3_0 Particle_VS();
+		PixelShader = compile ps_3_0 Particle_ShowFill_PS();
+	}
+}
+
 technique ParticleLow
 {
 	pass Pass0
@@ -219,16 +229,6 @@ technique ParticleHigh
 		GET_RENDERSTATES_PARTICLES(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_High_PS();
-	}
-}
-
-technique ParticleShowFill
-{
-	pass Pass0
-	{
-		GET_RENDERSTATES_PARTICLES(ONE, ONE)
-		VertexShader = compile vs_3_0 Particle_VS();
-		PixelShader = compile ps_3_0 Particle_ShowFill_PS();
 	}
 }
 

@@ -4,7 +4,6 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/RaCommon.fxh"
 
 #if !defined(_HASSHADOW_)
@@ -18,24 +17,6 @@ uniform float2 NormalUnpack;
 uniform float TexUnpack;
 uniform float4 ObjectSpaceCamPos;
 Light Lights[1];
-
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, IS_SRGB) \
-	sampler SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = LINEAR; \
-		MagFilter = LINEAR; \
-		MipFilter = LINEAR; \
-		AddressU = WRAP; \
-		AddressV = WRAP; \
-		SRGBTexture = IS_SRGB; \
-	}; \
-
-uniform texture DetailMap;
-CREATE_SAMPLER(SampleDetailMap, DetailMap, FALSE)
-
-uniform texture DiffuseMap;
-CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, FALSE)
 
 string GlobalParameters[] =
 {
@@ -80,6 +61,24 @@ string reqVertexElement[] =
 		"TDetailPacked2D",
 	#endif
 };
+
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, IS_SRGB) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = WRAP; \
+		AddressV = WRAP; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
+uniform texture DetailMap;
+CREATE_SAMPLER(SampleDetailMap, DetailMap, FALSE)
+
+uniform texture DiffuseMap;
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, FALSE)
 
 struct APP2VS
 {

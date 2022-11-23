@@ -4,7 +4,6 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/RaCommon.fxh"
 
 // Affects how transparency is claculated depending on camera height.
@@ -50,36 +49,6 @@ uniform float4 PointColor;
 	#define _WaterColor WaterColor
 #endif
 
-#define CREATE_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
-	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = LINEAR; \
-		MagFilter = LINEAR; \
-		MipFilter = LINEAR; \
-		AddressU = ADDRESS; \
-		AddressV = ADDRESS; \
-		AddressW = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
-	}; \
-
-uniform texture CubeMap;
-CREATE_SAMPLER(samplerCUBE, SampleCubeMap, CubeMap, WRAP, FALSE)
-
-#if defined(USE_3DTEXTURE)
-	uniform texture WaterMap;
-	CREATE_SAMPLER(sampler, SampleWaterMap, WaterMap, WRAP, FALSE)
-#else
-	uniform texture WaterMapFrame0;
-	CREATE_SAMPLER(sampler, SampleWaterMap0, WaterMapFrame0, WRAP, FALSE)
-
-	uniform texture WaterMapFrame1;
-	CREATE_SAMPLER(sampler, SampleWaterMap1, WaterMapFrame1, WRAP, FALSE)
-#endif
-
-uniform texture LightMap;
-CREATE_SAMPLER(sampler, SampleLightMap, LightMap, CLAMP, FALSE)
-
 string GlobalParameters[] =
 {
 	"WorldSpaceCamPos",
@@ -121,6 +90,36 @@ string reqVertexElement[] =
 	"Position",
 	"TLightMap2D"
 };
+
+#define CREATE_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		AddressW = ADDRESS; \
+		SRGBTexture = IS_SRGB; \
+	}; \
+
+uniform texture CubeMap;
+CREATE_SAMPLER(samplerCUBE, SampleCubeMap, CubeMap, WRAP, FALSE)
+
+#if defined(USE_3DTEXTURE)
+	uniform texture WaterMap;
+	CREATE_SAMPLER(sampler, SampleWaterMap, WaterMap, WRAP, FALSE)
+#else
+	uniform texture WaterMapFrame0;
+	CREATE_SAMPLER(sampler, SampleWaterMap0, WaterMapFrame0, WRAP, FALSE)
+
+	uniform texture WaterMapFrame1;
+	CREATE_SAMPLER(sampler, SampleWaterMap1, WaterMapFrame1, WRAP, FALSE)
+#endif
+
+uniform texture LightMap;
+CREATE_SAMPLER(sampler, SampleLightMap, LightMap, CLAMP, FALSE)
 
 struct APP2VS
 {

@@ -4,7 +4,6 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/RaCommon.fxh"
 
 /*
@@ -134,9 +133,7 @@ CREATE_DYNAMIC_SAMPLER(sampler, SampleTex6_Wrap, Tex6, WRAP, FALSE)
 CREATE_SAMPLER(samplerCUBE, SamplerTex6_Cube, Tex6, WRAP, FALSE)
 
 #include "shaders/CommonPixelLight.fxh"
-
 #include "shaders/TerrainShader_Shared.fx"
-
 #if HIGHTERRAIN || MIDTERRAIN
 	#include "shaders/TerrainShader_Hi.fx"
 #else

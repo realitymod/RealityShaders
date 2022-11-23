@@ -9,8 +9,6 @@
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaShaderSTMCommon.fxh"
 
-#define SkyNormal float3(0.78, 0.52, 0.65)
-
 // tl: Alias packed data indices to regular indices:
 #if defined(TexBasePackedInd)
 	#define TexBaseInd TexBasePackedInd
@@ -36,7 +34,7 @@
 	#define PERPIXEL
 #endif
 
-// common vars
+// Common vars
 Light Lights[NUM_LIGHTS];
 
 struct APP2VS
@@ -248,21 +246,14 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
-		float DotLN = saturate(dot(NormalVec.xyz / 5.0, -Lights[0].dir));
-		float3 InvDot = saturate((1.0 - DotLN) * StaticSkyColor * SkyNormal.z);
+		// We add ambient (BumpedSky) here to get correct ambient for surfaces parallel to the sun
+		float DotLN = saturate(dot(NormalVec.xyz, -Lights[0].dir) / 5.0);
+		float InvDot = saturate((1.0 - DotLN) * 0.65);
 
-		#if _LIGHTMAP_
-			// We add ambient (BumpedSky) here to get correct ambient for surfaces parallel to the sun
-			float3 BumpedSky = InvDot * Lightmap.b;
-			float3 BumpedDiffuse = BumpedSky + Light.Diffuse;
-
-			float3 PointColor = SinglePointColor * Lightmap.r;
-			Light.Diffuse = PointColor + lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
-			Light.Specular = Light.Specular * Lightmap.g;
-		#else
-			float3 BumpedSky = InvDot;
-			Light.Diffuse = BumpedSky + Light.Diffuse;
-		#endif
+		float3 PointColor = SinglePointColor * Lightmap.r;
+		float3 BumpedSky = (StaticSkyColor * InvDot) * Lightmap.b;
+		Light.Diffuse = PointColor + BumpedSky + (Light.Diffuse * Lightmap.g);
+		Light.Specular = Light.Specular * Lightmap.g;
 
 		OutputColor.rgb = ((DiffuseMap.rgb * Light.Diffuse) + Light.Specular) * 2.0;
 	#endif

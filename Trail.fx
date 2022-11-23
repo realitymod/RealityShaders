@@ -4,7 +4,6 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/FXCommon.fxh"
 
 // UNIFORM INPUTS

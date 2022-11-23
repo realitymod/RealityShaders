@@ -4,7 +4,6 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/RaCommon.fxh"
 
 uniform float4x4 _WorldViewProj : WorldViewProjection;

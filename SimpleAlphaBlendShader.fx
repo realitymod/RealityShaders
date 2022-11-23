@@ -75,18 +75,3 @@ technique t0
 		PixelShader = compile ps_3_0 Shader_PS();
 	}
 }
-
-/*
-	technique marked
-	{
-		pass Pass0
-		{
-			CullMode = NONE;
-			AlphaBlendEnable = FALSE;
-			Lighting = TRUE;
-		
-			VertexShader = compile vs_3_0 Shader_VS(_WorldViewProj, MaterialAmbient, MaterialDiffuse, LhtDir);
-			PixelShader = compile ps_3_0 PShaderMarked(samplebase);
-		}
-	}
-*/

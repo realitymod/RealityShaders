@@ -6,22 +6,17 @@
 #include "shaders/RealityGraphics.fxh"
 
 float4x4 _WorldViewProj : WORLDVIEWPROJ;
-
 float4 _CellPositions[32] : CELLPOSITIONS;
 float4 _Deviations[16] : DEVIATIONGROUPS;
-
 float4 _ParticleColor: PARTICLECOLOR;
-
 float4 _CameraPos : CAMERAPOS;
-
 float3 _FadeOutRange : FADEOUTRANGE;
 float3 _FadeOutDelta : FADEOUTDELTA;
-
 float3 _PointScale : POINTSCALE;
 float _ParticleSize : PARTICLESIZE;
 float _MaxParticleSize : PARTICLEMAXSIZE;
 
-texture Tex0 : TEXTURE;
+uniform texture Tex0 : TEXTURE;
 
 sampler SampleTex0 = sampler_state
 {

@@ -6,7 +6,6 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/CommonPixelLight.fxh"
 
 /*

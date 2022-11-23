@@ -4,25 +4,12 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/RaCommon.fxh"
 
 uniform float4 OverGrowthAmbient;
 uniform float4 ObjectSpaceCamPos;
 uniform float4 PosUnpack;
 Light Lights[1];
-
-uniform texture DiffuseMap;
-sampler SampleDiffuseMap = sampler_state
-{
-	Texture = (DiffuseMap);
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-	SRGBTexture = FALSE;
-};
 
 string GlobalParameters[] =
 {
@@ -52,6 +39,19 @@ string reqVertexElement[] =
 	"Position",
 	"Normal",
 	"TBase2D"
+};
+
+uniform texture DiffuseMap;
+
+sampler SampleDiffuseMap = sampler_state
+{
+	Texture = (DiffuseMap);
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
+	SRGBTexture = FALSE;
 };
 
 struct APP2VS
