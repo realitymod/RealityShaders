@@ -251,7 +251,7 @@ float4 Passthrough_PS(VS2PS_Blit Input) : COLOR
 float4 PassthroughSaturateAlpha_PS(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	OutputColor.a = 1.0f;
+	OutputColor.a = 1.0;
 	return OutputColor;
 }
 

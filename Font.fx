@@ -50,8 +50,8 @@ struct VS2PS_REGULAR
 VS2PS_REGULAR Regular_VS(APP2VS Input)
 {
 	VS2PS_REGULAR Output = (VS2PS_REGULAR)0;
-	// Output.Output.HPos = mul(float4(Input.Pos.xy, 0.5f, 1.0f), _WorldView);
-	Output.HPos = float4(Input.Pos.xy, 0.5f, 1.0f);
+	// Output.Output.HPos = mul(float4(Input.Pos.xy, 0.5, 1.0), _WorldView);
+	Output.HPos = float4(Input.Pos.xy, 0.5, 1.0);
 	Output.Diffuse = saturate(Input.Color);
 	Output.TexCoord = Input.TexCoord;
 	return Output;
@@ -69,7 +69,7 @@ float4 Regular_Scaled_PS(VS2PS_REGULAR Input) : COLOR
 
 float4 SelectionQuad_VS(float3 Pos : POSITION) : POSITION
 {
-	return mul(float4(Pos.xy, 0.0f, 1.0), _WorldView);
+	return mul(float4(Pos.xy, 0.0, 1.0), _WorldView);
 }
 
 float4 SelectionQuad_PS() : COLOR

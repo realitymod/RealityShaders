@@ -21,7 +21,7 @@ uniform float4 _ShadowViewPortMaps[10] : ShadowViewPortMaps;
 uniform float4 _AmbientColor : AmbientColor;
 uniform float4 _SunColor : SunColor;
 uniform float4 _SunDirection : SunDirection;
-uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = float2(100.0f, 30.0f);
+uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = float2(100.0, 30.0);
 
 /*
 	[Textures and samplers]
@@ -81,13 +81,13 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 	float4x3 WorldMat = _InstanceTransformations[Index];
 	float3 WorldPos = mul(Input.Pos, WorldMat);
 
-	Output.HPos = mul(float4(WorldPos, 1.0f), _WorldViewProjection);
+	Output.HPos = mul(float4(WorldPos, 1.0), _WorldViewProjection);
 	Output.ViewPos = Output.HPos.xyz;
 	Output.WorldNormal = normalize(mul(Input.Normal.xyz, (float3x3)WorldMat));
 
 	float Alpha = Input.P_Tex_Index_Alpha.w;
 	Output.Color.rgb = saturate(Input.Color);
-	Output.Color.a = 1.0f - saturate((Output.HPos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
+	Output.Color.a = 1.0 - saturate((Output.HPos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
 	Output.Color.a = saturate(Alpha * Output.Color.a);
 
 	if (UseShadow)

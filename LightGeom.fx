@@ -29,7 +29,7 @@ struct VS2PS
 VS2PS PointLight_VS(APP2VS Input)
 {
 	VS2PS Output;
-	Output.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	return Output;
 }
 
@@ -77,10 +77,10 @@ struct VS2PS_Spot
 VS2PS_Spot SpotLight_VS(APP2VS Input)
 {
 	VS2PS_Spot Output;
- 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
+ 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 
 	// transform vertex
-	float3 VertPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldView);
+	float3 VertPos = mul(float4(Input.Pos.xyz, 1.0), _WorldView);
 	Output.LightVec = -normalize(VertPos);
 
 	// transform LightDir to objectSpace
@@ -93,7 +93,7 @@ float4 SpotLight_PS(VS2PS_Spot Input) : COLOR
 {
 	float3 LightVec = normalize(Input.LightVec);
 	float3 LightDir = normalize(Input.LightDir);
-	float ConicalAtt = saturate(pow(saturate(dot(LightVec, LightDir)), 2.0) + (1.0f - _ConeAngle));
+	float ConicalAtt = saturate(pow(saturate(dot(LightVec, LightDir)), 2.0) + (1.0 - _ConeAngle));
 	return _LightColor * ConicalAtt;
 }
 

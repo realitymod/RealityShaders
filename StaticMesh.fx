@@ -176,7 +176,7 @@ float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
 
 float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 {
-	const float AlphaRef = 96.0f / 255.0f;
+	const float AlphaRef = 96.0 / 255.0;
 	float4 Alpha = tex2D(SampleShadowAlpha, Input.Tex0);
 	#if NVIDIA
 		return Alpha;

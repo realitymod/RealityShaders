@@ -257,7 +257,7 @@ VS2PS_ApplySkin ApplySkin_VS(APP2VS Input)
 	SkinnedData Skin = SkinSoldier(Input, -_SunLightDirection.xyz);
 
 	// Transform position into view and then projection space
-	Output.HPos = mul(float4(Skin.Pos, 1.0f), _WorldViewProjection);
+	Output.HPos = mul(float4(Skin.Pos, 1.0), _WorldViewProjection);
 
 	Output.P_Tex0_GroundUV.xy = Input.TexCoord0;
 

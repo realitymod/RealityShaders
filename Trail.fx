@@ -89,7 +89,7 @@ VS2PS_Trail Trail_VS(APP2VS Input)
 
 	Output.Maps[0] = AlphaBlendFactor * FadeFactor;
 	Output.Maps[1] = AnimBlendFactor;
-	Output.Maps[2] = saturate((Input.Pos.y - _HemiShadowAltitude) / 10.0f) + Template.m_uvRangeLMapIntensiyAndParticleMaxSize.z;
+	Output.Maps[2] = saturate((Input.Pos.y - _HemiShadowAltitude) / 10.0) + Template.m_uvRangeLMapIntensiyAndParticleMaxSize.z;
 
 	// Compute texcoords for trail
 	float2 RotatedTexCoords = Input.TexCoords;
@@ -100,7 +100,7 @@ VS2PS_Trail Trail_VS(APP2VS Input)
 	// Bias texcoords
 	RotatedTexCoords.y = -RotatedTexCoords.y;
 	RotatedTexCoords.xy += Template.m_uvRangeLMapIntensiyAndParticleMaxSize.xy;
-	RotatedTexCoords.y *= 0.5f;
+	RotatedTexCoords.y *= 0.5;
 
 	// Offset texcoords
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;

@@ -77,7 +77,7 @@ float4 GetUndergrowthPos(float4 InputPos, float4 InputPacked)
 
 	float4 UnpackedPos = (InputPos / 32767.0) * PosScale;
 	float4 Pos = float4(UnpackedPos.xyz, 1.0);
-	Pos.xz += _SwayOffsets[InputPacked.z * 255].xy * InputPacked.y * 3.0f;
+	Pos.xz += _SwayOffsets[InputPacked.z * 255].xy * InputPacked.y * 3.0;
 	Pos.xyz += PosOffset.xyz;
 
 	float ViewDistance = _FadeAndHeightScaleOffset.x;

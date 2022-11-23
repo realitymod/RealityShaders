@@ -10,10 +10,10 @@ float4x4 _World : World;
 
 string Category = "Effects\\Lighting";
 
-float4 _LightDir = { 1.0f, 0.0f, 0.0f, 1.0f }; //light Direction
-float4 _LightDiffuse = { 1.0f, 1.0f, 1.0f, 1.0f }; // Light Diffuse
-float4 _MaterialAmbient : MATERIALAMBIENT = { 0.5f, 0.5f, 0.5f, 1.0f };
-float4 _MaterialDiffuse : MATERIALDIFFUSE = { 1.0f, 1.0f, 1.0f, 1.0f };
+float4 _LightDir = { 1.0, 0.0, 0.0, 1.0 }; //light Direction
+float4 _LightDiffuse = { 1.0, 1.0, 1.0, 1.0 }; // Light Diffuse
+float4 _MaterialAmbient : MATERIALAMBIENT = { 0.5, 0.5, 0.5, 1.0 };
+float4 _MaterialDiffuse : MATERIALDIFFUSE = { 1.0, 1.0, 1.0, 1.0 };
 
 uniform texture BaseTex : TEXLAYER0
 <
@@ -54,11 +54,11 @@ VS2PS Debug_Basic_VS(APP2VS Input)
 	VS2PS Output;
 
 	float3 Pos = mul(Input.Pos, _World);
-	Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProj);
+	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.xyz + Diffuse(Input.Normal) * _MaterialDiffuse.xyz;
-	Output.Diffuse.w = 1.0f;
+	Output.Diffuse.w = 1.0;
 
 	Output.Tex0 = Input.TexCoord0;
 
@@ -72,7 +72,7 @@ float4 Debug_Basic_PS(VS2PS Input) : COLOR
 
 float4 Debug_Marked_PS(VS2PS Input) : COLOR
 {
-	return (tex2D(SampleBaseTex, Input.Tex0) * Input.Diffuse) + float4(1.0f, 0.0f, 0.0f, 0.0f);
+	return (tex2D(SampleBaseTex, Input.Tex0) * Input.Diffuse) + float4(1.0, 0.0, 0.0, 0.0);
 }
 
 technique t0_States < bool Restore = false; >

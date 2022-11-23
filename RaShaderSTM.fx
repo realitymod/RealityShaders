@@ -165,28 +165,28 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 }
 
 // This also includes the composite Gloss map
-float4 GetNormalMap(VS2PS Input, float3 TanEyeVec)
+float3 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 {
-	float4 Normals = float4(0.0, 0.0, 1.0, 1.0);
+	float3 Normals = float3(0.0, 0.0, 1.0);
 
 	#if	_NBASE_
-		Normals = tex2D(SampleNormalMap, Input.P_Base_Detail.xy);
+		Normals = tex2D(SampleNormalMap, Input.P_Base_Detail.xy).xyz;
 	#endif
 
 	#if _PARALLAXDETAIL_
-		Normals = tex2D(SampleNormalMap, GetParallax(Input.P_Base_Detail.zw, TanEyeVec));
+		Normals = tex2D(SampleNormalMap, GetParallax(Input.P_Base_Detail.zw, TanEyeVec)).xyz;
 	#elif _NDETAIL_
-		Normals = tex2D(SampleNormalMap, Input.P_Base_Detail.zw);
+		Normals = tex2D(SampleNormalMap, Input.P_Base_Detail.zw).xyz;
 	#endif
 
 	#if _NCRACK_
-		float4 CrackNormal = tex2D(SampleCrackNormalMap, Input.P_Dirt_Crack.zw);
+		float3 CrackNormal = tex2D(SampleCrackNormalMap, Input.P_Dirt_Crack.zw).xyz;
 		float CrackMask = tex2D(SampleCrackMap, Input.P_Dirt_Crack.zw).a;
 		Normals = lerp(Normals, CrackNormal, CrackMask);
 	#endif
 
 	#if defined(PERPIXEL)
-		Normals.xyz = normalize((Normals.xyz * 2.0) - 1.0);
+		Normals = normalize((Normals * 2.0) - 1.0);
 	#endif
 
 	return Normals;
@@ -227,7 +227,7 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 	float4 OutputColor = 1.0;
 	float Gloss;
 	float4 DiffuseMap = GetDiffuseMap(Input, ViewVec, Gloss);
-	float4 NormalVec = GetNormalMap(Input, ViewVec);
+	float3 NormalVec = GetNormalMap(Input, ViewVec);
 
 	ColorPair Light = ComputeLights(NormalVec, LightVec, ViewVec, SpecularPower);
 	Light.Diffuse = (Light.Diffuse * Lights[0].color);
@@ -247,11 +247,11 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 		#endif
 
 		// We add ambient (BumpedSky) here to get correct ambient for surfaces parallel to the sun
-		float DotLN = saturate(dot(NormalVec.xyz, -Lights[0].dir) / 5.0);
-		float InvDot = saturate((1.0 - DotLN) * 0.65);
+		float DotLN = saturate(dot(NormalVec.xyz / 5.0, -Lights[0].dir));
+		float InvDotLN = saturate((1.0 - DotLN) * 0.65);
 
 		float3 PointColor = SinglePointColor * Lightmap.r;
-		float3 BumpedSky = (StaticSkyColor * InvDot) * Lightmap.b;
+		float3 BumpedSky = (StaticSkyColor * InvDotLN) * Lightmap.b;
 		Light.Diffuse = PointColor + BumpedSky + (Light.Diffuse * Lightmap.g);
 		Light.Specular = Light.Specular * Lightmap.g;
 

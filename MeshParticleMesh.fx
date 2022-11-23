@@ -54,7 +54,7 @@ VS2PS Diffuse_VS(APP2VS Input)
 	int IndexArray[4] = (int[4])IndexVector;
 
 	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
-	Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProj);
+	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.VertexPos = Pos.xyz;
 
 	// Compute Cubic polynomial factors.
@@ -78,7 +78,7 @@ float2 GetGroundUV(float3 Pos)
 
 float GetLMOffset(float3 Pos)
 {
-	return saturate(saturate((Pos.y - _HemiShadowAltitude) / 10.0f) + _LightmapIntensityOffset);
+	return saturate(saturate((Pos.y - _HemiShadowAltitude) / 10.0) + _LightmapIntensityOffset);
 }
 
 // Renders 3D debris found in explosions like in PRBot4/Num6
@@ -86,7 +86,7 @@ float4 Diffuse_PS(VS2PS Input) : COLOR
 {
 	float2 GroundUV = GetGroundUV(Input.VertexPos);
 	float LMOffset = GetLMOffset(Input.VertexPos);
-	float4 HPos = mul(float4(Input.VertexPos.xyz, 1.0f), _WorldViewProj);
+	float4 HPos = mul(float4(Input.VertexPos.xyz, 1.0), _WorldViewProj);
 
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color; // Diffuse map
 	float4 TLUT = tex2D(SampleLUT, GroundUV); // Hemi map

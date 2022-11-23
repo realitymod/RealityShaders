@@ -23,11 +23,11 @@ sampler SampleTex0 = sampler_state
 
 float _TextureScale : TEXTURESCALE;
 
-float4 _LightDir = { 1.0f, 0.0f, 0.0f, 1.0f }; // Light Direction
-float4 _MaterialAmbient : MATERIALAMBIENT = {0.5f, 0.5f, 0.5f, 1.0f};
-float4 _MaterialDiffuse : MATERIALDIFFUSE = {1.0f, 1.0f, 1.0f, 1.0f};
+float4 _LightDir = { 1.0, 0.0, 0.0, 1.0 }; // Light Direction
+float4 _MaterialAmbient : MATERIALAMBIENT = {0.5, 0.5, 0.5, 1.0};
+float4 _MaterialDiffuse : MATERIALDIFFUSE = {1.0, 1.0, 1.0, 1.0};
 
-// float4 _Alpha : BLENDALPHA = { 1.0f, 1.0f, 1.0f, 1.0f };
+// float4 _Alpha : BLENDALPHA = { 1.0, 1.0, 1.0, 1.0 };
 
 float4 _ConeSkinValues : CONESKINVALUES;
 
@@ -62,7 +62,7 @@ VS2PS Debug_Basic_1_VS(APP2VS Input)
 	VS2PS Output;
 
  	float3 Pos = mul(Input.Pos, _World);
-	Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProj);
+	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.rgb + Diffuse(Input.Normal, _LightDir) * _MaterialDiffuse.xyz;
@@ -75,7 +75,7 @@ VS2PS Debug_Basic_2_VS(APP2VS Input)
 	VS2PS Output;
 
  	float3 Pos = mul(Input.Pos, _World);
-	Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProj);
+	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.rgb;
@@ -169,7 +169,7 @@ VS2PS Debug_Editor_VS(APP2VS Input, uniform float AmbientColorFactor = 1.0)
  	float4 Pos = Input.Pos;
 
 	float4 TempPos = Input.Pos;
-	TempPos.z += 0.5f;
+	TempPos.z += 0.5;
 
  	float RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, TempPos.z);
 	Pos.xy *= RadScale;
@@ -224,9 +224,9 @@ VS2PS Debug_CollisionMesh_VS(APP2VS Input, uniform float MaterialFactor = 1.0)
 	VS2PS Output;
 
 	float3 Pos = mul(Input.Pos, _World);
-	Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProj);
+	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 
-	Output.Diffuse.xyz = (_MaterialAmbient.rgb * MaterialFactor) + 0.1f * Diffuse(Input.Normal,float4(-1.0f, -1.0f, 1.0f, 0.0f)) * (_MaterialDiffuse.rgb * MaterialFactor);
+	Output.Diffuse.xyz = (_MaterialAmbient.rgb * MaterialFactor) + 0.1 * Diffuse(Input.Normal,float4(-1.0, -1.0, 1.0, 0.0)) * (_MaterialDiffuse.rgb * MaterialFactor);
 	Output.Diffuse.w = 0.8f;
 
 	return Output;
@@ -363,7 +363,7 @@ VS2PS_Grid Debug_Grid_VS(APP2VS Input)
 	VS2PS_Grid Output;
 
  	float3 Pos = mul(Input.Pos, _World);
-	Output.HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProj);
+	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.rgb + Diffuse(Input.Normal, _LightDir) * _MaterialDiffuse.xyz;

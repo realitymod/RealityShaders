@@ -44,7 +44,7 @@ struct VS2PS_ShapeTexture
 VS2PS_Shape Shape_VS(float3 Position : POSITION, float4 VertexColor : COLOR0)
 {
 	VS2PS_Shape Output = (VS2PS_Shape)0;
-	Output.HPos = float4(Position.xy, 0.0f, 1.0); // mul(float4(Position.xy, 0.0f, 1.0), WorldView);
+	Output.HPos = float4(Position.xy, 0.0, 1.0); // mul(float4(Position.xy, 0.0, 1.0), WorldView);
 	Output.Diffuse = saturate(VertexColor); // saturate(DiffuseColor);
 	return Output;
 }
@@ -52,9 +52,9 @@ VS2PS_Shape Shape_VS(float3 Position : POSITION, float4 VertexColor : COLOR0)
 VS2PS_Shape Line_VS(float3 Position : POSITION)
 {
 	VS2PS_Shape Output = (VS2PS_Shape)0;
-	// Output.HPos = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
-	// Output.HPos = float4(Position.xy, 0.0f, 1.0);
-	Output.HPos = float4(Position.xy, 0.0f, 1.0);
+	// Output.HPos = mul(float4(Position.xy, 0.0, 1.0), WorldView);
+	// Output.HPos = float4(Position.xy, 0.0, 1.0);
+	Output.HPos = float4(Position.xy, 0.0, 1.0);
 	Output.Diffuse = saturate(DiffuseColor);
 	return Output;
 }
@@ -63,7 +63,7 @@ VS2PS_ShapeTexture ShapeTexture_VS(float3 Position : POSITION)
 {
 	VS2PS_ShapeTexture Output = (VS2PS_ShapeTexture)0;
 
-	Output.HPos = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
+	Output.HPos = mul(float4(Position.xy, 0.0, 1.0), WorldView);
 	Output.Diffuse = saturate(DiffuseColor);
 	Output.Selector = saturate(Position.zzzz);
 

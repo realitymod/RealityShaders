@@ -18,7 +18,7 @@ uniform float4 WorldSpaceCamPos;
 uniform float4 PosUnpack;
 uniform float TexUnpack;
 
-uniform vector textureFactor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+uniform vector textureFactor = float4(1.0, 1.0, 1.0, 1.0);
 
 string GlobalParameters[] =
 {

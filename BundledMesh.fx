@@ -11,9 +11,9 @@
 	[Attributes from app]
 */
 
-uniform float4 _AmbientColor : Ambient = { 0.0f, 0.0f, 0.0f, 1.0f };
-uniform float4 _DiffuseColor : Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
-uniform float4 _SpecularColor : Specular = { 0.0f, 0.0f, 0.0f, 1.0f };
+uniform float4 _AmbientColor : Ambient = { 0.0, 0.0, 0.0, 1.0 };
+uniform float4 _DiffuseColor : Diffuse = { 1.0, 1.0, 1.0, 1.0 };
+uniform float4 _SpecularColor : Specular = { 0.0, 0.0, 0.0, 1.0 };
 
 uniform float4 _SkyColor : SkyColor;
 uniform float4 _AmbientColor2 : AmbientColor;
@@ -28,7 +28,7 @@ uniform float4x4 _ViewProjMatrix : WorldViewProjection; // : register(vs_1_1, c0
 uniform float4x4 _ViewInverseMatrix : ViewI; //: register(vs_1_1, c8);
 uniform float4x4 _ViewMatrix : ViewMatrix;
 uniform float4x4 _ViewITMatrix : ViewITMatrix;
-uniform float4 _EyePos : EYEPOS = { 0.0f, 0.0f, 1.0f, 0.25f };
+uniform float4 _EyePos : EYEPOS = { 0.0, 0.0, 1.0, 0.25 };
 
 uniform float4 _PosUnpack : POSUNPACK;
 uniform float2 _TexProjOffset : TEXPROJOFFSET;
@@ -42,7 +42,7 @@ uniform float4x4 _LightViewProj : LIGHTVIEWPROJ;
 
 uniform dword _DwordStencilRef : STENCILREF = 0;
 uniform bool _AlphaBlendEnable: AlphaBlendEnable;
-uniform float _AltitudeFactor : ALTITUDEFACTOR = 0.7f;
+uniform float _AltitudeFactor : ALTITUDEFACTOR = 0.7;
 
 uniform float4 _ViewportMap : VIEWPORTMAP;
 uniform float4x4 _ViewPortMatrix: _ViewPortMatrix;
@@ -142,7 +142,7 @@ VS2PS_Specular Lighting_VS(APP2VS Input)
 	float4x3 SkinWorldMat = _MatOneBoneSkinning[IndexArray[0]];
 	float3 WorldPos = mul(Input.Pos, SkinWorldMat);
 
-	Output.HPos = mul(float4(WorldPos.xyz, 1.0f), _ViewProjMatrix);
+	Output.HPos = mul(float4(WorldPos.xyz, 1.0), _ViewProjMatrix);
 	Output.Tex = Input.TexCoord;
 
 	// Calculate WorldTangent directly... inverse is the transpose for affine rotations

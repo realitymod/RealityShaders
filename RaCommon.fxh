@@ -41,7 +41,7 @@
 	uniform float WindSpeed = 0;
 
 	uniform float4 HemiMapConstants;
-	uniform float4 Transparency = 1.0f;
+	uniform float4 Transparency = 1.0;
 
 	uniform float4x4 World;
 	uniform float4x4 ViewProjection;

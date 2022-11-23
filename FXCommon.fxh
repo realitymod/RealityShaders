@@ -8,11 +8,11 @@
 
 	#include "shaders/RaCommon.fxh"
 
-	// commonparams
+	// Common parameters
 	uniform float4x4 _ViewMat : ViewMat;
 	uniform float4x4 _ProjMat : ProjMat;
 
-	uniform float _UVScale = rsqrt(2.0f);
+	uniform float _UVScale = rsqrt(2.0);
 	uniform float4 _HemiMapInfo : HemiMapInfo;
 	uniform float _HemiShadowAltitude : HemiShadowAltitude;
 	uniform float _AlphaPixelTestRef : AlphaPixelTestRef = 0;

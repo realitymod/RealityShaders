@@ -219,13 +219,13 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 	#if _HASSHADOW_
 		float ShadowDir = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
-		float ShadowDir = 1.0f;
+		float ShadowDir = 1.0;
 	#endif
 
 	#if _HASSHADOWOCCLUSION_
 		float ShadowOccDir = GetShadowFactor(SampleShadowOccluderMap, Input.OccShadowTex);
 	#else
-		float ShadowOccDir = 1.0f;
+		float ShadowOccDir = 1.0;
 	#endif
 
 	/*
@@ -347,7 +347,7 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		Alpha = dot(ColorMap.rgb, 1.0);
 	#else
 		#if _HASCOLORMAPGLOSS_
-			Alpha = 1.0f;
+			Alpha = 1.0;
 		#else
 			Alpha = ColorMap.a;
 		#endif

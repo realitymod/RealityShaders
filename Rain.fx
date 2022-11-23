@@ -17,7 +17,6 @@ float _ParticleSize : PARTICLESIZE;
 float _MaxParticleSize : PARTICLEMAXSIZE;
 
 uniform texture Tex0 : TEXTURE;
-
 sampler SampleTex0 = sampler_state
 {
 	Texture = (Tex0);
@@ -56,7 +55,7 @@ VS2PS_Point Point_VS(APP2PS Input)
 	float CamDist = length(CamDelta);
 	CamDelta = (CamDelta - _FadeOutRange) / _FadeOutDelta;
 
-	float Alpha = 1.0f - length(saturate(CamDelta));
+	float Alpha = 1.0 - length(saturate(CamDelta));
 
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
@@ -116,7 +115,7 @@ VS2PS_Line Line_VS(APP2PS Input)
 
 	float3 CamDelta = abs(_CameraPos.xyz - ParticlePos.xyz);
 	CamDelta = (CamDelta - _FadeOutRange) / _FadeOutDelta;
-	float Alpha = 1.0f - length(saturate(CamDelta));
+	float Alpha = 1.0 - length(saturate(CamDelta));
 
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);

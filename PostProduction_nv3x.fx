@@ -266,7 +266,7 @@ float4 ThermalVision_PS(VS2PS_ThermalVision Input) : COLOR
 		Image += tex2D(SampleTex0, ImgCoord - float2( HOffset, 0.0)) * 0.125;
 		Image += tex2D(SampleTex0, ImgCoord + float2( 0.0, VOffset)) * 0.125;
 		Image += tex2D(SampleTex0, ImgCoord - float2( 0.0, VOffset)) * 0.125;
-		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75f, 0.50f, Image.b), Image.b), Image.r, Image.r); // M
+		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
 		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
 		OutputColor.r -= _Interference * Random; // Add -_Interference
 		OutputColor = float4(_TVColor * OutputColor.rrr, Image.a);
@@ -311,7 +311,7 @@ float4 ThermalVision_Gradient_PS(VS2PS_ThermalVision Input) : COLOR
 		ImgCoord.x += _DistortionScale * Noise * Distort;
 		float4 Image = dot(float3(0.3, 0.59, 0.11), tex2D(SampleTex0, ImgCoord).rgb);
 		float4 Intensity = (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
-		float4 GradientColor = tex2D(SampleTex3, float2(Intensity.r, 0.0f));
+		float4 GradientColor = tex2D(SampleTex3, float2(Intensity.r, 0.0));
 		OutputColor = float4( GradientColor.rgb, Intensity.a );
 	}
 	else

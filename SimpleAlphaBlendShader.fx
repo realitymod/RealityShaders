@@ -40,7 +40,7 @@ struct VS2PS
 VS2PS Shader_VS(APP2VS Input)
 {
 	VS2PS Output;
-	Output.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	Output.Tex0 = Input.Tex0;
 	return Output;
 }

@@ -71,7 +71,7 @@ VS2PS Particle_VS(APP2VS Input)
 	Output.Maps[0] = Template[ID].m_color1AndLightFactor.a;
 	Output.Maps[1] = AlphaBlendFactor * Alpha;
 	Output.Maps[2] = IntensityBlendFactor;
-	Output.Maps[3] = saturate((Input.Pos.y - _HemiShadowAltitude) / 10.0f) + Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.z;
+	Output.Maps[3] = saturate((Input.Pos.y - _HemiShadowAltitude) / 10.0) + Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.z;
 	Output.Maps = saturate(Output.Maps);
 
 	// Displace vertex
@@ -91,7 +91,7 @@ VS2PS Particle_VS(APP2VS Input)
 	// Bias texcoords
 	RotatedTexCoords.y = -RotatedTexCoords.y;
 	RotatedTexCoords = RotatedTexCoords + Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.xy;
-	RotatedTexCoords *= 0.5f;
+	RotatedTexCoords *= 0.5;
 
 	// Offset texcoords
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
