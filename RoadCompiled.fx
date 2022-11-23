@@ -18,18 +18,6 @@ uniform float4 _GIColor : GICOLOR;
 uniform float4 _TexProjOffset : TEXPROJOFFSET;
 uniform float4 _TexProjScale : TEXPROJSCALE;
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
-	sampler SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = LINEAR; \
-		MagFilter = LINEAR; \
-		MipFilter = LINEAR; \
-		AddressU = ADDRESS; \
-		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
-	}; \
-
 #define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
@@ -44,7 +32,7 @@ uniform float4 _TexProjScale : TEXPROJSCALE;
 	}; \
 
 uniform texture LightMap : TEXLAYER2;
-CREATE_SAMPLER(SampleLightMap, LightMap, CLAMP, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleLightMap, LightMap, CLAMP, FALSE)
 
 uniform texture DetailMap0 : TEXLAYER3;
 CREATE_DYNAMIC_SAMPLER(SampleDetailMap0, DetailMap0, WRAP, FALSE)

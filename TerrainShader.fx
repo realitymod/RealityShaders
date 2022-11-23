@@ -85,18 +85,6 @@ uniform float3 _MorphDeltaAdder[3] : MORPHDELTAADDER;
 	[Textures and samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
-	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = LINEAR; \
-		MagFilter = LINEAR; \
-		MipFilter = LINEAR; \
-		AddressU = ADDRESS; \
-		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
-	}; \
-
 #define CREATE_DYNAMIC_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
 	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
 	{ \
@@ -111,26 +99,26 @@ uniform float3 _MorphDeltaAdder[3] : MORPHDELTAADDER;
 	}; \
 
 uniform texture Tex0 : TEXLAYER0;
-CREATE_SAMPLER(sampler, SampleTex0_Clamp, Tex0, CLAMP, FALSE)
+CREATE_DYNAMIC_SAMPLER(sampler, SampleTex0_Clamp, Tex0, CLAMP, FALSE)
 
 uniform texture Tex1 : TEXLAYER1;
-CREATE_SAMPLER(sampler, SampleTex1_Clamp, Tex1, CLAMP, FALSE)
+CREATE_DYNAMIC_SAMPLER(sampler, SampleTex1_Clamp, Tex1, CLAMP, FALSE)
 
 uniform texture Tex2 : TEXLAYER2;
-CREATE_SAMPLER(sampler, SampleTex2_Clamp, Tex2, CLAMP, FALSE)
+CREATE_DYNAMIC_SAMPLER(sampler, SampleTex2_Clamp, Tex2, CLAMP, FALSE)
 
 uniform texture Tex3 : TEXLAYER3;
 CREATE_DYNAMIC_SAMPLER(sampler, SampleTex3_Wrap, Tex3, WRAP, FALSE)
 
 uniform texture Tex4 : TEXLAYER4;
-CREATE_SAMPLER(sampler, SampleTex4_Wrap, Tex4, WRAP, FALSE)
+CREATE_DYNAMIC_SAMPLER(sampler, SampleTex4_Wrap, Tex4, WRAP, FALSE)
 
 uniform texture Tex5 : TEXLAYER5;
-CREATE_SAMPLER(sampler, SampleTex5_Clamp, Tex5, CLAMP, FALSE)
+CREATE_DYNAMIC_SAMPLER(sampler, SampleTex5_Clamp, Tex5, CLAMP, FALSE)
 
 uniform texture Tex6 : TEXLAYER6;
 CREATE_DYNAMIC_SAMPLER(sampler, SampleTex6_Wrap, Tex6, WRAP, FALSE)
-CREATE_SAMPLER(samplerCUBE, SamplerTex6_Cube, Tex6, WRAP, FALSE)
+CREATE_DYNAMIC_SAMPLER(samplerCUBE, SamplerTex6_Cube, Tex6, WRAP, FALSE)
 
 #include "shaders/CommonPixelLight.fxh"
 #include "shaders/TerrainShader_Shared.fx"

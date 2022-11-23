@@ -57,18 +57,6 @@ string reqVertexElement[] =
 	#endif
 };
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
-	sampler SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = LINEAR; \
-		MagFilter = LINEAR; \
-		MipFilter = LINEAR; \
-		AddressU = ADDRESS; \
-		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
-	}; \
-
 #define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
@@ -83,7 +71,7 @@ string reqVertexElement[] =
 	}; \
 
 uniform texture LightMap;
-CREATE_SAMPLER(SampleLightMap, LightMap, WRAP, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleLightMap, LightMap, WRAP, FALSE)
 
 #if defined(USE_DETAIL)
 	uniform texture DetailMap;
