@@ -142,8 +142,8 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
 		// tl: assumes base has .a = 1 (which should be the case)
 		Diffuse *= Detail;
-		DiffuseGloss = Detail.a;
 		#if (!_ALPHATEST_)
+			DiffuseGloss = Detail.a;
 			Diffuse.a = Transparency.a;
 		#else
 			Diffuse.a *= Transparency.a;
