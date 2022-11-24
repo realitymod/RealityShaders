@@ -35,7 +35,7 @@ struct APP2VS
 	float2 TexCoords : TEXCOORD2;
 };
 
-struct VS2PS_Trail
+struct VS2PS
 {
 	float4 HPos : POSITION;
 	float3 VertexPos : TEXCOORD0;
@@ -44,9 +44,15 @@ struct VS2PS_Trail
 	float3 Maps : TEXCOORD3; // [AlphaBlend, AnimBlend, LMOffset]
 };
 
-VS2PS_Trail Trail_VS(APP2VS Input)
+struct PS2FB
 {
-	VS2PS_Trail Output = (VS2PS_Trail)0;
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
+VS2PS Trail_VS(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
 
 	// Unpack vertex attributes
 	float Intensity = Input.IntensityAgeAnimBlendFactorAndAlpha[0];
@@ -110,7 +116,7 @@ VS2PS_Trail Trail_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Trail_Low_PS(VS2PS_Trail Input) : COLOR
+float4 Trail_Low_PS(VS2PS Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	OutputColor.rgb *= Input.Color.rgb;
@@ -120,7 +126,7 @@ float4 Trail_Low_PS(VS2PS_Trail Input) : COLOR
 	return OutputColor;
 }
 
-float4 Trail_Medium_PS(VS2PS_Trail Input) : COLOR
+float4 Trail_Medium_PS(VS2PS Input) : COLOR
 {
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
@@ -134,7 +140,7 @@ float4 Trail_Medium_PS(VS2PS_Trail Input) : COLOR
 	return OutputColor;
 }
 
-float4 Trail_High_PS(VS2PS_Trail Input) : COLOR
+float4 Trail_High_PS(VS2PS Input) : COLOR
 {
 	// Hemi lookup coords
 	float3 Pos = Input.VertexPos;
@@ -154,7 +160,7 @@ float4 Trail_High_PS(VS2PS_Trail Input) : COLOR
 	return OutputColor;
 }
 
-float4 Trail_ShowFill_PS(VS2PS_Trail Input) : COLOR
+float4 Trail_ShowFill_PS(VS2PS Input) : COLOR
 {
 	return _EffectSunColor.rrrr;
 }

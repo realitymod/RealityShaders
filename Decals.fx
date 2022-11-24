@@ -71,6 +71,12 @@ struct VS2PS
 	float4 ViewPortMap : TEXCOORD5;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 {
 	VS2PS Output = (VS2PS)0;
@@ -99,6 +105,11 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 	return Output;
 }
 
+VS2PS Decals_VS(APP2VS Input)
+{
+	return GetVertexDecals(Input, false);
+}
+
 float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 {
 	float DirShadow = 1.0;
@@ -124,11 +135,6 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 	float4 OutputColor = DiffuseMap * float4(Lighting, Input.Color.a);
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
 	return OutputColor;
-}
-
-VS2PS Decals_VS(APP2VS Input)
-{
-	return GetVertexDecals(Input, false);
 }
 
 float4 Decals_PS(VS2PS Input) : COLOR

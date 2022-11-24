@@ -26,6 +26,12 @@ struct VS2PS
 	float4 HPos : POSITION;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 VS2PS PointLight_VS(APP2VS Input)
 {
 	VS2PS Output;

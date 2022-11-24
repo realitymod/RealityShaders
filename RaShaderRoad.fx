@@ -100,6 +100,12 @@ struct VS2PS
 	float4 LightTex : TEXCOORD2;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 VS2PS Road_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;

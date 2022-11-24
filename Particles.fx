@@ -42,6 +42,12 @@ struct VS2PS
 	float4 Maps : TEXCOORD3; // [LightFactor, Alpha, BlendFactor, LMOffset]
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 VS2PS Particle_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;

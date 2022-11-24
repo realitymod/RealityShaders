@@ -35,7 +35,7 @@ struct APP2PS
 	float2 TexCoord: TEXCOORD0;
 };
 
-struct VS2PS_Point
+struct VS2PS
 {
 	float4 HPos: POSITION;
 	float2 TexCoord : TEXCOORD0;
@@ -43,9 +43,15 @@ struct VS2PS_Point
 	float PointSize : PSIZE;
 };
 
-VS2PS_Point Point_VS(APP2PS Input)
+struct PS2FB
 {
-	VS2PS_Point Output;
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
+VS2PS Point_VS(APP2PS Input)
+{
+	VS2PS Output;
 
 	float3 CellPos = _CellPositions[Input.Data.x];
 	float3 Deviation = _Deviations[Input.Data.y];
@@ -65,7 +71,7 @@ VS2PS_Point Point_VS(APP2PS Input)
 	return Output;
 }
 
-float4 Point_PS(VS2PS_Point Input) : COLOR
+float4 Point_PS(VS2PS Input) : COLOR
 {
 	float4 TexCol = tex2D(SampleTex0, Input.TexCoord);
 	return TexCol * Input.Color;

@@ -101,6 +101,12 @@ struct VS2PS
 	#endif
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 VS2PS TrunkSTMDetail_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;

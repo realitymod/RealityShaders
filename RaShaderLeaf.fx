@@ -111,6 +111,12 @@ struct VS2PS
 	float4 Color : TEXCOORD3;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 VS2PS Leaf_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;

@@ -75,6 +75,12 @@ struct VS2PS_DualClouds
 	float4 FadeOut : COLOR0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 /*
 	General SkyDome shaders
 */

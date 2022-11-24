@@ -37,6 +37,12 @@ struct VS2PS
     float2 Tex0 : TEXCOORD0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 VS2PS Shader_VS(APP2VS Input)
 {
 	VS2PS Output;

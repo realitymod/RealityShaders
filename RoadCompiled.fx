@@ -57,6 +57,12 @@ struct VS2PS
 	float4 P_VertexPos_Alpha : TEXCOORD2; // .xyz = VertexPos; .w = Alpha;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 float4 ProjToLighting(float4 HPos)
 {
 	// tl: This has been rearranged optimally (I believe) into 1 MUL and 1 MAD,

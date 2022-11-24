@@ -53,6 +53,12 @@ struct VS2PS
 	float4 Tex : TEXCOORD0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 VS2PS BM_Additive_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;

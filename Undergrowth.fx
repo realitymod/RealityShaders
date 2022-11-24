@@ -70,6 +70,12 @@ struct VS2PS
 	float4 Color : COLOR0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 float4 GetUndergrowthPos(float4 InputPos, float4 InputPacked)
 {
 	float3 PosOffset = _PosOffsetAndScale.xyz;

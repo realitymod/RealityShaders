@@ -22,7 +22,7 @@ struct VS2PS_FullDetail_Hi
 	float4 P_WorldNormal_Fade : TEXCOORD7; // .xyz = Normal; .w = InterpVal;
 };
 
-VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared_Default Input)
+VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared Input)
 {
 	VS2PS_FullDetail_Hi Output;
 

@@ -60,6 +60,12 @@ struct VS2PS
 	float3 VertexPos : TEXCOORD1;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 VS2PS Diffuse_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;

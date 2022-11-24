@@ -21,6 +21,12 @@ string InstanceParameters[] =
 	"ViewProjection"
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 float4 Default_VS(float3 Pos : POSITION0) : POSITION0
 {
 	return mul(float4(Pos.xyz, 1.0), mul(World, ViewProjection));

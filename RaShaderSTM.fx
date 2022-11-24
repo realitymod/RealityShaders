@@ -45,17 +45,6 @@ struct APP2VS
 	float4 TexSets[NUM_TEXSETS] : TEXCOORD0;
 };
 
-float GetBinormalFlipping(APP2VS Input)
-{
-	return 1.0 + Input.Pos.w * -2.0;
-}
-
-/*
-	Common vertex shader methods
-*/
-
-// P_(x)_(y) == Packed interpolator with (x) and (y)
-
 struct VS2PS
 {
 	float4 HPos : POSITION;
@@ -70,6 +59,21 @@ struct VS2PS
 	float4 LightMapTex : TEXCOORD6;
 	float4 ShadowTex : TEXCOORD7;
 };
+
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
+/*
+	Common vertex shader methods
+*/
+
+float GetBinormalFlipping(APP2VS Input)
+{
+	return 1.0 + Input.Pos.w * -2.0;
+}
 
 VS2PS StaticMesh_VS(APP2VS Input)
 {

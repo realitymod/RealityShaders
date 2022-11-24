@@ -39,6 +39,26 @@ struct APP2VS
 	float3 Tan : TANGENT;
 };
 
+struct VS2PS
+{
+	float4 HPos : POSITION;
+
+	float3 WorldPos : TEXCOORD0;
+	float3 Tangent : TEXCOORD1;
+	float3 Binormal : TEXCOORD2;
+	float3 Normal : TEXCOORD3;
+
+	float2 Tex0 : TEXCOORD4;
+	float4 ShadowTex : TEXCOORD5;
+	float4 OccShadowTex : TEXCOORD6;
+};
+
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 {
 	// Compensate for lack of UBYTE4 on Geforce3
@@ -61,38 +81,6 @@ float GetBinormalFlipping(APP2VS Input)
 	int IndexArray[4] = (int[4])IndexVector;
 	return 1.0 + IndexArray[2] * -2.0;
 }
-
-float2 GetGroundUV(float3 WorldPos, float3 WorldNormal)
-{
-	// HemiMapConstants: Offset x/y heightmapsize z / hemilerpbias w
-	float2 GroundUV = 0.0;
-	GroundUV.xy = ((WorldPos + (HemiMapConstants.z / 2.0) + WorldNormal).xz - HemiMapConstants.xy) / HemiMapConstants.z;
-	GroundUV.y = 1.0 - GroundUV.y;
-	return GroundUV;
-}
-
-float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
-{
-	// LocalHeight scale, 1 for top and 0 for bottom
-	float LocalHeight = (WorldPos.y - (World[3][1] - 0.5)) * 0.5;
-	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
-	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
-	return saturate(((WorldNormal.y + Offset) * 0.5) + 0.5);
-}
-
-struct VS2PS
-{
-	float4 HPos : POSITION;
-
-	float3 WorldPos : TEXCOORD0;
-	float3 Tangent : TEXCOORD1;
-	float3 Binormal : TEXCOORD2;
-	float3 Normal : TEXCOORD3;
-
-	float2 Tex0 : TEXCOORD4;
-	float4 ShadowTex : TEXCOORD5;
-	float4 OccShadowTex : TEXCOORD6;
-};
 
 VS2PS SkinnedMesh_VS(APP2VS Input)
 {
@@ -148,6 +136,24 @@ float3 GetLightVec(float3 WorldPos)
 	#else
 		return mul(-Lights[0].dir, (float3x3)World);
 	#endif
+}
+
+float2 GetGroundUV(float3 WorldPos, float3 WorldNormal)
+{
+	// HemiMapConstants: Offset x/y heightmapsize z / hemilerpbias w
+	float2 GroundUV = 0.0;
+	GroundUV.xy = ((WorldPos + (HemiMapConstants.z / 2.0) + WorldNormal).xz - HemiMapConstants.xy) / HemiMapConstants.z;
+	GroundUV.y = 1.0 - GroundUV.y;
+	return GroundUV;
+}
+
+float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
+{
+	// LocalHeight scale, 1 for top and 0 for bottom
+	float LocalHeight = (WorldPos.y - (World[3][1] - 0.5)) * 0.5;
+	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
+	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
+	return saturate(((WorldNormal.y + Offset) * 0.5) + 0.5);
 }
 
 float4 SkinnedMesh_PS(VS2PS Input) : COLOR

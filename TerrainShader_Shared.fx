@@ -5,6 +5,21 @@
 
 #include "shaders/RealityGraphics.fxh"
 
+
+struct APP2VS_Shared
+{
+	float4 Pos0 : POSITION0;
+	float4 Pos1 : POSITION1;
+	float4 MorphDelta : POSITION2;
+	float3 Normal : NORMAL;
+};
+
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
+};
+
 /*
 	Basic morphed technique
 */
@@ -65,21 +80,13 @@ float4 ProjToLighting(float4 HPos)
 	Fill lightmapping
 */
 
-struct APP2VS_Shared_Default
-{
-	float4 Pos0 : POSITION0;
-	float4 Pos1 : POSITION1;
-	float4 MorphDelta : POSITION2;
-	float3 Normal : NORMAL;
-};
-
 struct VS2PS_Shared_ZFillLightMap
 {
 	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
 };
 
-VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared_Default Input)
+VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared Input)
 {
 	VS2PS_Shared_ZFillLightMap Output = (VS2PS_Shared_ZFillLightMap)0;
 
@@ -123,7 +130,7 @@ struct VS2PS_Shared_PointLight
 	float3 WorldNormal : TEXCOORD1;
 };
 
-VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared_Default Input)
+VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
 {
 	VS2PS_Shared_PointLight Output = (VS2PS_Shared_PointLight)0;
 
@@ -164,7 +171,7 @@ struct VS2PS_Shared_LowDetail
 	float3 WorldNormal : TEXCOORD7;
 };
 
-VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared_Default Input)
+VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared Input)
 {
 	VS2PS_Shared_LowDetail Output = (VS2PS_Shared_LowDetail)0;
 
@@ -257,7 +264,7 @@ struct VS2PS_Shared_DynamicShadowmap
 	float4 ShadowTex : TEXCOORD0;
 };
 
-VS2PS_Shared_DynamicShadowmap Shared_DynamicShadowmap_VS(APP2VS_Shared_Default Input)
+VS2PS_Shared_DynamicShadowmap Shared_DynamicShadowmap_VS(APP2VS_Shared Input)
 {
 	VS2PS_Shared_DynamicShadowmap Output;
 
@@ -295,7 +302,7 @@ struct VS2PS_Shared_DirectionalLightShadows
 	float2 Z : TEXCOORD2;
 };
 
-VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Shared_Default Input)
+VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Shared Input)
 {
 	VS2PS_Shared_DirectionalLightShadows Output;
 
@@ -332,7 +339,7 @@ struct VS2PS_Shared_UnderWater
 	float3 WorldPos : TEXCOORD0;
 };
 
-VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared_Default Input)
+VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared Input)
 {
 	VS2PS_Shared_UnderWater Output;
 

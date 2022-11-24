@@ -42,7 +42,6 @@ string reqVertexElement[] =
 };
 
 uniform texture DiffuseMap;
-
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
@@ -67,6 +66,12 @@ struct VS2PS
 	float2 Tex0 : TEXCOORD0;
 	float4 P_Normals_ScaleLN : TEXCOORD1; // .xyz = Normals; .w = ScaleLN;
 	float3 VertexPos : TEXCOORD2;
+};
+
+struct PS2FB
+{
+	float4 Color : COLOR;
+	// float Depth : DEPTH;
 };
 
 VS2PS TrunkOG_VS(APP2VS Input)
