@@ -40,8 +40,8 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float3 VertexPos : TEXCOORD1;
+	float4 Pos : TEXCOORD0;
+	float2 Tex0 : TEXCOORD1;
 	float4 Color : COLOR0;
 };
 
@@ -61,7 +61,8 @@ VS2PS Diffuse_VS(APP2VS Input)
 
 	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
-	Output.VertexPos = Pos.xyz;
+	Output.Pos.xyz = Pos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
 	// Compute Cubic polynomial factors.
 	float Age = _AgeAndAlphaArray[IndexArray[0]][0];
@@ -92,9 +93,9 @@ PS2FB Diffuse_PS(VS2PS Input)
 {
 	PS2FB Output;
 
-	float2 GroundUV = GetGroundUV(Input.VertexPos);
-	float LMOffset = GetLMOffset(Input.VertexPos);
-	float4 HPos = mul(float4(Input.VertexPos.xyz, 1.0), _WorldViewProj);
+	float2 GroundUV = GetGroundUV(Input.Pos.xyz);
+	float LMOffset = GetLMOffset(Input.Pos.xyz);
+	float4 HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color; // Diffuse map
 	float4 TLUT = tex2D(SampleLUT, GroundUV); // Hemi map

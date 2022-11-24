@@ -83,7 +83,7 @@ float4 ProjToLighting(float4 HPos)
 struct VS2PS_Shared_ZFillLightMap
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
+	float3 Tex0 : TEXCOORD0;
 };
 
 VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared Input)
@@ -98,7 +98,8 @@ VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared Input)
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Tex0.z = Output.HPos.z;
 
 	return Output;
 }
@@ -137,8 +138,8 @@ PS2FB Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input)
 struct VS2PS_Shared_PointLight
 {
 	float4 HPos : POSITION;
-	float3 WorldPos : TEXCOORD0;
-	float3 WorldNormal : TEXCOORD1;
+	float4 Pos : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
 };
 
 VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
@@ -153,9 +154,10 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
+	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
-	Output.WorldPos = WorldPos.xyz;
-	Output.WorldNormal = normalize((Input.Normal * 2.0) - 1.0);
+	Output.Normal = normalize((Input.Normal * 2.0) - 1.0);
 
 	return Output;
 }
@@ -164,12 +166,14 @@ PS2FB Shared_PointLight_PS(VS2PS_Shared_PointLight Input)
 {
 	PS2FB Output;
 
-	float3 LightVec = _PointLight.pos - Input.WorldPos;
+	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldNormal = normalize(Input.Normal);
+
+	float3 LightVec = _PointLight.pos - WorldPos;
 	float Attenuation = GetLightAttenuation(LightVec, _PointLight.attSqrInv);
 
 	LightVec = normalize(LightVec);
-	float3 Normal = normalize(Input.WorldNormal);
-	float3 CosAngle = dot(Normal, LightVec);
+	float3 CosAngle = dot(WorldNormal, LightVec);
 
 	Output.Color = float4(saturate((CosAngle * _PointLight.col) * Attenuation), 0.0);
 	// Output.Depth = 0.0;
@@ -184,14 +188,15 @@ PS2FB Shared_PointLight_PS(VS2PS_Shared_PointLight Input)
 struct VS2PS_Shared_LowDetail
 {
 	float4 HPos : POSITION;
-	float3 WorldPos : TEXCOORD0;
-	float2 ColorTex : TEXCOORD1;
-	float4 LightTex : TEXCOORD2;
-	float2 CompTex : TEXCOORD3;
+	float4 Pos : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
+
+	float4 TexA : TEXCOORD2; // .xy = ColorTex; .zw = CompTex;
+	float4 LightTex : TEXCOORD3;
+
 	float2 YPlaneTex : TEXCOORD4;
 	float2 XPlaneTex : TEXCOORD5;
 	float2 ZPlaneTex : TEXCOORD6;
-	float3 WorldNormal : TEXCOORD7;
 };
 
 VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared Input)
@@ -206,9 +211,9 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared Input)
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.WorldPos = WorldPos.xyz;
-
-	Output.ColorTex = (Input.Pos0.xy * _ScaleBaseUV *_ColorLightTex.x) + _ColorLightTex.y;
+	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos.w = Output.HPos.z;
+	Output.Normal = normalize((Input.Normal * 2.0) - 1.0);
 
 	float3 Tex = 0.0;
 	Tex.x = Input.Pos0.x * _TexScale.x;
@@ -219,14 +224,13 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared Input)
 	float2 XPlaneTexCoord = Tex.zy;
 	float2 ZPlaneTexCoord = Tex.xy;
 
-	Output.CompTex = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
+	Output.TexA.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.TexA.zw = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
+	Output.LightTex = ProjToLighting(Output.HPos);
+
 	Output.YPlaneTex = (YPlaneTexCoord * _FarTexTiling.z);
 	Output.XPlaneTex = (XPlaneTexCoord * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
 	Output.ZPlaneTex = (ZPlaneTexCoord * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
-
-	Output.LightTex = ProjToLighting(Output.HPos);
-
-	Output.WorldNormal = normalize((Input.Normal * 2.0) - 1.0);
 
 	return Output;
 }
@@ -235,15 +239,15 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 {
 	PS2FB Output;
 
-	float3 WorldPos = Input.WorldPos;
-	float3 Normals = normalize(Input.WorldNormal);
+	float3 WorldPos = Input.Pos.xyz;
+	float3 Normals = normalize(Input.Normal);
 
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
-	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorTex);
+	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 
 	// If thermals assume no shadows and gray color
 	if (FogColor.r < 0.01)
@@ -257,7 +261,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 		return Light;
 	#endif
 
-	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.CompTex);
+	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
 	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
 	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex);
 	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
@@ -365,7 +369,7 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 struct VS2PS_Shared_UnderWater
 {
 	float4 HPos : POSITION;
-	float3 WorldPos : TEXCOORD0;
+	float4 Pos : TEXCOORD0;
 };
 
 VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared Input)
@@ -380,7 +384,8 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared Input)
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.WorldPos = WorldPos;
+	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
 	return Output;
 }
@@ -389,7 +394,7 @@ PS2FB Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input)
 {
 	PS2FB Output;
 
-	float3 WorldPos = Input.WorldPos;
+	float3 WorldPos = Input.Pos.xyz;
 	float3 OutputColor = _TerrainWaterColor.rgb;
 	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 
@@ -408,36 +413,36 @@ PS2FB Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input)
 struct APP2VS_Shared_ST_Normal
 {
 	float2 Pos0 : POSITION0;
-	float2 TexCoord0 : TEXCOORD0;
 	float4 Pos1 : POSITION1;
+	float2 Tex0 : TEXCOORD0;
 	float3 Normal : NORMAL;
 };
 
 struct VS2PS_Shared_ST_Normal
 {
 	float4 HPos : POSITION;
-	float3 WorldPos : TEXCOORD0;
-	float2 ColorLightTex : TEXCOORD1;
-	float2 LowDetailTex : TEXCOORD2;
+	float4 Pos : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
+
+	float4 TexA : TEXCOORD2; // .xy = ColorTex/LightTex; .zw = LowDetailTex;
 	float2 YPlaneTex : TEXCOORD3;
 	float2 XPlaneTex : TEXCOORD4;
 	float2 ZPlaneTex : TEXCOORD5;
-	float3 WorldNormal : TEXCOORD6;
 };
 
 VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 {
 	VS2PS_Shared_ST_Normal Output;
 
-	Output.ColorLightTex = (Input.TexCoord0 * _STColorLightTex.x) + _STColorLightTex.y;
-	Output.LowDetailTex = (Input.TexCoord0 * _STLowDetailTex.x) + _STLowDetailTex.y;
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = mul(float4(Input.Pos0.xy, 0.0, 1.0), _STTransXZ).xy;
 	WorldPos.yw = (Input.Pos1.xw * _STScaleTransY.xy) + _STScaleTransY.zw;
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.WorldPos = WorldPos.xyz;
+	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos.w = Output.HPos.z;
+	Output.Normal = Input.Normal;
 
 	float3 Tex = 0.0;
 	Tex.x = WorldPos.x * _STTexScale.x;
@@ -448,11 +453,12 @@ VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 	float2 XPlaneTexCoord = Tex.zy;
 	float2 ZPlaneTexCoord = Tex.xy;
 
+	Output.TexA.xy = (Input.Tex0 * _STColorLightTex.x) + _STColorLightTex.y;
+	Output.TexA.zw = (Input.Tex0 * _STLowDetailTex.x) + _STLowDetailTex.y;
+
 	Output.YPlaneTex = (YPlaneTexCoord * _STFarTexTiling.z);
 	Output.XPlaneTex = (XPlaneTexCoord * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
 	Output.ZPlaneTex = (ZPlaneTexCoord * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
-
-	Output.WorldNormal = Input.Normal;
 
 	return Output;
 }
@@ -461,12 +467,13 @@ PS2FB Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input)
 {
 	PS2FB Output;
 
-	float3 WorldNormal = normalize(Input.WorldNormal);
+	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldNormal = normalize(Input.Normal);
 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.ColorLightTex);
+	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 
 	// If thermals assume gray color
 	if (FogColor.r < 0.01)
@@ -474,7 +481,7 @@ PS2FB Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input)
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 
-	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.LowDetailTex);
+	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
 	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
 	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex);
 	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
@@ -488,7 +495,7 @@ PS2FB Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input)
 	float4 OutputColor = (ColorMap * LowDetailMap) * 4.0;
 	OutputColor.rb = (_GIColor.r < 0.01) ? 0.0 : OutputColor.rb; // M (temporary fix)
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos.xyz, _CameraPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;

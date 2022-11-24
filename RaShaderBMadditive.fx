@@ -44,13 +44,14 @@ struct APP2VS
 	float4 Pos : POSITION;
 	// float3 Normal : NORMAL;
 	float4 BlendIndices : BLENDINDICES;
-	float4 Tex : TEXCOORD0;
+	float4 Tex0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Tex : TEXCOORD0;
+	float4 Pos : TEXCOORD0;
+	float4 Tex0 : TEXCOORD1;
 };
 
 struct PS2FB
@@ -68,7 +69,8 @@ VS2PS BM_Additive_VS(APP2VS Input)
 
 	Output.HPos = float4(mul(Input.Pos, GeomBones[IndexArray[0]]), 1.0);
 	Output.HPos = mul(Output.HPos, ViewProjection);
-	Output.Tex = Input.Tex;
+	Output.Pos = Output.HPos;
+	Output.Tex0 = Input.Tex0;
 
 	return Output;
 }
@@ -77,7 +79,7 @@ PS2FB BM_Additive_PS(VS2PS Input)
 {
 	PS2FB Output;
 
-	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex);
+	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0);
 	OutputColor.rgb *= Transparency;
 
 	Output.Color = OutputColor;

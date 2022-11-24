@@ -34,7 +34,7 @@ struct APP2VS
 struct VS2PS
 {
     float4 HPos : POSITION;
-    float2 Tex0 : TEXCOORD0;
+    float3 Tex0 : TEXCOORD0;
 };
 
 struct PS2FB
@@ -46,8 +46,12 @@ struct PS2FB
 VS2PS Shader_VS(APP2VS Input)
 {
 	VS2PS Output;
+
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
-	Output.Tex0 = Input.Tex0;
+
+	Output.Tex0.xy = Input.Tex0;
+	Output.Tex0.z = Output.HPos.z;
+
 	return Output;
 }
 
@@ -55,7 +59,7 @@ PS2FB Shader_PS(VS2PS Input)
 {
 	PS2FB Output;
 
-	Output.Color = tex2D(SampleBaseTex, Input.Tex0);
+	Output.Color = tex2D(SampleBaseTex, Input.Tex0.xy);
 	// Output.Depth = 0.0;
 
 	return Output;

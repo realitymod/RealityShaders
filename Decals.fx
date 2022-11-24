@@ -61,14 +61,16 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float3 ViewPos : TEXCOORD1;
-	float3 WorldNormal : TEXCOORD2;
-	float4 Color : TEXCOORD3;
+	float4 Pos : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
+
+	float2 Tex0 : TEXCOORD2;
 
 	// Shadow attributes
-	float4 ShadowTex : TEXCOORD4;
-	float4 ViewPortMap : TEXCOORD5;
+	float4 ShadowTex : TEXCOORD3;
+	float4 ViewPortMap : TEXCOORD4;
+
+	float4 Color : TEXCOORD5;
 };
 
 struct PS2FB
@@ -88,8 +90,9 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 	float3 WorldPos = mul(Input.Pos, WorldMat);
 
 	Output.HPos = mul(float4(WorldPos, 1.0), _WorldViewProjection);
-	Output.ViewPos = Output.HPos.xyz;
-	Output.WorldNormal = normalize(mul(Input.Normal.xyz, (float3x3)WorldMat));
+	Output.Pos.xyz = Output.HPos.xyz;
+	Output.Pos.w = Output.HPos.z;
+	Output.Normal = normalize(mul(Input.Normal.xyz, (float3x3)WorldMat));
 
 	float Alpha = Input.P_Tex_Index_Alpha.w;
 	Output.Color.rgb = saturate(Input.Color);
@@ -128,12 +131,12 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 	}
 
 	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex0);
-	float3 Normals = normalize(Input.WorldNormal.xyz);
+	float3 Normals = normalize(Input.Normal.xyz);
 	float3 Diffuse = LambertLighting(Normals, -_SunDirection.xyz) * _SunColor * DirShadow;
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
 	float4 OutputColor = DiffuseMap * float4(Lighting, Input.Color.a);
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 	return OutputColor;
 }
 

@@ -130,11 +130,12 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float3 Tex : TEXCOORD0;
-	float3 WorldPos : TEXCOORD1;
+	float4 Pos : TEXCOORD0;
+
+	float3 Tex0 : TEXCOORD1;
 	float2 LightMapTex : TEXCOORD2;
 	#if defined(USE_SHADOWS)
-		float4 TexShadow : TEXCOORD3;
+		float4 ShadowTex : TEXCOORD3;
 	#endif
 };
 
@@ -150,7 +151,8 @@ VS2PS Water_VS(APP2VS Input)
 
 	float4 WorldPos = mul(Input.Pos, World);
 	Output.HPos = mul(WorldPos, ViewProjection);
-	Output.WorldPos = WorldPos.xyz;
+	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
 	float3 Tex = 0.0;
 	#if defined(USE_3DTEXTURE)
@@ -159,14 +161,14 @@ VS2PS Water_VS(APP2VS Input)
 	#else
 		Tex.xy = (WorldPos.xz / float2(99.13, 71.81));
 	#endif
-	Output.Tex = Tex;
+	Output.Tex0 = Tex;
 
 	#if defined(USE_LIGHTMAP)
 		Output.LightMapTex = (Input.LightMap * LightMapOffset.xy) + LightMapOffset.zw;
 	#endif
 
 	#if defined(USE_SHADOWS)
-		Output.TexShadow = GetShadowProjection(WorldPos);
+		Output.ShadowTex = GetShadowProjection(WorldPos);
 	#endif
 
 	return Output;
@@ -186,14 +188,14 @@ PS2FB Water_PS(in VS2PS Input)
 
 	float ShadowFactor = LightMap.g;
 	#if defined(USE_SHADOWS)
-		ShadowFactor *= GetShadowFactor(SampleShadowMap, Input.TexShadow);
+		ShadowFactor *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#endif
 
 	#if defined(USE_3DTEXTURE)
-		float3 TangentNormal = tex3D(SampleWaterMap, Input.Tex);
+		float3 TangentNormal = tex3D(SampleWaterMap, Input.Tex0);
 	#else
-		float3 Normal0 = tex2D(SampleWaterMap0, Input.Tex.xy).xyz;
-		float3 Normal1 = tex2D(SampleWaterMap1, Input.Tex.xy).xyz;
+		float3 Normal0 = tex2D(SampleWaterMap0, Input.Tex0.xy).xyz;
+		float3 Normal1 = tex2D(SampleWaterMap1, Input.Tex0.xy).xyz;
 		float3 TangentNormal = lerp(Normal0, Normal1, WaterCycleTime);
 	#endif
 
@@ -204,7 +206,7 @@ PS2FB Water_PS(in VS2PS Input)
 		TangentNormal.xyz = normalize((TangentNormal.xyz * 2.0) - 1.0);
 	#endif
 
-	float3 WorldPos = Input.WorldPos;
+	float3 WorldPos = Input.Pos.xyz;
 	float3 LightVec = normalize(-Lights[0].dir);
 	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 	float3 HalfVec = normalize(LightVec + ViewVec);

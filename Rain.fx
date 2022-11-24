@@ -32,13 +32,13 @@ struct APP2PS
 {
 	float3 Pos: POSITION;
 	float4 Data : COLOR0;
-	float2 TexCoord: TEXCOORD0;
+	float2 Tex0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-	float4 HPos: POSITION;
-	float2 TexCoord : TEXCOORD0;
+	float4 HPos : POSITION;
+	float3 Tex0 : TEXCOORD0;
 	float4 Color : COLOR0;
 	float PointSize : PSIZE;
 };
@@ -60,12 +60,13 @@ VS2PS Point_VS(APP2PS Input)
 	float3 CamDelta = abs(_CameraPos.xyz - ParticlePos.xyz);
 	float CamDist = length(CamDelta);
 	CamDelta = (CamDelta - _FadeOutRange) / _FadeOutDelta;
-
 	float Alpha = 1.0 - length(saturate(CamDelta));
 
-	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
-	Output.TexCoord = Input.TexCoord;
+	Output.Tex0.xy = Input.Tex0;
+	Output.Tex0.z = Output.HPos.z;
+
+	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
 	Output.PointSize = min(_ParticleSize * rsqrt(_PointScale[0] + _PointScale[1] * CamDist), _MaxParticleSize);
 
 	return Output;
@@ -75,7 +76,7 @@ PS2FB Point_PS(VS2PS Input)
 {
 	PS2FB Output;
 
-	float4 ColorTex = tex2D(SampleTex0, Input.TexCoord);
+	float4 ColorTex = tex2D(SampleTex0, Input.Tex0.xy);
 
 	Output.Color = ColorTex  * Input.Color;
 	// Output.Depth = 0.0;
@@ -111,7 +112,7 @@ technique Point
 struct VS2PS_Line
 {
 	float4 HPos : POSITION;
-	float2 TexCoord : TEXCOORD0;
+	float3 Tex0 : TEXCOORD0;
 	float4 Color : COLOR0;
 };
 
@@ -128,7 +129,8 @@ VS2PS_Line Line_VS(APP2PS Input)
 
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
-	Output.TexCoord = Input.TexCoord;
+	Output.Tex0.xy = Input.Tex0;
+	Output.Tex0.z = Output.HPos.z;
 
 	return Output;
 }
@@ -171,7 +173,7 @@ technique Line
 struct VS2PS_Cell
 {
 	float4 HPos: POSITION;
-	float2 TexCoord : TEXCOORD0;
+	float3 Tex0 : TEXCOORD0;
 	float4 Color : COLOR0;
 };
 
@@ -184,7 +186,8 @@ VS2PS_Cell Cells_VS(APP2PS Input)
 
 	Output.Color = saturate(_ParticleColor);
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
-	Output.TexCoord = Input.TexCoord;
+	Output.Tex0.xy = Input.Tex0;
+	Output.Tex0.z = Output.HPos.z;
 
 	return Output;
 }

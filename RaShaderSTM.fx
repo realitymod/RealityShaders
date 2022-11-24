@@ -48,8 +48,8 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
 
-	float3 ObjectPos : TEXCOORD0;
 	float3 ObjectTangent : TEXCOORD1;
 	float3 ObjectBinormal : TEXCOORD2;
 	float3 ObjectNormal : TEXCOORD3;
@@ -87,9 +87,10 @@ VS2PS StaticMesh_VS(APP2VS Input)
 
 	// Output HPos
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
+	Output.Pos.xyz = ObjectPos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
 	// Output object-space properties
-	Output.ObjectPos = ObjectPos.xyz;
 	Output.ObjectTangent = ObjectTBN[0];
 	Output.ObjectBinormal = ObjectTBN[1];
 	Output.ObjectNormal = ObjectTBN[2];
@@ -219,7 +220,7 @@ PS2FB StaticMesh_PS(VS2PS Input)
 	PS2FB Output;
 
 	// Get object-space properties
-	float3 ObjectPos = Input.ObjectPos;
+	float3 ObjectPos = Input.Pos.xyz;
 	float3 ObjectTangent = normalize(Input.ObjectTangent);
 	float3 ObjectBinormal = normalize(Input.ObjectBinormal);
 	float3 ObjectNormal = normalize(Input.ObjectNormal);

@@ -21,15 +21,32 @@ string InstanceParameters[] =
 	"ViewProjection"
 };
 
+struct APP2VS
+{
+	float3 Pos : POSITION0;
+};
+
+struct VS2PS
+{
+	float4 HPos : POSITION0;
+	float4 Pos : TEXCOORD0;
+};
+
 struct PS2FB
 {
 	float4 Color : COLOR;
 	// float Depth : DEPTH;
 };
 
-float4 Default_VS(float3 Pos : POSITION0) : POSITION0
+VS2PS Default_VS(APP2VS Input)
 {
-	return mul(float4(Pos.xyz, 1.0), mul(World, ViewProjection));
+	VS2PS Output;
+	
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
+
+	Output.Pos = Output.HPos;
+
+	return Output;
 }
 
 PS2FB Default_PS()

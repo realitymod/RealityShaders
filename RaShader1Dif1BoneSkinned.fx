@@ -57,7 +57,7 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float2 Tex : TEXCOORD0;
+	float3 Tex0 : TEXCOORD0;
 };
 
 struct PS2FB
@@ -75,7 +75,8 @@ VS2PS DiffuseBone_VS(APP2VS Input)
 	int IndexArray[4] = (int[4])IndexVector;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(Bones[IndexArray[0]], ViewProjection));
-	Output.Tex = Input.Tex0;
+	Output.Tex0.xy = Input.Tex0;
+	Output.Tex0.z = Output.HPos.z;
 
 	return Output;
 }
@@ -84,7 +85,7 @@ PS2FB DiffuseBone_PS(VS2PS Input)
 {
 	PS2FB Output;
 
-	float4 ColorTex = tex2D(SampleDiffuseMap, Input.Tex);
+	float4 ColorTex = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 
 	Output.Color = ColorTex * float4(1.0, 0.0, 1.0, 1.0);
 	// Output.Depth = 0.0;

@@ -42,8 +42,8 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
 
-	float3 WorldPos : TEXCOORD0;
 	float3 Tangent : TEXCOORD1;
 	float3 Binormal : TEXCOORD2;
 	float3 Normal : TEXCOORD3;
@@ -112,8 +112,8 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 
 	// Output HPos
 	Output.HPos = mul(SkinnedObjPos, WorldViewProjection);
-
-	Output.WorldPos.xyz = WorldPos.xyz;
+	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
 	Output.Tex0 = Input.TexCoord0;
 
@@ -161,14 +161,14 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 	PS2FB Output;
 
 	// Get world-space properties
-	float3 WorldPos = Input.WorldPos;
+	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldTangent = normalize(Input.Tangent);
 	float3 WorldBinormal = normalize(Input.Binormal);
 	float3 WorldNormal = normalize(Input.Normal);
 	float3x3 WorldTBN = float3x3(WorldTangent, WorldBinormal, WorldNormal);
 
 	// mul(mat, vec) ==	mul(vec, transpose(mat))
-	float3 WorldLightVec = GetLightVec(WorldPos.xyz);
+	float3 WorldLightVec = GetLightVec(WorldPos);
 	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 

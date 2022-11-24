@@ -38,7 +38,8 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float3 VertexPos : TEXCOORD0;
+	float4 Pos : TEXCOORD0;
+
 	float4 Tex0 : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
 	float3 Color : TEXCOORD2;
 	float3 Maps : TEXCOORD3; // [AlphaBlend, AnimBlend, LMOffset]
@@ -90,6 +91,8 @@ VS2PS Trail_VS(APP2VS Input)
 	// Displace vertex
 	float4 Pos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
+	Output.Pos.xyz = Input.Pos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
 	Output.Color = lerp(Template.m_color1AndLightFactor.rgb, Template.m_color2.rgb, ColorBlendFactor);
 
@@ -111,7 +114,15 @@ VS2PS Trail_VS(APP2VS Input)
 	// Offset texcoords
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
-	Output.VertexPos = Input.Pos.xyz;
+	return Output;
+}
+
+PS2FB Trail_ShowFill_PS(VS2PS Input)
+{
+	PS2FB Output;
+
+	Output.Color = _EffectSunColor.rrrr;
+	// Output.Depth = 0.0;
 
 	return Output;
 }
@@ -120,11 +131,13 @@ PS2FB Trail_Low_PS(VS2PS Input)
 {
 	PS2FB Output;
 
+	float3 LocalPos = Input.Pos.xyz;
+
 	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.Maps[0];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, _EyePos));
+	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;
@@ -136,6 +149,8 @@ PS2FB Trail_Medium_PS(VS2PS Input)
 {
 	PS2FB Output;
 
+	float3 LocalPos = Input.Pos.xyz;
+
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
 
@@ -144,7 +159,7 @@ PS2FB Trail_Medium_PS(VS2PS Input)
 	OutputColor.rgb *= GetParticleLighting(1.0, Input.Maps[2], saturate(Template.m_color1AndLightFactor.a));
 	OutputColor.a *= Input.Maps[0];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, _EyePos));
+	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;
@@ -157,8 +172,8 @@ PS2FB Trail_High_PS(VS2PS Input)
 	PS2FB Output;
 
 	// Hemi lookup coords
-	float3 Pos = Input.VertexPos;
- 	float2 HemiTex = ((Pos + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
+	float3 LocalPos = Input.Pos.xyz;
+ 	float2 HemiTex = ((LocalPos + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
  	HemiTex.y = 1.0 - HemiTex.y;
 
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
@@ -170,19 +185,9 @@ PS2FB Trail_High_PS(VS2PS Input)
 	OutputColor.rgb *= GetParticleLighting(TLUT.a, Input.Maps[2], saturate(Template.m_color1AndLightFactor.a));
 	OutputColor.a *= Input.Maps[0];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos, _EyePos));
+	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
-
-	return Output;
-}
-
-PS2FB Trail_ShowFill_PS(VS2PS Input)
-{
-	PS2FB Output;
-
-	Output.Color = _EffectSunColor.rrrr;
 	// Output.Depth = 0.0;
 
 	return Output;

@@ -83,8 +83,8 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
 
-	float3 WorldPos : TEXCOORD0;
 	float3 WorldTangent : TEXCOORD1;
 	float3 WorldBinormal : TEXCOORD2;
 	float3 WorldNormal : TEXCOORD3;
@@ -147,7 +147,8 @@ VS2PS BundledMesh_VS(APP2VS Input)
 	Output.HPos = mul(WorldPos, ViewProjection);
 
 	// Output world-space properties
-	Output.WorldPos = WorldPos.xyz;
+	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos.w = Output.HPos.z;
 	Output.WorldTangent = WorldTBN[0];
 	Output.WorldBinormal = WorldTBN[1];
 	Output.WorldNormal = WorldTBN[2];
@@ -202,7 +203,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	PS2FB Output;
 
 	// Get world-space properties
-	float3 WorldPos = Input.WorldPos;
+	float3 WorldPos = Input.Pos;
 	float3 WorldTangent = normalize(Input.WorldTangent);
 	float3 WorldBinormal = normalize(Input.WorldBinormal);
 	float3 WorldNormal = normalize(Input.WorldNormal);

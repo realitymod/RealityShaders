@@ -38,7 +38,7 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos: POSITION;
-	float2 TexCoords: TEXCOORD0;
+	float3 Tex0 : TEXCOORD0;
 	float4 Color : COLOR0;
 };
 
@@ -51,9 +51,14 @@ struct PS2FB
 VS2PS Lightning_VS(APP2VS Input)
 {
 	VS2PS Output;
+
 	Output.HPos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
-	Output.TexCoords = Input.TexCoords;
+
+	Output.Tex0.xy = Input.TexCoords;
+	Output.Tex0.z = Output.HPos.z;
+
 	Output.Color = saturate(Input.Color);
+
 	return Output;
 }
 
@@ -61,7 +66,7 @@ PS2FB Lightning_PS(VS2PS Input)
 {
 	PS2FB Output;
 
-	float4 ColorTex = tex2D(SampleLightning, Input.TexCoords);
+	float4 ColorTex = tex2D(SampleLightning, Input.Tex0.xy);
 
 	Output.Color = ColorTex * _LightningColor;
 	Output.Color.a *= Input.Color.a;

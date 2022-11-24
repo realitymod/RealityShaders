@@ -57,16 +57,18 @@ CREATE_SAMPLER(SampleTerrainLightMap, Tex2, FALSE)
 struct APP2VS
 {
 	float4 Pos : POSITION;
-	float2 TexCoord : TEXCOORD0;
+	float2 Tex0 : TEXCOORD0;
 	float4 Packed : COLOR;
 };
 
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1;
-	float4 ShadowTex : TEXCOORD1;
-	float3 VertexPos : TEXCOORD2;
+	float4 Pos : TEXCOORD0;
+
+	float4 TexA : TEXCOORD1; // .xy = Tex0; .zw = Tex1;
+	float4 ShadowTex : TEXCOORD2;
+
 	float4 Color : COLOR0;
 };
 
@@ -100,10 +102,11 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMa
 
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
+	Output.Pos.xyz = Pos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
-	Output.P_Tex0_Tex1.xy = Input.TexCoord / 32767.0;
-	Output.P_Tex0_Tex1.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
-
+	Output.TexA.xy = Input.Tex0 / 32767.0;
+	Output.TexA.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
 	float3 Light = 0.0;
@@ -117,8 +120,6 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMa
 	Output.Color.rgb = saturate(Light);
 	Output.Color.a = Input.Packed.w * 0.5;
 
-	Output.VertexPos = Pos.xyz;
-
 	return Output;
 }
 
@@ -126,9 +127,11 @@ PS2FB Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool Sh
 {
 	PS2FB Output;
 
-	float4 Base = tex2D(SampleColorMap, Input.P_Tex0_Tex1.xy);
-	float4 TerrainColor = tex2D(SampleTerrainColorMap, Input.P_Tex0_Tex1.zw);
-	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.P_Tex0_Tex1.zw);
+	float3 LocalPos = Input.Pos.xyz;
+
+	float4 Base = tex2D(SampleColorMap, Input.TexA.xy);
+	float4 TerrainColor = tex2D(SampleTerrainColorMap, Input.TexA.zw);
+	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.TexA.zw);
 	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
@@ -146,7 +149,7 @@ PS2FB Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool Sh
 	OutputColor.rgb = ((Base.rgb * TerrainColor.rgb) * TerrainLight.rgb) * 2.0;
 	OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _CameraPos));
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;
@@ -310,7 +313,7 @@ technique t0_l4_ds
 struct APP2VS_Simple
 {
 	float4 Pos : POSITION;
-	float2 TexCoord : TEXCOORD0;
+	float2 Tex0 : TEXCOORD0;
 	float4 Packed : COLOR;
 	float4 TerrainColorMap : COLOR1;
 	float4 TerrainLightMap : COLOR2;
@@ -319,9 +322,10 @@ struct APP2VS_Simple
 struct VS2PS_Simple
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float4 ShadowTex : TEXCOORD1;
-	float3 VertexPos : TEXCOORD2;
+	float4 Pos : TEXCOORD0;
+
+	float2 Tex0 : TEXCOORD1;
+	float4 ShadowTex : TEXCOORD2;
 
 	float4 Color : TEXCOORD3;
 	float4 TerrainLightMap : TEXCOORD4;
@@ -334,9 +338,10 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
+	Output.Pos.xyz = Pos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
-	Output.Tex0 = Input.TexCoord / 32767.0;
-
+	Output.Tex0 = Input.Tex0 / 32767.0;
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
 	float3 Light = 0.0;
@@ -349,10 +354,8 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 
 	Output.Color.rgb = saturate(Light);
 	Output.Color.a = Input.Packed.w * 0.5;
-
 	Output.TerrainColorMap = saturate(Input.TerrainColorMap);
 	Output.TerrainLightMap = saturate(Input.TerrainLightMap);
-	Output.VertexPos = Pos.xyz;
 
 	return Output;
 }
@@ -360,6 +363,8 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 PS2FB Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, uniform bool ShadowMapEnable)
 {
 	PS2FB Output;
+
+	float3 LocalPos = Input.Pos.xyz;
 
 	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
 	float4 TerrainColor = Input.TerrainColorMap;
@@ -381,7 +386,7 @@ PS2FB Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	OutputColor.rgb = ((Base.rgb * TerrainColor.rgb) * TerrainLight.rgb) * 2.0;
 	OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _CameraPos));
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;
@@ -547,15 +552,18 @@ technique t0_l4_ds_simple
 struct VS2PS_ZOnly
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
+	float3 Tex0 : TEXCOORD0;
 };
 
 VS2PS_ZOnly Undergrowth_ZOnly_VS(APP2VS Input)
 {
 	VS2PS_ZOnly Output = (VS2PS_ZOnly)0;
+
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
-	Output.Tex0 = Input.TexCoord / 32767.0;
+	Output.Tex0.xy = Input.Tex0 / 32767.0;
+	Output.Tex0.z = Output.HPos.z;
+
 	return Output;
 }
 
@@ -563,7 +571,7 @@ PS2FB Undergrowth_ZOnly_PS(VS2PS_ZOnly Input)
 {
 	PS2FB Output;
 
-	float4 OutputColor = tex2D(SampleColorMap, Input.Tex0);
+	float4 OutputColor = tex2D(SampleColorMap, Input.Tex0.xy);
 	OutputColor.a *= (_Transparency_x8.a * 8.0);
 
 	Output.Color = OutputColor;

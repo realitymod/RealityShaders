@@ -103,11 +103,13 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float3 VertexPos : TEXCOORD1;
+	float4 Pos : TEXCOORD0;
+
+	float2 Tex0 : TEXCOORD1;
 	#if _HASSHADOW_
 		float4 TexShadow : TEXCOORD2;
 	#endif
+
 	float4 Color : TEXCOORD3;
 };
 
@@ -136,8 +138,10 @@ VS2PS Leaf_VS(APP2VS Input)
 		float3 LocalPos = Input.Pos.xyz * PosUnpack.xyz;
 	#endif
 
+	Output.Pos.xyz = LocalPos.xyz;
+	Output.Pos.w = Output.HPos.z;
+
 	Output.Tex0.xy = Input.Tex0;
-	Output.VertexPos = LocalPos.xyz;
 
 	#if defined(OVERGROWTH)
 		Input.Normal = normalize((Input.Normal * 2.0) - 1.0);
@@ -207,7 +211,7 @@ PS2FB Leaf_PS(VS2PS Input)
 	#endif
 
 	#if !defined(_POINTLIGHT_)
-		ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+		ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos.xyz, ObjectSpaceCamPos.xyz));
 	#endif
 
 	Output.Color = OutputColor;

@@ -63,9 +63,10 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float4 P_Normals_ScaleLN : TEXCOORD1; // .xyz = Normals; .w = ScaleLN;
-	float3 VertexPos : TEXCOORD2;
+	float4 Pos : TEXCOORD0;
+
+	float2 Tex0 : TEXCOORD1;
+	float4 P_Normals_ScaleLN : TEXCOORD2; // .xyz = Normals; .w = ScaleLN;
 };
 
 struct PS2FB
@@ -79,10 +80,12 @@ VS2PS TrunkOG_VS(APP2VS Input)
 	VS2PS Output = (VS2PS)0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
+	Output.Pos.xyz = Input.Pos.xyz * PosUnpack.xyz;
+	Output.Pos.w = Output.HPos.z;
+
 	Output.Tex0.xy = Input.Tex0 / 32767.0;
 	Output.P_Normals_ScaleLN.xyz = normalize((Input.Normal * 2.0) - 1.0);
 	Output.P_Normals_ScaleLN.w = Input.Pos.w / 32767.0;
-	Output.VertexPos = Input.Pos.xyz * PosUnpack.xyz;
 
 	return Output;
 }
@@ -104,7 +107,7 @@ PS2FB TrunkOG_PS(VS2PS Input)
 
 	float4 OutputColor = float4((DiffuseMap.rgb * Color.rgb) * 2.0, Transparency.a);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos.xyz, ObjectSpaceCamPos.xyz));
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;

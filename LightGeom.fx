@@ -24,6 +24,7 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
 };
 
 struct PS2FB
@@ -35,7 +36,10 @@ struct PS2FB
 VS2PS PointLight_VS(APP2VS Input)
 {
 	VS2PS Output;
+
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
+	Output.Pos = Output.HPos;
+
 	return Output;
 }
 
@@ -81,8 +85,7 @@ technique Pointlight
 struct VS2PS_Spot
 {
 	float4 HPos : POSITION;
-	float3 LightDir : TEXCOORD0;
-	float3 LightVec : TEXCOORD1;
+	float4 Pos : TEXCOORD0;
 };
 
 VS2PS_Spot SpotLight_VS(APP2VS Input)
@@ -90,12 +93,10 @@ VS2PS_Spot SpotLight_VS(APP2VS Input)
 	VS2PS_Spot Output;
  	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 
-	// transform vertex
+	// Transform vertex
 	float3 VertPos = mul(float4(Input.Pos.xyz, 1.0), _WorldView);
-	Output.LightVec = -normalize(VertPos);
-
-	// transform LightDir to objectSpace
-	Output.LightDir = mul(_SpotDir, float3x3(_WorldView[0].xyz, _WorldView[1].xyz, _WorldView[2].xyz));
+	Output.Pos.xyz = -normalize(VertPos);
+	Output.Pos.w = Output.HPos.z;
 
 	return Output;
 }
@@ -104,8 +105,8 @@ PS2FB SpotLight_PS(VS2PS_Spot Input)
 {
 	PS2FB Output;
 
-	float3 LightVec = normalize(Input.LightVec);
-	float3 LightDir = normalize(Input.LightDir);
+	float3 LightVec = normalize(Input.Pos.xyz);
+	float3 LightDir = normalize(mul(_SpotDir, (float3x3)_WorldView));
 	float ConicalAtt = saturate(pow(saturate(dot(LightVec, LightDir)), 2.0) + (1.0 - _ConeAngle));
 
 	Output.Color = _LightColor * ConicalAtt;

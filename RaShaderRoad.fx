@@ -95,8 +95,9 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1;
-	float3 WorldPos : TEXCOORD1;
+	float4 Pos : TEXCOORD0;
+
+	float4 TexA : TEXCOORD1; // .xy = Tex0; .zw = Tex1;
 	float4 LightTex : TEXCOORD2;
 };
 
@@ -114,9 +115,13 @@ VS2PS Road_VS(APP2VS Input)
 	WorldPos.y += 0.01;
 
 	Output.HPos = mul(WorldPos, ViewProjection);
-	Output.P_Tex0_Tex1.xy = Input.Tex0 * TexUnpack;
+
+	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos.w = Output.HPos.z;
+
+	Output.TexA.xy = Input.Tex0 * TexUnpack;
 	#if defined(USE_DETAIL)
-		Output.P_Tex0_Tex1.zw = Input.Tex1 * TexUnpack;
+		Output.TexA.zw = Input.Tex1 * TexUnpack;
 	#endif
 
 	Output.LightTex.xy = Output.HPos.xy / Output.HPos.w;
@@ -125,8 +130,6 @@ VS2PS Road_VS(APP2VS Input)
 	Output.LightTex.xy = Output.LightTex.xy * Output.HPos.w;
 	Output.LightTex.zw = Output.HPos.zw;
 
-	Output.WorldPos.xyz = WorldPos.xyz;
-
 	return Output;
 }
 
@@ -134,11 +137,13 @@ PS2FB Road_PS(VS2PS Input)
 {
 	PS2FB Output;
 
+	float3 WorldPos = Input.Pos.xyz;
+
 	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
-	float4 Diffuse = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
+	float4 Diffuse = tex2D(SampleDiffuseMap, Input.TexA.xy);
 
 	#if defined(USE_DETAIL)
-		float4 Detail = tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw);
+		float4 Detail = tex2D(SampleDetailMap, Input.TexA.zw);
 		#if defined(NO_BLEND)
 			Diffuse.rgb *= Detail.rgb;
 		#else
@@ -161,7 +166,7 @@ PS2FB Road_PS(VS2PS Input)
 		Diffuse.rgb *= Light.rgb;
 	}
 
-	float ZFade = GetRoadZFade(Input.WorldPos, WorldSpaceCamPos, RoadFadeOut);
+	float ZFade = GetRoadZFade(WorldPos, WorldSpaceCamPos, RoadFadeOut);
 
 	#if defined(NO_BLEND)
 		Diffuse.a = (Diffuse.a <= 0.95) ? 1.0 : ZFade;
@@ -169,7 +174,7 @@ PS2FB Road_PS(VS2PS Input)
 		Diffuse.a *= ZFade;
 	#endif
 
-	ApplyFog(Diffuse.rgb, GetFogValue(Input.WorldPos, WorldSpaceCamPos));
+	ApplyFog(Diffuse.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	Output.Color = Diffuse;
 	// Output.Depth = 0.0;

@@ -93,9 +93,10 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
+	float4 Pos : TEXCOORD0;
+
 	float3 Normals : TEXCOORD1;
-	float3 VertexPos : TEXCOORD2;
+	float4 TexA : TEXCOORD2; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
 	#if _HASSHADOW_
 		float4 TexShadow : TEXCOORD3;
 	#endif
@@ -113,15 +114,15 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 
 	Input.Pos *= PosUnpack;
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
-
-	Output.P_Tex0_Tex1.xy = Input.Tex0 * TexUnpack;
-
-	#if !defined(BASEDIFFUSEONLY)
-		Output.P_Tex0_Tex1.zw = Input.Tex1 * TexUnpack;
-	#endif
+	Output.Pos.xyz = Input.Pos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
 	Output.Normals.xyz = normalize(Input.Normal * NormalUnpack.x + NormalUnpack.y);
-	Output.VertexPos = Input.Pos.xyz;
+
+	Output.TexA.xy = Input.Tex0 * TexUnpack;
+	#if !defined(BASEDIFFUSEONLY)
+		Output.TexA.zw = Input.Tex1 * TexUnpack;
+	#endif
 
 	#if _HASSHADOW_
 		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
@@ -135,9 +136,9 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 	PS2FB Output;
 
 	float3 Normals = normalize(Input.Normals.xyz);
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.TexA.xy);
 	#if !defined(BASEDIFFUSEONLY)
-		DiffuseMap *= tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw);
+		DiffuseMap *= tex2D(SampleDetailMap, Input.TexA.zw);
 	#endif
 
 	float3 Diffuse = LambertLighting(Normals.xyz, -Lights[0].dir) * Lights[0].color;
@@ -148,7 +149,7 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 
 	float4 OutputColor = float4((DiffuseMap.rgb * Diffuse.rgb) * 2.0, Transparency.r * 2.0);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos.xyz, ObjectSpaceCamPos.xyz));
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;

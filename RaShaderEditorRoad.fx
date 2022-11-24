@@ -93,8 +93,9 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION0;
-	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1;
-	float3 VertexPos : TEXCOORD1;
+	float4 Pos : TEXCOORD0;
+
+	float4 P_Tex0_Tex1 : TEXCOORD1; // .xy = Tex0; .zw = Tex1;
 	float4 LightTex : TEXCOORD2;
 };
 
@@ -122,7 +123,8 @@ VS2PS Editor_Road_VS(APP2VS Input)
 	Output.LightTex.xy = Output.LightTex.xy * Output.HPos.w;
 	Output.LightTex.zw = Output.HPos.zw;
 
-	Output.VertexPos.xyz = WorldPos.xyz;
+	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
 	return Output;
 }
@@ -140,9 +142,9 @@ PS2FB Editor_Road_PS(VS2PS Input)
 		float4 OutputColor = Diffuse;
 	#endif
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, WorldSpaceCamPos));
 
-	OutputColor.a *= GetRoadZFade(Input.VertexPos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
+	OutputColor.a *= GetRoadZFade(Input.Pos, WorldSpaceCamPos, RoadFadeOut);
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;

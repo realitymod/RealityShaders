@@ -36,7 +36,7 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float3 ViewPos : TEXCOORD0;
+	float4 Pos : TEXCOORD0;
 	float4 Tex0 : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
 	float3 Color : TEXCOORD2;
 	float4 Maps : TEXCOORD3; // [LightFactor, Alpha, BlendFactor, LMOffset]
@@ -87,7 +87,8 @@ VS2PS Particle_VS(APP2VS Input)
 
 	float4 Pos = mul(float4(ScaledPos, 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
-	Output.ViewPos = Pos.xyz;
+	Output.Pos.xyz = Pos.xyz;
+	Output.Pos.w = Output.HPos.z;
 
 	// Compute texcoords
 	// Rotate and scale to correct u,v space and zoom in.
@@ -124,7 +125,7 @@ PS2FB Particle_Low_PS(VS2PS Input)
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.Maps[1];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;
@@ -144,7 +145,7 @@ PS2FB Particle_Medium_PS(VS2PS Input)
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.Maps[1];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;
@@ -157,7 +158,7 @@ PS2FB Particle_High_PS(VS2PS Input)
 	PS2FB Output;
 
 	// Hemi lookup table coords
-	float3 Pos = Input.ViewPos;
+	float3 Pos = Input.Pos.xyz;
 	float2 HemiTex = ((Pos + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
 	HemiTex.y = 1.0 - HemiTex.y;
 
@@ -170,7 +171,7 @@ PS2FB Particle_High_PS(VS2PS Input)
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.Maps[1];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 
 	Output.Color = OutputColor;
 	// Output.Depth = 0.0;

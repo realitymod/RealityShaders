@@ -43,35 +43,41 @@ struct APP2VS
 {
 	float4 Pos : POSITION;
 	float4 BlendIndices : BLENDINDICES;
-	float2 TexCoord : TEXCOORD0;
-	float2 TexCoord1 : TEXCOORD1;
+	float2 Tex0 : TEXCOORD0;
+	float2 Tex1 : TEXCOORD1;
 };
 
 struct APP2VS_NoClouds
 {
 	float4 Pos : POSITION;
 	float4 BlendIndices : BLENDINDICES;
-	float2 TexCoord : TEXCOORD0;
+	float2 Tex0 : TEXCOORD0;
 };
 
 struct VS2PS_NoClouds
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
+	float4 Pos : TEXCOORD0;
+
+	float2 Tex0 : TEXCOORD1;
 };
 
 struct VS2PS_SkyDome
 {
 	float4 HPos : POSITION;
-	float4 UV_Sky_Cloud : TEXCOORD0; // .xy = SkyCoord; .zw = CloudCoord
+	float4 Pos : TEXCOORD0;
+
+	float4 TexA : TEXCOORD1; // .xy = SkyTex; .zw = CloudTex
 	float4 FadeOut : COLOR0;
 };
 
 struct VS2PS_DualClouds
 {
 	float4 HPos : POSITION;
-	float2 SkyCoord : TEXCOORD0;
-	float4 CloudCoords : TEXCOORD1; // .xy = CloudCoord0; .zw = CloudCoord1
+	float4 Pos : TEXCOORD0;
+
+	float2 SkyTex : TEXCOORD1;
+	float4 CloudTex : TEXCOORD2; // .xy = CloudTex0; .zw = CloudTex1
 	float4 FadeOut : COLOR0;
 };
 
@@ -88,13 +94,18 @@ struct PS2FB
 VS2PS_SkyDome SkyDome_VS(APP2VS Input)
 {
 	VS2PS_SkyDome Output;
+
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-	Output.UV_Sky_Cloud.xy = Input.TexCoord; // Sky coords
-	Output.UV_Sky_Cloud.zw = Input.TexCoord1.xy + _TexOffset.xy; // Cloud1 coords
+	Output.Pos = Output.HPos;
+
+	Output.TexA.xy = Input.Tex0; // Sky coords
+	Output.TexA.zw = Input.Tex1.xy + _TexOffset.xy; // Cloud1 coords
+
 	float Dist = length(Input.Pos.xyz);
 	Output.FadeOut = 1.0 - saturate((Dist - _FadeOutDist.x) / _FadeOutDist.y);
 	Output.FadeOut *= Input.Pos.y > 0.0;
 	Output.FadeOut = saturate(Output.FadeOut);
+
 	return Output;
 }
 
@@ -112,8 +123,8 @@ PS2FB SkyDome_PS(VS2PS_SkyDome Input)
 {
 	PS2FB Output;
 
-	float4 Sky = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
-	float4 Cloud1 = tex2D(SampleTex1, Input.UV_Sky_Cloud.zw) * Input.FadeOut;
+	float4 Sky = tex2D(SampleTex0, Input.TexA.xy);
+	float4 Cloud1 = tex2D(SampleTex1, Input.TexA.zw) * Input.FadeOut;
 
 	Output.Color = float4(lerp(Sky.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 	// Output.Depth = 0.0;
@@ -125,8 +136,8 @@ PS2FB SkyDome_Lit_PS(VS2PS_SkyDome Input)
 {
 	PS2FB Output;
 
-	float4 Sky = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
-	float4 Cloud1 = tex2D(SampleTex1, Input.UV_Sky_Cloud.zw) * Input.FadeOut;
+	float4 Sky = tex2D(SampleTex0, Input.TexA.xy);
+	float4 Cloud1 = tex2D(SampleTex1, Input.TexA.zw) * Input.FadeOut;
 	Sky.rgb += _LightingColor.rgb * (Sky.a * _LightingBlend);
 
 	Output.Color = float4(lerp(Sky.rgb, Cloud1.rgb, Cloud1.a), 1.0);
@@ -142,14 +153,19 @@ PS2FB SkyDome_Lit_PS(VS2PS_SkyDome Input)
 VS2PS_DualClouds SkyDome_DualClouds_VS(APP2VS Input)
 {
 	VS2PS_DualClouds Output;
+
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-	Output.SkyCoord = Input.TexCoord;
-	Output.CloudCoords.xy = (Input.TexCoord1.xy + _TexOffset.xy);
-	Output.CloudCoords.zw = (Input.TexCoord1.xy + _TexOffset2.xy);
+	Output.Pos = Output.HPos;
+
+	Output.SkyTex = Input.Tex0;
+	Output.CloudTex.xy = (Input.Tex1.xy + _TexOffset.xy);
+	Output.CloudTex.zw = (Input.Tex1.xy + _TexOffset2.xy);
+
 	float Dist = length(Input.Pos.xyz);
 	Output.FadeOut = 1.0 - saturate((Dist - _FadeOutDist.x) / _FadeOutDist.y);
 	Output.FadeOut *= Input.Pos.y > 0.0;
 	Output.FadeOut = saturate(Output.FadeOut);
+
 	return Output;
 }
 
@@ -157,9 +173,9 @@ PS2FB SkyDome_DualClouds_PS(VS2PS_DualClouds Input)
 {
 	PS2FB Output;
 
-	float4 Sky = tex2D(SampleTex0, Input.SkyCoord);
-	float4 Cloud1 = tex2D(SampleTex1, Input.CloudCoords.xy) * _CloudLerpFactors.x;
-	float4 Cloud2 = tex2D(SampleTex2, Input.CloudCoords.zw) * _CloudLerpFactors.y;
+	float4 Sky = tex2D(SampleTex0, Input.SkyTex);
+	float4 Cloud1 = tex2D(SampleTex1, Input.CloudTex.xy) * _CloudLerpFactors.x;
+	float4 Cloud2 = tex2D(SampleTex2, Input.CloudTex.zw) * _CloudLerpFactors.y;
 	float4 Temp = (Cloud1 + Cloud2) * Input.FadeOut;
 
 	Output.Color = lerp(Sky, Temp, Temp.a);
@@ -175,9 +191,13 @@ PS2FB SkyDome_DualClouds_PS(VS2PS_DualClouds Input)
 VS2PS_NoClouds SkyDome_NoClouds_VS(APP2VS_NoClouds Input)
 {
 	VS2PS_NoClouds Output;
+
 	float4 ScaledPos = float4(Input.Pos.xyz, 10.0); // plo: fix for artifacts on BFO.
 	Output.HPos = mul(ScaledPos, _ViewProjMatrix);
-	Output.Tex0 = Input.TexCoord;
+	Output.Pos = Output.HPos;
+
+	Output.Tex0 = Input.Tex0;
+
 	return Output;
 }
 
@@ -185,7 +205,7 @@ PS2FB SkyDome_NoClouds_PS(VS2PS_SkyDome Input)
 {
 	PS2FB Output;
 
-	Output.Color = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
+	Output.Color = tex2D(SampleTex0, Input.TexA.xy);
 	// Output.Depth = 0.0;
 
 	return Output;
@@ -195,7 +215,7 @@ PS2FB SkyDome_NoClouds_Lit_PS(VS2PS_SkyDome Input)
 {
 	PS2FB Output;
 
-	float4 Sky = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
+	float4 Sky = tex2D(SampleTex0, Input.TexA.xy);
 	Sky.rgb += _LightingColor.rgb * (Sky.a * _LightingBlend);
 
 	Output.Color = Sky;
@@ -204,7 +224,6 @@ PS2FB SkyDome_NoClouds_Lit_PS(VS2PS_SkyDome Input)
 	return Output;
 }
 
-
 /*
 	SkyDome with flare shaders
 */
@@ -212,8 +231,12 @@ PS2FB SkyDome_NoClouds_Lit_PS(VS2PS_SkyDome Input)
 VS2PS_NoClouds SkyDome_SunFlare_VS(APP2VS_NoClouds Input)
 {
 	VS2PS_NoClouds Output;
+
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-	Output.Tex0 = Input.TexCoord;
+	Output.Pos = Output.HPos;
+
+	Output.Tex0 = Input.Tex0;
+
 	return Output;
 }
 
@@ -221,7 +244,7 @@ PS2FB SkyDome_SunFlare_PS(VS2PS_SkyDome Input)
 {
 	PS2FB Output;
 
-	float3 OutputColor = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy).rgb * _FlareParams[0];
+	float3 OutputColor = tex2D(SampleTex0, Input.TexA.xy).rgb * _FlareParams[0];
 
 	Output.Color = float4(OutputColor, 1.0);
 	// Output.Depth = 0.0;
@@ -233,7 +256,7 @@ PS2FB SkyDome_Flare_Occlude_PS(VS2PS_SkyDome Input)
 {
 	PS2FB Output;
 
-	float4 Value = tex2D(SampleTex0, Input.UV_Sky_Cloud.xy);
+	float4 Value = tex2D(SampleTex0, Input.TexA.xy);
 
 	Output.Color = float4(0.0, 1.0, 0.0, Value.a);
 	// Output.Depth = 0.0;
