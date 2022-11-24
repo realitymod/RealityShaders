@@ -96,7 +96,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 P_Tex0_Tex1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1;
-	float3 VertexPos : TEXCOORD1;
+	float3 WorldPos : TEXCOORD1;
 	float4 LightTex : TEXCOORD2;
 };
 
@@ -125,13 +125,15 @@ VS2PS Road_VS(APP2VS Input)
 	Output.LightTex.xy = Output.LightTex.xy * Output.HPos.w;
 	Output.LightTex.zw = Output.HPos.zw;
 
-	Output.VertexPos.xyz = WorldPos.xyz;
+	Output.WorldPos.xyz = WorldPos.xyz;
 
 	return Output;
 }
 
-float4 Road_PS(VS2PS Input) : COLOR
+PS2FB Road_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
 
@@ -159,7 +161,7 @@ float4 Road_PS(VS2PS Input) : COLOR
 		Diffuse.rgb *= Light.rgb;
 	}
 
-	float ZFade = GetRoadZFade(Input.VertexPos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
+	float ZFade = GetRoadZFade(Input.WorldPos, WorldSpaceCamPos, RoadFadeOut);
 
 	#if defined(NO_BLEND)
 		Diffuse.a = (Diffuse.a <= 0.95) ? 1.0 : ZFade;
@@ -167,9 +169,12 @@ float4 Road_PS(VS2PS Input) : COLOR
 		Diffuse.a *= ZFade;
 	#endif
 
-	ApplyFog(Diffuse.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
+	ApplyFog(Diffuse.rgb, GetFogValue(Input.WorldPos, WorldSpaceCamPos));
 
-	return Diffuse;
+	Output.Color = Diffuse;
+	// Output.Depth = 0.0;
+
+	return Output;
 };
 
 technique defaultTechnique

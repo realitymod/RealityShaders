@@ -1,7 +1,7 @@
 
 /*
 	Description: Renders object's diffuse map
-	
+
 	Global variables we use to hold the view matrix, projection matrix,
 	ambient material, diffuse material, and the light vector that
 	describes the direction to the light source. These variables are
@@ -80,9 +80,16 @@ VS2PS DiffuseBone_VS(APP2VS Input)
 	return Output;
 }
 
-float4 DiffuseBone_PS(VS2PS Input) : COLOR
+PS2FB DiffuseBone_PS(VS2PS Input)
 {
-	return tex2D(SampleDiffuseMap, Input.Tex) * float4(1.0, 0.0, 1.0, 1.0);
+	PS2FB Output;
+
+	float4 ColorTex = tex2D(SampleDiffuseMap, Input.Tex);
+
+	Output.Color = ColorTex * float4(1.0, 0.0, 1.0, 1.0);
+	// Output.Depth = 0.0;
+
+	return Output;
 };
 
 technique defaultTechnique

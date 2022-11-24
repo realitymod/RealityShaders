@@ -53,7 +53,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Tex_0_1 : TEXCOORD0; // .xy = Tex0; .zw = Tex1
-	float4 PosTex : TEXCOORD1;
+	float4 LightTex : TEXCOORD1;
 	float4 P_VertexPos_Alpha : TEXCOORD2; // .xyz = VertexPos; .w = Alpha;
 };
 
@@ -80,15 +80,17 @@ VS2PS RoadCompiled_VS(APP2VS Input)
 	float4 WorldPos = Input.Pos;
 	WorldPos.y += 0.01;
 	Output.HPos = mul(WorldPos, _WorldViewProj);
-	Output.PosTex = ProjToLighting(Output.HPos);
+	Output.LightTex = ProjToLighting(Output.HPos);
 	Output.Tex_0_1 = float4(Input.Tex0, Input.Tex1);
 	Output.P_VertexPos_Alpha = float4(Input.Pos.xyz, Input.Alpha);
 
 	return Output;
 }
 
-float4 RoadCompiled_PS(VS2PS Input) : COLOR
+PS2FB RoadCompiled_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	float ZFade = GetRoadZFade(Input.P_VertexPos_Alpha.xyz, _LocalEyePos.xyz, _FadeoutValues);
 	float4 Detail0 = tex2D(SampleDetailMap0, Input.Tex_0_1.xy);
 	float4 Detail1 = tex2D(SampleDetailMap1, Input.Tex_0_1.zw * 0.1);
@@ -97,7 +99,7 @@ float4 RoadCompiled_PS(VS2PS Input) : COLOR
 	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
 	OutputColor.a = Detail0.a * saturate(ZFade * Input.P_VertexPos_Alpha.w);
 
-	float4 AccumLights = tex2Dproj(SampleLightMap, Input.PosTex);
+	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
 	float4 Light = ((AccumLights.w * _SunColor * 2.0) + AccumLights) * 2.0;
 
 	// On thermals no shadows
@@ -113,7 +115,11 @@ float4 RoadCompiled_PS(VS2PS Input) : COLOR
 	}
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.P_VertexPos_Alpha.xyz, _LocalEyePos.xyz));
-	return OutputColor;
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 struct VS2PS_Dx9
@@ -132,8 +138,10 @@ VS2PS_Dx9 RoadCompiled_Dx9_VS(APP2VS Input)
 	return Output;
 }
 
-float4 RoadCompiled_Dx9_PS(VS2PS_Dx9 Input) : COLOR
+PS2FB RoadCompiled_Dx9_PS(VS2PS_Dx9 Input)
 {
+	PS2FB Output;
+
 	float ZFade = GetRoadZFade(Input.VertexPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 	float4 Detail0 = tex2D(SampleDetailMap0, Input.Tex_0_1.xy);
 	float4 Detail1 = tex2D(SampleDetailMap1, Input.Tex_0_1.zw);
@@ -141,7 +149,11 @@ float4 RoadCompiled_Dx9_PS(VS2PS_Dx9 Input) : COLOR
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
 	OutputColor.a = Detail0.a * ZFade;
-	return OutputColor;
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique roadcompiledFull

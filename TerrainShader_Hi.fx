@@ -67,8 +67,10 @@ VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared Input)
 	return Output;
 }
 
-float4 FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform bool UseEnvMap)
+PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform bool UseEnvMap)
 {
+	PS2FB Output;
+
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 
 	float3 WorldPos = Input.WorldPos;
@@ -83,7 +85,8 @@ float4 FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform
 		float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
 		float4 Component = tex2D(SampleTex2_Clamp, Input.ColorTex);
 		float ChartContrib = dot(_ComponentSelector.xyz, Component.xyz);
-		return ChartContrib * Light;
+
+		Output.Color = ChartContrib * Light;
 	#else
 		float3 Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
 		float4 Component = tex2D(SampleTex2_Clamp, Input.DetailTex);
@@ -138,21 +141,26 @@ float4 FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform
 
 		OutputColor = OutputColor * 2.0;
 		ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos.xyz));
-		return float4(OutputColor * ChartContrib, ChartContrib);
+
+		Output.Color = float4(OutputColor * ChartContrib, ChartContrib);
 	#endif
+
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
-float4 FullDetail_Hi_PS(VS2PS_FullDetail_Hi Input) : COLOR
+PS2FB FullDetail_Hi_PS(VS2PS_FullDetail_Hi Input)
 {
 	return FullDetail_Hi(Input, false, false);
 }
 
-float4 FullDetail_Hi_Mounten_PS(VS2PS_FullDetail_Hi Input) : COLOR
+PS2FB FullDetail_Hi_Mounten_PS(VS2PS_FullDetail_Hi Input)
 {
 	return FullDetail_Hi(Input, true, false);
 }
 
-float4 FullDetail_Hi_EnvMap_PS(VS2PS_FullDetail_Hi Input) : COLOR
+PS2FB FullDetail_Hi_EnvMap_PS(VS2PS_FullDetail_Hi Input)
 {
 	return FullDetail_Hi(Input, false, true);
 }

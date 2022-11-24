@@ -105,18 +105,29 @@ VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared Input)
 
 float4 ZFillLightMapColor : register(c0);
 
-float4 Shared_ZFillLightMap_1_PS(VS2PS_Shared_ZFillLightMap Input) : COLOR
+PS2FB Shared_ZFillLightMap_1_PS(VS2PS_Shared_ZFillLightMap Input)
 {
+	PS2FB Output;
+
 	float4 Color = tex2D(SampleTex0_Clamp, Input.Tex0);
 	float4 OutputColor;
 	OutputColor.rgb = _GIColor * Color.b;
 	OutputColor.a = saturate(Color.g);
-	return OutputColor;
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
-float4 Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input) : COLOR
+PS2FB Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input)
 {
-	return ZFillLightMapColor;
+	PS2FB Output;
+
+	Output.Color = ZFillLightMapColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 /*
@@ -149,9 +160,21 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
 	return Output;
 }
 
-float4 Shared_PointLight_PS(VS2PS_Shared_PointLight Input) : COLOR
+PS2FB Shared_PointLight_PS(VS2PS_Shared_PointLight Input)
 {
-	return float4(GetTerrainLighting(Input.WorldPos, Input.WorldNormal), 0.0);
+	PS2FB Output;
+
+	float3 LightVec = _PointLight.pos - Input.WorldPos;
+	float Attenuation = GetLightAttenuation(LightVec, _PointLight.attSqrInv);
+
+	LightVec = normalize(LightVec);
+	float3 Normal = normalize(Input.WorldNormal);
+	float3 CosAngle = dot(Normal, LightVec);
+
+	Output.Color = float4(saturate((CosAngle * _PointLight.col) * Attenuation), 0.0);
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 /*
@@ -208,11 +231,13 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared Input)
 	return Output;
 }
 
-float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
+PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 {
+	PS2FB Output;
+
 	float3 WorldPos = Input.WorldPos;
 	float3 Normals = normalize(Input.WorldNormal);
-	
+
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
@@ -251,7 +276,11 @@ float4 Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input) : COLOR
 	OutputColor = lerp(OutputColor * 4.0, _TerrainWaterColor, WaterLerp);
 
 	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
-	return OutputColor;
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 /*
@@ -356,15 +385,20 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared Input)
 	return Output;
 }
 
-float4 Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input) : COLOR
+PS2FB Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input)
 {
+	PS2FB Output;
+
 	float3 WorldPos = Input.WorldPos;
 	float3 OutputColor = _TerrainWaterColor.rgb;
 	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 
 	ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos));
 
-	return float4(OutputColor, WaterLerp);
+	Output.Color = float4(OutputColor, WaterLerp);
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 /*
@@ -423,8 +457,10 @@ VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 	return Output;
 }
 
-float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
+PS2FB Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input)
 {
+	PS2FB Output;
+
 	float3 WorldNormal = normalize(Input.WorldNormal);
 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
@@ -454,7 +490,10 @@ float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.WorldPos.xyz, _CameraPos.xyz));
 
-	return OutputColor;
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique Shared_SurroundingTerrain

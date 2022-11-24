@@ -197,8 +197,10 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 	return saturate(((WorldNormal.y + Offset) * 0.5) + 0.5);
 }
 
-float4 BundledMesh_PS(VS2PS Input) : COLOR
+PS2FB BundledMesh_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	// Get world-space properties
 	float3 WorldPos = Input.WorldPos;
 	float3 WorldTangent = normalize(Input.WorldTangent);
@@ -359,7 +361,10 @@ float4 BundledMesh_PS(VS2PS Input) : COLOR
 		#endif
 	#endif
 
-	return float4(OutputColor.rgb, Alpha * Transparency.a);
+	Output.Color.rgb = OutputColor.rgb;
+	Output.Color.a = Alpha * Transparency.a;
+
+	return Output;
 }
 
 technique Variable

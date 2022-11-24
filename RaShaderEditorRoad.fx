@@ -127,8 +127,10 @@ VS2PS Editor_Road_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Editor_Road_PS(VS2PS Input) : COLOR
+PS2FB Editor_Road_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
 
 	#if defined(USE_DETAIL)
@@ -139,8 +141,13 @@ float4 Editor_Road_PS(VS2PS Input) : COLOR
 	#endif
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, WorldSpaceCamPos.xyz));
+
 	OutputColor.a *= GetRoadZFade(Input.VertexPos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
-	return OutputColor;
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 };
 
 technique defaultTechnique

@@ -156,8 +156,10 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 	return saturate(((WorldNormal.y + Offset) * 0.5) + 0.5);
 }
 
-float4 SkinnedMesh_PS(VS2PS Input) : COLOR
+PS2FB SkinnedMesh_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	// Get world-space properties
 	float3 WorldPos = Input.WorldPos;
 	float3 WorldTangent = normalize(Input.Tangent);
@@ -228,26 +230,29 @@ float4 SkinnedMesh_PS(VS2PS Input) : COLOR
 		Light.Specular = 0.0;
 	#endif
 
-	float4 OutColor = 1.0;
-	OutColor.rgb = (ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular;
+	float4 OutputColor = 1.0;
+	OutputColor.rgb = (ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular;
 
 	// Thermals
 	if (FogColor.r < 0.01)
 	{
 		#if _HASENVMAP_ // If EnvMap enabled, then should be hot on thermals
-			OutColor.rgb = float3(lerp(0.60, 0.30, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
+			OutputColor.rgb = float3(lerp(0.60, 0.30, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
 		#else // Else cold
-			OutColor.rgb = float3(lerp(0.43, 0.17, ColorMap.b), 1.0, 0.0);
+			OutputColor.rgb = float3(lerp(0.43, 0.17, ColorMap.b), 1.0, 0.0);
 		#endif
 	}
 
 	#if !_POINTLIGHT_
-		ApplyFog(OutColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+		ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 
-	OutColor.a = ColorMap.a * Transparency.a;
+	OutputColor.a = ColorMap.a * Transparency.a;
 
-	return OutColor;
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique VariableTechnique

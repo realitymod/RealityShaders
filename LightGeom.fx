@@ -39,9 +39,14 @@ VS2PS PointLight_VS(APP2VS Input)
 	return Output;
 }
 
-float4 PointLight_PS() : COLOR
+PS2FB PointLight_PS()
 {
-	return _LightColor;
+	PS2FB Output;
+
+	Output.Color = _LightColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique Pointlight
@@ -95,12 +100,18 @@ VS2PS_Spot SpotLight_VS(APP2VS Input)
 	return Output;
 }
 
-float4 SpotLight_PS(VS2PS_Spot Input) : COLOR
+PS2FB SpotLight_PS(VS2PS_Spot Input)
 {
+	PS2FB Output;
+
 	float3 LightVec = normalize(Input.LightVec);
 	float3 LightDir = normalize(Input.LightDir);
 	float ConicalAtt = saturate(pow(saturate(dot(LightVec, LightDir)), 2.0) + (1.0 - _ConeAngle));
-	return _LightColor * ConicalAtt;
+
+	Output.Color = _LightColor * ConicalAtt;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique Spotlight

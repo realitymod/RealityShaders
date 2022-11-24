@@ -137,9 +137,14 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 	return OutputColor;
 }
 
-float4 Decals_PS(VS2PS Input) : COLOR
+PS2FB Decals_PS(VS2PS Input)
 {
-	return GetPixelDecals(Input, false);
+	PS2FB Output;
+
+	Output.Color = GetPixelDecals(Input, false);
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 #define GET_RENDERSTATES_DECAL \

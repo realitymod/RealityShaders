@@ -71,10 +71,16 @@ VS2PS Point_VS(APP2PS Input)
 	return Output;
 }
 
-float4 Point_PS(VS2PS Input) : COLOR
+PS2FB Point_PS(VS2PS Input)
 {
-	float4 TexCol = tex2D(SampleTex0, Input.TexCoord);
-	return TexCol * Input.Color;
+	PS2FB Output;
+
+	float4 ColorTex = tex2D(SampleTex0, Input.TexCoord);
+
+	Output.Color = ColorTex  * Input.Color;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique Point
@@ -97,9 +103,6 @@ technique Point
 		PixelShader = compile ps_3_0 Point_PS();
 	}
 }
-
-
-
 
 /*
 	Line Technique
@@ -130,9 +133,14 @@ VS2PS_Line Line_VS(APP2PS Input)
 	return Output;
 }
 
-float4 Line_PS(VS2PS_Line Input) : COLOR
+PS2FB Line_PS(VS2PS_Line Input)
 {
-	return Input.Color;
+	PS2FB Output;
+
+	Output.Color = Input.Color;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique Line
@@ -155,9 +163,6 @@ technique Line
 		PixelShader = compile ps_3_0 Line_PS();
 	}
 }
-
-
-
 
 /*
 	Debug Cell Technique
@@ -184,9 +189,14 @@ VS2PS_Cell Cells_VS(APP2PS Input)
 	return Output;
 }
 
-float4 Cells_PS(VS2PS_Cell Input) : COLOR
+PS2FB Cells_PS(VS2PS_Cell Input)
 {
-	return Input.Color;
+	PS2FB Output;
+
+	Output.Color = Input.Color;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique Cells

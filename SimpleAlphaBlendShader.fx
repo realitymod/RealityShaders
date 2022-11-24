@@ -51,9 +51,14 @@ VS2PS Shader_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Shader_PS(VS2PS Input) : COLOR
+PS2FB Shader_PS(VS2PS Input)
 {
-	return tex2D(SampleBaseTex, Input.Tex0);
+	PS2FB Output;
+
+	Output.Color = tex2D(SampleBaseTex, Input.Tex0);
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique t0_States <bool Restore = true;>
@@ -69,13 +74,13 @@ technique t0_States <bool Restore = true;>
 		SrcBlend = ONE; // SRCALPHA;
 		DestBlend = ONE; // INVSRCALPHA;
 	}
-	
+
 	pass EndStates { }
 }
 
 technique t0
 {
-	pass Pass0 
+	pass Pass0
 	{
 		VertexShader = compile vs_3_0 Shader_VS();
 		PixelShader = compile ps_3_0 Shader_PS();

@@ -182,8 +182,10 @@ VS2PS Leaf_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Leaf_PS(VS2PS Input) : COLOR
+PS2FB Leaf_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 VertexColor = Input.Color;
 
@@ -192,23 +194,26 @@ float4 Leaf_PS(VS2PS Input) : COLOR
 		VertexColor.rgb += OverGrowthAmbient.rgb * 0.5;
 	#endif
 
-	float4 OutColor = DiffuseMap * VertexColor;
+	float4 OutputColor = DiffuseMap * VertexColor;
 
 	#if defined(_POINTLIGHT_)
-		OutColor.a *= 2.0;
+		OutputColor.a *= 2.0;
 	#else
-		OutColor *= 2.0;
+		OutputColor *= 2.0;
 	#endif
 
 	#if defined(OVERGROWTH) && HASALPHA2MASK
-		OutColor.a *= 2.0 * DiffuseMap.a;
+		OutputColor.a *= 2.0 * DiffuseMap.a;
 	#endif
 
 	#if !defined(_POINTLIGHT_)
-		ApplyFog(OutColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+		ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 	#endif
 
-	return OutColor;
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 };
 
 technique defaultTechnique

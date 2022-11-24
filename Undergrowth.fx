@@ -122,8 +122,10 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMa
 	return Output;
 }
 
-float4 Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool ShadowMapEnable) : COLOR
+PS2FB Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool ShadowMapEnable)
 {
+	PS2FB Output;
+
 	float4 Base = tex2D(SampleColorMap, Input.P_Tex0_Tex1.xy);
 	float4 TerrainColor = tex2D(SampleTerrainColorMap, Input.P_Tex0_Tex1.zw);
 	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.P_Tex0_Tex1.zw);
@@ -146,7 +148,10 @@ float4 Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool S
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 
-	return OutputColor;
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 // { StreamNo, DataType, Usage, UsageIdx }
@@ -352,8 +357,10 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 	return Output;
 }
 
-float4 Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, uniform bool ShadowMapEnable) : COLOR
+PS2FB Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, uniform bool ShadowMapEnable)
 {
+	PS2FB Output;
+
 	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
 	float4 TerrainColor = Input.TerrainColorMap;
 	float3 TerrainLightMap = Input.TerrainLightMap;
@@ -376,7 +383,10 @@ float4 Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, 
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, _CameraPos.xyz));
 
-	return OutputColor;
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 // { StreamNo, DataType, Usage, UsageIdx }
@@ -549,11 +559,17 @@ VS2PS_ZOnly Undergrowth_ZOnly_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Undergrowth_ZOnly_PS(VS2PS_ZOnly Input) : COLOR
+PS2FB Undergrowth_ZOnly_PS(VS2PS_ZOnly Input)
 {
+	PS2FB Output;
+
 	float4 OutputColor = tex2D(SampleColorMap, Input.Tex0);
 	OutputColor.a *= (_Transparency_x8.a * 8.0);
-	return OutputColor;
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 // { StreamNo, DataType, Usage, UsageIdx }

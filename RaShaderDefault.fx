@@ -32,9 +32,14 @@ float4 Default_VS(float3 Pos : POSITION0) : POSITION0
 	return mul(float4(Pos.xyz, 1.0), mul(World, ViewProjection));
 }
 
-float4 Default_PS() : COLOR
+PS2FB Default_PS()
 {
-	return float4(0.9, 0.4, 0.8, 1.0);
+	PS2FB Output;
+
+	Output.Color = float4(0.9, 0.4, 0.8, 1.0);
+	// Output.Depth = 0.0;
+
+	return Output;
 };
 
 technique defaultShader

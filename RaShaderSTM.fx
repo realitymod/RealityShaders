@@ -214,8 +214,10 @@ float3 GetLightVec(float3 ObjectPos)
 	#endif
 }
 
-float4 StaticMesh_PS(VS2PS Input) : COLOR
+PS2FB StaticMesh_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	// Get object-space properties
 	float3 ObjectPos = Input.ObjectPos;
 	float3 ObjectTangent = normalize(Input.ObjectTangent);
@@ -268,7 +270,10 @@ float4 StaticMesh_PS(VS2PS Input) : COLOR
 
 	OutputColor.a = DiffuseMap.a;
 
-	return OutputColor;
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 };
 
 technique defaultTechnique

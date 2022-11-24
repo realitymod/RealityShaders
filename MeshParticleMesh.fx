@@ -88,8 +88,10 @@ float GetLMOffset(float3 Pos)
 }
 
 // Renders 3D debris found in explosions like in PRBot4/Num6
-float4 Diffuse_PS(VS2PS Input) : COLOR
+PS2FB Diffuse_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	float2 GroundUV = GetGroundUV(Input.VertexPos);
 	float LMOffset = GetLMOffset(Input.VertexPos);
 	float4 HPos = mul(float4(Input.VertexPos.xyz, 1.0), _WorldViewProj);
@@ -100,12 +102,17 @@ float4 Diffuse_PS(VS2PS Input) : COLOR
 
 	ApplyFog(Diffuse.rgb, GetFogValue(HPos, 0.0));
 
-	return Diffuse;
+	Output.Color = Diffuse;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 // Renders circular shockwave found in explosions like in PRBot4/Num6
-float4 Additive_PS(VS2PS Input) : COLOR
+PS2FB Additive_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color;
 
 	if(_EffectSunColor.b < -0.1)
@@ -116,7 +123,10 @@ float4 Additive_PS(VS2PS Input) : COLOR
 	// Mask with alpha since were doing an add
 	Diffuse.rgb *= Diffuse.a;
 
-	return Diffuse;
+	Output.Color = Diffuse;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 #define GET_RENDERSTATES_MESH_PARTICLES(ZWRITE, SRCBLEND, DESTBLEND) \

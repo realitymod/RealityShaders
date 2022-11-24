@@ -57,10 +57,17 @@ VS2PS Lightning_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Lightning_PS(VS2PS Input) : COLOR
+PS2FB Lightning_PS(VS2PS Input)
 {
-	float4 Color = tex2D(SampleLightning, Input.TexCoords);
-	return float4(Color.rgb * _LightningColor.rgb, Color.a * _LightningColor.a * Input.Color.a);
+	PS2FB Output;
+
+	float4 ColorTex = tex2D(SampleLightning, Input.TexCoords);
+
+	Output.Color = ColorTex * _LightningColor;
+	Output.Color.a *= Input.Color.a;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique Lightning

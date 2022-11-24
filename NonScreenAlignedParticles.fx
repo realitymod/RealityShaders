@@ -106,23 +106,36 @@ VS2PS Particle_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Particle_ShowFill_PS(VS2PS Input) : COLOR
+PS2FB Particle_ShowFill_PS(VS2PS Input)
 {
-	return _EffectSunColor.rrrr;
+	PS2FB Output;
+
+	Output.Color = _EffectSunColor.rrrr;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
-float4 Particle_Low_PS(VS2PS Input) : COLOR
+PS2FB Particle_Low_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.Maps[1];
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
-	return OutputColor;
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
-float4 Particle_Medium_PS(VS2PS Input) : COLOR
+PS2FB Particle_Medium_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
 
@@ -132,11 +145,17 @@ float4 Particle_Medium_PS(VS2PS Input) : COLOR
 	OutputColor.a *= Input.Maps[1];
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
-	return OutputColor;
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
-float4 Particle_High_PS(VS2PS Input) : COLOR
+PS2FB Particle_High_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	// Hemi lookup table coords
 	float3 Pos = Input.ViewPos;
 	float2 HemiTex = ((Pos + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
@@ -152,7 +171,11 @@ float4 Particle_High_PS(VS2PS Input) : COLOR
 	OutputColor.a *= Input.Maps[1];
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.ViewPos, 0.0));
-	return OutputColor;
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 // Ordinary technique

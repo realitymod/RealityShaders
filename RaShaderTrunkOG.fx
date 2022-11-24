@@ -90,8 +90,10 @@ VS2PS TrunkOG_VS(APP2VS Input)
 // There will be small differences between this lighting and the one produced by the static mesh shader,
 // not enough to worry about, ambient is added here and lerped in the static mesh, etc
 // NOTE: could be an issue at some point.
-float4 TrunkOG_PS(VS2PS Input) : COLOR
+PS2FB TrunkOG_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float3 Normals = normalize(Input.P_Normals_ScaleLN.xyz);
 	float Diffuse = LambertLighting(Normals.xyz, -Lights[0].dir);
@@ -101,8 +103,13 @@ float4 TrunkOG_PS(VS2PS Input) : COLOR
 	Color += ((Diffuse * ScaleLN) * (Lights[0].color * ScaleLN));
 
 	float4 OutputColor = float4((DiffuseMap.rgb * Color.rgb) * 2.0, Transparency.a);
+
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
-	return OutputColor;
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 };
 
 technique defaultTechnique

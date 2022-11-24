@@ -77,11 +77,18 @@ VS2PS Diffuse_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Diffuse_PS(VS2PS Input) : COLOR
+PS2FB Diffuse_PS(VS2PS Input)
 {
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
-	ApplyFog(DiffuseMap.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
-	return DiffuseMap;
+	PS2FB Output;
+
+	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0);
+
+	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
+
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 };
 
 technique defaultTechnique

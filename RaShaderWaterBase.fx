@@ -174,8 +174,10 @@ VS2PS Water_VS(APP2VS Input)
 
 #define INV_LIGHTDIR float3(0.4, 0.5, 0.6)
 
-float4 Water_PS(in VS2PS Input) : COLOR
+PS2FB Water_PS(in VS2PS Input)
 {
+	PS2FB Output;
+
 	#if defined(USE_LIGHTMAP)
 		float4 LightMap = tex2D(SampleLightMap, Input.LightMapTex);
 	#else
@@ -236,7 +238,10 @@ float4 Water_PS(in VS2PS Input) : COLOR
 	float Fresnel = BASE_TRANSPARENCY - pow(dot(FresnelNormal.xyz, ViewVec), POW_TRANSPARENCY);
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.w);
 
-	return OutputColor;
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 }
 
 technique defaultShader

@@ -130,8 +130,10 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 	return Output;
 }
 
-float4 TrunkSTMDetail_PS(VS2PS Input) : COLOR
+PS2FB TrunkSTMDetail_PS(VS2PS Input)
 {
+	PS2FB Output;
+
 	float3 Normals = normalize(Input.Normals.xyz);
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
 	#if !defined(BASEDIFFUSEONLY)
@@ -145,9 +147,13 @@ float4 TrunkSTMDetail_PS(VS2PS Input) : COLOR
 	Diffuse = saturate(OverGrowthAmbient.rgb + Diffuse);
 
 	float4 OutputColor = float4((DiffuseMap.rgb * Diffuse.rgb) * 2.0, Transparency.r * 2.0);
+
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.VertexPos.xyz, ObjectSpaceCamPos.xyz));
 
-	return OutputColor;
+	Output.Color = OutputColor;
+	// Output.Depth = 0.0;
+
+	return Output;
 };
 
 technique defaultTechnique
