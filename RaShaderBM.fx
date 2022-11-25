@@ -272,7 +272,10 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	#if _HASGIMAP_
 		float4 GI = tex2D(SampleGIMap, Input.Tex0);
 		float4 GI_TIS = GI; // M
-		GI = (GI_TIS.a < 0.01) ? 1.0 : GI;
+		if (GI_TIS.a < 0.01)
+		{
+			GI = 1.0;
+		}
 	#else
 		const float4 GI = 1.0;
 	#endif
