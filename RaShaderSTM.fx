@@ -263,7 +263,7 @@ PS2FB StaticMesh_PS(VS2PS Input)
 		Light.Diffuse = Light.Diffuse * Lightmap.g;
 		Light.Specular = Light.Specular * Lightmap.g;
 
-		OutputColor.rgb = (ColorMap.rgb * 2.0) * (Ambient + Light.Diffuse + Light.Specular);
+		OutputColor.rgb = ((ColorMap.rgb * 2.0) * (Ambient + Light.Diffuse)) + Light.Specular;
 	#endif
 
 	#if !_POINTLIGHT_
