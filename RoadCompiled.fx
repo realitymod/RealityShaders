@@ -62,7 +62,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 float4 ProjToLighting(float4 HPos)
@@ -126,7 +126,7 @@ PS2FB RoadCompiled_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _LocalEyePos));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -167,7 +167,7 @@ PS2FB RoadCompiled_Dx9_PS(VS2PS_Dx9 Input)
 	OutputColor.a = Detail0.a * ZFade;
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

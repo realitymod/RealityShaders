@@ -46,7 +46,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS Point_VS(APP2PS Input)
@@ -79,7 +79,7 @@ PS2FB Point_PS(VS2PS Input)
 	float4 ColorTex = tex2D(SampleTex0, Input.Tex0.xy);
 
 	Output.Color = ColorTex  * Input.Color;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }
@@ -140,7 +140,7 @@ PS2FB Line_PS(VS2PS_Line Input)
 	PS2FB Output;
 
 	Output.Color = Input.Color;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }
@@ -197,7 +197,7 @@ PS2FB Cells_PS(VS2PS_Cell Input)
 	PS2FB Output;
 
 	Output.Color = Input.Color;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }

@@ -84,7 +84,7 @@ struct VS2PS_DualClouds
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 /*
@@ -114,7 +114,7 @@ PS2FB SkyDome_UnderWater_PS(VS2PS_SkyDome Input)
 	PS2FB Output;
 
 	Output.Color = _UnderwaterFog;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 }
@@ -127,7 +127,7 @@ PS2FB SkyDome_PS(VS2PS_SkyDome Input)
 	float4 Cloud1 = tex2D(SampleTex1, Input.TexA.zw) * Input.FadeOut;
 
 	Output.Color = float4(lerp(Sky.rgb, Cloud1.rgb, Cloud1.a), 1.0);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 }
@@ -141,7 +141,7 @@ PS2FB SkyDome_Lit_PS(VS2PS_SkyDome Input)
 	Sky.rgb += _LightingColor.rgb * (Sky.a * _LightingBlend);
 
 	Output.Color = float4(lerp(Sky.rgb, Cloud1.rgb, Cloud1.a), 1.0);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 }
@@ -179,13 +179,13 @@ PS2FB SkyDome_DualClouds_PS(VS2PS_DualClouds Input)
 	float4 Temp = (Cloud1 + Cloud2) * Input.FadeOut;
 
 	Output.Color = lerp(Sky, Temp, Temp.a);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 }
 
 /*
-	SkyDome with not cloud shaders
+	SkyDome with no cloud shaders
 */
 
 VS2PS_NoClouds SkyDome_NoClouds_VS(APP2VS_NoClouds Input)
@@ -201,25 +201,25 @@ VS2PS_NoClouds SkyDome_NoClouds_VS(APP2VS_NoClouds Input)
 	return Output;
 }
 
-PS2FB SkyDome_NoClouds_PS(VS2PS_SkyDome Input)
+PS2FB SkyDome_NoClouds_PS(VS2PS_NoClouds Input)
 {
 	PS2FB Output;
 
-	Output.Color = tex2D(SampleTex0, Input.TexA.xy);
-	// Output.Depth = 0.0;
+	Output.Color = tex2D(SampleTex0, Input.Tex0);
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 }
 
-PS2FB SkyDome_NoClouds_Lit_PS(VS2PS_SkyDome Input)
+PS2FB SkyDome_NoClouds_Lit_PS(VS2PS_NoClouds Input)
 {
 	PS2FB Output;
 
-	float4 Sky = tex2D(SampleTex0, Input.TexA.xy);
+	float4 Sky = tex2D(SampleTex0, Input.Tex0);
 	Sky.rgb += _LightingColor.rgb * (Sky.a * _LightingBlend);
 
 	Output.Color = Sky;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 }
@@ -240,26 +240,26 @@ VS2PS_NoClouds SkyDome_SunFlare_VS(APP2VS_NoClouds Input)
 	return Output;
 }
 
-PS2FB SkyDome_SunFlare_PS(VS2PS_SkyDome Input)
+PS2FB SkyDome_SunFlare_PS(VS2PS_NoClouds Input)
 {
 	PS2FB Output;
 
-	float3 OutputColor = tex2D(SampleTex0, Input.TexA.xy).rgb * _FlareParams[0];
+	float3 OutputColor = tex2D(SampleTex0, Input.Tex0).rgb * _FlareParams[0];
 
 	Output.Color = float4(OutputColor, 1.0);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 }
 
-PS2FB SkyDome_Flare_Occlude_PS(VS2PS_SkyDome Input)
+PS2FB SkyDome_Flare_Occlude_PS(VS2PS_NoClouds Input)
 {
 	PS2FB Output;
 
-	float4 Value = tex2D(SampleTex0, Input.TexA.xy);
+	float4 Value = tex2D(SampleTex0, Input.Tex0);
 
 	Output.Color = float4(0.0, 1.0, 0.0, Value.a);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 }

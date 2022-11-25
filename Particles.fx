@@ -45,7 +45,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS Particle_VS(APP2VS Input)
@@ -115,7 +115,7 @@ PS2FB Particle_ShowFill_PS(VS2PS Input)
 	PS2FB Output;
 
 	Output.Color = _EffectSunColor.rrrr;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -131,7 +131,7 @@ PS2FB Particle_Low_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -151,7 +151,7 @@ PS2FB Particle_Medium_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -177,7 +177,7 @@ PS2FB Particle_High_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -194,7 +194,7 @@ PS2FB Particle_Low_Additive_PS(VS2PS Input)
 	OutputColor.rgb *= GetFogValue(Input.Pos, 0.0);
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -214,7 +214,7 @@ PS2FB Particle_High_Additive_PS(VS2PS Input)
 	OutputColor.rgb *= GetFogValue(Input.Pos, 0.0);
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

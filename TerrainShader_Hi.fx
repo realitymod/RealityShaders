@@ -147,7 +147,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		Output.Color = float4(OutputColor * ChartContrib, ChartContrib);
 	#endif
 
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

@@ -17,7 +17,7 @@ struct APP2VS_Shared
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 /*
@@ -116,7 +116,7 @@ PS2FB Shared_ZFillLightMap_1_PS(VS2PS_Shared_ZFillLightMap Input)
 	OutputColor.a = saturate(Color.g);
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }
@@ -126,7 +126,7 @@ PS2FB Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input)
 	PS2FB Output;
 
 	Output.Color = ZFillLightMapColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }
@@ -176,7 +176,7 @@ PS2FB Shared_PointLight_PS(VS2PS_Shared_PointLight Input)
 	float3 CosAngle = dot(WorldNormal, LightVec);
 
 	Output.Color = float4(saturate((CosAngle * _PointLight.col) * Attenuation), 0.0);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -282,7 +282,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -401,7 +401,7 @@ PS2FB Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input)
 	ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos));
 
 	Output.Color = float4(OutputColor, WaterLerp);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -498,7 +498,7 @@ PS2FB Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

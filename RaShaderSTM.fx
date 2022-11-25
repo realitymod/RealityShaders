@@ -63,7 +63,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 /*
@@ -272,7 +272,7 @@ PS2FB StaticMesh_PS(VS2PS Input)
 	OutputColor.a = DiffuseMap.a;
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 };

@@ -45,7 +45,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS Lightning_VS(APP2VS Input)
@@ -70,7 +70,7 @@ PS2FB Lightning_PS(VS2PS Input)
 
 	Output.Color = ColorTex * _LightningColor;
 	Output.Color.a *= Input.Color.a;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }

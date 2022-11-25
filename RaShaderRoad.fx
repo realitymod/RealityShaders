@@ -104,7 +104,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS Road_VS(APP2VS Input)
@@ -177,7 +177,7 @@ PS2FB Road_PS(VS2PS Input)
 	ApplyFog(Diffuse.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	Output.Color = Diffuse;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 };

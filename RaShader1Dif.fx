@@ -63,7 +63,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS Diffuse_VS(APP2VS Input)
@@ -88,7 +88,7 @@ PS2FB Diffuse_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, ObjectSpaceCamPos));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 };

@@ -56,7 +56,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
@@ -250,7 +250,7 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 	OutputColor.a = ColorMap.a * Transparency.a;
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

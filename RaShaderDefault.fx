@@ -35,7 +35,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS Default_VS(APP2VS Input)
@@ -49,12 +49,12 @@ VS2PS Default_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Default_PS()
+PS2FB Default_PS(VS2PS Input)
 {
 	PS2FB Output;
 
 	Output.Color = float4(0.9, 0.4, 0.8, 1.0);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 };

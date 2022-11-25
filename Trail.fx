@@ -48,7 +48,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS Trail_VS(APP2VS Input)
@@ -122,7 +122,7 @@ PS2FB Trail_ShowFill_PS(VS2PS Input)
 	PS2FB Output;
 
 	Output.Color = _EffectSunColor.rrrr;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -140,7 +140,7 @@ PS2FB Trail_Low_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -162,7 +162,7 @@ PS2FB Trail_Medium_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -188,7 +188,7 @@ PS2FB Trail_High_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

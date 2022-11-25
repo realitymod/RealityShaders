@@ -57,7 +57,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS BM_Additive_VS(APP2VS Input)
@@ -83,7 +83,7 @@ PS2FB BM_Additive_PS(VS2PS Input)
 	OutputColor.rgb *= Transparency;
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 }

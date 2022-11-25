@@ -40,7 +40,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS Shader_VS(APP2VS Input)
@@ -60,7 +60,7 @@ PS2FB Shader_PS(VS2PS Input)
 	PS2FB Output;
 
 	Output.Color = tex2D(SampleBaseTex, Input.Tex0.xy);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }

@@ -75,7 +75,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 float4 GetUndergrowthPos(float4 InputPos, float4 InputPacked)
@@ -152,7 +152,7 @@ PS2FB Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform bool Sh
 	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _CameraPos));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -389,7 +389,7 @@ PS2FB Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _CameraPos));
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -575,7 +575,7 @@ PS2FB Undergrowth_ZOnly_PS(VS2PS_ZOnly Input)
 	OutputColor.a *= (_Transparency_x8.a * 8.0);
 
 	Output.Color = OutputColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }

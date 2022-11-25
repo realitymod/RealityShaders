@@ -76,7 +76,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
@@ -145,7 +145,7 @@ PS2FB Decals_PS(VS2PS Input)
 	PS2FB Output;
 
 	Output.Color = GetPixelDecals(Input, false);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

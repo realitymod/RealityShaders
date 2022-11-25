@@ -97,7 +97,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 float4x3 GetSkinnedWorldMatrix(APP2VS Input)
@@ -364,6 +364,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 
 	Output.Color.rgb = OutputColor.rgb;
 	Output.Color.a = Alpha * Transparency.a;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

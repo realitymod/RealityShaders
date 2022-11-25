@@ -30,7 +30,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS PointLight_VS(APP2VS Input)
@@ -43,12 +43,12 @@ VS2PS PointLight_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB PointLight_PS()
+PS2FB PointLight_PS(VS2PS Input)
 {
 	PS2FB Output;
 
 	Output.Color = _LightColor;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
 
 	return Output;
 }
@@ -110,7 +110,7 @@ PS2FB SpotLight_PS(VS2PS_Spot Input)
 	float ConicalAtt = saturate(pow(saturate(dot(LightVec, LightDir)), 2.0) + (1.0 - _ConeAngle));
 
 	Output.Color = _LightColor * ConicalAtt;
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

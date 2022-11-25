@@ -63,7 +63,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	// float Depth : DEPTH;
+	float Depth : DEPTH;
 };
 
 VS2PS DiffuseBone_VS(APP2VS Input)
@@ -88,7 +88,7 @@ PS2FB DiffuseBone_PS(VS2PS Input)
 	float4 ColorTex = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 
 	Output.Color = ColorTex * float4(1.0, 0.0, 1.0, 1.0);
-	// Output.Depth = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 };
