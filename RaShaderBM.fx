@@ -269,6 +269,14 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		ColorMap.rgb = lerp(ColorMap, EnvMapColor, Gloss / 4.0);
 	#endif
 
+	#if _HASGIMAP_
+		float4 GI = tex2D(SampleGIMap, Input.Tex0);
+		float4 GI_TIS = GI; // M
+		GI = (GI_TIS.a < 0.01) ? 1.0 : GI;
+	#else
+		const float4 GI = 1.0;
+	#endif
+
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 	#else
@@ -280,20 +288,12 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	Light.Specular = ((Light.Specular * Gloss) * Lights[0].color);
 
 	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
-	Light.Diffuse *= LightFactors;
-	Light.Specular *= LightFactors;
+	Light.Diffuse = (Light.Diffuse * GI.rgb) * LightFactors;
+	Light.Specular = (Light.Specular * GI.rgb) * LightFactors;
 
 	// there is no Gloss map so alpha means transparency
 	#if _POINTLIGHT_ && !_HASCOLORMAPGLOSS_
 		Light.Diffuse *= ColorMap.a;
-	#endif
-
-	#if _HASGIMAP_
-		float4 GI = tex2D(SampleGIMap, Input.Tex0);
-		float4 GI_TIS = GI; // M
-		GI = (GI_TIS.a < 0.01) ? 1.0 : GI;
-	#else
-		const float4 GI = 1.0;
 	#endif
 
 	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
@@ -302,7 +302,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		Light.Specular = 0.0;
 	#endif
 	float4 OutputColor = 1.0;
-	OutputColor.rgb = (ColorMap.rgb * ((Ambient + Light.Diffuse))+ Light.Specular) * GI.rgb;
+	OutputColor.rgb = (ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular;
 
 	/*
 		Calculate fogging and other occluders
