@@ -332,7 +332,7 @@ struct VS2PS_Shared_DirectionalLightShadows
 	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
 	float4 ShadowTex : TEXCOORD1;
-	float2 Z : TEXCOORD2;
+	float3 Z : TEXCOORD2;
 };
 
 VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Shared Input)
@@ -356,6 +356,8 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 	#else
 		Output.ShadowTex.z = LightZ;
 	#endif
+
+	Output.Z.z = Output.HPos.z;
 
 	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
 
