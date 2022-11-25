@@ -83,7 +83,7 @@ PS2FB BM_Additive_PS(VS2PS Input)
 	OutputColor.rgb *= Transparency;
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

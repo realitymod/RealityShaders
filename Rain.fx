@@ -64,7 +64,7 @@ VS2PS Point_VS(APP2PS Input)
 
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.Tex0.xy = Input.Tex0;
-	Output.Tex0.z = Output.HPos.z;
+	Output.Tex0.z = Output.HPos.w;
 
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
 	Output.PointSize = min(_ParticleSize * rsqrt(_PointScale[0] + _PointScale[1] * CamDist), _MaxParticleSize);
@@ -130,7 +130,7 @@ VS2PS_Line Line_VS(APP2PS Input)
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.Tex0.xy = Input.Tex0;
-	Output.Tex0.z = Output.HPos.z;
+	Output.Tex0.z = Output.HPos.w;
 
 	return Output;
 }
@@ -187,7 +187,7 @@ VS2PS_Cell Cells_VS(APP2PS Input)
 	Output.Color = saturate(_ParticleColor);
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.Tex0.xy = Input.Tex0;
-	Output.Tex0.z = Output.HPos.z;
+	Output.Tex0.z = Output.HPos.w;
 
 	return Output;
 }

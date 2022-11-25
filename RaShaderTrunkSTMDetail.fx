@@ -115,7 +115,7 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 	Input.Pos *= PosUnpack;
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 	Output.Pos.xyz = Input.Pos.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 
 	Output.Normals.xyz = normalize(Input.Normal * NormalUnpack.x + NormalUnpack.y);
 

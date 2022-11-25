@@ -88,7 +88,7 @@ VS2PS Particle_VS(APP2VS Input)
 	float4 Pos = mul(float4(ScaledPos, 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
 	Output.Pos.xyz = Pos.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 
 	// Compute texcoords
 	// Rotate and scale to correct u,v space and zoom in.

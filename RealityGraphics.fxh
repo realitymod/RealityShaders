@@ -99,9 +99,9 @@
 	// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
 	float ApplyLogarithmicDepth(float Depth)
 	{
-		const float Far = 1000000000.0;
-		const float FCoef = 1.0 / log(Far + 1.0);
-		return log(max(1e-6, Depth + 1.0)) * FCoef;
+		const float FarPlane = 1000000000.0;
+		const float FCoef = 1.0 / log(FarPlane + 1.0);
+		return log2(max(1e-6, Depth + 1.0)) * FCoef;
 	}
 
 	// Description: Transforms the vertex position's depth from World/Object space to light space

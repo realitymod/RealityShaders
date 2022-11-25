@@ -99,7 +99,7 @@ VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared Input)
 
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
-	Output.Tex0.z = Output.HPos.z;
+	Output.Tex0.z = Output.HPos.w;
 
 	return Output;
 }
@@ -155,7 +155,7 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
 
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 
 	Output.Normal = normalize((Input.Normal * 2.0) - 1.0);
 
@@ -212,7 +212,7 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared Input)
 
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 	Output.Normal = normalize((Input.Normal * 2.0) - 1.0);
 
 	float3 Tex = 0.0;
@@ -357,7 +357,7 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 		Output.ShadowTex.z = LightZ;
 	#endif
 
-	Output.Z.z = Output.HPos.z;
+	Output.Z.z = Output.HPos.w;
 
 	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
 
@@ -387,7 +387,7 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared Input)
 
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 
 	return Output;
 }
@@ -443,7 +443,7 @@ VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 	Output.Normal = Input.Normal;
 
 	float3 Tex = 0.0;

@@ -103,7 +103,7 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMa
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
 	Output.Pos.xyz = Pos.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 
 	Output.TexA.xy = Input.Tex0 / 32767.0;
 	Output.TexA.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
@@ -339,7 +339,7 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, 
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
 	Output.Pos.xyz = Pos.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 
 	Output.Tex0 = Input.Tex0 / 32767.0;
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
@@ -562,7 +562,7 @@ VS2PS_ZOnly Undergrowth_ZOnly_VS(APP2VS Input)
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
 	Output.Tex0.xy = Input.Tex0 / 32767.0;
-	Output.Tex0.z = Output.HPos.z;
+	Output.Tex0.z = Output.HPos.w;
 
 	return Output;
 }

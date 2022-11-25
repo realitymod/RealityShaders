@@ -55,7 +55,7 @@ VS2PS Lightning_VS(APP2VS Input)
 	Output.HPos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
 
 	Output.Tex0.xy = Input.TexCoords;
-	Output.Tex0.z = Output.HPos.z;
+	Output.Tex0.z = Output.HPos.w;
 
 	Output.Color = saturate(Input.Color);
 

@@ -54,7 +54,7 @@ PS2FB Default_PS(VS2PS Input)
 	PS2FB Output;
 
 	Output.Color = float4(0.9, 0.4, 0.8, 1.0);
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 };

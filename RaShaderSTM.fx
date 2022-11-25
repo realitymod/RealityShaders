@@ -88,7 +88,7 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	// Output HPos
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
 	Output.Pos.xyz = ObjectPos.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 
 	// Output object-space properties
 	Output.ObjectTangent = ObjectTBN[0];

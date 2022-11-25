@@ -81,7 +81,7 @@ VS2PS TrunkOG_VS(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 	Output.Pos.xyz = Input.Pos.xyz * PosUnpack.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 
 	Output.Tex0.xy = Input.Tex0 / 32767.0;
 	Output.P_Normals_ScaleLN.xyz = normalize((Input.Normal * 2.0) - 1.0);

@@ -139,7 +139,7 @@ VS2PS Leaf_VS(APP2VS Input)
 	#endif
 
 	Output.Pos.xyz = LocalPos.xyz;
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 
 	Output.Tex0.xy = Input.Tex0;
 

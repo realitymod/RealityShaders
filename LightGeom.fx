@@ -48,7 +48,7 @@ PS2FB PointLight_PS(VS2PS Input)
 	PS2FB Output;
 
 	Output.Color = _LightColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.z);
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -96,7 +96,7 @@ VS2PS_Spot SpotLight_VS(APP2VS Input)
 	// Transform vertex
 	float3 VertPos = mul(float4(Input.Pos.xyz, 1.0), _WorldView);
 	Output.Pos.xyz = -normalize(VertPos);
-	Output.Pos.w = Output.HPos.z;
+	Output.Pos.w = Output.HPos.w;
 
 	return Output;
 }
