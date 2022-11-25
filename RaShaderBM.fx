@@ -218,8 +218,8 @@ PS2FB BundledMesh_PS(VS2PS Input)
 
 	#if _HASNORMALMAP_
 		// Transform from tangent-space to world-space
-		float4 TangentNormal = tex2D(SampleNormalMap, Input.Tex0);
-		float3 NormalVec = normalize((TangentNormal.xyz * 2.0) - 1.0);
+		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
+		float3 NormalVec = normalize((NormalMap.xyz * 2.0) - 1.0);
 		NormalVec = normalize(mul(NormalVec, WorldTBN));
 	#else
 		float3 NormalVec = normalize(WorldNormal);
@@ -258,7 +258,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	#if _HASCOLORMAPGLOSS_
 		float Gloss = ColorMap.a;
 	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
-		float Gloss = TangentNormal.a;
+		float Gloss = NormalMap.a;
 	#else
 		float Gloss = StaticGloss;
 	#endif
