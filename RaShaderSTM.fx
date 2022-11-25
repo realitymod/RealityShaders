@@ -253,14 +253,16 @@ PS2FB StaticMesh_PS(VS2PS Input)
 			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
+		// We divide the normal by 5.0 to prevent complete darkness for surfaces facing away from the sun
 		float DotLN = saturate(dot(NormalVec.xyz / 5.0, -Lights[0].dir));
 		float InvDotLN = saturate((1.0 - DotLN) * 0.65);
 
-		// We add ambient (BumpedSky) here to get correct ambient for surfaces parallel to the sun
-		float3 PointColor = SinglePointColor * Lightmap.r;
+		// We add ambient to get correct ambient for surfaces parallel to the sun
 		float3 BumpedSky = (StaticSkyColor * InvDotLN) * Lightmap.b;
-		float3 Ambient = PointColor + BumpedSky;
-		Light.Diffuse = Light.Diffuse * Lightmap.g;
+		float3 BumpedDiffuse = Light.Diffuse + BumpedSky;
+
+		float3 Ambient = SinglePointColor * Lightmap.r;
+		Light.Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
 		Light.Specular = Light.Specular * Lightmap.g;
 
 		OutputColor.rgb = ((ColorMap.rgb * 2.0) * (Ambient + Light.Diffuse)) + Light.Specular;

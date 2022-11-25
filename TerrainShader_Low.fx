@@ -1,18 +1,16 @@
 
 /*
-	Description: Low-settings terrain shader
+	Description:
+	- Low-settings terrain shader
+	- Renders the terrain's low-setting shading
+	- Renders the terrain's low-setting shadowing
 */
 
 #include "shaders/RealityGraphics.fxh"
 
 /*
-	Low Terrain
-*/
-
-
-/*
 	Terrain DirShadow shader
-	Applies dynamic shadows to the terrain
+	Applies dynamic shadows to the terrain's light buffer
 */
 
 PS2FB Low_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input)

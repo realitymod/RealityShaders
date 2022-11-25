@@ -246,13 +246,13 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
-	float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
+	float4 Light = ((_SunColor * 2.0) * AccumLights.w) + AccumLights;
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 
 	// If thermals assume no shadows and gray color
 	if (FogColor.r < 0.01)
 	{
-		Light.rgb = 2.0 * _SunColor + AccumLights;
+		Light.rgb = (_SunColor * 2.0) + AccumLights;
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 
@@ -269,7 +269,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 					(YPlaneLowDetailmap.x * BlendValue.y) +
 					(ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float4 OutputColor = ColorMap * Light * 2.0;
+	float4 OutputColor = (ColorMap * 2.0) * Light;
 	OutputColor *= lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x);
 	OutputColor *= lerp(0.5, Mounten, LowComponent.z);
 
