@@ -302,7 +302,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		Light.Specular = 0.0;
 	#endif
 	float4 OutputColor = 1.0;
-	OutputColor.rgb = (ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular;
+	OutputColor.rgb = ColorMap.rgb * (Ambient + Light.Diffuse + Light.Specular);
 
 	/*
 		Calculate fogging and other occluders

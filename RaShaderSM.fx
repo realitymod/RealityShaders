@@ -231,7 +231,7 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 	#endif
 
 	float4 OutputColor = 1.0;
-	OutputColor.rgb = (ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular;
+	OutputColor.rgb = ColorMap.rgb * (Ambient + Light.Diffuse + Light.Specular);
 
 	// Thermals
 	if (FogColor.r < 0.01)

@@ -233,7 +233,7 @@ PS2FB StaticMesh_PS(VS2PS Input)
 
 	float4 OutputColor = 1.0;
 	float Gloss;
-	float4 DiffuseMap = GetDiffuseMap(Input, ViewVec, Gloss);
+	float4 ColorMap = GetDiffuseMap(Input, ViewVec, Gloss);
 	float3 NormalVec = GetNormalMap(Input, ViewVec);
 
 	ColorPair Light = ComputeLights(NormalVec, LightVec, ViewVec, SpecularPower);
@@ -244,7 +244,7 @@ PS2FB StaticMesh_PS(VS2PS Input)
 		float Attenuation = GetLightAttenuation(ObjectLightVec, Lights[0].attenuation);
 		Light.Diffuse *= Attenuation;
 		Light.Specular *= Attenuation;
-		OutputColor.rgb = (DiffuseMap.rgb * Light.Diffuse) + Light.Specular;
+		OutputColor.rgb = ColorMap.rgb * (Light.Diffuse + Light.Specular);
 		OutputColor.rgb *= GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
@@ -253,23 +253,24 @@ PS2FB StaticMesh_PS(VS2PS Input)
 			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
-		// We add ambient (BumpedSky) here to get correct ambient for surfaces parallel to the sun
 		float DotLN = saturate(dot(NormalVec.xyz / 5.0, -Lights[0].dir));
 		float InvDotLN = saturate((1.0 - DotLN) * 0.65);
 
+		// We add ambient (BumpedSky) here to get correct ambient for surfaces parallel to the sun
 		float3 PointColor = SinglePointColor * Lightmap.r;
 		float3 BumpedSky = (StaticSkyColor * InvDotLN) * Lightmap.b;
-		Light.Diffuse = PointColor + BumpedSky + (Light.Diffuse * Lightmap.g);
+		float3 Ambient = PointColor + BumpedSky;
+		Light.Diffuse = Light.Diffuse * Lightmap.g;
 		Light.Specular = Light.Specular * Lightmap.g;
 
-		OutputColor.rgb = ((DiffuseMap.rgb * Light.Diffuse) + Light.Specular) * 2.0;
+		OutputColor.rgb = (ColorMap.rgb * 2.0) * (Ambient + Light.Diffuse + Light.Specular);
 	#endif
 
 	#if !_POINTLIGHT_
 		ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
 	#endif
 
-	OutputColor.a = DiffuseMap.a;
+	OutputColor.a = ColorMap.a;
 
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
