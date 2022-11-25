@@ -1,7 +1,7 @@
 
 /*
 	Third-party shader code
-	Author: [R-CON]papadanku
+	Author: [R-CON]papadanku @ 2022
 */
 
 /*
@@ -85,10 +85,10 @@
 #endif
 
 // Depth-based functions
-#if !defined(REALITYDEPTH)
-	#define REALITYDEPTH
+#if !defined(REALITY_DEPTH)
+	#define REALITY_DEPTH
 
-	// Gets slope-scaled bias from depth
+	// Gets slope-scaled shadow bias from depth
 	// Source: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
 	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.001, uniform float Bias = -0.003)
 	{
@@ -130,10 +130,10 @@
 #endif
 
 // Math-based functions
-#if !defined(REALITYMATH)
-	#define REALITYMATH
+#if !defined(REALITY_MATH)
+	#define REALITY_MATH
 
-	// Gets Orthonormal (TBN) matrix
+	// Gets orthonormal Tangent-BiNormal-Normal (TBN) matrix
 	// Source: https://en.wikipedia.org/wiki/Gram-Schmidt_process
 	// License: https://creativecommons.org/licenses/by-sa/3.0/
 	float3x3 GetTangentBasis(float3 Tangent, float3 Normal, float Flip)

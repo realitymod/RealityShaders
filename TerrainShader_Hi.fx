@@ -87,13 +87,13 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	#if LIGHTONLY
-		float4 Light = ((_SunColor * 2.0) * AccumLights.w) + AccumLights;
+		float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
 		float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.xy);
 		float ChartContrib = dot(_ComponentSelector.xyz, Component.xyz);
 
 		Output.Color = ChartContrib * Light;
 	#else
-		float3 Light = ((_SunColor.rgb * 2.0) * AccumLights.w) + AccumLights.rgb;
+		float3 Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 		float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.zw);
 		float ChartContrib = dot(_ComponentSelector.xyz, Component.xyz);
@@ -101,7 +101,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		// If thermals assume no shadows and gray color
 		if (FogColor.r < 0.01)
 		{
-			Light.rgb = (_SunColor.rgb * 2.0) + AccumLights.rgb;
+			Light.rgb = 2.0 * _SunColor.rgb + AccumLights.rgb;
 			ColorMap.rgb = 1.0 / 3.0;
 		}
 
