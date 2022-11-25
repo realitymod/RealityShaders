@@ -29,6 +29,7 @@
 	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+// Functions from DirectXTK
 #if !defined(DIRECTXTK)
 	#define DIRECTXTK
 
@@ -83,10 +84,7 @@
 	}
 #endif
 
-/*
-	Third-party depth-based functions
-*/
-
+// Depth-based functions
 #if !defined(REALITYDEPTH)
 	#define REALITYDEPTH
 
@@ -97,13 +95,13 @@
 		return Depth + (SlopeScaleBias * fwidth(Depth)) + Bias;
 	}
 
-	// Converts linear depth to logarithmic depth in the vertex shader
+	// Converts linear depth to logarithmic depth in the pixel shader
 	// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
 	float ApplyLogarithmicDepth(float Depth)
 	{
 		const float Far = 1000000000.0;
 		const float FCoef = 1.0 / log(Far + 1.0);
-		return (log(Depth + 1.0) * FCoef);
+		return log(max(1e-6, Depth + 1.0)) * FCoef;
 	}
 
 	// Description: Transforms the vertex position's depth from World/Object space to light space
@@ -131,10 +129,7 @@
 	}
 #endif
 
-/*
-	Third-party math-based functions
-*/
-
+// Math-based functions
 #if !defined(REALITYMATH)
 	#define REALITYMATH
 

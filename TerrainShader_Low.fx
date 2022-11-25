@@ -115,7 +115,8 @@ technique Low_Terrain
 	// Pass 8 (removed)
 	pass DirectionalLightShadowsNV { }
 
-	pass DynamicShadowmap // Pass9
+	// Pass 9
+	pass DynamicShadowmap
 	{
 		CullMode = CW;
 

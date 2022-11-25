@@ -38,8 +38,9 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 	float4 Tex0 : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
-	float3 Color : TEXCOORD2;
-	float4 Maps : TEXCOORD3; // [LightFactor, Alpha, BlendFactor, LMOffset]
+	float2 HemiTex : TEXCOORD2;
+	float3 Color : TEXCOORD3;
+	float4 Maps : TEXCOORD4; // [LightFactor, Alpha, BlendFactor, LMOffset]
 };
 
 struct PS2FB
@@ -103,6 +104,10 @@ VS2PS Particle_VS(APP2VS Input)
 	// Offset texcoords
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
+	// Hemi lookup coords
+	Output.HemiTex = ((Input.Pos + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;	
+ 	Output.HemiTex.y = 1.0 - Output.HemiTex.y;
+
 	return Output;
 }
 
@@ -160,14 +165,9 @@ PS2FB Particle_High_PS(VS2PS Input)
 {
 	PS2FB Output;
 
-	// Hemi lookup coords
-	float3 Pos = Input.Pos.xyz;
-	float2 HemiTex = ((Pos + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
-	HemiTex.y = 1.0 - HemiTex.y;
-
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
-	float4 TLUT = tex2D(SampleLUT, HemiTex);
+	float4 TLUT = tex2D(SampleLUT, Input.HemiTex);
 
 	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.Maps[2]);
 	OutputColor.rgb *= GetParticleLighting(TLUT.a, Input.Maps[3], Input.Maps[0]);
