@@ -100,7 +100,7 @@
 	float ApplyLogarithmicDepth(float Depth)
 	{
 		const float FarPlane = 1000000000.0;
-		const float FCoef = 1.0 / log(FarPlane + 1.0);
+		const float FCoef = 1.0 / log2(FarPlane + 1.0);
 		return log2(max(1e-6, Depth + 1.0)) * FCoef;
 	}
 
