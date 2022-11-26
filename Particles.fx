@@ -88,7 +88,7 @@ VS2PS Particle_VS(APP2VS Input)
 
 	Output.HPos = mul(Pos, _ProjMat);
 	Output.Pos.xyz = Pos.xyz;
-	Output.Pos.w = Output.HPos.w;
+	Output.Pos.w = Output.HPos.w; // Output depth
 
 	// Compute texcoords
 	// Rotate and scale to correct u,v space and zoom in.

@@ -34,7 +34,7 @@ VS2PS Debug_Circle_VS(APP2VS Input)
 	VS2PS Output;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	Output.Diffuse.xyz = Input.Diffuse.xyz;
 	Output.Diffuse.w = 0.8f;

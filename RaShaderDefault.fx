@@ -44,7 +44,7 @@ VS2PS Default_VS(APP2VS Input)
 	
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	return Output;
 }

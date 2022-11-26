@@ -117,7 +117,7 @@ VS2PS Road_VS(APP2VS Input)
 	Output.HPos = mul(WorldPos, ViewProjection);
 
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w;
+	Output.Pos.w = Output.HPos.w; // Output depth
 
 	Output.TexA.xy = Input.Tex0 * TexUnpack;
 	#if defined(USE_DETAIL)

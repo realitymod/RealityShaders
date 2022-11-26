@@ -67,7 +67,7 @@ VS2PS Debug_Basic_1_VS(APP2VS Input)
 
  	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.rgb + Diffuse(Input.Normal, _LightDir) * _MaterialDiffuse.xyz;
@@ -82,7 +82,7 @@ VS2PS Debug_Basic_2_VS(APP2VS Input)
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.rgb;
@@ -135,7 +135,7 @@ VS2PS Debug_Occluder_VS(APP2VS Input)
 
 	float4 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(Pos, _WorldViewProj);
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	Output.Diffuse = 1.0;
 
@@ -194,7 +194,7 @@ VS2PS Debug_Editor_VS(APP2VS Input, uniform float AmbientColorFactor = 1.0)
 
 	Pos = mul(Pos, _World);
 	Output.HPos = mul(Pos, _WorldViewProj);
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	Output.Diffuse.xyz = _MaterialAmbient.rgb * AmbientColorFactor;
 	Output.Diffuse.w = _MaterialAmbient.a;
@@ -244,7 +244,7 @@ VS2PS Debug_CollisionMesh_VS(APP2VS Input, uniform float MaterialFactor = 1.0)
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	Output.Diffuse.xyz = (_MaterialAmbient.rgb * MaterialFactor) + 0.1 * Diffuse(Input.Normal, float4(-1.0, -1.0, 1.0, 0.0)) * (_MaterialDiffuse.rgb * MaterialFactor);
 	Output.Diffuse.w = 0.8f;
@@ -398,7 +398,7 @@ VS2PS_Grid Debug_Grid_VS(APP2VS Input)
 
 	Output.Tex0.xy = (Input.Pos.xz * 0.5) + 0.5;
 	Output.Tex0.xy *= _TextureScale;
-	Output.Tex0.z = Output.HPos.w;
+	Output.Tex0.z = Output.HPos.w; // Output depth
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.rgb + Diffuse(Input.Normal, _LightDir) * _MaterialDiffuse.xyz;
@@ -462,7 +462,7 @@ VS2PS Debug_SpotLight_VS(APP2VS Input)
 	Pos = mul(Pos, _World);
 
 	Output.HPos = mul(Pos, _WorldViewProj);
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	Output.Diffuse.rgb = _MaterialAmbient.rgb;
 	Output.Diffuse.a = _MaterialAmbient.a;
@@ -522,7 +522,7 @@ VS2PS Debug_PivotBox_VS(APP2VS Input)
 
 	float4 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(Pos, _WorldViewProj);
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.rgb = _MaterialAmbient.rgb;
@@ -584,7 +584,7 @@ VS2PS Debug_Pivot_VS(APP2VS Input)
 	Pos.xy *= RadScale;
 	Pos = mul(Pos, _World);
 	Output.HPos = mul(Pos, _WorldViewProj);
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.rgb = _MaterialAmbient.rgb;
@@ -655,7 +655,7 @@ VS2PS_Frustum Debug_Frustum_VS(APP2VS_Frustum Input)
 	VS2PS_Frustum Output;
 
 	Output.HPos = mul(Input.Pos, _WorldViewProj);
-	Output.Pos = Output.HPos;
+	Output.Pos = Output.HPos; // Output depth
 
 	Output.Color = Input.Color;
 

@@ -357,7 +357,7 @@ VS2PS_ShadowMap ShadowMap_VS(APP2VS Input)
 	float4 BonePos = float4(mul(Input.Pos, BoneMat), 1.0);
 
 	Output.HPos = GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat);
-	Output.DepthPos = Output.HPos;
+	Output.DepthPos = Output.HPos; // Output depth
 	Output.Tex0 = Input.TexCoord0;
 
 	return Output;

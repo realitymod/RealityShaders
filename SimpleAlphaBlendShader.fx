@@ -50,7 +50,7 @@ VS2PS Shader_VS(APP2VS Input)
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 
 	Output.Tex0.xy = Input.Tex0;
-	Output.Tex0.z = Output.HPos.w;
+	Output.Tex0.z = Output.HPos.w; // Output depth
 
 	return Output;
 }
