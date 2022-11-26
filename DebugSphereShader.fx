@@ -39,9 +39,19 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
+	float3 Tex0 : TEXCOORD0;
 	float4 Diffuse : COLOR0;
-	float2 Tex0 : TEXCOORD0;
 };
+
+struct PS2FB
+{
+	float4 Color : COLOR;
+	float Depth : DEPTH;
+};
+
+/*
+	Debug basic shaders
+*/
 
 float3 Diffuse(float3 Normal)
 {
@@ -56,23 +66,34 @@ VS2PS Debug_Basic_VS(APP2VS Input)
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 
+	Output.Tex0.xy = Input.TexCoord0;
+	Output.Tex0.z = Output.HPos.w;
+
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.xyz + Diffuse(Input.Normal) * _MaterialDiffuse.xyz;
 	Output.Diffuse.w = 1.0;
 
-	Output.Tex0 = Input.TexCoord0;
+	return Output;
+}
+
+PS2FB Debug_Basic_PS(VS2PS Input)
+{
+	PS2FB Output;
+
+	Output.Color = tex2D(SampleBaseTex, Input.Tex0.xy) * Input.Diffuse;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }
 
-float4 Debug_Basic_PS(VS2PS Input) : COLOR
+PS2FB Debug_Marked_PS(VS2PS Input)
 {
-	return tex2D(SampleBaseTex, Input.Tex0) * Input.Diffuse;
-}
+	PS2FB Output;
 
-float4 Debug_Marked_PS(VS2PS Input) : COLOR
-{
-	return (tex2D(SampleBaseTex, Input.Tex0) * Input.Diffuse) + float4(1.0, 0.0, 0.0, 0.0);
+	Output.Color = (tex2D(SampleBaseTex, Input.Tex0.xy) * Input.Diffuse) + float4(1.0, 0.0, 0.0, 0.0);
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	return Output;
 }
 
 technique t0_States < bool Restore = false; >
@@ -81,6 +102,7 @@ technique t0_States < bool Restore = false; >
 	{
 		CullMode = NONE;
 	}
+
 	pass EndStates
 	{
 		CullMode = CCW;
@@ -107,7 +129,6 @@ technique t0
 	}
 }
 
-
 technique marked
 <
 	int DetailLevel = DLHigh+DLNormal+DLLow+DLAbysmal;
@@ -132,27 +153,37 @@ technique marked
 	}
 }
 
+/*
+	Debug lightsource shaders
+*/
+
 VS2PS Debug_LightSource_VS(APP2VS Input)
 {
 	VS2PS Output;
 
- 	float4 Pos;
- 	Pos.xyz = mul(Input.Pos, _World);
- 	Pos.w = 1.0;
+	float4 Pos;
+	Pos.xyz = mul(Input.Pos, _World);
+	Pos.w = 1.0;
 	Output.HPos = mul(Pos, _WorldViewProj);
+
+	Output.Tex0 = 0.0;
+	Output.Tex0.z = Output.HPos.w;
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.rgb = _MaterialDiffuse.xyz;
 	Output.Diffuse.a = _MaterialDiffuse.w;
 
-	Output.Tex0 = 0.0;
-
 	return Output;
 }
 
-float4 Debug_LightSource_PS(VS2PS Input) : COLOR
+PS2FB Debug_LightSource_PS(VS2PS Input)
 {
-	return Input.Diffuse;
+	PS2FB Output;
+
+	Output.Color = Input.Diffuse;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	return Output;
 }
 
 technique lightsource

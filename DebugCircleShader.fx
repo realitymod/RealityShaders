@@ -19,21 +19,37 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Diffuse : COLOR;
+	float4 Pos : TEXCOORD0;
+	float4 Diffuse : COLOR0;
+};
+
+struct PS2FB
+{
+	float4 Color : COLOR;
+	float Depth : DEPTH;
 };
 
 VS2PS Debug_Circle_VS(APP2VS Input)
 {
 	VS2PS Output;
+
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
+	Output.Pos = Output.HPos;
+
 	Output.Diffuse.xyz = Input.Diffuse.xyz;
 	Output.Diffuse.w = 0.8f;
+
 	return Output;
 }
 
-float4 Debug_Circle_PS(VS2PS Input) : COLOR
+PS2FB Debug_Circle_PS(VS2PS Input)
 {
-	return Input.Diffuse;
+	PS2FB Output;
+
+	Output.Color = Input.Diffuse;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	return Output;
 }
 
 technique t0

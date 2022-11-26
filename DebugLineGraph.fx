@@ -20,6 +20,12 @@ struct VS2PS
 	float4 Color : COLOR0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR;
+	float Depth : DEPTH;
+};
+
 VS2PS Debug_Linegraph_VS(APP2VS Input)
 {
 	VS2PS Output;
