@@ -35,7 +35,6 @@
 	uniform bool AlphaTest = false;
 	uniform int alphaRef = 20;
 	uniform int CullMode = 3; // D3DCULL_CCW
-	#define HARDCODED_PARALLAX_BIAS 0.004
 
 	uniform float GlobalTime;
 	uniform float WindSpeed = 0;

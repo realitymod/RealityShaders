@@ -123,9 +123,10 @@ VS2PS StaticMesh_VS(APP2VS Input)
 float2 GetParallax(float2 TexCoords, float3 ViewVec)
 {
 	float Height = tex2D(SampleNormalMap, TexCoords).a;
-	Height = ((Height * 2.0) - 1.0);
-	ViewVec.y = -ViewVec.y;
-	return TexCoords + (ViewVec.xy * Height * HARDCODED_PARALLAX_BIAS);
+	Height = (Height * 2.0) - 1.0;
+	Height = Height * ParallaxScaleBias.xy + ParallaxScaleBias.wz;
+	ViewVec = ViewVec * float3(1.0, -1.0, 1.0);
+	return TexCoords + (Height * ViewVec.xy);
 }
 
 float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
