@@ -11,23 +11,23 @@
 
 // tl: Alias packed data indices to regular indices:
 #if defined(TexBasePackedInd)
-	#define TexBaseInd TexBasePackedInd
+	#define BaseTexID TexBasePackedInd
 #endif
 
 #if defined(TexDetailPackedInd)
-	#define TexDetailInd TexDetailPackedInd
+	#define DetailTexID TexDetailPackedInd
 #endif
 
 #if defined(TexDirtPackedInd)
-	#define TexDirtInd TexDirtPackedInd
+	#define DirtTexID TexDirtPackedInd
 #endif
 
 #if defined(TexCrackPackedInd)
-	#define TexCrackInd TexCrackPackedInd
+	#define CrackTexID TexCrackPackedInd
 #endif
 
 #if defined(TexLightMapPackedInd)
-	#define TexLightMapInd TexLightMapPackedInd
+	#define LightMapTexID TexLightMapPackedInd
 #endif
 
 #if (_NBASE_ || _NDETAIL_ || _NCRACK_ || _PARALLAXDETAIL_)
@@ -39,7 +39,7 @@
 	#undef _CRACK_
 #endif
 
-#define PARALLAX_BIAS 0.01
+#define PARALLAX_BIAS 0.0025
 
 // Common vars
 Light Lights[NUM_LIGHTS];
@@ -61,8 +61,8 @@ struct VS2PS
 	float3 ObjectBinormal : TEXCOORD2;
 	float3 ObjectNormal : TEXCOORD3;
 
-	float4 P_Base_Detail : TEXCOORD4; // .xy = TexBase; .zw = TexDetail;
-	float4 P_Dirt_Crack : TEXCOORD5; // .xy = TexDirt; .zw = TexCrack;
+	float4 BaseAndDetail : TEXCOORD4; // .xy = BaseTex; .zw = DetailTex;
+	float4 DirtAndCrack : TEXCOORD5; // .xy = DirtTex; .zw = CrackTex;
 	float4 LightMapTex : TEXCOORD6;
 	float4 ShadowTex : TEXCOORD7;
 };
@@ -103,21 +103,21 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	Output.ObjectNormal = ObjectTBN[2];
 
 	#if _BASE_
-		Output.P_Base_Detail.xy = Input.TexSets[TexBaseInd].xy * TexUnpack;
+		Output.BaseAndDetail.xy = Input.TexSets[BaseTexID].xy * TexUnpack;
 	#endif
 	#if _DETAIL_ || _NDETAIL_
-		Output.P_Base_Detail.zw = Input.TexSets[TexDetailInd].xy * TexUnpack;
+		Output.BaseAndDetail.zw = Input.TexSets[DetailTexID].xy * TexUnpack;
 	#endif
 
 	#if _DIRT_
-		Output.P_Dirt_Crack.xy = Input.TexSets[TexDirtInd].xy * TexUnpack;
+		Output.DirtAndCrack.xy = Input.TexSets[DirtTexID].xy * TexUnpack;
 	#endif
 	#if _CRACK_
-		Output.P_Dirt_Crack.zw = Input.TexSets[TexCrackInd].xy * TexUnpack;
+		Output.DirtAndCrack.zw = Input.TexSets[CrackTexID].xy * TexUnpack;
 	#endif
 
 	#if	_LIGHTMAP_
-		Output.LightMapTex.xy =  Input.TexSets[TexLightMapInd].xy * TexUnpack * LightMapOffset.xy + LightMapOffset.zw;
+		Output.LightMapTex.xy = Input.TexSets[LightMapTexID].xy * TexUnpack * LightMapOffset.xy + LightMapOffset.zw;
 	#endif
 
 	#if _SHADOW_ && _LIGHTMAP_
@@ -131,9 +131,10 @@ VS2PS StaticMesh_VS(APP2VS Input)
 float2 GetParallax(float2 TexCoords, float3 ViewVec)
 {
 	float Height = tex2D(SampleNormalMap, TexCoords).a;
+	Height = (Height * 2.0) - 1.0;
 	Height = Height * ParallaxScaleBias.xy + ParallaxScaleBias.wz;
 	ViewVec = ViewVec * float3(1.0, -1.0, 1.0);
-	return TexCoords + (Height * ViewVec.xy);
+	return TexCoords + ((Height * ViewVec.xy) * PARALLAX_BIAS);
 }
 
 float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
@@ -142,14 +143,13 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 	DiffuseGloss = StaticGloss;
 
 	#if _BASE_
-		Diffuse = tex2D(SampleDiffuseMap, Input.P_Base_Detail.xy);
+		Diffuse = tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy);
 	#endif
 
 	#if _PARALLAXDETAIL_
-		Diffuse = tex2D(SampleDiffuseMap, GetParallax(Input.P_Base_Detail.xy, TanEyeVec));
-		float4 Detail = tex2D(SampleDetailMap, GetParallax(Input.P_Base_Detail.zw, TanEyeVec));
+		float4 Detail = tex2D(SampleDetailMap, GetParallax(Input.BaseAndDetail.zw, TanEyeVec));
 	#elif _DETAIL_
-		float4 Detail = tex2D(SampleDetailMap, Input.P_Base_Detail.zw);
+		float4 Detail = tex2D(SampleDetailMap, Input.BaseAndDetail.zw);
 	#endif
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
@@ -166,11 +166,11 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 	#endif
 
 	#if _DIRT_
-		Diffuse.rgb *= tex2D(SampleDirtMap, Input.P_Dirt_Crack.xy).rgb;
+		Diffuse.rgb *= tex2D(SampleDirtMap, Input.DirtAndCrack.xy).rgb;
 	#endif
 
 	#if _CRACK_
-		float4 Crack = tex2D(SampleCrackMap, Input.P_Dirt_Crack.zw);
+		float4 Crack = tex2D(SampleCrackMap, Input.DirtAndCrack.zw);
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
 
@@ -183,18 +183,18 @@ float3 GetNormalMap(VS2PS Input, float3 TanEyeVec)
 	float3 Normals = float3(0.0, 0.0, 1.0);
 
 	#if	_NBASE_
-		Normals = tex2D(SampleNormalMap, Input.P_Base_Detail.xy).xyz;
+		Normals = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
 	#endif
 
 	#if _PARALLAXDETAIL_
-		Normals = tex2D(SampleNormalMap, GetParallax(Input.P_Base_Detail.zw, TanEyeVec)).xyz;
+		Normals = tex2D(SampleNormalMap, GetParallax(Input.BaseAndDetail.zw, TanEyeVec)).xyz;
 	#elif _NDETAIL_
-		Normals = tex2D(SampleNormalMap, Input.P_Base_Detail.zw).xyz;
+		Normals = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 	#endif
 
 	#if _NCRACK_
-		float3 CrackNormal = tex2D(SampleCrackNormalMap, Input.P_Dirt_Crack.zw).xyz;
-		float CrackMask = tex2D(SampleCrackMap, Input.P_Dirt_Crack.zw).a;
+		float3 CrackNormal = tex2D(SampleCrackNormalMap, Input.DirtAndCrack.zw).xyz;
+		float CrackMask = tex2D(SampleCrackMap, Input.DirtAndCrack.zw).a;
 		Normals = lerp(Normals, CrackNormal, CrackMask);
 	#endif
 
