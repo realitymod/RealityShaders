@@ -151,19 +151,19 @@ PS2FB Road_PS(VS2PS Input)
 		#endif
 	#endif
 
-	float4 TerrainColor = float4(TerrainSunColor, 1.0);
-	float4 Light = ((TerrainColor * 2.0 * AccumLights.w) + AccumLights) * 2.0;
+	float3 TerrainColor = TerrainSunColor * 2.0;
+	float3 Light = ((TerrainColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
 	// On thermals no shadows
 	if (FogColor.r < 0.01)
 	{
-		Light.rgb = (TerrainColor * 2.0 + AccumLights) * 2.0;
-		Diffuse.rgb *= Light.rgb;
+		Light = (TerrainColor + AccumLights.rgb) * 2.0;
+		Diffuse.rgb *= Light;
 		Diffuse.g = clamp(Diffuse.g, 0.0, 0.5);
 	}
 	else
 	{
-		Diffuse.rgb *= Light.rgb;
+		Diffuse.rgb *= Light;
 	}
 
 	float ZFade = GetRoadZFade(WorldPos, WorldSpaceCamPos, RoadFadeOut);

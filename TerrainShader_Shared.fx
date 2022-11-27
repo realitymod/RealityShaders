@@ -239,47 +239,52 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 {
 	PS2FB Output;
 
+	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
+
 	float3 WorldPos = Input.Pos.xyz;
 	float3 Normals = normalize(Input.Normal);
 
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
-	float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
+	float3 TerrainSunColor = _SunColor * 2.0;
+	float3 Light = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
+
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
+	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
+	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex) * 2.0;
+	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex) * 2.0;
+	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex) * 2.0;
 
 	// If thermals assume no shadows and gray color
 	if (FogColor.r < 0.01)
 	{
-		Light.rgb = 2.0 * _SunColor + AccumLights;
+		Light = (TerrainSunColor + AccumLights.rgb) * 2.0;
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 
-	#if LIGHTONLY
-		ApplyFog(Light.rgb, GetFogValue(WorldPos, _CameraPos));
-		return Light;
-	#endif
+	float Color = lerp(1.0, YPlaneLowDetailmap.z, saturate(dot(LowComponent.xy, 1.0)));
+	float Blue = 0.0;
+	Blue += (XPlaneLowDetailmap.y * BlendValue.x);
+	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
+	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
+	Color *= lerp(1.0, Blue, LowComponent.z);
 
-	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
-	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
-	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex);
-	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
-	float Mounten = (XPlaneLowDetailmap.y * BlendValue.x) +
-					(YPlaneLowDetailmap.x * BlendValue.y) +
-					(ZPlaneLowDetailmap.y * BlendValue.z);
-
-	float4 OutputColor = (ColorMap * Light) * 2.0;
-	OutputColor *= lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x);
-	OutputColor *= lerp(0.5, Mounten, LowComponent.z);
+	float4 LowDetailMap = Color;
+	float4 OutputColor = ColorMap * LowDetailMap;
+	OutputColor.rgb = saturate(OutputColor.rgb * Light);
 
 	// tl: changed a few things with this factor:
 	// - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.
 	// - by pre-multiplying the _WaterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
 	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
-	OutputColor = lerp(OutputColor * 4.0, _TerrainWaterColor, WaterLerp);
+	OutputColor = lerp(OutputColor, _TerrainWaterColor, WaterLerp);
 
 	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
+
+	#if defined(LIGHTONLY)
+		Output.Color = float4(Light, 1.0);
+	#endif
 
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -476,6 +481,10 @@ PS2FB Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input)
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
+	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
+	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex) * 2.0;
+	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex) * 2.0;
+	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex) * 2.0;
 
 	// If thermals assume gray color
 	if (FogColor.r < 0.01)
@@ -483,18 +492,15 @@ PS2FB Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input)
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 
-	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
-	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
-	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex);
-	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
-	float Mounten = (XPlaneLowDetailmap.y * BlendValue.x) +
-					(YPlaneLowDetailmap.x * BlendValue.y) +
-					(ZPlaneLowDetailmap.y * BlendValue.z);
+	float Color = lerp(1.0, YPlaneLowDetailmap.z, saturate(dot(LowComponent.xy, 1.0)));
+	float Blue = 0.0;
+	Blue += (XPlaneLowDetailmap.y * BlendValue.x);
+	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
+	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
+	Color *= lerp(1.0, Blue, LowComponent.z);
 
-	float4 LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x);
-	LowDetailMap *= lerp(0.5, Mounten, LowComponent.z);
-
-	float4 OutputColor = (ColorMap * LowDetailMap) * 4.0;
+	float4 LowDetailMap = Color;
+	float4 OutputColor = ColorMap * LowDetailMap;
 
 	// M (temporary fix)
 	if (_GIColor.r < 0.01)

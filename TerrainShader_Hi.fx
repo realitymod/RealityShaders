@@ -32,7 +32,7 @@ VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared Input)
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
-	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy); // tl: Trans is always 0
+	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy);
 
 	float YDelta, InterpVal;
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
@@ -80,71 +80,71 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.P_Normal_Fade.xyz);
-	float InterpVal = Input.P_Normal_Fade.w;
-	float ScaledInterpVal = saturate((InterpVal * 0.5) + 0.5);
+	float LerpValue = Input.P_Normal_Fade.w;
 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	#if LIGHTONLY
-		float4 Light = 2.0 * AccumLights.w * _SunColor + AccumLights;
-		float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.xy);
-		float ChartContrib = dot(_ComponentSelector.xyz, Component.xyz);
+	float3 TerrainSunColor = _SunColor * 2.0;
+	float3 Light = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
-		Output.Color = ChartContrib * Light;
+	#if defined(LIGHTONLY)
+		float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.xy);
+		float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
+
+		Output.Color = float4(Light * ChartContrib, ChartContrib);
 	#else
-		float3 Light = 2.0 * AccumLights.w * _SunColor.rgb + AccumLights.rgb;
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 		float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.zw);
-		float ChartContrib = dot(_ComponentSelector.xyz, Component.xyz);
+		float3 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
+		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy);
+		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy);
+		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.ZPlaneTex.xy);
+		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw) * 2.0;
+		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw) * 2.0;
+		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw) * 2.0;
+
+		float EnvMapScale = YPlaneDetailmap.a;
+		float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
 
 		// If thermals assume no shadows and gray color
 		if (FogColor.r < 0.01)
 		{
-			Light.rgb = 2.0 * _SunColor.rgb + AccumLights.rgb;
+			Light = (TerrainSunColor + AccumLights.rgb) * 2.0;
 			ColorMap.rgb = 1.0 / 3.0;
 		}
 
-		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy);
-		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy);
-		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.ZPlaneTex.xy);
-		float EnvMapScale = YPlaneDetailmap.a;
+		float Color = lerp(1.0, YPlaneLowDetailmap.z, saturate(dot(LowComponent.xy, 1.0)));
+		float Blue = 0.0;
+		Blue += (XPlaneLowDetailmap.y * BlendValue.x);
+		Blue += (YPlaneLowDetailmap.x * BlendValue.y);
+		Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
+		Color *= lerp(1.0, Blue, LowComponent.z);
 
-		float3 HiDetail = 1.0;
-		if (UseMounten)
+		float4 DetailMap = 0.0;
+		if(UseMounten)
 		{
-			HiDetail = (YPlaneDetailmap.xyz * BlendValue.y) +
-					   (XPlaneDetailmap.xyz * BlendValue.x) +
-					   (ZPlaneDetailmap.xyz * BlendValue.z);
+			DetailMap += (XPlaneDetailmap * BlendValue.x);
+			DetailMap += (YPlaneDetailmap * BlendValue.y);
+			DetailMap += (ZPlaneDetailmap * BlendValue.z);
 		}
 		else
 		{
-			HiDetail = YPlaneDetailmap.xyz;
+			DetailMap = YPlaneDetailmap;
 		}
 
-		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw);
-		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw);
-		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw);
-		float Mounten = (YPlaneLowDetailmap.x * BlendValue.y) +
-						(XPlaneLowDetailmap.y * BlendValue.x) +
-						(ZPlaneLowDetailmap.y * BlendValue.z);
-
-		float3 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
-		float LowDetailMap = lerp(0.5, YPlaneLowDetailmap.z, LowComponent.x * ScaledInterpVal);
-		LowDetailMap *= (4.0 * lerp(0.5, Mounten, LowComponent.z));
-
-		float3 BothDetailmap = (HiDetail * LowDetailMap) * 2.0;
-		float3 DetailOut = lerp(BothDetailmap, LowDetailMap, InterpVal);
-		float3 OutputColor = (ColorMap * DetailOut) * Light;
+		float4 LowDetailMap = Color;
+		float4 BothDetailMap = (DetailMap * LowDetailMap) * 2.0;
+		float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
+		float3 OutputColor = saturate((ColorMap.rgb * OutputDetail.rgb) * Light);
 
 		if (UseEnvMap)
 		{
 			float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
 			float3 EnvMapColor = texCUBE(SamplerTex6_Cube, Reflection);
-			OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - InterpVal));
+			OutputColor = saturate(lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue)));
 		}
 
-		OutputColor = OutputColor * 2.0;
 		ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos.xyz));
 
 		Output.Color = float4(OutputColor * ChartContrib, ChartContrib);
