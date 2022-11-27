@@ -34,6 +34,11 @@
 	#define PERPIXEL
 #endif
 
+// Only use crackmap if we have a per-pixel normalmap
+#if !defined(PERPIXEL)
+	#undef _CRACK_
+#endif
+
 // Common vars
 Light Lights[NUM_LIGHTS];
 
@@ -162,7 +167,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 		Diffuse.rgb *= tex2D(SampleDirtMap, Input.P_Dirt_Crack.xy).rgb;
 	#endif
 
-	#if _CRACK_ && defined(PERPIXEL) // Only run if we have a normalmap
+	#if _CRACK_
 		float4 Crack = tex2D(SampleCrackMap, Input.P_Dirt_Crack.zw);
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
@@ -245,7 +250,7 @@ PS2FB StaticMesh_PS(VS2PS Input)
 		float Attenuation = GetLightAttenuation(ObjectLightVec, Lights[0].attenuation);
 		Light.Diffuse *= Attenuation;
 		Light.Specular *= Attenuation;
-		OutputColor.rgb = ColorMap.rgb * (Light.Diffuse + Light.Specular);
+		OutputColor.rgb = (ColorMap.rgb * Light.Diffuse) + Light.Specular;
 		OutputColor.rgb *= GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
@@ -259,14 +264,13 @@ PS2FB StaticMesh_PS(VS2PS Input)
 		float InvDotLN = saturate((1.0 - DotLN) * 0.65);
 
 		// We add ambient to get correct ambient for surfaces parallel to the sun
-		float3 BumpedSky = (StaticSkyColor * InvDotLN) * Lightmap.b;
-		float3 BumpedDiffuse = Light.Diffuse + BumpedSky;
+		float3 Ambient = (StaticSkyColor * InvDotLN) * Lightmap.b;
+		float3 BumpedDiffuse = Light.Diffuse + Ambient;
 
-		float3 Ambient = SinglePointColor * Lightmap.r;
-		Light.Diffuse = lerp(BumpedSky, BumpedDiffuse, Lightmap.g);
+		Light.Diffuse = lerp(Ambient, BumpedDiffuse, Lightmap.g);
 		Light.Specular = Light.Specular * Lightmap.g;
 
-		OutputColor.rgb = ((ColorMap.rgb * 2.0) * (Ambient + Light.Diffuse)) + Light.Specular;
+		OutputColor.rgb = ((ColorMap.rgb * 2.0) * Light.Diffuse) + Light.Specular;
 	#endif
 
 	#if !_POINTLIGHT_
