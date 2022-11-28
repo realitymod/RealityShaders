@@ -1,43 +1,60 @@
-
 """
 This module searches for techniques from a specified folder
+Credit: http://bytehazard.com/_temp/used_techniques.html
 """
 
 import os
 
+RED = "\x1b[38;5;210m"
+GREEN = "\x1b[38;5;114m"
+YELLOW = "\x1b[38;5;11m"
+ORANGE = "\x1b[38;5;215m"
+BLUE = "\x1b[38;5;153m"
+GRAY = "\x1b[38;5;242m"
+RESET = "\x1b[0m"
+BOLD = "\x1b[1m"
+UNDR = "\x1b[4m"
+
+
+def getShaderFiles(folderPath):
+    files = []
+    for file in os.listdir(folderPath):
+        if file.endswith(".fx"):
+            files.append(file)
+    return files
+
+
+def getShaderTechniques(filePath):
+    techniques = []
+    for line in open(filePath, "r"):
+        # Remove whitespace
+        line = line.strip()
+        # Skip empty lines
+        if len(line) == 0:
+            continue
+        # Split line to words
+        words = line.split(" ")
+        if words[0] == "technique":
+            techniques.append(words[1])
+    return techniques
+
+
 class shaderInfo(object):
     """
-    Methods for finding shader information
+    Methods for printing  shader information
     """
 
     def __init__(self, folderPath):
-        self.path = folderPath
-        self.files = []
-        self.techniques = []
+        self.folderPath = folderPath
+        self.files = getShaderFiles(self.folderPath)
 
-    def getShaderFiles(self):
-        """
-        Finds shader files in a folder
-        """
-        for file in os.listdir(self.path):
-            if file.endswith('.fx'):
-                self.files.append(self.path + '\\' + file)
-        return self.files
-    
-    def getShaderTechniques(self):
-        """
-        Finds techniques in a shader
-        """
+    def printShaderInfo(self):
         for file in self.files:
-            shaderFile = open(file, 'r')
-            for line in shaderFile:
-                # Remove whitespace
-                line = line.strip()
-                # Skip empty lines
-                if len(line) == 0:
-                    continue
-                # Split line to words
-                words = line.split(' ')
-                if words[0] == 'technique':
-                    self.techniques.append(words[1])
-        return self.techniques
+            # Print the shader file's name
+            print(YELLOW + file + RESET)
+            # Get techniques from the shader file
+            filePath = self.folderPath + "\\" + file
+            techniques = getShaderTechniques(filePath)
+            for technique in techniques:
+                color = GREEN
+                print("\t" + color + technique + RESET)
