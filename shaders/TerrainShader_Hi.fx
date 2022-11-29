@@ -105,7 +105,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw) * 2.0;
 
 		float EnvMapScale = YPlaneDetailmap.a;
-		float ChartContrib = saturate(dot(Component.xyz, _ComponentSelector.xyz));
+		float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
 
 		// If thermals assume no shadows and gray color
 		if (FogColor.r < 0.01)
