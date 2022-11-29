@@ -171,27 +171,6 @@ PS2FB FullDetail_Hi_EnvMap_PS(VS2PS_FullDetail_Hi Input)
 }
 
 /*
-	Terrain DirShadow shader
-	Applies dynamic shadows to the terrain's light buffer
-*/
-
-PS2FB Hi_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input)
-{
-	PS2FB Output;
-
-	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0);
-	float4 Light = saturate(LightMap.z * _GIColor * 2.0) * 0.5;
-	float4 AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
-
-	Light.w = (AvgShadowValue.z < LightMap.y) ? AvgShadowValue.z : LightMap.y;
-
-	Output.Color = Light;
-	Output.Depth = ApplyLogarithmicDepth(Input.Z.z);
-
-	return Output;
-}
-
-/*
 	High terrain technique
 */
 
@@ -346,7 +325,7 @@ technique Hi_Terrain
 		#endif
 
 		VertexShader = compile vs_3_0 Shared_DirectionalLightShadows_VS();
-		PixelShader = compile ps_3_0 Hi_DirectionalLightShadows_PS();
+		PixelShader = compile ps_3_0 Shared_DirectionalLightShadows_PS();
 	}
 
 	// Pass 8 (removed)

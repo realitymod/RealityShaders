@@ -8,28 +8,6 @@
 
 #include "shaders/RealityGraphics.fxh"
 
-/*
-	Terrain DirShadow shader
-	Applies dynamic shadows to the terrain's light buffer
-*/
-
-PS2FB Low_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input)
-{
-	PS2FB Output;
-
-	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0);
-	float4 Light = saturate(LightMap.z * _GIColor * 2.0) * 0.5;
-	float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex);
-
-	AvgShadowValue = AvgShadowValue == 1.0;
-	Light.w = (AvgShadowValue < LightMap.y) ? 1.0 - saturate(4.0 - Input.Z.x) + AvgShadowValue.x : LightMap.y;
-
-	Output.Color = Light;
-	Output.Depth = ApplyLogarithmicDepth(Input.Z.z);
-
-	return Output;
-}
-
 technique Low_Terrain
 {
 	// Pass 0
@@ -107,7 +85,7 @@ technique Low_Terrain
 		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_DirectionalLightShadows_VS();
-		PixelShader = compile ps_3_0 Low_DirectionalLightShadows_PS();
+		PixelShader = compile ps_3_0 Shared_DirectionalLightShadows_PS();
 	}
 
 	// Pass 8 (removed)

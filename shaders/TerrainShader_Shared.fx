@@ -329,15 +329,15 @@ float4 Shared_DynamicShadowmap_PS(VS2PS_Shared_DynamicShadowmap Input) : COLOR
 }
 
 /*
-	Directional light shadows
+	Terrain Directional shadow shader
+	Applies dynamic shadows to the terrain's light buffer
 */
 
 struct VS2PS_Shared_DirectionalLightShadows
 {
 	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
+	float3 Tex0 : TEXCOORD0;
 	float4 ShadowTex : TEXCOORD1;
-	float3 Z : TEXCOORD2;
 };
 
 VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Shared Input)
@@ -355,16 +355,36 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 
 	Output.ShadowTex = mul(WorldPos, _LightViewProj);
 	float LightZ = mul(WorldPos, _LightViewProjOrtho).z;
-	Output.Z.xy = Output.ShadowTex.z;
+
 	#if NVIDIA
 		Output.ShadowTex.z = LightZ * Output.ShadowTex.w;
 	#else
 		Output.ShadowTex.z = LightZ;
 	#endif
 
-	Output.Z.z = Output.HPos.w; // Output depth
+	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Tex0.z = Output.HPos.w; // Output depth
 
-	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
+	return Output;
+}
+
+PS2FB Shared_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input)
+{
+	PS2FB Output;
+
+	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
+	float4 Light = _GIColor * LightMap.z;
+
+	#if HIGHTERRAIN || MIDTERRAIN
+		float4 AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+	#else
+		float4 AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
+	#endif
+
+	Light.w = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
+
+	Output.Color = Light;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }
