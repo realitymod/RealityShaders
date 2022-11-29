@@ -154,7 +154,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
 		// tl: assumes base has .a = 1 (which should be the case)
-		Diffuse *= Detail;
+		Diffuse.rgb *= Detail.rgb;
 		#if (!_ALPHATEST_)
 			DiffuseGloss = Detail.a;
 			Diffuse.a = Transparency.a;
@@ -295,16 +295,13 @@ technique defaultTechnique
 			FillMode = WireFrame;
 		#endif
 
-		ZFunc = LESS;
-
 		#if _POINTLIGHT_
-			ZFunc = LESSEQUAL;
 			AlphaBlendEnable = TRUE;
 			SrcBlend = ONE;
 			DestBlend = ONE;
 		#endif
 
-		AlphaTestEnable = < AlphaTest >;
+		AlphaTestEnable = (AlphaTest);
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 
 		SRGBWriteEnable = FALSE;

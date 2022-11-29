@@ -200,8 +200,8 @@ technique defaultTechnique
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 
-		// DepthBias = < RoadDepthBias >;
-		// SlopeScaleDepthBias = < RoadSlopeScaleDepthBias >;
+		// DepthBias = (RoadDepthBias);
+		// SlopeScaleDepthBias = (RoadSlopeScaleDepthBias);
 
 		SRGBWriteEnable = FALSE;
 

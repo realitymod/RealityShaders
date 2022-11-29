@@ -102,12 +102,12 @@ technique defaultTechnique
 		#endif
 
 		AlphaTestEnable = TRUE; // < AlphaTest >;
-		AlphaRef = <alphaRef>;
+		AlphaRef = (alphaRef);
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 
-		AlphaBlendEnable = <alphaBlendEnable>;
-		SrcBlend = <srcBlend>;
-		DestBlend = <destBlend>;
+		AlphaBlendEnable = (alphaBlendEnable);
+		SrcBlend = (srcBlend);
+		DestBlend = (destBlend);
 
 		SRGBWriteEnable = FALSE;
 

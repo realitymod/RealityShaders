@@ -306,7 +306,6 @@ technique SkyDomeNV3xLit
 	}
 }
 
-
 technique SkyDomeNV3xDualClouds
 {
 	pass Sky

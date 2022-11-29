@@ -148,11 +148,13 @@ VS2PS Leaf_VS(APP2VS Input)
 	#endif
 
 	#if defined(_POINTLIGHT_)
-		float3 LightVec = Lights[0].pos.xyz - Input.Pos.xyz;
+		float3 LightVec = normalize(Lights[0].pos.xyz - Input.Pos.xyz);
+		Output.Tex0.z = saturate(dot(Input.Normal.xyz, LightVec));
 	#else
-		float3 LightVec = -Lights[0].dir.xyz;
+		float3 LightVec = normalize(-Lights[0].dir.xyz);
+		Output.Tex0.z = saturate((dot(Input.Normal.xyz, LightVec) * 0.5) + 0.5);
 	#endif
-	Output.Tex0.z = saturate((dot(Input.Normal.xyz, LightVec) * 0.5) + 0.5);
+
 	Output.Tex0.w = Input.Pos.w / 32767.0;
 
 	#if _HASSHADOW_
@@ -216,8 +218,8 @@ technique defaultTechnique
 		AlphaTestEnable = TRUE;
 		AlphaRef = 127;
 
-		SrcBlend = <srcBlend>;
-		DestBlend = <destBlend>;
+		SrcBlend = (srcBlend);
+		DestBlend = (destBlend);
 
 		#if defined(_POINTLIGHT_)
 			AlphaBlendEnable = TRUE;

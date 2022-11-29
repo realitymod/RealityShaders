@@ -101,12 +101,12 @@ technique defaultTechnique
 			FillMode = WireFrame;
 		#endif
 
-		AlphaTestEnable = <AlphaTest>;
-		AlphaRef = <alphaRef>;
+		AlphaTestEnable = (AlphaTest);
+		AlphaRef = (alphaRef);
 
-		AlphaBlendEnable = <AlphaBlendEnable>;
-		SrcBlend = <srcBlend>;
-		DestBlend = <destBlend>;
+		AlphaBlendEnable = (AlphaBlendEnable);
+		SrcBlend = (srcBlend);
+		DestBlend = (destBlend);
 
 		SRGBWriteEnable = FALSE;
 

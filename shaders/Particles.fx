@@ -228,7 +228,7 @@ PS2FB Particle_High_Additive_PS(VS2PS Input)
 	StencilFunc = ALWAYS; \
 	StencilPass = ZERO; \
 	AlphaTestEnable = TRUE; \
-	AlphaRef = <_AlphaPixelTestRef>; \
+	AlphaRef = (_AlphaPixelTestRef); \
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCBLEND; \
 	DestBlend = DESTBLEND; \

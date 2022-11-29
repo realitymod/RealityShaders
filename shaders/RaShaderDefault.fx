@@ -67,7 +67,7 @@ technique defaultShader
 			FillMode = WireFrame;
 		#endif
 
-		AlphaBlendEnable = <alphaBlendEnable>;
+		AlphaBlendEnable = (alphaBlendEnable);
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
