@@ -209,7 +209,6 @@ PS2FB Water_PS(in VS2PS Input)
 	float3 WorldPos = Input.Pos.xyz;
 	float3 LightVec = normalize(-Lights[0].dir);
 	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
-	float3 HalfVec = normalize(LightVec + ViewVec);
 
 	float3 Reflection = normalize(reflect(-ViewVec, TangentNormal));
 	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);

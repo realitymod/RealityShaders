@@ -111,8 +111,8 @@ PS2FB Shared_ZFillLightMap_1_PS(VS2PS_Shared_ZFillLightMap Input)
 	PS2FB Output;
 
 	float4 Color = tex2D(SampleTex0_Clamp, Input.Tex0);
-	float4 OutputColor;
-	OutputColor.rgb = _GIColor * Color.b;
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = saturate(_GIColor * Color.b);
 	OutputColor.a = saturate(Color.g);
 
 	Output.Color = OutputColor;
@@ -125,7 +125,7 @@ PS2FB Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output;
 
-	Output.Color = ZFillLightMapColor;
+	Output.Color = saturate(ZFillLightMapColor);
 	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
@@ -286,7 +286,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 		Output.Color = float4(Light, 1.0);
 	#endif
 
-	Output.Color = OutputColor;
+	Output.Color = float4(OutputColor.rgb, 1.0);
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;

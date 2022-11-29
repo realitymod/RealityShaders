@@ -104,13 +104,10 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-
-	float2 Tex0 : TEXCOORD1;
+	float4 Tex0 : TEXCOORD1;
 	#if _HASSHADOW_
 		float4 TexShadow : TEXCOORD2;
 	#endif
-
-	float4 Color : TEXCOORD3;
 };
 
 struct PS2FB
@@ -132,17 +129,16 @@ VS2PS Leaf_VS(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 
-	#if !defined(OVERGROWTH)
-		float3 LocalPos = Input.Pos.xyz;
-	#else
+	#if defined(OVERGROWTH)
 		float3 LocalPos = Input.Pos.xyz * PosUnpack.xyz;
+	#else
+		float3 LocalPos = Input.Pos.xyz;
 	#endif
 
 	Output.Pos.xyz = LocalPos.xyz;
 	Output.Pos.w = Output.HPos.w; // Output depth
 
 	Output.Tex0.xy = Input.Tex0;
-
 	#if defined(OVERGROWTH)
 		Input.Normal = normalize((Input.Normal * 2.0) - 1.0);
 		Output.Tex0.xy /= 32767.0;
@@ -151,33 +147,13 @@ VS2PS Leaf_VS(APP2VS Input)
 		Output.Tex0.xy *= TexUnpack;
 	#endif
 
-	float ScaleLN = Input.Pos.w / 32767.0;
-
-	float3 LightVec = Lights[0].pos.xyz - Input.Pos.xyz;
-
 	#if defined(_POINTLIGHT_)
-		float Diffuse = LambertLighting(Input.Normal, normalize(LightVec));
+		float3 LightVec = Lights[0].pos.xyz - Input.Pos.xyz;
 	#else
-		float Diffuse = saturate((dot(Input.Normal.xyz, -Lights[0].dir.xyz) + 0.6) / 1.4);
+		float3 LightVec = -Lights[0].dir.xyz;
 	#endif
-
-	#if defined(OVERGROWTH)
-		Output.Color.rgb = (Diffuse * ScaleLN) * (Lights[0].color * ScaleLN);
-		OverGrowthAmbient *= ScaleLN;
-	#else
-		Output.Color.rgb = Diffuse * Lights[0].color;
-	#endif
-
-	#if (!_HASSHADOW_) && !defined(_POINTLIGHT_)
-		Output.Color.rgb += OverGrowthAmbient.rgb;
-	#endif
-
-	#if defined(_POINTLIGHT_)
-		Output.Color.rgb *= GetLightAttenuation(LightVec, Lights[0].attenuation);
-		Output.Color.rgb *= GetFogValue(LocalPos.xyz, ObjectSpaceCamPos.xyz);
-	#endif
-
-	Output.Color = float4(Output.Color.rgb * 0.5, Transparency.a);
+	Output.Tex0.z = saturate((dot(Input.Normal.xyz, LightVec) * 0.5) + 0.5);
+	Output.Tex0.w = Input.Pos.w / 32767.0;
 
 	#if _HASSHADOW_
 		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
@@ -190,28 +166,37 @@ PS2FB Leaf_PS(VS2PS Input)
 {
 	PS2FB Output;
 
+	float DotLN = Input.Tex0.z;
+	float LodScale = Input.Tex0.w;
+	float3 ObjectPos = Input.Pos.xyz;
+	float3 LightVec = Lights[0].pos.xyz - ObjectPos;
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	float4 VertexColor = Input.Color;
+
+	#if defined(OVERGROWTH)
+		float3 Diffuse = (DotLN * LodScale) * (Lights[0].color * LodScale);
+		OverGrowthAmbient *= LodScale;
+	#else
+		float3 Diffuse = DotLN * Lights[0].color;
+	#endif
 
 	#if _HASSHADOW_
-		VertexColor.rgb *= saturate(GetShadowFactor(SampleShadowMap, Input.TexShadow) + (2.0 / 3.0));
-		VertexColor.rgb += OverGrowthAmbient.rgb * 0.5;
+		float4 Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
+		Diffuse.rgb *= Shadow.rgb;
 	#endif
 
+	float4 VertexColor = float4(OverGrowthAmbient.rgb + Diffuse, Transparency.a);
 	float4 OutputColor = DiffuseMap * VertexColor;
-
-	#if defined(_POINTLIGHT_)
-		OutputColor.a *= 2.0;
-	#else
-		OutputColor *= 2.0;
-	#endif
+	OutputColor.a *= 2.0;
 
 	#if defined(OVERGROWTH) && HASALPHA2MASK
-		OutputColor.a *= 2.0 * DiffuseMap.a;
+		OutputColor.a *= DiffuseMap.a;
 	#endif
 
-	#if !defined(_POINTLIGHT_)
-		ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos.xyz, ObjectSpaceCamPos.xyz));
+	#if defined(_POINTLIGHT_)
+		OutputColor.rgb *= GetLightAttenuation(LightVec, Lights[0].attenuation);
+		OutputColor.rgb *= GetFogValue(ObjectPos, ObjectSpaceCamPos);
+	#else
+		ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
 	#endif
 
 	Output.Color = OutputColor;

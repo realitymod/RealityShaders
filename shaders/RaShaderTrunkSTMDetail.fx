@@ -141,13 +141,15 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 		DiffuseMap *= tex2D(SampleDetailMap, Input.TexA.zw);
 	#endif
 
-	float3 Diffuse = LambertLighting(Normals.xyz, -Lights[0].dir) * Lights[0].color;
+	float3 Diffuse = LambertLighting(Normals, -Lights[0].dir) * Lights[0].color;
 	#if _HASSHADOW_
 		Diffuse = Diffuse * GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#endif
 	Diffuse = saturate(OverGrowthAmbient.rgb + Diffuse);
 
-	float4 OutputColor = float4((DiffuseMap.rgb * Diffuse.rgb) * 2.0, Transparency.r * 2.0);
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = (DiffuseMap.rgb * Diffuse.rgb) * 2.0;
+	OutputColor.a = Transparency.a * 2.0;
 
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos.xyz, ObjectSpaceCamPos.xyz));
 

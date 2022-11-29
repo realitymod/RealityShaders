@@ -92,7 +92,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.xy);
 		float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
 
-		Output.Color = float4(Light * ChartContrib, ChartContrib);
+		Output.Color = float4(Light * ChartContrib, 1.0);
 	#else
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 		float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.zw);
@@ -105,7 +105,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw) * 2.0;
 
 		float EnvMapScale = YPlaneDetailmap.a;
-		float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
+		float ChartContrib = saturate(dot(Component.xyz, _ComponentSelector.xyz));
 
 		// If thermals assume no shadows and gray color
 		if (FogColor.r < 0.01)
@@ -147,7 +147,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 
 		ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos.xyz));
 
-		Output.Color = float4(OutputColor * ChartContrib, ChartContrib);
+		Output.Color = float4(OutputColor * ChartContrib, 1.0);
 	#endif
 
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

@@ -64,9 +64,8 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-
-	float2 Tex0 : TEXCOORD1;
-	float4 P_Normals_ScaleLN : TEXCOORD2; // .xyz = Normals; .w = ScaleLN;
+	float3 Tex0 : TEXCOORD1; // .xy = Tex0; .z = LodScale;
+	float3 Normal : TEXCOORD2;
 };
 
 struct PS2FB
@@ -84,8 +83,8 @@ VS2PS TrunkOG_VS(APP2VS Input)
 	Output.Pos.w = Output.HPos.w; // Output depth
 
 	Output.Tex0.xy = Input.Tex0 / 32767.0;
-	Output.P_Normals_ScaleLN.xyz = normalize((Input.Normal * 2.0) - 1.0);
-	Output.P_Normals_ScaleLN.w = Input.Pos.w / 32767.0;
+	Output.Tex0.z = Input.Pos.w / 32767.0;
+	Output.Normal = normalize((Input.Normal * 2.0) - 1.0);
 
 	return Output;
 }
@@ -97,17 +96,21 @@ PS2FB TrunkOG_PS(VS2PS Input)
 {
 	PS2FB Output;
 
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	float3 Normals = normalize(Input.P_Normals_ScaleLN.xyz);
-	float Diffuse = LambertLighting(Normals.xyz, -Lights[0].dir);
+	float3 ObjectPos = Input.Pos.xyz;
+	float LodScale = Input.Tex0.z;
+	float3 Normals = normalize(Input.Normal.xyz);
 
-	float ScaleLN = Input.P_Normals_ScaleLN.w;
-	float3 Color = (OverGrowthAmbient.rgb * ScaleLN);
-	Color += ((Diffuse * ScaleLN) * (Lights[0].color * ScaleLN));
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy) * 2.0;
+	float Diffuse = LambertLighting(Normals, -Lights[0].dir);
 
-	float4 OutputColor = float4((DiffuseMap.rgb * Color.rgb) * 2.0, Transparency.a);
+	float3 Color = ((Diffuse * LodScale) * (Lights[0].color * LodScale));
+	Color += (OverGrowthAmbient.rgb * LodScale);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos.xyz, ObjectSpaceCamPos.xyz));
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = DiffuseMap.rgb * Color.rgb;
+	OutputColor.a = Transparency.a;
+
+	ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
 
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
