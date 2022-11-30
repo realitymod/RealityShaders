@@ -385,11 +385,11 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 
 #define GET_RENDERSTATES_SHADOWMAP \
 	CullMode = CW; \
-	AlphaBlendEnable = FALSE; \
 	ZEnable = TRUE; \
-	ZWriteEnable = TRUE; \
 	ZFunc = LESSEQUAL; \
+	ZWriteEnable = TRUE; \
 	ScissorTestEnable = TRUE; \
+	AlphaBlendEnable = FALSE; \
 
 technique DrawShadowMap
 {

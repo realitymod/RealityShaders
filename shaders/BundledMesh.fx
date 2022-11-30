@@ -489,8 +489,8 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap_Alpha Input) : COLOR
 	ZEnable = TRUE; \
 	ZFunc = LESSEQUAL; \
 	ZWriteEnable = TRUE; \
-	AlphaBlendEnable = FALSE; \
 	ScissorTestEnable = TRUE; \
+	AlphaBlendEnable = FALSE; \
 
 technique DrawShadowMap
 {

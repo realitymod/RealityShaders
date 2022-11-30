@@ -188,18 +188,11 @@ float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
 
 #define GET_RENDERSTATES_SHADOWMAP \
 	CullMode = CW; \
-	AlphaBlendEnable = FALSE; \
 	ZEnable = TRUE; \
-	ZWriteEnable = TRUE; \
 	ZFunc = LESSEQUAL; \
-	ScissorTestEnable = TRUE; \
-
-#define GET_RENDERSTATES_POINT \
-	CullMode = CW; \
-	AlphaBlendEnable = FALSE; \
-	ZEnable = TRUE; \
 	ZWriteEnable = TRUE; \
 	ScissorTestEnable = TRUE; \
+	AlphaBlendEnable = FALSE; \
 
 technique DrawShadowMap
 {
@@ -234,7 +227,7 @@ technique DrawShadowMap
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		GET_RENDERSTATES_POINT
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
@@ -275,7 +268,7 @@ technique DrawShadowMapNV
 			ColorWriteEnable = 0; // 0x0000000F;
 		#endif
 
-		GET_RENDERSTATES_POINT
+		GET_RENDERSTATES_SHADOWMAP
 		VertexShader = compile vs_3_0 ShadowMap_VS();
 		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
