@@ -168,7 +168,7 @@ PS2FB Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	}; \
 
 #define GET_RENDERSTATES_UNDERGROWTH \
-	CullMode = NONE; \
+	CullMode = CW; \
 	AlphaTestEnable = TRUE; \
 	AlphaRef = FH2_ALPHAREF; \
 	AlphaFunc = GREATER; \
@@ -581,7 +581,7 @@ PS2FB Undergrowth_ZOnly_PS(VS2PS_ZOnly Input)
 	}; \
 
 #define GET_RENDERSTATES_UNDERGROWTH_ZONLY \
-	CullMode = NONE; \
+	CullMode = CW; \
 	AlphaTestEnable = TRUE; \
 	AlphaRef = FH2_ALPHAREF; \
 	AlphaFunc = GREATER; \
