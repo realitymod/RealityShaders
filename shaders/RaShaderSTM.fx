@@ -295,7 +295,10 @@ technique defaultTechnique
 			FillMode = WireFrame;
 		#endif
 
+		ZFunc = LESS;
+
 		#if _POINTLIGHT_
+			ZFunc = LESSEQUAL;
 			AlphaBlendEnable = TRUE;
 			SrcBlend = ONE;
 			DestBlend = ONE;

@@ -291,8 +291,8 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	Light.Specular = ((Light.Specular * Gloss) * Lights[0].color);
 
 	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
-	Light.Diffuse = (Light.Diffuse * GI.rgb) * LightFactors;
-	Light.Specular = (Light.Specular * GI.rgb) * LightFactors;
+	Light.Diffuse = Light.Diffuse * LightFactors;
+	Light.Specular = Light.Specular * LightFactors;
 
 	// there is no Gloss map so alpha means transparency
 	#if _POINTLIGHT_ && !_HASCOLORMAPGLOSS_
@@ -305,7 +305,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		Light.Specular = 0.0;
 	#endif
 	float4 OutputColor = 1.0;
-	OutputColor.rgb = (ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular;
+	OutputColor.rgb = ((ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular) * GI.rgb;
 
 	/*
 		Calculate fogging and other occluders

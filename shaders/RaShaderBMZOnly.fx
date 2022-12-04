@@ -53,6 +53,13 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+};
+
+struct PS2FB
+{
+	float4 Color : COLOR;
+	float Depth : DEPTH;
 };
 
 float4x3 GetSkinnedWorldMatrix(APP2VS Input)
@@ -72,6 +79,15 @@ VS2PS BM_ZOnly_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 	Output.HPos = mul(GetWorldPos(Input), ViewProjection); // Output HPOS
+	Output.Pos = Output.HPos; // Output depth
+	return Output;
+}
+
+PS2FB BM_ZOnly_PS(VS2PS Input)
+{
+	PS2FB Output;
+	Output.Color = 0.0;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	return Output;
 }
 
@@ -89,6 +105,6 @@ technique Variable
 		CullMode = CCW;
 
 		VertexShader = compile vs_3_0 BM_ZOnly_VS();
-		PixelShader = NULL;
+		PixelShader = compile ps_3_0 BM_ZOnly_PS();
 	}
 }
