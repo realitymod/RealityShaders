@@ -84,7 +84,7 @@ VS2PS RoadCompiled_VS(APP2VS Input)
 
 	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos.xyz = Input.Pos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.TexA = float4(Input.Tex0, Input.Tex1);
 	Output.LightTex = ProjToLighting(Output.HPos);
@@ -146,7 +146,7 @@ VS2PS_Dx9 RoadCompiled_Dx9_VS(APP2VS Input)
 
 	Output.HPos = mul(Input.Pos, _WorldViewProj);
 	Output.Pos.xyz = Input.Pos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.TexA = float4(Input.Tex0, Input.Tex1);
 

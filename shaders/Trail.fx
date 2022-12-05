@@ -92,7 +92,7 @@ VS2PS Trail_VS(APP2VS Input)
 	float4 Pos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
 	Output.Pos.xyz = Input.Pos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.Color = lerp(Template.m_color1AndLightFactor.rgb, Template.m_color2.rgb, ColorBlendFactor);
 

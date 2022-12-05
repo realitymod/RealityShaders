@@ -72,7 +72,7 @@ VS2PS Diffuse_VS(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 	Output.Pos.xyz = Input.Pos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.Tex0 = Input.Tex0;
 

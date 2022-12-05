@@ -113,7 +113,7 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	// Output HPos
 	Output.HPos = mul(SkinnedObjPos, WorldViewProjection);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.Tex0 = Input.TexCoord0;
 

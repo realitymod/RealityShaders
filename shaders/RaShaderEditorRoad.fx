@@ -124,7 +124,7 @@ VS2PS Editor_Road_VS(APP2VS Input)
 	Output.LightTex.zw = Output.HPos.zw;
 
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	return Output;
 }

@@ -69,7 +69,9 @@ VS2PS BM_Additive_VS(APP2VS Input)
 
 	Output.HPos = float4(mul(Input.Pos, GeomBones[IndexArray[0]]), 1.0);
 	Output.HPos = mul(Output.HPos, ViewProjection);
-	Output.Pos = Output.HPos; // Output depth
+	Output.Pos = Output.HPos;
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+
 	Output.Tex0 = Input.Tex0;
 
 	return Output;

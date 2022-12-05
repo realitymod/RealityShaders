@@ -78,8 +78,11 @@ float4 GetWorldPos(APP2VS Input)
 VS2PS BM_ZOnly_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
+
 	Output.HPos = mul(GetWorldPos(Input), ViewProjection); // Output HPOS
-	Output.Pos = Output.HPos; // Output depth
+	Output.Pos = Output.HPos;
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	
 	return Output;
 }
 

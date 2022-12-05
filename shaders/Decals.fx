@@ -90,8 +90,9 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 	float3 WorldPos = mul(Input.Pos, WorldMat);
 
 	Output.HPos = mul(float4(WorldPos, 1.0), _WorldViewProjection);
-	Output.Pos.xyz = Output.HPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos = Output.HPos;
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+
 	Output.Normal = normalize(mul(Input.Normal.xyz, (float3x3)WorldMat));
 
 	float Alpha = Input.P_Tex_Index_Alpha.w;

@@ -152,7 +152,7 @@ VS2PS Water_VS(APP2VS Input)
 	float4 WorldPos = mul(Input.Pos, World);
 	Output.HPos = mul(WorldPos, ViewProjection);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	float3 Tex = 0.0;
 	#if defined(USE_3DTEXTURE)

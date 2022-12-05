@@ -67,7 +67,7 @@ VS2PS Debug_Basic_VS(APP2VS Input)
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 
 	Output.Tex0.xy = Input.TexCoord0;
-	Output.Tex0.z = Output.HPos.w; // Output depth
+	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.xyz + Diffuse(Input.Normal) * _MaterialDiffuse.xyz;
@@ -167,7 +167,7 @@ VS2PS Debug_LightSource_VS(APP2VS Input)
 	Output.HPos = mul(Pos, _WorldViewProj);
 
 	Output.Tex0 = 0.0;
-	Output.Tex0.z = Output.HPos.w; // Output depth
+	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.rgb = _MaterialDiffuse.xyz;

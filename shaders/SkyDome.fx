@@ -96,7 +96,8 @@ VS2PS_SkyDome SkyDome_VS(APP2VS Input)
 	VS2PS_SkyDome Output;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-	Output.Pos = Output.HPos; // Output depth
+	Output.Pos = Output.HPos;
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.TexA.xy = Input.Tex0; // Sky coords
 	Output.TexA.zw = Input.Tex1.xy + _TexOffset.xy; // Cloud1 coords
@@ -155,7 +156,8 @@ VS2PS_DualClouds SkyDome_DualClouds_VS(APP2VS Input)
 	VS2PS_DualClouds Output;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-	Output.Pos = Output.HPos; // Output depth
+	Output.Pos = Output.HPos;
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.SkyTex = Input.Tex0;
 	Output.CloudTex.xy = (Input.Tex1.xy + _TexOffset.xy);
@@ -194,7 +196,8 @@ VS2PS_NoClouds SkyDome_NoClouds_VS(APP2VS_NoClouds Input)
 
 	float4 ScaledPos = float4(Input.Pos.xyz, 10.0); // plo: fix for artifacts on BFO.
 	Output.HPos = mul(ScaledPos, _ViewProjMatrix);
-	Output.Pos = Output.HPos; // Output depth
+	Output.Pos = Output.HPos;
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.Tex0 = Input.Tex0;
 
@@ -233,7 +236,8 @@ VS2PS_NoClouds SkyDome_SunFlare_VS(APP2VS_NoClouds Input)
 	VS2PS_NoClouds Output;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-	Output.Pos = Output.HPos; // Output depth
+	Output.Pos = Output.HPos;
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.Tex0 = Input.Tex0;
 

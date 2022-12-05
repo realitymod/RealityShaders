@@ -95,7 +95,7 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	// Output HPos
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
 	Output.Pos.xyz = ObjectPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	// Output object-space properties
 	Output.ObjectTangent = ObjectTBN[0];
@@ -166,7 +166,8 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 	#endif
 
 	#if _DIRT_
-		Diffuse.rgb *= tex2D(SampleDirtMap, Input.DirtAndCrack.xy).rgb;
+		float4 DirtMap = tex2D(SampleDirtMap, Input.DirtAndCrack.xy);
+		Diffuse.rgb *= DirtMap.rgb;
 	#endif
 
 	#if _CRACK_

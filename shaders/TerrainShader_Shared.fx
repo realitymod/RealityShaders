@@ -98,8 +98,9 @@ VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared Input)
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
+
 	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
-	Output.Tex0.z = Output.HPos.w; // Output depth
+	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 
 	return Output;
 }
@@ -155,7 +156,7 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
 
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.Normal = normalize((Input.Normal * 2.0) - 1.0);
 
@@ -212,7 +213,8 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared Input)
 
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+
 	Output.Normal = normalize((Input.Normal * 2.0) - 1.0);
 
 	float3 Tex = 0.0;
@@ -363,7 +365,7 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 	#endif
 
 	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
-	Output.Tex0.z = Output.HPos.w; // Output depth
+	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 
 	return Output;
 }
@@ -373,14 +375,13 @@ PS2FB Shared_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Inp
 	PS2FB Output;
 
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
-	float4 Light = _GIColor * LightMap.z;
-
 	#if HIGHTERRAIN || MIDTERRAIN
 		float4 AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
 		float4 AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
 	#endif
 
+	float4 Light = _GIColor * LightMap.z;
 	Light.w = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
 
 	Output.Color = Light;
@@ -412,7 +413,7 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared Input)
 
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	return Output;
 }
@@ -468,7 +469,8 @@ VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+
 	Output.Normal = Input.Normal;
 
 	float3 Tex = 0.0;
@@ -576,11 +578,13 @@ struct HI_VS2PS_OccluderShadow
 HI_VS2PS_OccluderShadow Hi_OccluderShadow_VS(HI_APP2VS_OccluderShadow Input)
 {
 	HI_VS2PS_OccluderShadow Output;
+
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
 	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy);
 	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
 	Output.DepthPos = Output.HPos; // Output depth
+
 	return Output;
 }
 

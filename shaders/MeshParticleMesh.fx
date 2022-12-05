@@ -62,7 +62,7 @@ VS2PS Diffuse_VS(APP2VS Input)
 	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos.xyz = Pos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	// Compute Cubic polynomial factors.
 	float Age = _AgeAndAlphaArray[IndexArray[0]][0];

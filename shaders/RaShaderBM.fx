@@ -148,7 +148,7 @@ VS2PS BundledMesh_VS(APP2VS Input)
 
 	// Output world-space properties
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	Output.WorldTangent = WorldTBN[0];
 	Output.WorldBinormal = WorldTBN[1];
 	Output.WorldNormal = WorldTBN[2];

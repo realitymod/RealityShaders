@@ -40,7 +40,7 @@ VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared Input)
 	// tl: output HPos as early as possible.
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w; // Output depth
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	// tl: uncompress normal
 	Output.P_Normal_Fade.xyz = normalize((Input.Normal * 2.0) - 1.0);
