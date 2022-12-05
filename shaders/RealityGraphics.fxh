@@ -99,7 +99,7 @@
 	// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
 	float ApplyLogarithmicDepth(float Depth)
 	{
-		const float FarPlane = 10000.0;
+		const float FarPlane = 5000.0;
 		const float FCoef = 1.0 / log2(FarPlane + 1.0);
 		return log2(Depth) * FCoef;
 	}
