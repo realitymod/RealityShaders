@@ -132,7 +132,12 @@ PS2FB Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output;
 
-	Output.Color = saturate(ZFillLightMapColor);
+	float3 WorldPos = Input.Pos.xyz;
+	float4 OutputColor = ZFillLightMapColor;
+
+	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
+
+	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
@@ -181,10 +186,9 @@ PS2FB Shared_PointLight_PS(VS2PS_Shared_PointLight Input)
 
 	LightVec = normalize(LightVec);
 	float3 CosAngle = dot(WorldNormal, LightVec);
-
 	float4 OutputColor = float4(saturate((CosAngle * _PointLight.col) * Attenuation), 0.0);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
+	OutputColor *= GetFogValue(WorldPos, _CameraPos);
 
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -387,6 +391,7 @@ PS2FB Shared_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Inp
 	PS2FB Output;
 
 	float3 WorldPos = Input.Pos.xyz;
+
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 	#if HIGHTERRAIN || MIDTERRAIN
 		float4 AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
@@ -441,7 +446,7 @@ PS2FB Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input)
 	float3 OutputColor = _TerrainWaterColor.rgb;
 	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 
-	ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos));
+	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	Output.Color = float4(OutputColor, WaterLerp);
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

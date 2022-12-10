@@ -99,18 +99,18 @@ PS2FB RoadCompiled_PS(VS2PS Input)
 	PS2FB Output;
 
 	float3 LocalPos = Input.Pos.xyz;
-
 	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
+
+	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
+	float3 TerrainSunColor = _SunColor.rgb * 2.0;
+	float3 Light = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
+
 	float4 Detail0 = tex2D(SampleDetailMap0, Input.TexA.xy);
 	float4 Detail1 = tex2D(SampleDetailMap1, Input.TexA.zw * 0.1);
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
 	OutputColor.a = Detail0.a * saturate(ZFade * Input.Alpha);
-
-	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
-	float3 TerrainSunColor = _SunColor.rgb * 2.0;
-	float3 Light = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
 	// On thermals no shadows
 	if (FogColor.r < 0.01)
@@ -132,46 +132,13 @@ PS2FB RoadCompiled_PS(VS2PS Input)
 	return Output;
 }
 
-struct VS2PS_Dx9
-{
-	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0;
-
-	float4 TexA : TEXCOORD1; // .xy = Tex0; .zw = Tex1
-};
-
-VS2PS_Dx9 RoadCompiled_Dx9_VS(APP2VS Input)
-{
-	VS2PS_Dx9 Output;
-
-	Output.HPos = mul(Input.Pos, _WorldViewProj);
-	Output.Pos.xyz = Input.Pos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
-
-	Output.TexA = float4(Input.Tex0, Input.Tex1);
-
-	return Output;
-}
-
-PS2FB RoadCompiled_Dx9_PS(VS2PS_Dx9 Input)
-{
-	PS2FB Output;
-
-	float3 LocalPos = Input.Pos.xyz;
-
-	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
-	float4 Detail0 = tex2D(SampleDetailMap0, Input.TexA.xy);
-	float4 Detail1 = tex2D(SampleDetailMap1, Input.TexA.zw);
-
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
-	OutputColor.a = Detail0.a * ZFade;
-
-	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
-
-	return Output;
-}
+#define GET_RENDERSTATES_ROAD \
+	AlphaBlendEnable = TRUE; \
+	SrcBlend = SRCALPHA; \
+	DestBlend = INVSRCALPHA; \
+	ZEnable = TRUE; \
+	ZWriteEnable = FALSE; \
+	SRGBWriteEnable = FALSE; \
 
 technique roadcompiledFull
 <
@@ -192,28 +159,15 @@ technique roadcompiledFull
 {
 	pass NV3X
 	{
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
-		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
-
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_ROAD
 		VertexShader = compile vs_3_0 RoadCompiled_VS();
 		PixelShader = compile ps_3_0 RoadCompiled_PS();
 	}
 
 	pass DirectX9
 	{
-		DepthBias = -0.0001f;
-		SlopeScaleDepthBias = -0.00001f;
-		ZEnable = FALSE;
-
-		SRGBWriteEnable = FALSE;
-
-		VertexShader = compile vs_3_0 RoadCompiled_Dx9_VS();
-		PixelShader = compile ps_3_0 RoadCompiled_Dx9_PS();
+		GET_RENDERSTATES_ROAD
+		VertexShader = compile vs_3_0 RoadCompiled_VS();
+		PixelShader = compile ps_3_0 RoadCompiled_PS();
 	}
 }
