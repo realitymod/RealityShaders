@@ -143,7 +143,7 @@ VS2PS Leaf_VS(APP2VS Input)
 		Input.Normal = normalize((Input.Normal * 2.0) - 1.0);
 		Output.Tex0.xy /= 32767.0;
 	#else
-		Input.Normal = normalize(Input.Normal * NormalUnpack.x + NormalUnpack.y);
+		Input.Normal = normalize((Input.Normal * NormalUnpack.x) + NormalUnpack.y);
 		Output.Tex0.xy *= TexUnpack;
 	#endif
 
@@ -154,7 +154,12 @@ VS2PS Leaf_VS(APP2VS Input)
 	#endif
 
 	Output.Tex0.z = saturate((dot(Input.Normal.xyz, LightVec) * 0.5) + 0.5);
-	Output.Tex0.w = Input.Pos.w / 32767.0;
+
+	#if defined(OVERGROWTH)
+		Output.Tex0.w = Input.Pos.w / 32767.0;
+	#else
+		Output.Tex0.w = 1.0;
+	#endif
 
 	#if _HASSHADOW_
 		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
@@ -171,21 +176,17 @@ PS2FB Leaf_PS(VS2PS Input)
 	float LodScale = Input.Tex0.w;
 	float3 ObjectPos = Input.Pos.xyz;
 	float3 LightVec = Lights[0].pos.xyz - ObjectPos;
+
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-
-	#if defined(OVERGROWTH)
-		float3 Diffuse = (DotLN * LodScale) * (Lights[0].color * LodScale);
-		OverGrowthAmbient *= LodScale;
-	#else
-		float3 Diffuse = DotLN * Lights[0].color;
-	#endif
-
 	#if _HASSHADOW_
 		float4 Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
-		Diffuse.rgb *= Shadow.rgb;
+	#else
+		float4 Shadow = 1.0;
 	#endif
 
-	float3 VertexColor = OverGrowthAmbient.rgb + Diffuse;
+	float3 Ambient = OverGrowthAmbient * LodScale;
+	float3 Diffuse = (DotLN * LodScale) * (Lights[0].color * LodScale);
+	float3 VertexColor = Ambient + (Diffuse * Shadow.rgb);
 	float4 OutputColor = DiffuseMap * float4(VertexColor, Transparency.a * 2.0);
 
 	#if defined(OVERGROWTH) && HASALPHA2MASK

@@ -302,7 +302,8 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 		Output.Color = float4(Light, 1.0);
 	#endif
 
-	Output.Color = float4(OutputColor.rgb, 1.0);
+	Output.Color = OutputColor;
+	Output.Color.a = 1.0;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;

@@ -77,6 +77,8 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	PS2FB Output;
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
+	float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.zw);
+	float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.P_Normal_Fade.xyz);
@@ -89,23 +91,18 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float3 Light = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
 	#if defined(LIGHTONLY)
-		float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.xy);
-		float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
-
-		Output.Color = float4(Light * ChartContrib, 1.0);
+		Output.Color = Light * ChartContrib;
+		Output.Color.a = 1.0;
 	#else
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
-		float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.zw);
-		float3 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
+		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
 		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy);
 		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy);
 		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.ZPlaneTex.xy);
 		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw) * 2.0;
 		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw) * 2.0;
 		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw) * 2.0;
-
 		float EnvMapScale = YPlaneDetailmap.a;
-		float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
 
 		// If thermals assume no shadows and gray color
 		if (FogColor.r < 0.01)
@@ -147,7 +144,8 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 
 		ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos.xyz));
 
-		Output.Color = float4(OutputColor * ChartContrib, 1.0);
+		Output.Color = OutputColor * ChartContrib;
+		Output.Color.a = 1.0;
 	#endif
 
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
