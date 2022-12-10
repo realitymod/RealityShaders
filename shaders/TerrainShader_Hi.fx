@@ -144,7 +144,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 
 		ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos.xyz));
 
-		Output.Color = OutputColor * ChartContrib;
+		Output.Color.rgb = OutputColor * ChartContrib;
 		Output.Color.a = 1.0;
 	#endif
 
