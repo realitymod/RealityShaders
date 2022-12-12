@@ -26,9 +26,6 @@
 // Modifies heightalpha (for tweaking transparancy depending on depth)
 #define APOW 1.3
 
-// Wether to use normalmap for transparency calculation or not
-// #define FRESNEL_NORMALMAP
-
 uniform float4 LightMapOffset;
 Light Lights[1];
 
@@ -230,13 +227,7 @@ PS2FB Water_PS(in VS2PS Input)
 
 	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
-	#if defined(FRESNEL_NORMALMAP)
-		float4 FresnelNormal = float4(TangentNormal, 1.0);
-	#else
-		float4 FresnelNormal = float4(0.0, 1.0, 0.0, 0.0);
-	#endif
-
-	float Fresnel = BASE_TRANSPARENCY - pow(dot(FresnelNormal.xyz, ViewVec), POW_TRANSPARENCY);
+	float Fresnel = BASE_TRANSPARENCY - pow(dot(TangentNormal, ViewVec), POW_TRANSPARENCY);
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.w);
 
 	Output.Color = OutputColor;
