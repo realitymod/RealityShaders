@@ -36,15 +36,18 @@
 	static const float PI = 3.14159265;
 
 	// (Approximate) sRGB to linear
-	float3 SRGBToLinearEst(float3 Color)
+	float4 SRGBToLinearEst(float4 ColorMap)
 	{
-		return pow(abs(Color), 2.2);
+		float4 Color = 0.0;
+		Color.rgb = pow(abs(ColorMap.rgb), 2.2);
+		Color.a = ColorMap.a;
+		return Color;
 	}
 
 	// Apply the (approximate) sRGB curve to linear values
-	float3 LinearToSRGBEst(float3 Color)
+	void LinearToSRGBEst(inout float3 Color)
 	{
-		return pow(abs(Color), 1.0 / 2.2);
+		Color = pow(abs(Color), 1.0 / 2.2);
 	}
 
 	struct ColorPair
