@@ -69,7 +69,7 @@
 
 	void ApplyLinearFog(inout float3 Color, in float FogValue)
 	{
-		Color = lerp(SRGBToLinearEst(FogColor.rgb), Color, FogValue);
+		Color = lerp(SRGBToLinearEst(FogColor).rgb, Color, FogValue);
 	}
 
 	float GetRoadZFade(float3 ObjectPos, float3 CameraPos, float2 FadeValues)
