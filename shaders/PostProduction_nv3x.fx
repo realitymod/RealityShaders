@@ -106,22 +106,27 @@ VS2PS_Quad Basic_VS(APP2VS_Quad Input)
 
 float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 {
-	const float BlurSize = 0.02;
+	const float2 BlurSize = 0.02;
 	const int BlurTaps = 9;
+
+	float4 ColumnTex[3];
+	ColumnTex[0] = Input.TexCoord0.xyyy + (float4(-1.0, +1.0, 0.0, -1.0) * BlurSize.xyyy);
+	ColumnTex[1] = Input.TexCoord0.xyyy + (float4( 0.0, +1.0, 0.0, -1.0) * BlurSize.xyyy);
+	ColumnTex[2] = Input.TexCoord0.xyyy + (float4(+1.0, +1.0, 0.0, -1.0) * BlurSize.xyyy);
 
 	// 0 3 6
 	// 1 4 7
 	// 2 5 8
 	float4 Tex[BlurTaps];
-	Tex[0] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, 1.0) * BlurSize));
-	Tex[1] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, 0.0) * BlurSize));
-	Tex[2] = tex2D(SampleTex0, Input.TexCoord0 + (float2(-1.0, -1.0) * BlurSize));
-	Tex[3] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, 1.0) * BlurSize));
-	Tex[4] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, 0.0) * BlurSize));
-	Tex[5] = tex2D(SampleTex0, Input.TexCoord0 + (float2(0.0, -1.0) * BlurSize));
-	Tex[6] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, 1.0) * BlurSize));
-	Tex[7] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, 0.0) * BlurSize));
-	Tex[8] = tex2D(SampleTex0, Input.TexCoord0 + (float2(1.0, -1.0) * BlurSize));
+	Tex[0] = tex2D(SampleTex0, ColumnTex[0].xy);
+	Tex[1] = tex2D(SampleTex0, ColumnTex[0].xz);
+	Tex[2] = tex2D(SampleTex0, ColumnTex[0].xw);
+	Tex[3] = tex2D(SampleTex0, ColumnTex[1].xy);
+	Tex[4] = tex2D(SampleTex0, ColumnTex[1].xz);
+	Tex[5] = tex2D(SampleTex0, ColumnTex[1].xw);
+	Tex[6] = tex2D(SampleTex0, ColumnTex[2].xy);
+	Tex[7] = tex2D(SampleTex0, ColumnTex[2].xz);
+	Tex[8] = tex2D(SampleTex0, ColumnTex[2].xw);
 
 	float4 Blur = 0.0;
 	for(int i = 0; i < BlurTaps; i++)
