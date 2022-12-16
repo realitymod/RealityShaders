@@ -88,10 +88,10 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float3 TerrainSunColor = _SunColor * 2.0;
-	float3 Light = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
+	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
 	#if defined(LIGHTONLY)
-		Output.Color = Light * ChartContrib;
+		Output.Color = TerrainLights * ChartContrib;
 		Output.Color.a = 1.0;
 	#else
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
@@ -107,7 +107,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		// If thermals assume no shadows and gray color
 		if (FogColor.r < 0.01)
 		{
-			Light = (TerrainSunColor + AccumLights.rgb) * 2.0;
+			TerrainLights = (TerrainSunColor + AccumLights.rgb) * 2.0;
 			ColorMap.rgb = 1.0 / 3.0;
 		}
 
@@ -133,7 +133,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		float4 LowDetailMap = Color;
 		float4 BothDetailMap = (DetailMap * LowDetailMap) * 2.0;
 		float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
-		float3 OutputColor = saturate((ColorMap.rgb * OutputDetail.rgb) * Light);
+		float3 OutputColor = saturate((ColorMap.rgb * OutputDetail.rgb) * TerrainLights);
 
 		if (UseEnvMap)
 		{

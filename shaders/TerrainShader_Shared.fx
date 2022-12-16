@@ -264,7 +264,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float3 TerrainSunColor = _SunColor * 2.0;
-	float3 Light = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
+	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
@@ -275,7 +275,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	// If thermals assume no shadows and gray color
 	if (FogColor.r < 0.01)
 	{
-		Light = (TerrainSunColor + AccumLights.rgb) * 2.0;
+		TerrainLights = (TerrainSunColor + AccumLights.rgb) * 2.0;
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 
@@ -288,7 +288,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 
 	float4 LowDetailMap = Color;
 	float4 OutputColor = ColorMap * LowDetailMap;
-	OutputColor.rgb = saturate(OutputColor.rgb * Light);
+	OutputColor.rgb = saturate(OutputColor.rgb * TerrainLights);
 
 	// tl: changed a few things with this factor:
 	// - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.
@@ -299,7 +299,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	#if defined(LIGHTONLY)
-		Output.Color = float4(Light, 1.0);
+		Output.Color = float4(TerrainLights, 1.0);
 	#endif
 
 	Output.Color = OutputColor;
