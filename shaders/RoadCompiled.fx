@@ -132,14 +132,6 @@ PS2FB RoadCompiled_PS(VS2PS Input)
 	return Output;
 }
 
-#define GET_RENDERSTATES_ROAD \
-	AlphaBlendEnable = TRUE; \
-	SrcBlend = SRCALPHA; \
-	DestBlend = INVSRCALPHA; \
-	ZEnable = TRUE; \
-	ZWriteEnable = FALSE; \
-	SRGBWriteEnable = FALSE; \
-
 technique roadcompiledFull
 <
 	int DetailLevel = DLHigh+DLNormal+DLLow+DLAbysmal;
@@ -159,14 +151,25 @@ technique roadcompiledFull
 {
 	pass NV3X
 	{
-		GET_RENDERSTATES_ROAD
+		ZEnable = TRUE;
+		ZWriteEnable = FALSE;
+
+		AlphaBlendEnable = TRUE;
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
+
 		VertexShader = compile vs_3_0 RoadCompiled_VS();
 		PixelShader = compile ps_3_0 RoadCompiled_PS();
 	}
 
 	pass DirectX9
 	{
-		GET_RENDERSTATES_ROAD
+		ZEnable = FALSE;
+		DepthBias = -0.0001f;
+		SlopeScaleDepthBias = -0.00001f;
+
+		AlphaBlendEnable = FALSE;
+
 		VertexShader = compile vs_3_0 RoadCompiled_VS();
 		PixelShader = compile ps_3_0 RoadCompiled_PS();
 	}
