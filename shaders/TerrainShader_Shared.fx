@@ -83,8 +83,7 @@ float4 ProjToLighting(float4 HPos)
 struct VS2PS_Shared_ZFillLightMap
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0;
-	float2 Tex0 : TEXCOORD1;
+	float3 Tex0 : TEXCOORD0;
 };
 
 VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared Input)
@@ -99,10 +98,9 @@ VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared Input)
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
-	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 
 	return Output;
 }
@@ -113,17 +111,14 @@ PS2FB Shared_ZFillLightMap_1_PS(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output;
 
-	float3 WorldPos = Input.Pos.xyz;
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0);
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = saturate(_GIColor * LightMap.b);
 	OutputColor.a = saturate(LightMap.g);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
-
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }
@@ -132,13 +127,8 @@ PS2FB Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output;
 
-	float3 WorldPos = Input.Pos.xyz;
-	float4 OutputColor = ZFillLightMapColor;
-
-	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
-
-	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	Output.Color = ZFillLightMapColor;
+	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
 }
