@@ -101,9 +101,9 @@ PS2FB TrunkOG_PS(VS2PS Input)
 	float3 Normals = normalize(Input.Normal.xyz);
 
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy) * 2.0;
-	float Diffuse = LambertLighting(Normals, -Lights[0].dir);
+	float DotLN = LambertLighting(Normals, -Lights[0].dir);
 
-	float3 Color = ((Diffuse * LodScale) * (Lights[0].color * LodScale));
+	float3 Color = (DotLN * LodScale) * (Lights[0].color * LodScale);
 	Color += (OverGrowthAmbient.rgb * LodScale);
 
 	float4 OutputColor = 0.0;
