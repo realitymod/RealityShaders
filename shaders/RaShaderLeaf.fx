@@ -129,13 +129,7 @@ VS2PS Leaf_VS(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 
-	#if defined(OVERGROWTH)
-		float3 LocalPos = Input.Pos.xyz * PosUnpack.xyz;
-	#else
-		float3 LocalPos = Input.Pos.xyz;
-	#endif
-
-	Output.Pos.xyz = LocalPos.xyz;
+	Output.Pos.xyz = Input.Pos.xyz;
 	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.Tex0.xy = Input.Tex0;
@@ -185,7 +179,7 @@ PS2FB Leaf_PS(VS2PS Input)
 	#endif
 
 	float3 Ambient = OverGrowthAmbient * LodScale;
-	float3 Diffuse = (DotLN * LodScale) * (Lights[0].color * LodScale);
+	float3 Diffuse = DotLN * (Lights[0].color * LodScale);
 	float3 VertexColor = Ambient + (Diffuse * Shadow.rgb);
 	float4 OutputColor = DiffuseMap * float4(VertexColor, Transparency.a * 2.0);
 
@@ -197,7 +191,11 @@ PS2FB Leaf_PS(VS2PS Input)
 		OutputColor.rgb *= GetLightAttenuation(LightVec, Lights[0].attenuation);
 		OutputColor.rgb *= GetFogValue(ObjectPos, ObjectSpaceCamPos);
 	#else
-		ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
+		#if defined(OVERGROWTH)
+			ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos * PosUnpack.xyz, ObjectSpaceCamPos));
+		#else
+			ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
+		#endif
 	#endif
 
 	Output.Color = OutputColor;
