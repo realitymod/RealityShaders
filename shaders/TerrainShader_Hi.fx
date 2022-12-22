@@ -83,12 +83,13 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.P_Normal_Fade.xyz);
 	float LerpValue = Input.P_Normal_Fade.w;
+	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float3 TerrainSunColor = _SunColor * 2.0;
-	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
+	float3 TerrainLights = ((TerrainSunColor * AccumLights.a) + AccumLights.rgb) * 2.0;
 
 	#if defined(LIGHTONLY)
 		Output.Color = TerrainLights * ChartContrib;
@@ -99,9 +100,9 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy);
 		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy);
 		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.ZPlaneTex.xy);
-		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw) * 2.0;
-		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw) * 2.0;
-		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw) * 2.0;
+		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw);
+		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw);
+		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw);
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color
@@ -111,12 +112,14 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 			ColorMap.rgb = 1.0 / 3.0;
 		}
 
-		float Color = lerp(1.0, YPlaneLowDetailmap.z, saturate(dot(LowComponent.xy, 1.0)));
 		float Blue = 0.0;
-		Blue += (XPlaneLowDetailmap.y * BlendValue.x);
-		Blue += (YPlaneLowDetailmap.x * BlendValue.y);
-		Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
-		Color *= lerp(1.0, Blue, LowComponent.z);
+		Blue += (XPlaneLowDetailmap.g * BlendValue.x);
+		Blue += (YPlaneLowDetailmap.r * BlendValue.y);
+		Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
+
+		float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
+		float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
+		LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
 		float4 DetailMap = 0.0;
 		if(UseMounten)
@@ -130,7 +133,6 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 			DetailMap = YPlaneDetailmap;
 		}
 
-		float4 LowDetailMap = Color;
 		float4 BothDetailMap = (DetailMap * LowDetailMap) * 2.0;
 		float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
 		float3 OutputColor = saturate((ColorMap.rgb * OutputDetail.rgb) * TerrainLights);

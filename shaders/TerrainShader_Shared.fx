@@ -254,13 +254,13 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float3 TerrainSunColor = _SunColor * 2.0;
-	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
+	float3 TerrainLights = ((TerrainSunColor * AccumLights.a) + AccumLights.rgb) * 2.0;
 
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
-	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex) * 2.0;
-	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex) * 2.0;
-	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex) * 2.0;
+	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex);
+	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
+	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
 
 	// If thermals assume no shadows and gray color
 	if (FogColor.r < 0.01)
@@ -269,15 +269,16 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 
-	float Color = lerp(1.0, YPlaneLowDetailmap.z, saturate(dot(LowComponent.xy, 1.0)));
 	float Blue = 0.0;
-	Blue += (XPlaneLowDetailmap.y * BlendValue.x);
-	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
-	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
-	Color *= lerp(1.0, Blue, LowComponent.z);
+	Blue += (XPlaneLowDetailmap.g * BlendValue.x);
+	Blue += (YPlaneLowDetailmap.r * BlendValue.y);
+	Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
 
-	float4 LowDetailMap = Color;
-	float4 OutputColor = ColorMap * LowDetailMap;
+	float LowDetailMapBlend = LowComponent.r;
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
+	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
+
+	float4 OutputColor = (ColorMap * LowDetailMap);
 	OutputColor.rgb = saturate(OutputColor.rgb * TerrainLights);
 
 	// tl: changed a few things with this factor:
