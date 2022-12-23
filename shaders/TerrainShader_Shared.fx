@@ -111,7 +111,7 @@ PS2FB Shared_ZFillLightMap_1_PS(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output;
 
-	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0);
+	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = saturate(_GIColor * LightMap.b);
@@ -127,7 +127,7 @@ PS2FB Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output;
 
-	Output.Color = ZFillLightMapColor;
+	Output.Color = saturate(ZFillLightMapColor);
 	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 
 	return Output;
@@ -253,8 +253,8 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	float3 TerrainSunColor = _SunColor * 2.0;
-	float3 TerrainLights = ((TerrainSunColor * AccumLights.a) + AccumLights.rgb) * 2.0;
+	float4 TerrainSunColor = _SunColor * 2.0;
+	float4 TerrainLights = ((TerrainSunColor * AccumLights.a) + AccumLights) * 2.0;
 
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
@@ -265,7 +265,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	// If thermals assume no shadows and gray color
 	if (FogColor.r < 0.01)
 	{
-		TerrainLights = (TerrainSunColor + AccumLights.rgb) * 2.0;
+		TerrainLights = (TerrainSunColor + AccumLights) * 2.0;
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 
@@ -278,8 +278,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
-	float4 OutputColor = (ColorMap * LowDetailMap);
-	OutputColor.rgb = saturate(OutputColor.rgb * TerrainLights);
+	float4 OutputColor = saturate((ColorMap * LowDetailMap) * TerrainLights);
 
 	// tl: changed a few things with this factor:
 	// - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.
@@ -290,11 +289,10 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	#if defined(LIGHTONLY)
-		Output.Color = float4(TerrainLights, 1.0);
+		OutputColor = TerrainLights;
 	#endif
 
 	Output.Color = OutputColor;
-	Output.Color.a = 1.0;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
@@ -321,7 +319,7 @@ VS2PS_Shared_DynamicShadowmap Shared_DynamicShadowmap_VS(APP2VS_Shared Input)
 	Output.HPos = mul(WorldPos, _ViewProj);
 
 	Output.ShadowTex = mul(WorldPos, _LightViewProj);
-	Output.ShadowTex.z = Output.ShadowTex.w;
+	Output.ShadowTex.z = 0.999 * Output.ShadowTex.w;
 
 	return Output;
 }
@@ -339,6 +337,9 @@ float4 Shared_DynamicShadowmap_PS(VS2PS_Shared_DynamicShadowmap Input) : COLOR
 /*
 	Terrain Directional shadow shader
 	Applies dynamic shadows to the terrain's light buffer
+
+	NOTE: Do not apply fog in this shader because it only writes to a light buffer, not the terrain itself.
+	NOTE: Final compositing happens in Shared_LowDetail_PS and FullDetail_Hi_PS
 */
 
 struct VS2PS_Shared_DirectionalLightShadows
@@ -361,7 +362,7 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos = Output.HPos;
 	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	Output.ShadowTex = mul(WorldPos, _LightViewProj);
@@ -382,8 +383,6 @@ PS2FB Shared_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Inp
 {
 	PS2FB Output;
 
-	float3 WorldPos = Input.Pos.xyz;
-
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 	#if HIGHTERRAIN || MIDTERRAIN
 		float4 AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
@@ -391,12 +390,17 @@ PS2FB Shared_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Inp
 		float4 AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
 	#endif
 
-	float4 OutputColor = _GIColor * LightMap.z;
-	OutputColor.a = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
+	float4 Light = saturate(_GIColor * LightMap.z * 2.0) * 0.5;
+	if (AvgShadowValue.z < LightMap.y)
+	{
+		Light.w = AvgShadowValue.z;
+	}
+	else
+	{
+		Light.w = LightMap.y;
+	}
 
-	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
-
-	Output.Color = OutputColor;
+	Output.Color = Light;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
@@ -587,6 +591,14 @@ struct HI_VS2PS_OccluderShadow
 	float4 DepthPos : TEXCOORD0;
 };
 
+float4 GetOccluderShadow(float4 Pos, float4x4 LightTrapMat, float4x4 LightMat)
+{
+	float4 ShadowTex = mul(Pos, LightTrapMat);
+	float LightZ = mul(Pos, LightMat).z;
+	ShadowTex.z = LightZ * ShadowTex.w;
+	return ShadowTex;
+}
+
 HI_VS2PS_OccluderShadow Hi_OccluderShadow_VS(HI_APP2VS_OccluderShadow Input)
 {
 	HI_VS2PS_OccluderShadow Output;
@@ -594,7 +606,7 @@ HI_VS2PS_OccluderShadow Hi_OccluderShadow_VS(HI_APP2VS_OccluderShadow Input)
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
 	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy);
-	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
+	Output.HPos = GetOccluderShadow(WorldPos, _vpLightTrapezMat, _vpLightMat);
 	Output.DepthPos = Output.HPos; // Output depth
 
 	return Output;

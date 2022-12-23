@@ -181,7 +181,7 @@ PS2FB Leaf_PS(VS2PS Input)
 	float3 Ambient = OverGrowthAmbient * LodScale;
 	float3 Diffuse = (DotLN * LodScale) * (Lights[0].color * LodScale);
 	float3 VertexColor = Ambient + (Diffuse * Shadow.rgb);
-	float4 OutputColor = DiffuseMap * float4(VertexColor, Transparency.a * 2.0);
+	float4 OutputColor = DiffuseMap * float4(VertexColor, Transparency.r * 2.0);
 
 	#if defined(OVERGROWTH) && HASALPHA2MASK
 		OutputColor.a *= 2.0 * DiffuseMap.a;
