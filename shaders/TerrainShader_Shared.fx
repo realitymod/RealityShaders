@@ -562,8 +562,8 @@ technique Shared_SurroundingTerrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;
 
@@ -629,8 +629,8 @@ technique TerrainOccludershadow
 		CullMode = NONE;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESS;
+		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;

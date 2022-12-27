@@ -190,8 +190,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESS;
+		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;
 
@@ -209,8 +209,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -235,8 +235,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
@@ -257,8 +257,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -287,8 +287,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -315,8 +315,8 @@ technique Hi_Terrain
 		// ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
 
  		AlphaBlendEnable = FALSE;
 
@@ -343,8 +343,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -375,8 +375,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -398,8 +398,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaTestEnable = TRUE;
 		AlphaRef = 15; // tl: leave cap above 0 for better results
@@ -426,8 +426,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESS;
+		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;
 

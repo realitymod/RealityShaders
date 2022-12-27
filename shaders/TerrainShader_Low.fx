@@ -16,8 +16,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;
 
@@ -31,8 +31,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -53,8 +53,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = FALSE;
 
@@ -79,8 +79,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = FALSE;
 
@@ -97,8 +97,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = FALSE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = DESTCOLOR;
@@ -123,8 +123,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -151,8 +151,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
