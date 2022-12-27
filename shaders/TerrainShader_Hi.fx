@@ -190,8 +190,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESS;
 		ZWriteEnable = TRUE;
+		ZFunc = LESS;
 
 		AlphaBlendEnable = FALSE;
 
@@ -209,8 +209,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -219,8 +219,6 @@ technique Hi_Terrain
 		#if IS_NV4X
 			GET_RENDERSTATES_NV4X
 		#endif
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
@@ -235,8 +233,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
@@ -244,8 +242,6 @@ technique Hi_Terrain
 		#if IS_NV4X
 			GET_RENDERSTATES_NV4X
 		#endif
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_LowDetail_VS();
 		PixelShader = compile ps_3_0 Shared_LowDetail_PS();
@@ -257,8 +253,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -275,8 +271,6 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		SRGBWriteEnable = FALSE;
-
 		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
 		PixelShader = compile ps_3_0 FullDetail_Hi_PS();
 	}
@@ -287,8 +281,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -297,8 +291,6 @@ technique Hi_Terrain
 		#if IS_NV4X
 			GET_RENDERSTATES_NV4X
 		#endif
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
 		PixelShader = compile ps_3_0 FullDetail_Hi_Mounten_PS();
@@ -315,8 +307,8 @@ technique Hi_Terrain
 		// ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
  		AlphaBlendEnable = FALSE;
 
@@ -343,8 +335,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -360,8 +352,6 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		SRGBWriteEnable = FALSE;
-
 		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
 		PixelShader = compile ps_3_0 FullDetail_Hi_EnvMap_PS();
 	}
@@ -375,8 +365,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -385,8 +375,6 @@ technique Hi_Terrain
 		#if IS_NV4X
 			GET_RENDERSTATES_NV4X
 		#endif
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
@@ -398,8 +386,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaTestEnable = TRUE;
 		AlphaRef = 15; // tl: leave cap above 0 for better results
@@ -413,8 +401,6 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		SRGBWriteEnable = FALSE;
-
 		VertexShader = compile vs_3_0 Shared_UnderWater_VS();
 		PixelShader = compile ps_3_0 Shared_UnderWater_PS();
 	}
@@ -426,8 +412,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESS;
 		ZWriteEnable = TRUE;
+		ZFunc = LESS;
 
 		AlphaBlendEnable = FALSE;
 

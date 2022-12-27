@@ -55,27 +55,26 @@ uniform float4 _ParaboloidZValues : ParaboloidZValues;
 	[Textures and Samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
 		MinFilter = FILTER; \
 		MagFilter = FILTER; \
 		MipFilter = FILTER; \
-		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture Tex0 : TEXLAYER0;
-CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, FALSE)
+CREATE_SAMPLER(SampleTex0, Tex0, LINEAR)
 
 uniform texture Tex1 : TEXLAYER1;
-CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, FALSE)
+CREATE_SAMPLER(SampleTex1, Tex1, LINEAR)
 
 uniform texture Tex2 : TEXLAYER2;
-CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, FALSE)
+CREATE_SAMPLER(SampleTex2, Tex2, LINEAR)
 
 uniform texture Tex3 : TEXLAYER3;
-CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, FALSE)
+CREATE_SAMPLER(SampleTex3, Tex3, LINEAR)
 
 uniform texture Tex4 : TEXLAYER4;
 

@@ -18,7 +18,7 @@ uniform float2 _CloudLerpFactors : CLOUDLERPFACTORS;
 uniform float _LightingBlend : LIGHTINGBLEND;
 uniform float3 _LightingColor : LIGHTINGCOLOR;
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -27,17 +27,16 @@ uniform float3 _LightingColor : LIGHTINGCOLOR;
 		MipFilter = LINEAR; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture Tex0 : TEXLAYER0;
-CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTex0, Tex0, CLAMP)
 
 uniform texture Tex1 : TEXLAYER1;
-CREATE_SAMPLER(SampleTex1, Tex1, WRAP, FALSE)
+CREATE_SAMPLER(SampleTex1, Tex1, WRAP)
 
 uniform texture Tex2 : TEXLAYER2;
-CREATE_SAMPLER(SampleTex2, Tex2, WRAP, FALSE)
+CREATE_SAMPLER(SampleTex2, Tex2, WRAP)
 
 struct APP2VS
 {
@@ -273,7 +272,6 @@ PS2FB SkyDome_Flare_Occlude_PS(VS2PS_NoClouds Input)
 	ZFunc = LESSEQUAL; \
 	ZWriteEnable = TRUE; \
 	AlphaBlendEnable = FALSE; \
-	SRGBWriteEnable = FALSE;
 
 technique SkyDomeUnderWater
 {
@@ -339,18 +337,16 @@ technique SkyDomeSunFlare
 {
 	pass Sky
 	{
-		Zenable = FALSE;
-		ZWriteEnable = FALSE;
-		ZFunc = ALWAYS;
-
 		CullMode = NONE;
 		// ColorWriteEnable = 0;
+
+		ZEnable = FALSE;
+		ZFunc = ALWAYS;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_SunFlare_PS();
@@ -362,8 +358,8 @@ technique SkyDomeFlareOccludeCheck
 	pass Sky
 	{
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = ALWAYS;
+		ZWriteEnable = FALSE;
 
 		CullMode = NONE;
 		ColorWriteEnable = 0;
@@ -375,8 +371,6 @@ technique SkyDomeFlareOccludeCheck
 		AlphaTestEnable = TRUE;
 		AlphaRef = 50; // 255
 		AlphaFunc = GREATER; // LESS
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_Flare_Occlude_PS();
@@ -388,8 +382,8 @@ technique SkyDomeFlareOcclude
 	pass Sky
 	{
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESS;
+		ZWriteEnable = FALSE;
 
 		CullMode = NONE;
 		ColorWriteEnable = 0;
@@ -401,8 +395,6 @@ technique SkyDomeFlareOcclude
 		AlphaTestEnable = TRUE;
 		AlphaRef = 50; // 255
 		AlphaFunc = GREATER; // LESS
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
 		PixelShader = compile ps_3_0 SkyDome_Flare_Occlude_PS();

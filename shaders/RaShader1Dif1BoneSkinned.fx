@@ -24,7 +24,6 @@ sampler SampleDiffuseMap = sampler_state
 	MagFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
-	SRGBTexture = FALSE;
 };
 
 string TemplateParameters[] =
@@ -107,8 +106,6 @@ technique defaultTechnique
 		AlphaBlendEnable = (AlphaBlendEnable);
 		SrcBlend = (srcBlend);
 		DestBlend = (destBlend);
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 DiffuseBone_VS();
 		PixelShader = compile ps_3_0 DiffuseBone_PS();

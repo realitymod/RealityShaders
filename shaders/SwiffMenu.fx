@@ -11,7 +11,7 @@ uniform float4 TexGenS : TEXGENS;
 uniform float4 TexGenT : TEXGENT;
 uniform float Time : TIME;
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -20,12 +20,11 @@ uniform float Time : TIME;
 		MipFilter = NONE; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture TexMap : TEXTURE;
-CREATE_SAMPLER(SampleTexMap_Clamp, TexMap, CLAMP, FALSE)
-CREATE_SAMPLER(SampleTexMap_Wrap, TexMap, WRAP, FALSE)
+CREATE_SAMPLER(SampleTexMap_Clamp, TexMap, CLAMP)
+CREATE_SAMPLER(SampleTexMap_Wrap, TexMap, WRAP)
 
 struct VS2PS_Shape
 {

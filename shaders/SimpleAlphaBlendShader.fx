@@ -22,7 +22,6 @@ sampler SampleBaseTex = sampler_state
 	MipFilter = LINEAR;
     AddressU = WRAP;
     AddressV = WRAP;
-	SRGBTexture = FALSE;
 };
 
 struct APP2VS

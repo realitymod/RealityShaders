@@ -297,6 +297,8 @@ technique defaultTechnique
 		#endif
 
 		ZFunc = LESS;
+		AlphaTestEnable = (AlphaTest);
+		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 
 		#if _POINTLIGHT_
 			ZFunc = LESSEQUAL;
@@ -304,11 +306,6 @@ technique defaultTechnique
 			SrcBlend = ONE;
 			DestBlend = ONE;
 		#endif
-
-		AlphaTestEnable = (AlphaTest);
-		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 StaticMesh_VS();
 		PixelShader = compile ps_3_0 StaticMesh_PS();

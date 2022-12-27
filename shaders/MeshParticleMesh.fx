@@ -141,7 +141,6 @@ PS2FB Additive_PS(VS2PS Input)
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCBLEND; \
 	DestBlend = DESTBLEND; \
-	SRGBWriteEnable = FALSE; \
 
 technique Diffuse
 {

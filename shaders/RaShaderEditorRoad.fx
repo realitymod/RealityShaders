@@ -57,7 +57,7 @@ string reqVertexElement[] =
 	#endif
 };
 
-#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -67,19 +67,18 @@ string reqVertexElement[] =
 		MaxAnisotropy = 16; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture LightMap;
-CREATE_DYNAMIC_SAMPLER(SampleLightMap, LightMap, WRAP, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleLightMap, LightMap, WRAP)
 
 #if defined(USE_DETAIL)
 	uniform texture DetailMap;
-	CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap, WRAP, FALSE)
+	CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap, WRAP)
 #endif
 
 uniform texture DiffuseMap;
-CREATE_DYNAMIC_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP)
 
 struct APP2VS
 {
@@ -161,19 +160,18 @@ technique defaultTechnique
 		#endif
 
 		CullMode = CCW;
+	
+		ZEnable	= TRUE;
+		ZWriteEnable = FALSE;
+
 		AlphaTestEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		ZEnable	= TRUE;
-		ZWriteEnable = FALSE;
-
 		// DepthBias = (RoadDepthBias);
 		// SlopeScaleDepthBias = (RoadSlopeScaleDepthBias);
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Editor_Road_VS();
 		PixelShader = compile ps_3_0 Editor_Road_PS();

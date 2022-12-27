@@ -27,7 +27,7 @@ uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = fl
 	[Textures and samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -36,19 +36,18 @@ uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = fl
 		MipFilter = LINEAR; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
 	};
 
 uniform texture Tex0: TEXLAYER0;
-CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTex0, Tex0, CLAMP)
 
 uniform texture Tex1: HemiMapTexture;
 
 uniform texture DecalShadowMap: ShadowMapTex;
-CREATE_SAMPLER(SampleDecalShadowMap, DecalShadowMap, CLAMP, FALSE)
+CREATE_SAMPLER(SampleDecalShadowMap, DecalShadowMap, CLAMP)
 
 uniform texture DecalShadowMapOccluder: ShadowMapOccluderTex;
-CREATE_SAMPLER(SampleDecalShadowMapOccluder, DecalShadowMapOccluder, CLAMP, FALSE)
+CREATE_SAMPLER(SampleDecalShadowMapOccluder, DecalShadowMapOccluder, CLAMP)
 
 struct APP2VS
 {
@@ -161,7 +160,6 @@ PS2FB Decals_PS(VS2PS Input)
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCALPHA; \
 	DestBlend = INVSRCALPHA; \
-	SRGBWriteEnable = FALSE; \
 
 technique Decal
 <

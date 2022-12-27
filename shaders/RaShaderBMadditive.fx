@@ -98,6 +98,9 @@ technique defaultTechnique
 			FillMode = WireFrame;
 		#endif
 
+		ZFunc = ALWAYS;
+		ZWriteEnable = FALSE;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
@@ -105,11 +108,6 @@ technique defaultTechnique
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE; // SRCALPHA;
 		DestBlend = ONE; // INVSRCALPHA;
-
-		ZFunc = ALWAYS;
-		ZWriteEnable = FALSE;
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 BM_Additive_VS();
 		PixelShader = compile ps_3_0 BM_Additive_PS();

@@ -35,7 +35,6 @@ uniform float4x4 _ProjMatrix : matPROJ;
 		MipFilter = LINEAR; \
 		AddressU = CLAMP; \
 		AddressV = CLAMP; \
-		SRGBTexture = FALSE; \
 	}; \
 
 uniform texture Tex0: TEXLAYER0;
@@ -111,7 +110,6 @@ float4 Quad_WTex_Tex_Masked_PS(VS2PS Input) : COLOR
 	ZEnable = (_ZEnable); \
 	ZFunc = (_ZFunc); \
 	ZWriteEnable = (_ZWriteEnable); \
-	SRGBWriteEnable = FALSE; \
 
 technique QuadWithTexture
 <
@@ -172,17 +170,15 @@ technique QuadCache
 {
 	pass Pass0
 	{
-		AlphaBlendEnable = FALSE;
+		ZEnable = TRUE;
+		ZFunc = LESS;
+		ZWriteEnable = TRUE;
 
 		AlphaTestEnable = TRUE;
 		AlphaFunc = GREATER;
 		AlphaRef = 0;
 
-		ZEnable = TRUE;
-		ZFunc = LESS;
-		ZWriteEnable = TRUE;
-
-		SRGBWriteEnable = FALSE;
+		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Quad_Cache_PS();

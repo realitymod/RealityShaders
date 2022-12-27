@@ -17,7 +17,7 @@ uniform float4 _DiffuseColor : DIFFUSE;
 	[Textures and samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -26,12 +26,11 @@ uniform float4 _DiffuseColor : DIFFUSE;
 		MipFilter = NONE; \
 		AddressU = CLAMP; \
 		AddressV = CLAMP; \
-		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture TexMap : TEXTURE;
-CREATE_SAMPLER(SampleTexMap, TexMap, POINT, FALSE)
-CREATE_SAMPLER(SampleTexMap_Linear, TexMap, LINEAR, FALSE)
+CREATE_SAMPLER(SampleTexMap, TexMap, POINT)
+CREATE_SAMPLER(SampleTexMap_Linear, TexMap, LINEAR)
 
 struct APP2VS
 {

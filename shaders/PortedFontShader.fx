@@ -24,7 +24,6 @@ uniform float4 _Alpha : BLENDALPHA;
 		MipFilter = LINEAR; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		SRGBTexture = FALSE; \
 	}; \
 
 uniform texture Tex0: TEXLAYER0;
@@ -128,7 +127,6 @@ technique Overlay <
 {
 	pass Pass0
 	{
-		SRGBWriteEnable = FALSE;
 		VertexShader = compile vs_3_0 HPos_VS();
 		PixelShader = compile ps_3_0 Overlay_HPos_PS();
 	}

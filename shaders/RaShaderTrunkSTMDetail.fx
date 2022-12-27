@@ -62,7 +62,7 @@ string reqVertexElement[] =
 	#endif
 };
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -71,14 +71,13 @@ string reqVertexElement[] =
 		MipFilter = LINEAR; \
 		AddressU = WRAP; \
 		AddressV = WRAP; \
-		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture DetailMap;
-CREATE_SAMPLER(SampleDetailMap, DetailMap, FALSE)
+CREATE_SAMPLER(SampleDetailMap, DetailMap)
 
 uniform texture DiffuseMap;
-CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, FALSE)
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap)
 
 struct APP2VS
 {
@@ -169,8 +168,6 @@ technique defaultTechnique
 
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 TrunkSTMDetail_VS();
 		PixelShader = compile ps_3_0 TrunkSTMDetail_PS();

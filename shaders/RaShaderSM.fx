@@ -261,6 +261,7 @@ technique VariableTechnique
 	{
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (AlphaTestRef);
+
 		#if _POINTLIGHT_
 			AlphaBlendEnable = TRUE;
 			SrcBlend = ONE;
@@ -268,8 +269,6 @@ technique VariableTechnique
 		#else
 			AlphaBlendEnable = FALSE;
 		#endif
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 SkinnedMesh_VS();
 		PixelShader = compile ps_3_0 SkinnedMesh_PS();

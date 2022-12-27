@@ -50,7 +50,6 @@ sampler SampleDiffuseMap = sampler_state
 	MipFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
-	SRGBTexture = FALSE;
 };
 
 struct APP2VS
@@ -125,8 +124,6 @@ technique defaultTechnique
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 TrunkOG_VS();
 		PixelShader = compile ps_3_0 TrunkOG_PS();

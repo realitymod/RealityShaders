@@ -58,7 +58,7 @@ uniform float2 _TexelSize : TEXELSIZE;
 	[Textures and samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESS, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESS) \
 sampler SAMPLER_NAME = sampler_state \
 { \
 	Texture = (TEXTURE); \
@@ -68,22 +68,21 @@ sampler SAMPLER_NAME = sampler_state \
 	MaxAnisotropy = 16; \
 	AddressU = ADDRESS; \
 	AddressV = ADDRESS; \
-	SRGBTexture = IS_SRGB; \
 }; \
 
 uniform texture Tex0 : TEXLAYER0;
-CREATE_SAMPLER(SampleTex0_Clamp, Tex0, LINEAR, CLAMP, FALSE)
-CREATE_SAMPLER(SampleTex0_Mirror, Tex0, LINEAR, MIRROR, FALSE)
-CREATE_SAMPLER(SampleTex0_Aniso, Tex0, ANISOTROPIC, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTex0_Clamp, Tex0, LINEAR, CLAMP)
+CREATE_SAMPLER(SampleTex0_Mirror, Tex0, LINEAR, MIRROR)
+CREATE_SAMPLER(SampleTex0_Aniso, Tex0, ANISOTROPIC, CLAMP)
 
 uniform texture Tex1 : TEXLAYER1;
-CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
 
 // uniform texture Tex2 : TEXLAYER2;
-// CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, FALSE)
+// CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, CLAMP)
 
 // uniform texture Tex3 : TEXLAYER3;
-// CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, FALSE)
+// CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, CLAMP)
 
 struct APP2VS_Blit
 {

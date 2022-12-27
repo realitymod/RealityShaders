@@ -19,7 +19,7 @@
 
 	const float _OneOverShort = 1.0 / 32767.0;
 
-	#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, IS_SRGB) \
+	#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
 		sampler SAMPLER_NAME = sampler_state \
 		{ \
 			Texture = (TEXTURE); \
@@ -28,16 +28,15 @@
 			MipFilter = LINEAR; \
 			AddressU = CLAMP; \
 			AddressV = CLAMP; \
-			SRGBTexture = IS_SRGB; \
 		}; \
 
 	// Particle Texture
 	uniform texture Tex0: Texture0;
-	CREATE_SAMPLER(SampleDiffuseMap, Tex0, FALSE)
+	CREATE_SAMPLER(SampleDiffuseMap, Tex0)
 
 	// Groundhemi Texture
 	uniform texture Tex1: Texture1;
-	CREATE_SAMPLER(SampleLUT, Tex1, FALSE)
+	CREATE_SAMPLER(SampleLUT, Tex1)
 
 	uniform float3 _EffectSunColor : EffectSunColor;
 	uniform float3 _EffectShadowColor : EffectShadowColor;

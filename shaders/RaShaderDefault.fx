@@ -67,14 +67,12 @@ technique defaultShader
 			FillMode = WireFrame;
 		#endif
 
-		AlphaBlendEnable = (alphaBlendEnable);
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
 		CullMode = NONE;
 		AlphaTestEnable = FALSE;
 
-		SRGBWriteEnable = FALSE;
+		AlphaBlendEnable = (alphaBlendEnable);
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
 
 		VertexShader = compile vs_3_0 Default_VS();
 		PixelShader = compile ps_3_0 Default_PS();

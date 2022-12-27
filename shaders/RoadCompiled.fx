@@ -18,7 +18,7 @@ uniform float4 _GIColor : GICOLOR;
 uniform float4 _TexProjOffset : TEXPROJOFFSET;
 uniform float4 _TexProjScale : TEXPROJSCALE;
 
-#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -28,17 +28,16 @@ uniform float4 _TexProjScale : TEXPROJSCALE;
 		MaxAnisotropy = 16; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture LightMap : TEXLAYER2;
-CREATE_DYNAMIC_SAMPLER(SampleLightMap, LightMap, CLAMP, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleLightMap, LightMap, CLAMP)
 
 uniform texture DetailMap0 : TEXLAYER3;
-CREATE_DYNAMIC_SAMPLER(SampleDetailMap0, DetailMap0, WRAP, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleDetailMap0, DetailMap0, WRAP)
 
 uniform texture DetailMap1 : TEXLAYER4;
-CREATE_DYNAMIC_SAMPLER(SampleDetailMap1, DetailMap1, WRAP, FALSE)
+CREATE_DYNAMIC_SAMPLER(SampleDetailMap1, DetailMap1, WRAP)
 
 struct APP2VS
 {

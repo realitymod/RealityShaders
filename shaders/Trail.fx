@@ -208,7 +208,6 @@ PS2FB Trail_High_PS(VS2PS Input)
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCBLEND; \
 	DestBlend = DESTBLEND; \
-	SRGBWriteEnable = FALSE; \
 
 /*	int Declaration[] =
 	{

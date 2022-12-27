@@ -16,8 +16,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = FALSE;
 
@@ -31,14 +31,12 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
@@ -53,12 +51,10 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = FALSE;
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_LowDetail_VS();
 		PixelShader = compile ps_3_0 Shared_LowDetail_PS();
@@ -79,8 +75,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = FALSE;
 
@@ -97,8 +93,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = FALSE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = DESTCOLOR;
@@ -123,8 +119,8 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -139,8 +135,6 @@ technique Low_Terrain
 			StencilFail = KEEP;
 		#endif
 
-		SRGBWriteEnable = FALSE;
-
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();
 		PixelShader = compile ps_3_0 Shared_PointLight_PS();
 	}
@@ -151,14 +145,12 @@ technique Low_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
+		ZFunc = LESSEQUAL;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Shared_UnderWater_VS();
 		PixelShader = compile ps_3_0 Shared_UnderWater_PS();

@@ -68,7 +68,7 @@ uniform float4x3 _UVMatrix[8]: UVMatrix;
 	[Textures and Samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESS, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -77,23 +77,22 @@ uniform float4x3 _UVMatrix[8]: UVMatrix;
 		MipFilter = FILTER; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
 	};
 
 uniform texture Tex0: TEXLAYER0;
-CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP, FALSE)
-CREATE_SAMPLER(SampleDiffuseMap, Tex0, LINEAR, WRAP, FALSE)
+CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP)
+CREATE_SAMPLER(SampleDiffuseMap, Tex0, LINEAR, WRAP)
 
 uniform texture Tex1: TEXLAYER1;
-CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP, FALSE)
-CREATE_SAMPLER(SampleNormalMap, Tex1, LINEAR, WRAP, FALSE)
+CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
+CREATE_SAMPLER(SampleNormalMap, Tex1, LINEAR, WRAP)
 
 uniform texture Tex2: TEXLAYER2;
-CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, CLAMP, FALSE)
-CREATE_SAMPLER(SampleColorLUT, Tex2, LINEAR, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, CLAMP)
+CREATE_SAMPLER(SampleColorLUT, Tex2, LINEAR, CLAMP)
 
 uniform texture Tex3: TEXLAYER3;
-CREATE_SAMPLER(SampleCubeTex3, Tex3, LINEAR, WRAP, FALSE)
+CREATE_SAMPLER(SampleCubeTex3, Tex3, LINEAR, WRAP)
 
 uniform texture Tex4: TEXLAYER4;
 

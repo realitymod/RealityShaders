@@ -41,7 +41,7 @@ uniform float _DeltaV : DELTAV;
 	[Textures and samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -50,7 +50,6 @@ uniform float _DeltaV : DELTAV;
 		MipFilter = LINEAR; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
 	}; \
 
 
@@ -62,18 +61,18 @@ uniform float _DeltaV : DELTAV;
 */
 
 uniform texture Tex0 : TEXLAYER0;
-CREATE_SAMPLER(SampleTex0, Tex0, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTex0, Tex0, CLAMP)
 
 uniform texture Tex1 : TEXLAYER1;
-CREATE_SAMPLER(SampleTex1, Tex1, CLAMP, FALSE)
-CREATE_SAMPLER(SampleTex1_Wrap, Tex1, WRAP, FALSE)
+CREATE_SAMPLER(SampleTex1, Tex1, CLAMP)
+CREATE_SAMPLER(SampleTex1_Wrap, Tex1, WRAP)
 
 uniform texture Tex2 : TEXLAYER2;
-CREATE_SAMPLER(SampleTex2, Tex2, CLAMP, FALSE)
-CREATE_SAMPLER(SampleTex2_Wrap, Tex2, WRAP, FALSE)
+CREATE_SAMPLER(SampleTex2, Tex2, CLAMP)
+CREATE_SAMPLER(SampleTex2_Wrap, Tex2, WRAP)
 
 uniform texture Tex3 : TEXLAYER3;
-CREATE_SAMPLER(SampleTex3, Tex3, CLAMP, FALSE)
+CREATE_SAMPLER(SampleTex3, Tex3, CLAMP)
 
 struct APP2VS_Quad
 {
@@ -153,14 +152,11 @@ technique Tinnitus
 	pass Pass0
 	{
 		ZEnable = FALSE;
+		StencilEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-
-		StencilEnable = FALSE;
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Tinnitus_PS();
@@ -194,8 +190,6 @@ technique Glow
 		SrcBlend = SRCCOLOR;
 		DestBlend = ONE;
 
-		SRGBWriteEnable = FALSE;
-
 		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Glow_PS();
 	}
@@ -207,10 +201,6 @@ technique GlowMaterial
 	{
 		ZEnable = FALSE;
 
-		AlphaBlendEnable = FALSE;
-		SrcBlend = SRCCOLOR;
-		DestBlend = ONE;
-
 		StencilEnable = TRUE;
 		StencilFunc = NOTEQUAL;
 		StencilRef = 0x80;
@@ -219,7 +209,9 @@ technique GlowMaterial
 		StencilZFail = KEEP;
 		StencilPass = KEEP;
 
-		SRGBWriteEnable = FALSE;
+		AlphaBlendEnable = FALSE;
+		SrcBlend = SRCCOLOR;
+		DestBlend = ONE;
 
 		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Glow_Material_PS();
@@ -333,9 +325,8 @@ technique TVEffect
 	pass Pass0
 	{
 		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
 		StencilEnable = FALSE;
-		SRGBWriteEnable = FALSE;
+		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 ThermalVision_VS();
 		PixelShader = compile ps_3_0 ThermalVision_PS();
@@ -347,9 +338,8 @@ technique TVEffect_Gradient_Tex
 	pass Pass0
 	{
 		ZEnable = FALSE;
-		AlphaBlendEnable = FALSE;
 		StencilEnable = FALSE;
-		SRGBWriteEnable = FALSE;
+		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 ThermalVision_VS();
 		PixelShader = compile ps_3_0 ThermalVision_Gradient_PS();
@@ -436,8 +426,6 @@ technique Flashbang
 		BlendOp = ADD;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Flashbang_PS();

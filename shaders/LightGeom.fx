@@ -76,8 +76,6 @@ technique Pointlight
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
 
-		SRGBWriteEnable = FALSE;
-
  		VertexShader = compile vs_3_0 PointLight_VS();
 		PixelShader = compile ps_3_0 PointLight_PS();
 	}
@@ -137,8 +135,6 @@ technique Spotlight
 		StencilEnable = TRUE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
-
-		SRGBWriteEnable = FALSE;
 
  		VertexShader = compile vs_3_0 SpotLight_VS();
 		PixelShader = compile ps_3_0 SpotLight_PS();

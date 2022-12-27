@@ -25,7 +25,6 @@ sampler SampleTex0 = sampler_state
 	MipFilter = LINEAR;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
-	SRGBTexture = FALSE;
 };
 
 struct APP2PS
@@ -88,6 +87,8 @@ technique Point
 {
 	pass Pass0
 	{
+		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE; // TRUE;
@@ -95,10 +96,6 @@ technique Point
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE; // INVSRCALPHA;
-
-		CullMode = NONE;
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Point_VS();
 		PixelShader = compile ps_3_0 Point_PS();
@@ -149,6 +146,8 @@ technique Line
 {
 	pass Pass0
 	{
+		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE; // TRUE;
@@ -156,10 +155,6 @@ technique Line
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE; // INVSRCALPHA;
-
-		CullMode = NONE;
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Line_VS();
 		PixelShader = compile ps_3_0 Line_PS();
@@ -206,6 +201,8 @@ technique Cells
 {
 	pass Pass0
 	{
+		CullMode = NONE;
+
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE; // TRUE;
@@ -213,10 +210,6 @@ technique Cells
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SrcAlpha;
 		DestBlend = ONE; // INVSRCALPHA;
-
-		CullMode = NONE;
-
-		SRGBWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Cells_VS();
 		PixelShader = compile ps_3_0 Cells_PS();

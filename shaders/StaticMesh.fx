@@ -54,7 +54,7 @@ uniform float4 _EyePosObjectSpace : EyePosObjectSpace;
 	[Textures and Samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -63,7 +63,6 @@ uniform float4 _EyePosObjectSpace : EyePosObjectSpace;
 		MipFilter = LINEAR; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
-		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture Tex0: TEXLAYER0;
@@ -75,9 +74,9 @@ uniform texture Tex5: TEXLAYER5;
 uniform texture Tex6: TEXLAYER6;
 uniform texture Tex7: TEXLAYER7;
 
-CREATE_SAMPLER(SampleShadowAlpha, Tex0, WRAP, FALSE)
-CREATE_SAMPLER(SampleTex0_Wrap, Tex0, WRAP, FALSE)
-CREATE_SAMPLER(SampleColorLUT, Tex2, CLAMP, FALSE)
+CREATE_SAMPLER(SampleShadowAlpha, Tex0, WRAP)
+CREATE_SAMPLER(SampleTex0_Wrap, Tex0, WRAP)
+CREATE_SAMPLER(SampleColorLUT, Tex2, CLAMP)
 
 /*
 	Normalmap shaders

@@ -209,7 +209,6 @@ PS2FB Particle_High_PS(VS2PS Input)
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCBLEND; \
 	DestBlend = DESTBLEND; \
-	SRGBWriteEnable = FALSE; \
 
 technique NSAParticleShowFill
 <

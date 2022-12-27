@@ -33,7 +33,7 @@ uniform float4 _Transparency_x8 : TRANSPARENCY_X8;
 
 #define FH2_ALPHAREF 127
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, IS_SRGB) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
 	sampler2D SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -42,17 +42,16 @@ uniform float4 _Transparency_x8 : TRANSPARENCY_X8;
 		MipFilter = LINEAR; \
 		AddressU = CLAMP; \
 		AddressV = CLAMP; \
-		SRGBTexture = IS_SRGB; \
 	}; \
 
 uniform texture Tex0 : TEXLAYER0;
-CREATE_SAMPLER(SampleColorMap, Tex0, FALSE)
+CREATE_SAMPLER(SampleColorMap, Tex0)
 
 uniform texture Tex1 : TEXLAYER1;
-CREATE_SAMPLER(SampleTerrainColorMap, Tex1, FALSE)
+CREATE_SAMPLER(SampleTerrainColorMap, Tex1)
 
 uniform texture Tex2 : TEXLAYER2;
-CREATE_SAMPLER(SampleTerrainLightMap, Tex2, FALSE)
+CREATE_SAMPLER(SampleTerrainLightMap, Tex2)
 
 struct APP2VS
 {
@@ -173,7 +172,6 @@ PS2FB Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	AlphaRef = FH2_ALPHAREF; \
 	AlphaFunc = GREATER; \
 	ZFunc = LESS; \
-	SRGBWriteEnable = FALSE; \
 
 technique t0_l0
 <
@@ -587,7 +585,6 @@ PS2FB Undergrowth_ZOnly_PS(VS2PS_ZOnly Input)
 	AlphaFunc = GREATER; \
 	ColorWriteEnable = 0; \
 	ZFunc = LESS; \
-	SRGBWriteEnable = FALSE; \
 
 technique ZOnly
 <

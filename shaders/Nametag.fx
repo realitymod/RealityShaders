@@ -53,7 +53,6 @@ sampler SampleDetail0 = sampler_state
 	MipFilter = LINEAR;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
-	SRGBTexture = FALSE;
 };
 
 sampler SampleDetail1 = sampler_state
@@ -64,7 +63,6 @@ sampler SampleDetail1 = sampler_state
 	MipFilter = LINEAR;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
-	SRGBTexture = FALSE;
 };
 
 struct APP2VS
@@ -133,15 +131,13 @@ technique nametag
 {
 	pass Pass0
 	{
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
 		CullMode = NONE;
 		ZEnable = FALSE;
 		ZWriteEnable = FALSE;
 
-		SRGBWriteEnable = FALSE;
+		AlphaBlendEnable = TRUE;
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
 
 		VertexShader = compile vs_3_0 Nametag_VS();
 		PixelShader = compile ps_3_0 Nametag_PS();
@@ -193,15 +189,13 @@ technique nametag_arrow
 {
 	pass Pass0
 	{
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
 		CullMode = NONE;
 		ZEnable = FALSE;
 		ZWriteEnable = FALSE;
 
-		SRGBWriteEnable = FALSE;
+		AlphaBlendEnable = TRUE;
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
 
 		VertexShader = compile vs_3_0 Nametag_Arrow_VS();
 		PixelShader = compile ps_3_0 Nametag_Arrow_PS();
@@ -255,15 +249,13 @@ technique nametag_healthbar
 {
 	pass Pass0
 	{
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
 		CullMode = NONE;
 		ZEnable = FALSE;
 		ZWriteEnable = FALSE;
 
-		SRGBWriteEnable = FALSE;
+		AlphaBlendEnable = TRUE;
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
 
 		VertexShader = compile vs_3_0 Nametag_Healthbar_VS();
 		PixelShader = compile ps_3_0 Nametag_Healthbar_PS();
@@ -338,15 +330,13 @@ technique nametag_vehicleIcons
 {
 	pass Pass0
 	{
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-
 		CullMode = NONE;
 		ZEnable = FALSE;
 		ZWriteEnable = FALSE;
 
-		SRGBWriteEnable = FALSE;
+		AlphaBlendEnable = TRUE;
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
 
 		VertexShader = compile vs_3_0 Nametag_Vehicle_Icons_VS();
 		PixelShader = compile ps_3_0 Nametag_Vehicle_Icons_PS();

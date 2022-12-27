@@ -96,7 +96,6 @@
 			AddressU = CLAMP; \
 			AddressV = CLAMP; \
 			AddressW = CLAMP; \
-			SRGBTexture = FALSE; \
 		}; \
 
 	uniform texture ShadowMap : SHADOWMAP;
