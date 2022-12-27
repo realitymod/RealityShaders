@@ -268,15 +268,18 @@ PS2FB SkyDome_Flare_Occlude_PS(VS2PS_NoClouds Input)
 	return Output;
 }
 
+#define GET_RENDERSTATES_SKY \
+	ZEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
+	ZWriteEnable = TRUE; \
+	AlphaBlendEnable = FALSE; \
+	SRGBWriteEnable = FALSE;
+
 technique SkyDomeUnderWater
 {
 	pass Sky
 	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_SKY
 		VertexShader = compile vs_3_0 SkyDome_VS();
 		PixelShader = compile ps_3_0 SkyDome_UnderWater_PS();
 	}
@@ -286,11 +289,7 @@ technique SkyDomeNV3x
 {
 	pass Sky
 	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_SKY
 		VertexShader = compile vs_3_0 SkyDome_VS();
 		PixelShader = compile ps_3_0 SkyDome_PS();
 	}
@@ -300,11 +299,7 @@ technique SkyDomeNV3xLit
 {
 	pass Sky
 	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_SKY
 		VertexShader = compile vs_3_0 SkyDome_VS();
 		PixelShader = compile ps_3_0 SkyDome_Lit_PS();
 	}
@@ -314,11 +309,7 @@ technique SkyDomeNV3xDualClouds
 {
 	pass Sky
 	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_SKY
 		VertexShader = compile vs_3_0 SkyDome_DualClouds_VS();
 		PixelShader = compile ps_3_0 SkyDome_DualClouds_PS();
 	}
@@ -328,11 +319,7 @@ technique SkyDomeNV3xNoClouds
 {
 	pass Sky
 	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_SKY
 		VertexShader = compile vs_3_0 SkyDome_NoClouds_VS();
 		PixelShader = compile ps_3_0 SkyDome_NoClouds_PS();
 	}
@@ -342,11 +329,7 @@ technique SkyDomeNV3xNoCloudsLit
 {
 	pass Sky
 	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		SRGBWriteEnable = FALSE;
-
+		GET_RENDERSTATES_SKY
 		VertexShader = compile vs_3_0 SkyDome_NoClouds_VS();
 		PixelShader = compile ps_3_0 SkyDome_NoClouds_Lit_PS();
 	}
