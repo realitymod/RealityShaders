@@ -39,7 +39,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float2 Tex : TEXCOORD0;
-	float4 Color : COLOR0;
+	float4 Color : TEXCOORD1;
 };
 
 VS2PS Screen_VS(APP2VS Input)

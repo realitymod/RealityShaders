@@ -39,7 +39,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float3 Tex0 : TEXCOORD0;
-	float4 Color : COLOR0;
+	float4 Color : TEXCOORD1;
 	float PointSize : PSIZE;
 };
 
@@ -113,7 +113,7 @@ struct VS2PS_Line
 {
 	float4 HPos : POSITION;
 	float3 Tex0 : TEXCOORD0;
-	float4 Color : COLOR0;
+	float4 Color : TEXCOORD1;
 };
 
 VS2PS_Line Line_VS(APP2PS Input)
@@ -174,7 +174,7 @@ struct VS2PS_Cell
 {
 	float4 HPos: POSITION;
 	float3 Tex0 : TEXCOORD0;
-	float4 Color : COLOR0;
+	float4 Color : TEXCOORD1;
 };
 
 VS2PS_Cell Cells_VS(APP2PS Input)

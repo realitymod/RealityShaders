@@ -42,7 +42,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float4 Diffuse : COLOR0;
+	float4 Diffuse : TEXCOORD1;
 };
 
 struct PS2FB
@@ -391,7 +391,7 @@ struct VS2PS_Grid
 {
 	float4 HPos : POSITION;
 	float3 Tex0 : TEXCOORD0;
-	float4 Diffuse : COLOR0;
+	float4 Diffuse : TEXCOORD1;
 };
 
 VS2PS_Grid Debug_Grid_VS(APP2VS Input)
@@ -655,7 +655,7 @@ struct VS2PS_Frustum
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float4 Color : COLOR0;
+	float4 Color : TEXCOORD1;
 };
 
 VS2PS_Frustum Debug_Frustum_VS(APP2VS_Frustum Input)

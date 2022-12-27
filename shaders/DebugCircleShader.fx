@@ -20,7 +20,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float4 Diffuse : COLOR0;
+	float4 Diffuse : TEXCOORD1;
 };
 
 struct PS2FB

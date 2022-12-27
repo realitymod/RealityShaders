@@ -56,7 +56,7 @@ struct VS2PS
 
 	float4 TexA : TEXCOORD1; // .xy = Tex0; .zw = Tex1
 	float4 LightTex : TEXCOORD2;
-	float Alpha : COLOR0;
+	float Alpha : TEXCOORD3;
 };
 
 struct PS2FB

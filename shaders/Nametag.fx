@@ -79,7 +79,7 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float2 TexCoord0 : TEXCOORD0;
 	float2 TexCoord1 : TEXCOORD1;
-	float4 Color0 : COLOR0;
+	float4 Color0 : TEXCOORD2;
 };
 
 struct VS2PS_2TEX
@@ -87,8 +87,8 @@ struct VS2PS_2TEX
 	float4 HPos : POSITION;
 	float2 TexCoord0 : TEXCOORD0;
 	float2 TexCoord1 : TEXCOORD1;
-	float4 Color0 : COLOR0;
-	float4 Color1 : COLOR1;
+	float4 Color0 : TEXCOORD2;
+	float4 Color1 : TEXCOORD3;
 };
 
 /*
@@ -229,6 +229,7 @@ VS2PS_2TEX Nametag_Healthbar_VS(APP2VS Input)
 
 	Output.Color0 = saturate(Output.Color0);
 	Output.Color1 = saturate(Output.Color1);
+
 	return Output;
 }
 

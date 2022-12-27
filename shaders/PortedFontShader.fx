@@ -41,8 +41,8 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float3 Color : COLOR0;
-	float2 TexCoord : TEXCOORD0;
+	float3 Color : TEXCOORD0;
+	float2 TexCoord : TEXCOORD1;
 };
 
 VS2PS HPos_VS(APP2VS Input)

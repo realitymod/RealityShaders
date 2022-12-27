@@ -68,7 +68,7 @@ struct VS2PS_SkyDome
 	float4 Pos : TEXCOORD0;
 
 	float4 TexA : TEXCOORD1; // .xy = SkyTex; .zw = CloudTex
-	float4 FadeOut : COLOR0;
+	float4 FadeOut : TEXCOORD2;
 };
 
 struct VS2PS_DualClouds
@@ -78,7 +78,7 @@ struct VS2PS_DualClouds
 
 	float2 SkyTex : TEXCOORD1;
 	float4 CloudTex : TEXCOORD2; // .xy = CloudTex0; .zw = CloudTex1
-	float4 FadeOut : COLOR0;
+	float4 FadeOut : TEXCOORD3;
 };
 
 struct PS2FB

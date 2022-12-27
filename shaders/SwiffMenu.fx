@@ -30,15 +30,15 @@ CREATE_SAMPLER(SampleTexMap_Wrap, TexMap, WRAP, FALSE)
 struct VS2PS_Shape
 {
 	float4 HPos : POSITION;
-	float4 Diffuse : COLOR0;
+	float4 Diffuse : TEXCOORD0;
 };
 
 struct VS2PS_ShapeTexture
 {
 	float4 HPos : POSITION;
 	float2 TexCoord : TEXCOORD0;
-	float4 Diffuse : COLOR0;
-	float4 Selector : COLOR1;
+	float4 Diffuse : TEXCOORD1;
+	float4 Selector : TEXCOORD2;
 };
 
 VS2PS_Shape Shape_VS(float3 Position : POSITION, float4 VertexColor : COLOR0)

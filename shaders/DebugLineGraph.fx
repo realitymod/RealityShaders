@@ -17,7 +17,7 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Color : COLOR0;
+	float4 Color : TEXCOORD0;
 };
 
 struct PS2FB

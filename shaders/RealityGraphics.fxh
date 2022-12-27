@@ -104,7 +104,7 @@
 	{
 		const float FarPlane = 5000.0;
 		const float FCoef = 1.0 / log2(FarPlane + 1.0);
-		return log2(Depth) * FCoef;
+		return saturate(log2(Depth) * FCoef);
 	}
 
 	// Description: Transforms the vertex position's depth from World/Object space to light space

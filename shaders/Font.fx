@@ -36,15 +36,15 @@ CREATE_SAMPLER(SampleTexMap_Linear, TexMap, LINEAR, FALSE)
 struct APP2VS
 {
 	float4 Pos : POSITION;
-	float4 Color : COLOR;
 	float2 TexCoord : TEXCOORD0;
+	float4 Color : COLOR;
 };
 
 struct VS2PS_REGULAR
 {
 	float4 HPos : POSITION;
-	float4 Diffuse : COLOR0;
 	float2 TexCoord : TEXCOORD0;
+	float4 Diffuse : TEXCOORD1;
 };
 
 VS2PS_REGULAR Regular_VS(APP2VS Input)
@@ -52,8 +52,8 @@ VS2PS_REGULAR Regular_VS(APP2VS Input)
 	VS2PS_REGULAR Output = (VS2PS_REGULAR)0;
 	// Output.Output.HPos = mul(float4(Input.Pos.xy, 0.5, 1.0), _WorldView);
 	Output.HPos = float4(Input.Pos.xy, 0.5, 1.0);
-	Output.Diffuse = saturate(Input.Color);
 	Output.TexCoord = Input.TexCoord;
+	Output.Diffuse = saturate(Input.Color);
 	return Output;
 }
 

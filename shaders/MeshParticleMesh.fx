@@ -42,7 +42,7 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 	float2 Tex0 : TEXCOORD1;
-	float4 Color : COLOR0;
+	float4 Color : TEXCOORD2;
 };
 
 struct PS2FB
