@@ -38,7 +38,7 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0;
+	float3 Pos : TEXCOORD0;
 
 	float4 Tex0 : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
 	float3 Color : TEXCOORD2;
@@ -48,7 +48,6 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
 };
 
 VS2PS Trail_VS(APP2VS Input)
@@ -91,8 +90,7 @@ VS2PS Trail_VS(APP2VS Input)
 	// Displace vertex
 	float4 Pos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
-	Output.Pos.xyz = Input.Pos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	Output.Pos = Input.Pos;
 
 	Output.Color = lerp(Template.m_color1AndLightFactor.rgb, Template.m_color2.rgb, ColorBlendFactor);
 
@@ -114,6 +112,9 @@ VS2PS Trail_VS(APP2VS Input)
 	// Offset texcoords
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
+	// Output depth (VS)
+	Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
+
 	return Output;
 }
 
@@ -122,7 +123,6 @@ PS2FB Trail_ShowFill_PS(VS2PS Input)
 	PS2FB Output;
 
 	Output.Color = _EffectSunColor.rrrr;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -140,7 +140,6 @@ PS2FB Trail_Low_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -162,7 +161,6 @@ PS2FB Trail_Medium_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -188,7 +186,6 @@ PS2FB Trail_High_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
