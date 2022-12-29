@@ -48,7 +48,6 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
 };
 
 VS2PS Diffuse_VS(APP2VS Input)
@@ -74,6 +73,9 @@ VS2PS Diffuse_VS(APP2VS Input)
 
 	// Pass-through texcoords
 	Output.Tex0 = Input.TexCoord;
+
+	// Output depth (VS)
+	Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 
 	return Output;
 }
@@ -104,7 +106,6 @@ PS2FB Diffuse_PS(VS2PS Input)
 	ApplyFog(Diffuse.rgb, GetFogValue(HPos, 0.0));
 
 	Output.Color = Diffuse;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -125,7 +126,6 @@ PS2FB Additive_PS(VS2PS Input)
 	Diffuse.rgb *= Diffuse.a;
 
 	Output.Color = Diffuse;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

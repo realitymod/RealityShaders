@@ -45,6 +45,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
+	float Depth : DEPTH;
 };
 
 VS2PS Particle_VS(APP2VS Input)
@@ -86,7 +87,8 @@ VS2PS Particle_VS(APP2VS Input)
 
 	float4 Pos = mul(float4(ScaledPos, 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
-	Output.Pos = Pos;
+	Output.Pos.xyz = Pos.xyz;
+	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 
 	// Compute texcoords
 	// Rotate and scale to correct u,v space and zoom in.
@@ -102,9 +104,6 @@ VS2PS Particle_VS(APP2VS Input)
 	// Offset texcoords for particle diffuse
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
-	// Output depth (VS)
-	Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
-
 	return Output;
 }
 
@@ -113,6 +112,7 @@ PS2FB Particle_ShowFill_PS(VS2PS Input)
 	PS2FB Output;
 
 	Output.Color = _EffectSunColor.rrrr;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -128,6 +128,7 @@ PS2FB Particle_Low_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 
 	Output.Color = OutputColor;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -147,6 +148,7 @@ PS2FB Particle_Medium_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 
 	Output.Color = OutputColor;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
@@ -172,6 +174,7 @@ PS2FB Particle_High_PS(VS2PS Input)
 	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 
 	Output.Color = OutputColor;
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }
