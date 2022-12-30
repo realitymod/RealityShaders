@@ -75,6 +75,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
+	float Depth : DEPTH;
 };
 
 VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
@@ -103,9 +104,6 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 		Output.ShadowTex = mul(float4(WorldPos, 1.0), _ShadowTransformations[Index]);
 		Output.ViewPortMap = _ShadowViewPortMaps[Index];
 	}
-
-	// Output depth (VS)
-	Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 
 	return Output;
 }
@@ -148,6 +146,7 @@ PS2FB Decals_PS(VS2PS Input)
 	PS2FB Output;
 
 	Output.Color = GetPixelDecals(Input, false);
+	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	return Output;
 }

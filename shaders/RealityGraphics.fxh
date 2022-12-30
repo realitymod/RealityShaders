@@ -103,8 +103,8 @@
 	float ApplyLogarithmicDepth(float Depth)
 	{
 		const float FarPlane = 10000.0;
-		const float FCoef = 1.0 / log(FarPlane + 1.0);
-		return saturate(log(Depth) * FCoef);
+		const float FCoef = 1.0 / log2(FarPlane + 1.0);
+		return saturate(log2(Depth) * FCoef);
 	}
 
 	// Description: Transforms the vertex position's depth from World/Object space to light space
