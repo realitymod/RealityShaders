@@ -193,21 +193,22 @@ PS2FB Leaf_PS(VS2PS Input)
 		OutputColor.a *= 2.0 * DiffuseMap.a;
 	#endif
 
-	#if defined(_POINTLIGHT_)
-		OutputColor.rgb *= GetLightAttenuation(LightVec, Lights[0].attenuation);
-		OutputColor.rgb *= GetFogValue(ObjectPos, ObjectSpaceCamPos);
-	#else
-		#if defined(OVERGROWTH)
-			ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos * PosUnpack.xyz, ObjectSpaceCamPos));
-		#else
-			ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
-		#endif
-	#endif
-
 	Output.Color = OutputColor;
-
 	#if !defined(OVERGROWTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	#if defined(_POINTLIGHT_)
+		Output.Color.rgb *= GetLightAttenuation(LightVec, Lights[0].attenuation);
+		Output.Color.rgb *= GetFogValue(ObjectPos, ObjectSpaceCamPos);
+	#endif
+
+	#if !defined(_POINTLIGHT_)
+		#if defined(OVERGROWTH)
+			ApplyFog(Output.Color.rgb, GetFogValue(ObjectPos * PosUnpack.xyz, ObjectSpaceCamPos));
+		#else
+			ApplyFog(Output.Color.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
+		#endif
 	#endif
 
 	return Output;

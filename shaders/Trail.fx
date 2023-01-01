@@ -137,9 +137,9 @@ PS2FB Trail_Low_PS(VS2PS Input)
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.Maps[0];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
-
 	Output.Color = OutputColor;
+
+	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _EyePos));
 
 	return Output;
 }
@@ -158,9 +158,9 @@ PS2FB Trail_Medium_PS(VS2PS Input)
 	OutputColor.rgb *= GetParticleLighting(1.0, Input.Maps[2], saturate(Template.m_color1AndLightFactor.a));
 	OutputColor.a *= Input.Maps[0];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
-
 	Output.Color = OutputColor;
+
+	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _EyePos));
 
 	return Output;
 }
@@ -183,9 +183,9 @@ PS2FB Trail_High_PS(VS2PS Input)
 	OutputColor.rgb *= GetParticleLighting(TLUT.a, Input.Maps[2], saturate(Template.m_color1AndLightFactor.a));
 	OutputColor.a *= Input.Maps[0];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _EyePos));
-
 	Output.Color = OutputColor;
+
+	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _EyePos));
 
 	return Output;
 }

@@ -144,13 +144,13 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 			OutputColor = saturate(lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue)));
 		}
 
-		ApplyFog(OutputColor, GetFogValue(WorldPos, _CameraPos.xyz));
-
 		Output.Color.rgb = OutputColor * ChartContrib;
 		Output.Color.a = 1.0;
 	#endif
 
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	return Output;
 }

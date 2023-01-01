@@ -123,10 +123,10 @@ PS2FB RoadCompiled_PS(VS2PS Input)
 		OutputColor.rgb *= TerrainLights;
 	}
 
-	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _LocalEyePos));
-
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos));
 
 	return Output;
 }

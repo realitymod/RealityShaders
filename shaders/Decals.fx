@@ -136,7 +136,6 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
 	float4 OutputColor = DiffuseMap * float4(Lighting, Input.Color.a);
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
 
 	return OutputColor;
 }
@@ -147,6 +146,8 @@ PS2FB Decals_PS(VS2PS Input)
 
 	Output.Color = GetPixelDecals(Input, false);
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 
 	return Output;
 }

@@ -286,14 +286,14 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 	OutputColor = lerp(OutputColor, _TerrainWaterColor, WaterLerp);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
-
 	#if defined(LIGHTONLY)
 		OutputColor = TerrainLights;
 	#endif
 
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	return Output;
 }
@@ -442,10 +442,10 @@ PS2FB Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input)
 	float3 OutputColor = _TerrainWaterColor.rgb;
 	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
-
 	Output.Color = float4(OutputColor, WaterLerp);
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	return Output;
 }
@@ -546,10 +546,10 @@ PS2FB Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input)
 		OutputColor.rb = 0.0;
 	}
 
-	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, _CameraPos));
-
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	return Output;
 }

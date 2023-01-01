@@ -103,9 +103,9 @@ PS2FB Diffuse_PS(VS2PS Input)
 	float4 TLUT = tex2D(SampleLUT, GroundUV); // Hemi map
 	Diffuse.rgb *= GetParticleLighting(TLUT.a, LMOffset, saturate(m_color1AndLightFactor.a));
 
-	ApplyFog(Diffuse.rgb, GetFogValue(HPos, 0.0));
-
 	Output.Color = Diffuse;
+
+	ApplyFog(Output.Color.rgb, GetFogValue(HPos, 0.0));
 
 	return Output;
 }

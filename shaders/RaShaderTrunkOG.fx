@@ -109,9 +109,9 @@ PS2FB TrunkOG_PS(VS2PS Input)
 	OutputColor.rgb = DiffuseMap.rgb * Color.rgb;
 	OutputColor.a = Transparency.a;
 
-	ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
-
 	Output.Color = OutputColor;
+
+	ApplyFog(Output.Color.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
 
 	return Output;
 };

@@ -171,10 +171,10 @@ PS2FB Road_PS(VS2PS Input)
 		Diffuse.a *= ZFade;
 	#endif
 
-	ApplyFog(Diffuse.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
-
 	Output.Color = Diffuse;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	return Output;
 };

@@ -133,20 +133,18 @@ PS2FB Editor_Road_PS(VS2PS Input)
 	PS2FB Output;
 
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
-
 	#if defined(USE_DETAIL)
 		float4 Detail = tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw);
 		float4 OutputColor = Diffuse * Detail;
 	#else
 		float4 OutputColor = Diffuse;
 	#endif
-
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, WorldSpaceCamPos));
-
 	OutputColor.a *= GetRoadZFade(Input.Pos, WorldSpaceCamPos, RoadFadeOut);
 
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, WorldSpaceCamPos));
 
 	return Output;
 };

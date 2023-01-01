@@ -125,10 +125,10 @@ PS2FB Particle_Low_PS(VS2PS Input)
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.Maps[1];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
-
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 
 	return Output;
 }
@@ -145,10 +145,10 @@ PS2FB Particle_Medium_PS(VS2PS Input)
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.Maps[1];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
-
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 
 	return Output;
 }
@@ -171,10 +171,10 @@ PS2FB Particle_High_PS(VS2PS Input)
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.Maps[1];
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, 0.0));
-
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 
 	return Output;
 }

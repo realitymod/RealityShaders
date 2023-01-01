@@ -147,10 +147,10 @@ PS2FB Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
 	OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _CameraPos));
-
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 
 	return Output;
 }
@@ -381,10 +381,10 @@ PS2FB Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
 	OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
 
-	ApplyFog(OutputColor.rgb, GetFogValue(LocalPos, _CameraPos));
-
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 
 	return Output;
 }

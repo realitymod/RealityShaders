@@ -340,10 +340,6 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		#endif
 	}
 
-	#if !_POINTLIGHT_
-		ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
-	#endif
-
 	/*
 		Calculate alpha transparency
 	*/
@@ -368,6 +364,10 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	Output.Color.rgb = OutputColor.rgb;
 	Output.Color.a = Alpha * Transparency.a;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if !_POINTLIGHT_
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	#endif
 
 	return Output;
 }

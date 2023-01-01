@@ -82,12 +82,10 @@ PS2FB Diffuse_PS(VS2PS Input)
 {
 	PS2FB Output;
 
-	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0);
-
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos, ObjectSpaceCamPos));
-
-	Output.Color = OutputColor;
+	Output.Color = tex2D(SampleDiffuseMap, Input.Tex0);
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, ObjectSpaceCamPos));
 
 	return Output;
 };

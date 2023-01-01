@@ -276,14 +276,14 @@ PS2FB StaticMesh_PS(VS2PS Input)
 		OutputColor.rgb = ((ColorMap.rgb * 2.0) * Light.Diffuse) + Light.Specular;
 	#endif
 
-	#if !_POINTLIGHT_
-		ApplyFog(OutputColor.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
-	#endif
-
 	OutputColor.a = ColorMap.a;
 
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if !_POINTLIGHT_
+		ApplyFog(Output.Color.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
+	#endif
 
 	return Output;
 };

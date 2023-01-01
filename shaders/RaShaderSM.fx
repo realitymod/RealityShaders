@@ -232,6 +232,7 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 
 	float4 OutputColor = 1.0;
 	OutputColor.rgb = (ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular;
+	OutputColor.a = ColorMap.a * Transparency.a;
 
 	// Thermals
 	if (FogColor.r < 0.01)
@@ -243,14 +244,12 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 		#endif
 	}
 
-	#if !_POINTLIGHT_
-		ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
-	#endif
-
-	OutputColor.a = ColorMap.a * Transparency.a;
-
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if !_POINTLIGHT_
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	#endif
 
 	return Output;
 }

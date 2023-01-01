@@ -150,10 +150,10 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 	OutputColor.rgb = (DiffuseMap.rgb * Diffuse.rgb) * 2.0;
 	OutputColor.a = Transparency.a * 2.0;
 
-	ApplyFog(OutputColor.rgb, GetFogValue(Input.Pos.xyz, ObjectSpaceCamPos.xyz));
-
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, ObjectSpaceCamPos));
 
 	return Output;
 };

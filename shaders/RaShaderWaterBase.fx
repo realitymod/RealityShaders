@@ -224,13 +224,13 @@ PS2FB Water_PS(in VS2PS Input)
 		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
-	ApplyFog(OutputColor.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
-
 	float Fresnel = BASE_TRANSPARENCY - pow(dot(TangentNormal, ViewVec), POW_TRANSPARENCY);
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.w);
 
 	Output.Color = OutputColor;
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	return Output;
 }
