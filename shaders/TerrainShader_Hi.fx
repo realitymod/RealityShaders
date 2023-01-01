@@ -78,7 +78,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.zw);
-	float ChartContrib = dot(Component, _ComponentSelector);
+	float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.P_Normal_Fade.xyz);
@@ -92,7 +92,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
 	#if defined(LIGHTONLY)
-		Output.Color.rgb = TerrainLights * ChartContrib;
+		Output.Color.rgb = TerrainLights;
 		Output.Color.a = 1.0;
 	#else
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
@@ -144,7 +144,6 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 			OutputColor = saturate(lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue)));
 		}
 
-		Output.Color.rgb = OutputColor * ChartContrib;
 		Output.Color.a = 1.0;
 	#endif
 
