@@ -92,8 +92,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
 	#if defined(LIGHTONLY)
-		Output.Color.rgb = TerrainLights;
-		Output.Color.a = 1.0;
+		float3 OutputColor = TerrainLights;
 	#else
 		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
@@ -143,10 +142,9 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 			float3 EnvMapColor = texCUBE(SamplerTex6_Cube, Reflection);
 			OutputColor = saturate(lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue)));
 		}
-
-		Output.Color.a = 1.0;
 	#endif
 
+	Output.Color = float4(OutputColor, 1.0);
 	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
