@@ -59,7 +59,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 float4x3 GetSkinnedWorldMatrix(APP2VS Input)
@@ -81,16 +83,22 @@ VS2PS BM_ZOnly_VS(APP2VS Input)
 
 	Output.HPos = mul(GetWorldPos(Input), ViewProjection); // Output HPOS
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 	
 	return Output;
 }
 
 PS2FB BM_ZOnly_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 	Output.Color = 0.0;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
 	return Output;
 }
 

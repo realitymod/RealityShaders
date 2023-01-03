@@ -104,7 +104,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS TrunkSTMDetail_VS(APP2VS Input)
@@ -114,7 +116,9 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 	Input.Pos *= PosUnpack;
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 	Output.Pos.xyz = Input.Pos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Normals.xyz = normalize(Input.Normal * NormalUnpack.x + NormalUnpack.y);
 
@@ -132,7 +136,7 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 
 PS2FB TrunkSTMDetail_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float3 Normals = normalize(Input.Normals.xyz);
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.TexA.xy);
@@ -151,7 +155,10 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, ObjectSpaceCamPos));
 

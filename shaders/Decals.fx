@@ -75,7 +75,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
@@ -90,7 +92,9 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 
 	Output.HPos = mul(float4(WorldPos, 1.0), _WorldViewProjection);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Normal = normalize(mul(Input.Normal.xyz, (float3x3)WorldMat));
 
@@ -142,10 +146,13 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 
 PS2FB Decals_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = GetPixelDecals(Input, false);
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 

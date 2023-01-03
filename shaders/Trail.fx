@@ -112,15 +112,17 @@ VS2PS Trail_VS(APP2VS Input)
 	// Offset texcoords
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
-	// Output depth (VS)
-	Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
+	#if defined(LOG_DEPTH)
+		// Output depth (VS)
+		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
+	#endif
 
 	return Output;
 }
 
 PS2FB Trail_ShowFill_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = _EffectSunColor.rrrr;
 
@@ -129,7 +131,7 @@ PS2FB Trail_ShowFill_PS(VS2PS Input)
 
 PS2FB Trail_Low_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float3 LocalPos = Input.Pos.xyz;
 
@@ -146,7 +148,7 @@ PS2FB Trail_Low_PS(VS2PS Input)
 
 PS2FB Trail_Medium_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float3 LocalPos = Input.Pos.xyz;
 
@@ -167,7 +169,7 @@ PS2FB Trail_Medium_PS(VS2PS Input)
 
 PS2FB Trail_High_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	// Hemi lookup coords
 	float3 LocalPos = Input.Pos.xyz;

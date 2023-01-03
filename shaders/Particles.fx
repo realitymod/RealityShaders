@@ -106,8 +106,10 @@ VS2PS Particle_VS(APP2VS Input)
 	Output.HemiTex = ((Input.Pos + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;	
  	Output.HemiTex.y = 1.0 - Output.HemiTex.y;
 
-	// Output depth (VS)
-	Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
+	#if defined(LOG_DEPTH)
+		// Output depth (VS)
+		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
+	#endif
 
 	return Output;
 }
@@ -118,14 +120,14 @@ VS2PS Particle_VS(APP2VS Input)
 
 PS2FB Particle_ShowFill_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 	Output.Color = _EffectSunColor.rrrr;
 	return Output;
 }
 
 PS2FB Particle_Low_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	OutputColor.rgb *= Input.Color.rgb * _EffectSunColor; // M
@@ -140,7 +142,7 @@ PS2FB Particle_Low_PS(VS2PS Input)
 
 PS2FB Particle_Medium_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
@@ -159,7 +161,7 @@ PS2FB Particle_Medium_PS(VS2PS Input)
 
 PS2FB Particle_High_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
@@ -179,7 +181,7 @@ PS2FB Particle_High_PS(VS2PS Input)
 
 PS2FB Particle_Low_Additive_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	// Mask with alpha since were doing an add
 	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
@@ -195,7 +197,7 @@ PS2FB Particle_Low_Additive_PS(VS2PS Input)
 
 PS2FB Particle_High_Additive_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);

@@ -62,7 +62,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS DiffuseBone_VS(APP2VS Input)
@@ -75,19 +77,24 @@ VS2PS DiffuseBone_VS(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(Bones[IndexArray[0]], ViewProjection));
 	Output.Tex0.xy = Input.Tex0;
-	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	return Output;
 }
 
 PS2FB DiffuseBone_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 ColorTex = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 
 	Output.Color = ColorTex * float4(1.0, 0.0, 1.0, 1.0);
-	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
 
 	return Output;
 };

@@ -45,7 +45,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS Particle_VS(APP2VS Input)
@@ -88,7 +90,9 @@ VS2PS Particle_VS(APP2VS Input)
 	float4 Pos = mul(float4(ScaledPos, 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
 	Output.Pos.xyz = Pos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// Compute texcoords
 	// Rotate and scale to correct u,v space and zoom in.
@@ -109,24 +113,30 @@ VS2PS Particle_VS(APP2VS Input)
 
 PS2FB Particle_ShowFill_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = _EffectSunColor.rrrr;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	return Output;
 }
 
 PS2FB Particle_Low_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	OutputColor.rgb *= Input.Color.rgb;
 	OutputColor.a *= Input.Maps[1];
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 
@@ -135,7 +145,7 @@ PS2FB Particle_Low_PS(VS2PS Input)
 
 PS2FB Particle_Medium_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
@@ -146,7 +156,10 @@ PS2FB Particle_Medium_PS(VS2PS Input)
 	OutputColor.a *= Input.Maps[1];
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 
@@ -155,7 +168,7 @@ PS2FB Particle_Medium_PS(VS2PS Input)
 
 PS2FB Particle_High_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	// Hemi lookup table coords
 	float3 Pos = Input.Pos.xyz;
@@ -172,7 +185,10 @@ PS2FB Particle_High_PS(VS2PS Input)
 	OutputColor.a *= Input.Maps[1];
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 

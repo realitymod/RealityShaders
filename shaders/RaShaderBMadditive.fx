@@ -57,7 +57,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS BM_Additive_VS(APP2VS Input)
@@ -70,7 +72,9 @@ VS2PS BM_Additive_VS(APP2VS Input)
 	Output.HPos = float4(mul(Input.Pos, GeomBones[IndexArray[0]]), 1.0);
 	Output.HPos = mul(Output.HPos, ViewProjection);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Tex0 = Input.Tex0;
 
@@ -79,13 +83,16 @@ VS2PS BM_Additive_VS(APP2VS Input)
 
 PS2FB BM_Additive_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0);
 	OutputColor.rgb *= Transparency;
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	return Output;
 }

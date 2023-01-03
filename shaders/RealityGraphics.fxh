@@ -29,6 +29,12 @@
 	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#if !defined(SETTINGS_DEFINES)
+	#define SETTINGS_DEFINES
+
+	#include "shaders/SettingsDefines.fxh"
+#endif
+
 // Functions from DirectXTK
 #if !defined(DIRECTXTK)
 	#define DIRECTXTK
@@ -91,6 +97,9 @@
 #if !defined(REALITY_DEPTH)
 	#define REALITY_DEPTH
 
+	static const float FarPlane = 10000.0;
+	static const float FCoef = 1.0 / log2(FarPlane + 1.0);
+
 	// Gets slope-scaled shadow bias from depth
 	// Source: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
 	float GetSlopedBasedBias(float Depth, uniform float SlopeScaleBias = -0.001, uniform float Bias = -0.003)
@@ -102,8 +111,6 @@
 	// Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
 	float ApplyLogarithmicDepth(float Depth)
 	{
-		const float FarPlane = 10000.0;
-		const float FCoef = 1.0 / log2(FarPlane + 1.0);
 		return saturate(log2(Depth) * FCoef);
 	}
 

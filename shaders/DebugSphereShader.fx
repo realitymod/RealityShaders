@@ -46,7 +46,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 /*
@@ -61,13 +63,15 @@ float3 Diffuse(float3 Normal)
 
 VS2PS Debug_Basic_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 
 	Output.Tex0.xy = Input.TexCoord0;
-	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.xyz + Diffuse(Input.Normal) * _MaterialDiffuse.xyz;
@@ -78,20 +82,26 @@ VS2PS Debug_Basic_VS(APP2VS Input)
 
 PS2FB Debug_Basic_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = tex2D(SampleBaseTex, Input.Tex0.xy) * Input.Diffuse;
-	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
 
 	return Output;
 }
 
 PS2FB Debug_Marked_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = (tex2D(SampleBaseTex, Input.Tex0.xy) * Input.Diffuse) + float4(1.0, 0.0, 0.0, 0.0);
-	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
 
 	return Output;
 }
@@ -159,7 +169,7 @@ technique marked
 
 VS2PS Debug_LightSource_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float4 Pos;
 	Pos.xyz = mul(Input.Pos, _World);
@@ -167,7 +177,9 @@ VS2PS Debug_LightSource_VS(APP2VS Input)
 	Output.HPos = mul(Pos, _WorldViewProj);
 
 	Output.Tex0 = 0.0;
-	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.rgb = _MaterialDiffuse.xyz;
@@ -178,10 +190,13 @@ VS2PS Debug_LightSource_VS(APP2VS Input)
 
 PS2FB Debug_LightSource_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = Input.Diffuse;
-	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
 
 	return Output;
 }

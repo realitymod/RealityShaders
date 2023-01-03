@@ -35,26 +35,33 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS Default_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 	
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	return Output;
 }
 
 PS2FB Default_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = float4(0.9, 0.4, 0.8, 1.0);
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	return Output;
 };

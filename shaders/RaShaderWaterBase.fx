@@ -138,7 +138,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS Water_VS(APP2VS Input)
@@ -148,7 +150,9 @@ VS2PS Water_VS(APP2VS Input)
 	float4 WorldPos = mul(Input.Pos, World);
 	Output.HPos = mul(WorldPos, ViewProjection);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	float3 Tex = 0.0;
 	#if defined(USE_3DTEXTURE)
@@ -174,7 +178,7 @@ VS2PS Water_VS(APP2VS Input)
 
 PS2FB Water_PS(in VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	#if defined(USE_LIGHTMAP)
 		float4 LightMap = tex2D(SampleLightMap, Input.LightMapTex);
@@ -228,7 +232,10 @@ PS2FB Water_PS(in VS2PS Input)
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.w);
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 

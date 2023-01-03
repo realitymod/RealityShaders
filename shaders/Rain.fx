@@ -45,12 +45,14 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS Point_VS(APP2PS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float3 CellPos = _CellPositions[Input.Data.x];
 	float3 Deviation = _Deviations[Input.Data.y];
@@ -63,7 +65,9 @@ VS2PS Point_VS(APP2PS Input)
 
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.Tex0.xy = Input.Tex0;
-	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
 	Output.PointSize = min(_ParticleSize * rsqrt(_PointScale[0] + _PointScale[1] * CamDist), _MaxParticleSize);
@@ -73,12 +77,15 @@ VS2PS Point_VS(APP2PS Input)
 
 PS2FB Point_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 ColorTex = tex2D(SampleTex0, Input.Tex0.xy);
 
 	Output.Color = ColorTex  * Input.Color;
-	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
 
 	return Output;
 }
@@ -115,7 +122,7 @@ struct VS2PS_Line
 
 VS2PS_Line Line_VS(APP2PS Input)
 {
-	VS2PS_Line Output;
+	VS2PS_Line Output = (VS2PS_Line)0;
 
 	float3 CellPos = _CellPositions[Input.Data.x];
 	float3 ParticlePos = Input.Pos + CellPos;
@@ -127,17 +134,22 @@ VS2PS_Line Line_VS(APP2PS Input)
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.Tex0.xy = Input.Tex0;
-	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	return Output;
 }
 
 PS2FB Line_PS(VS2PS_Line Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = Input.Color;
-	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
 
 	return Output;
 }
@@ -174,7 +186,7 @@ struct VS2PS_Cell
 
 VS2PS_Cell Cells_VS(APP2PS Input)
 {
-	VS2PS_Cell Output;
+	VS2PS_Cell Output = (VS2PS_Cell)0;
 
 	float3 CellPos = _CellPositions[Input.Data.x];
 	float3 ParticlePos = Input.Pos + CellPos;
@@ -182,17 +194,22 @@ VS2PS_Cell Cells_VS(APP2PS Input)
 	Output.Color = saturate(_ParticleColor);
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.Tex0.xy = Input.Tex0;
-	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	return Output;
 }
 
 PS2FB Cells_PS(VS2PS_Cell Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = Input.Color;
-	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
 
 	return Output;
 }

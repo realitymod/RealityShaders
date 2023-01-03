@@ -30,26 +30,33 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS PointLight_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	return Output;
 }
 
 PS2FB PointLight_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = _LightColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	return Output;
 }
@@ -89,27 +96,33 @@ struct VS2PS_Spot
 
 VS2PS_Spot SpotLight_VS(APP2VS Input)
 {
-	VS2PS_Spot Output;
+	VS2PS_Spot Output = (VS2PS_Spot)0;
+
  	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 
 	// Transform vertex
 	float3 VertPos = mul(float4(Input.Pos.xyz, 1.0), _WorldView);
 	Output.Pos.xyz = -normalize(VertPos);
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	return Output;
 }
 
 PS2FB SpotLight_PS(VS2PS_Spot Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float3 LightVec = normalize(Input.Pos.xyz);
 	float3 LightDir = normalize(mul(_SpotDir, (float3x3)_WorldView));
 	float ConicalAtt = saturate(pow(saturate(dot(LightVec, LightDir)), 2.0) + (1.0 - _ConeAngle));
 
 	Output.Color = _LightColor * ConicalAtt;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	return Output;
 }

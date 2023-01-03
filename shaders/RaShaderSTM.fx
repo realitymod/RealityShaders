@@ -70,7 +70,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 /*
@@ -95,7 +97,9 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	// Output HPos
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
 	Output.Pos.xyz = ObjectPos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// Output object-space properties
 	Output.ObjectTangent = ObjectTBN[0];
@@ -226,7 +230,7 @@ float3 GetLightVec(float3 ObjectPos)
 
 PS2FB StaticMesh_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	// Get object-space properties
 	float3 ObjectPos = Input.Pos.xyz;
@@ -279,7 +283,10 @@ PS2FB StaticMesh_PS(VS2PS Input)
 	OutputColor.a = ColorMap.a;
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));

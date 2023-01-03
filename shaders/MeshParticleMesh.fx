@@ -61,7 +61,9 @@ VS2PS Diffuse_VS(APP2VS Input)
 	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos.xyz = Pos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// Compute Cubic polynomial factors.
 	float Age = _AgeAndAlphaArray[IndexArray[0]][0];
@@ -74,8 +76,10 @@ VS2PS Diffuse_VS(APP2VS Input)
 	// Pass-through texcoords
 	Output.Tex0 = Input.TexCoord;
 
-	// Output depth (VS)
-	Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
+	#if defined(LOG_DEPTH)
+		// Output depth (VS)
+		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
+	#endif
 
 	return Output;
 }
@@ -93,7 +97,7 @@ float GetLMOffset(float3 Pos)
 // Renders 3D debris found in explosions like in PRBot4/Num6
 PS2FB Diffuse_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float2 GroundUV = GetGroundUV(Input.Pos.xyz);
 	float LMOffset = GetLMOffset(Input.Pos.xyz);
@@ -113,7 +117,7 @@ PS2FB Diffuse_PS(VS2PS Input)
 // Renders circular shockwave found in explosions like in PRBot4/Num6
 PS2FB Additive_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color;
 

@@ -44,17 +44,21 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS Lightning_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	Output.HPos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
 
 	Output.Tex0.xy = Input.TexCoords;
-	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Color = saturate(Input.Color);
 
@@ -63,13 +67,16 @@ VS2PS Lightning_VS(APP2VS Input)
 
 PS2FB Lightning_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 ColorTex = tex2D(SampleLightning, Input.Tex0.xy);
 
 	Output.Color = ColorTex * _LightningColor;
 	Output.Color.a *= Input.Color.a;
-	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
 
 	return Output;
 }

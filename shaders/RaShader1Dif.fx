@@ -62,7 +62,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS Diffuse_VS(APP2VS Input)
@@ -71,7 +73,9 @@ VS2PS Diffuse_VS(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 	Output.Pos.xyz = Input.Pos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Tex0 = Input.Tex0;
 
@@ -80,10 +84,13 @@ VS2PS Diffuse_VS(APP2VS Input)
 
 PS2FB Diffuse_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = tex2D(SampleDiffuseMap, Input.Tex0);
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, ObjectSpaceCamPos));
 

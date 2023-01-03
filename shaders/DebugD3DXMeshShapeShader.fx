@@ -48,7 +48,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 /*
@@ -63,12 +65,14 @@ float3 Diffuse(float3 Normal, uniform float4 LightDir)
 
 VS2PS Debug_Basic_1_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
  	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.rgb + Diffuse(Input.Normal, _LightDir) * _MaterialDiffuse.xyz;
@@ -79,12 +83,14 @@ VS2PS Debug_Basic_1_VS(APP2VS Input)
 
 VS2PS Debug_Basic_2_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.rgb;
@@ -95,10 +101,13 @@ VS2PS Debug_Basic_2_VS(APP2VS Input)
 
 PS2FB Debug_Basic_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = Input.Diffuse;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	return Output;
 }
@@ -133,12 +142,14 @@ technique t0
 
 VS2PS Debug_Occluder_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float4 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Diffuse = 1.0;
 
@@ -147,10 +158,13 @@ VS2PS Debug_Occluder_VS(APP2VS Input)
 
 PS2FB Debug_Occluder_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = float4(1.0, 0.5, 0.5, 0.5);
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	return Output;
 }
@@ -185,20 +199,21 @@ technique occluder
 
 VS2PS Debug_Editor_VS(APP2VS Input, uniform float AmbientColorFactor = 1.0)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float4 Pos = Input.Pos;
-
 	float4 TempPos = Input.Pos;
 	TempPos.z += 0.5;
 
 	float RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, TempPos.z);
 	Pos.xy *= RadScale;
-
 	Pos = mul(Pos, _World);
+
 	Output.HPos = mul(Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Diffuse.xyz = _MaterialAmbient.rgb * AmbientColorFactor;
 	Output.Diffuse.w = _MaterialAmbient.a;
@@ -244,12 +259,14 @@ technique EditorDebug
 
 VS2PS Debug_CollisionMesh_VS(APP2VS Input, uniform float MaterialFactor = 1.0)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Diffuse.xyz = (_MaterialAmbient.rgb * MaterialFactor) + 0.1 * Diffuse(Input.Normal, float4(-1.0, -1.0, 1.0, 0.0)) * (_MaterialDiffuse.rgb * MaterialFactor);
 	Output.Diffuse.w = 0.8f;
@@ -396,14 +413,16 @@ struct VS2PS_Grid
 
 VS2PS_Grid Debug_Grid_VS(APP2VS Input)
 {
-	VS2PS_Grid Output;
+	VS2PS_Grid Output = (VS2PS_Grid)0;
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 
 	Output.Tex0.xy = (Input.Pos.xz * 0.5) + 0.5;
 	Output.Tex0.xy *= _TextureScale;
-	Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.rgb + Diffuse(Input.Normal, _LightDir) * _MaterialDiffuse.xyz;
@@ -414,7 +433,7 @@ VS2PS_Grid Debug_Grid_VS(APP2VS Input)
 
 PS2FB Debug_Grid_PS(VS2PS_Grid Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 Tex = tex2D(SampleTex0, Input.Tex0.xy);
 
@@ -423,7 +442,10 @@ PS2FB Debug_Grid_PS(VS2PS_Grid Input)
 	OutputColor.a = (1.0 - Tex.b); // * Input.Diffuse.a;
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
 
 	return Output;
 }
@@ -458,7 +480,7 @@ technique grid
 
 VS2PS Debug_SpotLight_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float4 Pos = Input.Pos;
 	Pos.z += 0.5;
@@ -468,7 +490,9 @@ VS2PS Debug_SpotLight_VS(APP2VS Input)
 
 	Output.HPos = mul(Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Diffuse.rgb = _MaterialAmbient.rgb;
 	Output.Diffuse.a = _MaterialAmbient.a;
@@ -524,12 +548,14 @@ technique spotlight
 
 VS2PS Debug_PivotBox_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float4 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.rgb = _MaterialAmbient.rgb;
@@ -584,7 +610,7 @@ technique pivotBox
 
 VS2PS Debug_Pivot_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float4 Pos = Input.Pos;
 	float RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, Pos.z + 0.5);
@@ -592,7 +618,9 @@ VS2PS Debug_Pivot_VS(APP2VS Input)
 	Pos = mul(Pos, _World);
 	Output.HPos = mul(Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.rgb = _MaterialAmbient.rgb;
@@ -660,11 +688,13 @@ struct VS2PS_Frustum
 
 VS2PS_Frustum Debug_Frustum_VS(APP2VS_Frustum Input)
 {
-	VS2PS_Frustum Output;
+	VS2PS_Frustum Output = (VS2PS_Frustum)0;
 
 	Output.HPos = mul(Input.Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Color = Input.Color;
 
@@ -673,10 +703,13 @@ VS2PS_Frustum Debug_Frustum_VS(APP2VS_Frustum Input)
 
 PS2FB Debug_Frustum_PS(VS2PS_Frustum Input, uniform float AlphaValue)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = float4(Input.Color.rgb, Input.Color.a * AlphaValue);
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	return Output;
 }

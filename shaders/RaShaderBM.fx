@@ -97,7 +97,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 float4x3 GetSkinnedWorldMatrix(APP2VS Input)
@@ -148,7 +150,10 @@ VS2PS BundledMesh_VS(APP2VS Input)
 
 	// Output world-space properties
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
 	Output.WorldTangent = WorldTBN[0];
 	Output.WorldBinormal = WorldTBN[1];
 	Output.WorldNormal = WorldTBN[2];
@@ -200,7 +205,7 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 
 PS2FB BundledMesh_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	// Get world-space properties
 	float3 WorldPos = Input.Pos;
@@ -363,7 +368,10 @@ PS2FB BundledMesh_PS(VS2PS Input)
 
 	Output.Color.rgb = OutputColor.rgb;
 	Output.Color.a = Alpha * Transparency.a;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));

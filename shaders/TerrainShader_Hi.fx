@@ -28,7 +28,7 @@ struct VS2PS_FullDetail_Hi
 
 VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared Input)
 {
-	VS2PS_FullDetail_Hi Output;
+	VS2PS_FullDetail_Hi Output = (VS2PS_FullDetail_Hi)0;
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
@@ -40,7 +40,9 @@ VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared Input)
 	// tl: output HPos as early as possible.
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	// tl: uncompress normal
 	Output.P_Normal_Fade.xyz = normalize((Input.Normal * 2.0) - 1.0);
@@ -74,7 +76,7 @@ VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared Input)
 
 PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform bool UseEnvMap)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.zw);
@@ -145,7 +147,10 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#endif
 
 	Output.Color = float4(OutputColor, 1.0);
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 

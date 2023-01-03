@@ -101,7 +101,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS Editor_Road_VS(APP2VS Input)
@@ -123,14 +125,16 @@ VS2PS Editor_Road_VS(APP2VS Input)
 	Output.LightTex.zw = Output.HPos.zw;
 
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	return Output;
 }
 
 PS2FB Editor_Road_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
 	#if defined(USE_DETAIL)
@@ -142,7 +146,10 @@ PS2FB Editor_Road_PS(VS2PS Input)
 	OutputColor.a *= GetRoadZFade(Input.Pos, WorldSpaceCamPos, RoadFadeOut);
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, WorldSpaceCamPos));
 

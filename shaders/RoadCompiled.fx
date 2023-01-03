@@ -61,7 +61,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 float4 ProjToLighting(float4 HPos)
@@ -76,14 +78,16 @@ float4 ProjToLighting(float4 HPos)
 
 VS2PS RoadCompiled_VS(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0;
 
 	float4 WorldPos = Input.Pos;
 	WorldPos.y += 0.01;
 
 	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos.xyz = Input.Pos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.TexA = float4(Input.Tex0, Input.Tex1);
 	Output.LightTex = ProjToLighting(Output.HPos);
@@ -95,7 +99,7 @@ VS2PS RoadCompiled_VS(APP2VS Input)
 
 PS2FB RoadCompiled_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	float3 LocalPos = Input.Pos.xyz;
 	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
@@ -124,7 +128,10 @@ PS2FB RoadCompiled_PS(VS2PS Input)
 	}
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos));
 

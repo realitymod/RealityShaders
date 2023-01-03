@@ -56,7 +56,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	float Depth : DEPTH;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
@@ -113,7 +115,9 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	// Output HPos
 	Output.HPos = mul(SkinnedObjPos, WorldViewProjection);
 	Output.Pos.xyz = WorldPos.xyz;
-	Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Tex0 = Input.TexCoord0;
 
@@ -158,7 +162,7 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 
 PS2FB SkinnedMesh_PS(VS2PS Input)
 {
-	PS2FB Output;
+	PS2FB Output = (PS2FB)0;
 
 	// Get world-space properties
 	float3 WorldPos = Input.Pos.xyz;
@@ -245,7 +249,10 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 	}
 
 	Output.Color = OutputColor;
-	Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
