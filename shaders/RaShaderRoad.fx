@@ -150,11 +150,7 @@ PS2FB Road_PS(VS2PS Input)
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.TexA.xy);
 	#if defined(USE_DETAIL)
 		float4 Detail = tex2D(SampleDetailMap, Input.TexA.zw);
-		#if defined(NO_BLEND)
-			Diffuse.rgb *= Detail.rgb;
-		#else
-			Diffuse *= Detail;
-		#endif
+		Diffuse *= Detail;
 	#endif
 
 	// On thermals no shadows
@@ -170,7 +166,7 @@ PS2FB Road_PS(VS2PS Input)
 	}
 
 	#if defined(NO_BLEND)
-		Diffuse.a = (Diffuse.a <= 0.95) ? 1.0 : ZFade;
+		Diffuse.a = ZFade;
 	#else
 		Diffuse.a *= ZFade;
 	#endif

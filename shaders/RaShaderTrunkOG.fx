@@ -70,6 +70,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS TrunkOG_VS(APP2VS Input)
@@ -78,15 +81,13 @@ VS2PS TrunkOG_VS(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 	Output.Pos = Input.Pos * PosUnpack;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	Output.Tex0.xy = Input.Tex0 / 32767.0;
 	Output.Tex0.z = Input.Pos.w / 32767.0;
 	Output.Normal = normalize((Input.Normal * 2.0) - 1.0);
-
-	#if defined(LOG_DEPTH)
-		// Output depth (VS)
-		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
-	#endif
 
 	return Output;
 }
@@ -113,6 +114,10 @@ PS2FB TrunkOG_PS(VS2PS Input)
 	OutputColor.a = Transparency.a;
 
 	Output.Color = OutputColor;
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	ApplyFog(Output.Color.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
 

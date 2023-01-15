@@ -112,7 +112,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	#if defined(LOG_DEPTH) && !defined(OVERGROWTH)
+	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
 };
@@ -162,11 +162,6 @@ VS2PS Leaf_VS(APP2VS Input)
 		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
 	#endif
 
-	#if defined(LOG_DEPTH) && defined(OVERGROWTH)
-		// Output depth (VS)
-		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
-	#endif
-
 	return Output;
 }
 
@@ -197,7 +192,7 @@ PS2FB Leaf_PS(VS2PS Input)
 
 	Output.Color = OutputColor;
 
-	#if defined(LOG_DEPTH) && !defined(OVERGROWTH)
+	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
