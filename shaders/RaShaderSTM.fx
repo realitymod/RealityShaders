@@ -150,9 +150,8 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 		Diffuse = tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy);
 	#endif
 
-	#if _PARALLAXDETAIL_
-		float4 Detail = tex2D(SampleDetailMap, GetParallax(Input.BaseAndDetail.zw, TanEyeVec));
-	#elif _DETAIL_
+	// TODO: Fix parallax mapping
+	#if (_DETAIL_ || _PARALLAXDETAIL_)
 		float4 Detail = tex2D(SampleDetailMap, Input.BaseAndDetail.zw);
 	#endif
 
