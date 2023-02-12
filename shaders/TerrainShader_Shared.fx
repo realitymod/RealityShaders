@@ -280,7 +280,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex);
 
 	// If thermals assume no shadows and gray color
-	if (FogColor.r < 0.01)
+	if (IsTisActive())
 	{
 		TerrainLights = (TerrainSunColor + AccumLights) * 2.0;
 		ColorMap.rgb = 1.0 / 3.0;
@@ -556,7 +556,7 @@ PS2FB Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input)
 	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex) * 2.0;
 
 	// If thermals assume gray color
-	if (FogColor.r < 0.01)
+	if (IsTisActive())
 	{
 		ColorMap.rgb = 1.0 / 3.0;
 	}

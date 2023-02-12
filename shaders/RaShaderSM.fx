@@ -239,7 +239,7 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 	OutputColor.a = ColorMap.a * Transparency.a;
 
 	// Thermals
-	if (FogColor.r < 0.01)
+	if (IsTisActive())
 	{
 		#if _HASENVMAP_ // If EnvMap enabled, then should be hot on thermals
 			OutputColor.rgb = float3(lerp(0.60, 0.30, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25

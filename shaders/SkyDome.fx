@@ -66,6 +66,21 @@ float GetFadeOut(float3 Pos)
 	return saturate(FadeOut * (Pos.y > 0.0));
 }
 
+bool IsTisActive()
+{
+	return _UnderwaterFog.r < 0.01;
+}
+
+float4 ApplyTis(in out float4 color)
+{
+	// TIS uses Green + Red channel to determine heat
+	// We move the Green channel into red and reduce it by fixed value to make sky cold
+	color.r = color.g - 0.66;
+	// Green we set to 1 to remove the influence of it on the result
+	color.g = 1;
+	return color;
+}
+
 /*
 	General SkyDome shaders
 */
@@ -107,6 +122,12 @@ PS2FB SkyDome_PS(VS2PS_SkyDome Input)
 	float4 Cloud1 = tex2D(SampleTex1, Input.TexA.zw) * GetFadeOut(Input.Pos.xyz);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
+	
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
 
 	return Output;
 }
@@ -120,6 +141,12 @@ PS2FB SkyDome_Lit_PS(VS2PS_SkyDome Input)
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
+	
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
 
 	return Output;
 }
@@ -160,6 +187,12 @@ PS2FB SkyDome_DualClouds_PS(VS2PS_DualClouds Input)
 	float4 Temp = (Cloud1 + Cloud2) * GetFadeOut(Input.Pos.xyz);
 
 	Output.Color = lerp(SkyDome, Temp, Temp.a);
+	
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
 
 	return Output;
 }
@@ -193,6 +226,12 @@ PS2FB SkyDome_NoClouds_PS(VS2PS_NoClouds Input)
 	PS2FB Output = (PS2FB)0;
 
 	Output.Color = tex2D(SampleTex0, Input.Tex0);
+	
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
 
 	return Output;
 }
@@ -205,6 +244,12 @@ PS2FB SkyDome_NoClouds_Lit_PS(VS2PS_NoClouds Input)
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = SkyDome;
+	
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
 
 	return Output;
 }

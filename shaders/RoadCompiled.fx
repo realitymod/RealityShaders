@@ -116,7 +116,7 @@ PS2FB RoadCompiled_PS(VS2PS Input)
 	OutputColor.a = Detail0.a * saturate(ZFade * Input.Alpha);
 
 	// On thermals no shadows
-	if (FogColor.r < 0.01)
+	if (IsTisActive())
 	{
 		TerrainLights = (TerrainSunColor + AccumLights.rgb) * 2.0;
 		OutputColor.rgb *= TerrainLights;

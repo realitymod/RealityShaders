@@ -1,6 +1,7 @@
 
 /*
 	Description: Renders objects with leaf-like characteristics
+	Special Thanks: [FH2]Remdul for the overgrowth fix
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -28,6 +29,7 @@ uniform float4 PosUnpack;
 uniform float2 NormalUnpack;
 uniform float TexUnpack;
 uniform float4 ObjectSpaceCamPos;
+uniform float4 WorldSpaceCamPos;
 uniform float ObjRadius = 2;
 Light Lights[1];
 
@@ -50,8 +52,9 @@ string GlobalParameters[] =
 	"GlobalTime",
 	"FogRange",
 	#if !defined(_POINTLIGHT_)
-		"FogColor"
+		"FogColor",
 	#endif
+	"WorldSpaceCamPos",
 };
 
 string InstanceParameters[] =
@@ -60,6 +63,7 @@ string InstanceParameters[] =
 		"ShadowProjMat",
 		"ShadowTrapMat",
 	#endif
+	"World",
 	"WorldViewProjection",
 	"Transparency",
 	"WindSpeed",
@@ -117,6 +121,39 @@ struct PS2FB
 	#endif
 };
 
+struct Vertex
+{
+	float3 WorldPos;
+	float3 LightVec;
+};
+
+float3 GetWorldLightPos()
+{
+	return mul(float4(Lights[0].pos.xyz, 1.0), World);
+}
+
+Vertex GetVertexAttrib(float3 ObjectPos)
+{
+	Vertex Output = (Vertex)0;
+
+	// Compute world-space position
+	#if defined(OVERGROWTH)
+		ObjectPos *= PosUnpack.xyz;
+		Output.WorldPos = ObjectPos + (WorldSpaceCamPos.xyz - ObjectSpaceCamPos.xyz);
+	#else
+		Output.WorldPos = mul(float4(ObjectPos.xyz, 1.0), World).xyz;
+	#endif
+
+	// Compute world-space light vector
+	#if defined(_POINTLIGHT_)
+		Output.LightVec = GetWorldLightPos() - Output.WorldPos;
+	#else
+		Output.LightVec = mul(-Lights[0].dir.xyz, (float3x3)World);
+	#endif
+
+	return Output;
+}
+
 VS2PS Leaf_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
@@ -130,7 +167,9 @@ VS2PS Leaf_VS(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 
-	Output.Pos.xyz = Input.Pos.xyz;
+	Vertex Vtx = GetVertexAttrib(Input.Pos.xyz);
+
+	Output.Pos.xyz = Vtx.WorldPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
@@ -144,13 +183,12 @@ VS2PS Leaf_VS(APP2VS Input)
 		Output.Tex0.xy *= TexUnpack;
 	#endif
 
-	#if defined(_POINTLIGHT_)
-		float3 LightVec = normalize(Lights[0].pos.xyz - Input.Pos.xyz);
-	#else
-		float3 LightVec = -Lights[0].dir.xyz;
-	#endif
+	// Calculate light vector
+	Vtx.LightVec = normalize(Vtx.LightVec);
 
-	Output.Tex0.z = saturate((dot(Input.Normal.xyz, LightVec) * 0.5) + 0.5);
+	// Calculate per-vertex lighting
+	Output.Tex0.z = dot(Input.Normal.xyz, Vtx.LightVec);
+	Output.Tex0.z = saturate((Output.Tex0.z * 0.5) + 0.5);
 
 	#if defined(OVERGROWTH)
 		Output.Tex0.w = Input.Pos.w / 32767.0;
@@ -171,8 +209,7 @@ PS2FB Leaf_PS(VS2PS Input)
 
 	float DotLN = Input.Tex0.z;
 	float LodScale = Input.Tex0.w;
-	float3 ObjectPos = Input.Pos.xyz;
-	float3 LightVec = Lights[0].pos.xyz - ObjectPos;
+	float3 WorldPos = Input.Pos.xyz;
 
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	#if _HASSHADOW_
@@ -196,17 +233,16 @@ PS2FB Leaf_PS(VS2PS Input)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
+	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos);
+
 	#if defined(_POINTLIGHT_)
+		float3 LightVec = GetWorldLightPos() - WorldPos;
 		Output.Color.rgb *= GetLightAttenuation(LightVec, Lights[0].attenuation);
-		Output.Color.rgb *= GetFogValue(ObjectPos, ObjectSpaceCamPos);
+		Output.Color.rgb *= FogValue;
 	#endif
 
 	#if !defined(_POINTLIGHT_)
-		#if defined(OVERGROWTH)
-			ApplyFog(Output.Color.rgb, GetFogValue(ObjectPos * PosUnpack.xyz, ObjectSpaceCamPos));
-		#else
-			ApplyFog(Output.Color.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
-		#endif
+		ApplyFog(Output.Color.rgb, FogValue);
 	#endif
 
 	return Output;

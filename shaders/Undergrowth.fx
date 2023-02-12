@@ -128,7 +128,7 @@ PS2FB Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
-	if (FogColor.r < 0.01)
+	if (IsTisActive())
 	{
 		TerrainColor = 1.0 / 3.0;
 	}
@@ -367,7 +367,7 @@ PS2FB Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
-	if (FogColor.r < 0.01)
+	if (IsTisActive())
 	{
 		TerrainColor = 1.0 / 3.0;
 	}

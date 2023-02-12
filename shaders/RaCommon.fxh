@@ -48,6 +48,14 @@
 
 	uniform float4 FogRange : fogRange;
 	uniform float4 FogColor : fogColor;
+	
+	/*
+		Shared Thermal code
+	*/
+	bool IsTisActive()
+	{
+		return FogColor.r < 0.01;
+	}
 
 	/*
 		Shared fogging and fading functions
@@ -64,12 +72,34 @@
 
 	void ApplyFog(inout float3 Color, in float FogValue)
 	{
-		Color = lerp(FogColor.rgb, Color, FogValue);
+		float3 fogColor = FogColor.rgb;
+		// Adjust fog for thermals same way as the sky in SkyDome
+		if (IsTisActive())
+		{
+			// TIS uses Green + Red channel to determine heat
+			// We move the Green channel into red and reduce it by fixed value to make sky cold
+			fogColor.r = fogColor.g - 0.66;
+			// Green we set to 1 to remove the influence of it on the result
+			fogColor.g = 1;
+		}
+	
+		Color = lerp(fogColor, Color, FogValue);
 	}
 
 	void ApplyLinearFog(inout float3 Color, in float FogValue)
 	{
-		Color = lerp(SRGBToLinearEst(FogColor).rgb, Color, FogValue);
+		float4 fogColor = FogColor;
+		// Adjust fog for thermals same way as the sky in SkyDome
+		if (IsTisActive())
+		{
+			// TIS uses Green + Red channel to determine heat
+			// We move the Green channel into red and reduce it by fixed value to make sky cold
+			fogColor.r = fogColor.g - 0.66;
+			// Green we set to 1 to remove the influence of it on the result
+			fogColor.g = 1;
+		}
+    
+		Color = lerp(SRGBToLinearEst(fogColor).rgb, Color, FogValue);
 	}
 
 	float GetRoadZFade(float3 ObjectPos, float3 CameraPos, float2 FadeValues)

@@ -154,7 +154,7 @@ PS2FB Road_PS(VS2PS Input)
 	#endif
 
 	// On thermals no shadows
-	if (FogColor.r < 0.01)
+	if (IsTisActive())
 	{
 		Light = (TerrainColor + AccumLights.rgb) * 2.0;
 		Diffuse.rgb *= Light;

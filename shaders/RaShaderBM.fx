@@ -321,7 +321,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	#endif
 
 	// Thermals
-	if (FogColor.r < 0.01)
+	if (IsTisActive())
 	{
 		#if _HASGIMAP_
 			if (GI_TIS.a < 0.01)

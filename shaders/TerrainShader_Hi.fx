@@ -107,7 +107,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color
-		if (FogColor.r < 0.01)
+		if (IsTisActive())
 		{
 			TerrainLights = (TerrainSunColor + AccumLights.rgb) * 2.0;
 			ColorMap.rgb = 1.0 / 3.0;

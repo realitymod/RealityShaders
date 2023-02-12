@@ -223,7 +223,7 @@ PS2FB Water_PS(in VS2PS Input)
 	OutputColor.rgb = WaterLerp + (Specular * LightFactors);
 
 	// Thermals
-	if (FogColor.r < 0.01)
+	if (IsTisActive())
 	{
 		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
