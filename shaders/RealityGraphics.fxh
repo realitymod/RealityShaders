@@ -167,4 +167,23 @@
 		float SqDistance = dot(LightVec, LightVec);
 		return saturate(1.0 - (SqDistance * Attenuation));
 	}
+
+	// Sorry DICE, we're yoinking your code - Project Reality
+	// Function to generate world-space normals from terrain heightmap
+	// Source: https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/chapter5-andersson-terrain-rendering-in-frostbite.pdf
+	float3 GetNormalsFromHeight(sampler SampleHeight, float2 TexCoord)
+	{
+		float2 TexelSize = float2(ddx(TexCoord.x), ddy(TexCoord.y));
+		float4 H;
+		H[0] = tex2D(SampleHeight, TexCoord + (TexelSize * float2( 0.0,-1.0))).a;
+		H[1] = tex2D(SampleHeight, TexCoord + (TexelSize * float2(-1.0, 0.0))).a;
+		H[2] = tex2D(SampleHeight, TexCoord + (TexelSize * float2( 1.0, 0.0))).a;
+		H[3] = tex2D(SampleHeight, TexCoord + (TexelSize * float2( 0.0, 1.0))).a;
+
+		float3 N;
+		N.z = H[0] - H[3];
+		N.x = H[1] - H[2];
+		N.y = 2.0;
+		return normalize(N);
+	}
 #endif

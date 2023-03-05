@@ -183,11 +183,14 @@ VS2PS Leaf_VS(APP2VS Input)
 		Output.Tex0.xy *= TexUnpack;
 	#endif
 
-	// Calculate light vector
-	Vtx.LightVec = normalize(Vtx.LightVec);
+	#if defined(_POINTLIGHT_)
+		float3 LightVec = normalize(Lights[0].pos.xyz - Input.Pos.xyz);
+	#else
+		float3 LightVec = -Lights[0].dir.xyz;
+	#endif
 
 	// Calculate per-vertex lighting
-	Output.Tex0.z = dot(Input.Normal.xyz, Vtx.LightVec);
+	Output.Tex0.z = dot(Input.Normal, LightVec);
 	Output.Tex0.z = saturate((Output.Tex0.z * 0.5) + 0.5);
 
 	#if defined(OVERGROWTH)

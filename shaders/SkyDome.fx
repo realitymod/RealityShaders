@@ -74,10 +74,10 @@ bool IsTisActive()
 float4 ApplyTis(in out float4 color)
 {
 	// TIS uses Green + Red channel to determine heat
-	// We move the Green channel into red and reduce it by fixed value to make sky cold
-	color.r = color.g - 0.66;
-	// Green we set to 1 to remove the influence of it on the result
-	color.g = 1;
+	color.r = 0;
+    // Green = 1 means cold, Green = 0 hot. Invert channel so clouds (high green) become hot
+    // Add constant to make everything colder
+	color.g = (1 - color.g) + 0.5;
 	return color;
 }
 
@@ -109,7 +109,14 @@ PS2FB SkyDome_UnderWater_PS(VS2PS_SkyDome Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	Output.Color = _UnderwaterFog;
+    if (IsTisActive())
+    {
+        Output.Color = 0;
+    }
+    else
+    {
+        Output.Color = _UnderwaterFog;
+    }
 
 	return Output;
 }
