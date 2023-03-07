@@ -91,6 +91,28 @@
 		float ViewAngle = dot(WorldNormal, ViewVec);
 		return saturate(1.0 - abs(ViewAngle));
 	}
+
+	// Christian Schuler, "Normal Mapping without Precomputed Tangents", ShaderX 5, Chapter 2.6, pp. 131-140
+	// See also follow-up blog post: http://www.thetenthplanet.de/archives/1180
+	float3x3 CalculateTBN(float3 Pos, float3 Normal, float2 Tex)
+	{
+		float3 DPos1 = ddx(Pos);
+		float3 DPos2 = ddy(Pos);
+		float2 DTex1 = ddx(Tex);
+		float2 DTex2 = ddy(Tex);
+
+		float3x3 M = float3x3(DPos1, DPos2, cross(DPos1, DPos2));
+		float2x3 InverseM = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+		float3 Tangent = normalize(mul(float2(DTex1.x, DTex2.x), InverseM));
+		float3 BiTangent = normalize(mul(float2(DTex1.y, DTex2.y), InverseM));
+		return float3x3(Tangent, BiTangent, Normal);
+	}
+
+	float3 PeturbNormal(float3 LocalNormal, float3 Pos, float3 Normal, float2 Tex)
+	{
+		float3x3 TBN = CalculateTBN(Pos, Normal, Tex);
+		return normalize(mul(LocalNormal, TBN));
+	}
 #endif
 
 // Depth-based functions

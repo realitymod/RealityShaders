@@ -110,7 +110,7 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform bool ShadowMapEnable)
 	Output.TexA.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
-	Output.Scale = Input.Packed.w;
+	Output.Scale = Input.Packed.w * 0.5;
 
 	return Output;
 }
@@ -142,7 +142,7 @@ PS2FB Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	}
 	Lights = saturate(Lights);
 
-	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale);
+	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale) * 2.0;
 	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
 	TerrainLight += (TerrainSunColor) * (TerrainShadow.rgb * TerrainLightMap.y);
 	TerrainLight += Lights;
@@ -345,7 +345,7 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform bool ShadowMapEn
 	#endif
 
 	Output.Tex0.xy = Input.Tex0 / 32767.0;
-	Output.Tex0.z = Input.Packed.w;
+	Output.Tex0.z = Input.Packed.w * 0.5;
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
 	Output.TerrainColorMap = saturate(Input.TerrainColorMap);
@@ -381,7 +381,7 @@ PS2FB Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	}
 	Lights = saturate(Lights);
 
-	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z);
+	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z) * 2.0;
 	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
 	TerrainLight += (TerrainSunColor * (TerrainShadow.rgb * TerrainLightMap.y));
 	TerrainLight += Lights;
