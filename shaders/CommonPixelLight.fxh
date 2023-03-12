@@ -13,8 +13,6 @@
 		float3 col;
 	};
 
-	PointLightData _PointLight : POINTLIGHT;
-
 	struct SpotLightData
 	{
 		float3 pos;
@@ -25,6 +23,7 @@
 		float oneminusconeAngle;
 	};
 
+	PointLightData _PointLight : POINTLIGHT;
 	SpotLightData _SpotLight : SPOTLIGHT;
 
 	float4 _LightPosAndAttSqrInv : LightPositionAndAttSqrInv;

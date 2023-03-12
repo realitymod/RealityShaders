@@ -186,8 +186,7 @@
 	// Gets radial light attenuation value for pointlights
 	float GetLightAttenuation(float3 LightVec, float Attenuation)
 	{
-		float SqDistance = dot(LightVec, LightVec);
-		return saturate(1.0 - (SqDistance * Attenuation));
+		return saturate(1.0 - dot(LightVec, LightVec) * Attenuation);
 	}
 
 	// Sorry DICE, we're yoinking your code - Project Reality

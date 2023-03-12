@@ -91,7 +91,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float3 TerrainSunColor = _SunColor.rgb * 2.0;
-	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
+	float3 TerrainLights = (TerrainSunColor * AccumLights.a) + AccumLights.rgb;
 
 	#if defined(LIGHTONLY)
 		float3 OutputColor = TerrainLights;
@@ -109,7 +109,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		// If thermals assume no shadows and gray color
 		if (IsTisActive())
 		{
-			TerrainLights = (TerrainSunColor + AccumLights.rgb) * 2.0;
+			TerrainLights = TerrainSunColor + AccumLights.rgb;
 			ColorMap.rgb = 1.0 / 3.0;
 		}
 
@@ -136,13 +136,13 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 
 		float4 BothDetailMap = (DetailMap * LowDetailMap) * 2.0;
 		float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
-		float3 OutputColor = ColorMap.rgb * OutputDetail.rgb * TerrainLights;
+		float3 OutputColor = ColorMap.rgb * OutputDetail.rgb * TerrainLights * 2.0;
 
 		if (UseEnvMap)
 		{
 			float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
 			float3 EnvMapColor = texCUBE(SamplerTex6_Cube, Reflection);
-			OutputColor = saturate(lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue)));
+			OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue));
 		}
 	#endif
 

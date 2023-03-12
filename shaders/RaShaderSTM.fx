@@ -274,6 +274,7 @@ PS2FB StaticMesh_PS(VS2PS Input)
 		float3 BumpedDiffuse = Light.Diffuse + Ambient;
 
 		Light.Diffuse = lerp(Ambient, BumpedDiffuse, Lightmap.g);
+		Light.Diffuse += (Lightmap.r * SinglePointColor);
 		Light.Specular = Light.Specular * Lightmap.g;
 
 		OutputColor.rgb = ((ColorMap.rgb * 2.0) * Light.Diffuse) + Light.Specular;

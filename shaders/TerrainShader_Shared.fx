@@ -150,8 +150,7 @@ PS2FB Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input)
 struct VS2PS_Shared_PointLight
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0;
-	float3 Normal : TEXCOORD1;
+	float4 Tex : TEXCOORD0; // .rgb = Lighting; .w = Depth;
 };
 
 VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
@@ -166,12 +165,18 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos = WorldPos;
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Tex.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	Output.Normal = normalize((Input.Normal * 2.0) - 1.0);
+	// Calculate lighting in the vertex shader (precision reasons)
+	float3 LightVec = _PointLight.pos - WorldPos;
+	float3 WorldNormal = normalize((Input.Normal * 2.0) - 1.0);
+
+	float Attenuation = GetLightAttenuation(LightVec, _PointLight.attSqrInv);
+	float3 CosAngle = dot(WorldNormal, normalize(LightVec)) * Attenuation;
+
+	Output.Tex.rgb = CosAngle * _PointLight.col;
 
 	return Output;
 }
@@ -180,22 +185,10 @@ PS2FB Shared_PointLight_PS(VS2PS_Shared_PointLight Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float3 WorldPos = Input.Pos.xyz;
-	float3 WorldNormal = normalize(Input.Normal);
-
-	float3 LightVec = _PointLight.pos - WorldPos;
-	float Attenuation = GetLightAttenuation(LightVec, _PointLight.attSqrInv);
-
-	LightVec = normalize(LightVec);
-	float3 CosAngle = dot(WorldNormal, LightVec);
-	float4 OutputColor = float4(saturate((CosAngle * _PointLight.col) * Attenuation), 0.0);
-
-	OutputColor *= GetFogValue(WorldPos, _CameraPos);
-
-	Output.Color = OutputColor;
+	Output.Color = float4(Input.Tex.rgb, 0.0);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex.w);
 	#endif
 
 	return Output;
