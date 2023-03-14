@@ -95,14 +95,14 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 
 	// Get world-space properties
 	float4 WorldPos = mul(SkinnedObjPos, World);
-	float4x3 SkinnedWorldMat = mul(GetBoneMatrix(Input, 0), World);
+	float3x3 WorldMat = mul(GetBoneMatrix(Input, 0), (float3x3)World);
 	#if _OBJSPACENORMALMAP_ // [Object Space] -> [Skinned Object Space] -> [Skinned World Space]
-		Output.Tangent = SkinnedWorldMat[0].xyz;
-		Output.Binormal = SkinnedWorldMat[1].xyz;
-		Output.Normal = SkinnedWorldMat[2].xyz;
+		Output.Tangent = WorldMat[0];
+		Output.Binormal = WorldMat[1];
+		Output.Normal = WorldMat[2];
 	#else // [Tangent Space] -> [Object Space] -> [Skinned Object Space] -> [Skinned World Space]
-		float3x3 ObjTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
-		float3x3 WorldTBN = mul(ObjTBN, (float3x3)SkinnedWorldMat);
+		float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
+		float3x3 WorldTBN = mul(ObjectTBN, WorldMat);
 		Output.Tangent = WorldTBN[0];
 		Output.Binormal = WorldTBN[1];
 		Output.Normal = WorldTBN[2];
