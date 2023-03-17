@@ -178,14 +178,6 @@ PS2FB FullDetail_Hi_EnvMap_PS(VS2PS_FullDetail_Hi Input)
 	High terrain technique
 */
 
-#define GET_RENDERSTATES_NV4X \
-	StencilEnable = TRUE; \
-	StencilFunc = NOTEQUAL; \
-	StencilRef = 0xa; \
-	StencilPass = KEEP; \
-	StencilZFail = KEEP; \
-	StencilFail = KEEP; \
-
 technique Hi_Terrain
 {
 	// Pass 0

@@ -127,12 +127,7 @@ technique Low_Terrain
 		DestBlend = ONE;
 
 		#if IS_NV4X
-			StencilEnable = TRUE;
-			StencilFunc = NOTEQUAL;
-			StencilRef = 0xa;
-			StencilPass = KEEP;
-			StencilZFail = KEEP;
-			StencilFail = KEEP;
+			GET_RENDERSTATES_NV4X
 		#endif
 
 		VertexShader = compile vs_3_0 Shared_PointLight_VS();

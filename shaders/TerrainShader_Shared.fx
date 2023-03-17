@@ -150,7 +150,8 @@ PS2FB Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input)
 struct VS2PS_Shared_PointLight
 {
 	float4 HPos : POSITION;
-	float4 Tex : TEXCOORD0; // .rgb = Lighting; .w = Depth;
+	float4 Pos : TEXCOORD0; // .rgb = Lighting; .w = Depth;
+	float3 Normal : TEXCOORD1;
 };
 
 VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
@@ -165,18 +166,13 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
+
+	Output.Pos.xyz = WorldPos.xyz;
 	#if defined(LOG_DEPTH)
-		Output.Tex.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	// Calculate lighting in the vertex shader (precision reasons)
-	float3 LightVec = _PointLight.pos - WorldPos;
-	float3 WorldNormal = normalize((Input.Normal * 2.0) - 1.0);
-
-	float Attenuation = GetLightAttenuation(LightVec, _PointLight.attSqrInv);
-	float3 CosAngle = dot(WorldNormal, normalize(LightVec)) * Attenuation;
-
-	Output.Tex.rgb = CosAngle * _PointLight.col;
+	Output.Normal = (Input.Normal * 2.0) - 1.0;
 
 	return Output;
 }
@@ -185,10 +181,18 @@ PS2FB Shared_PointLight_PS(VS2PS_Shared_PointLight Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	Output.Color = float4(Input.Tex.rgb, 0.0);
+	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldNormal = normalize(Input.Normal);
+
+	// Calculate lighting in the vertex shader (precision reasons)
+	float3 LightVec = _PointLight.pos - WorldPos;
+	float Attenuation = GetLightAttenuation(LightVec, _PointLight.attSqrInv);
+	float3 DotNL = dot(WorldNormal, normalize(LightVec)) * Attenuation;
+
+	Output.Color = float4(_PointLight.col * DotNL, 0.0);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -264,7 +268,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 TerrainSunColor = _SunColor * 2.0;
-	float4 TerrainLights = ((TerrainSunColor * AccumLights.a) + AccumLights) * 2.0;
+	float4 TerrainLights = ((TerrainSunColor * AccumLights.a) + AccumLights);
 
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
@@ -288,7 +292,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
-	float4 OutputColor = saturate((ColorMap * LowDetailMap) * TerrainLights);
+	float4 OutputColor = ColorMap * LowDetailMap * TerrainLights * 2.0;
 
 	// tl: changed a few things with this factor:
 	// - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.

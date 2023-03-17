@@ -119,7 +119,16 @@ uniform texture Tex6 : TEXLAYER6;
 CREATE_DYNAMIC_SAMPLER(sampler, SampleTex6_Wrap, Tex6, WRAP)
 CREATE_DYNAMIC_SAMPLER(samplerCUBE, SamplerTex6_Cube, Tex6, WRAP)
 
+#define GET_RENDERSTATES_NV4X \
+	StencilEnable = TRUE; \
+	StencilFunc = NOTEQUAL; \
+	StencilRef = 0xa; \
+	StencilPass = KEEP; \
+	StencilZFail = KEEP; \
+	StencilFail = KEEP; \
+
 #include "shaders/CommonPixelLight.fxh"
+
 #include "shaders/TerrainShader_Shared.fx"
 #if HIGHTERRAIN || MIDTERRAIN
 	#include "shaders/TerrainShader_Hi.fx"
