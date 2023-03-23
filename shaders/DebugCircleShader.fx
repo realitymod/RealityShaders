@@ -41,8 +41,7 @@ VS2PS Debug_Circle_VS(APP2VS Input)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	Output.Diffuse.xyz = Input.Diffuse.xyz;
-	Output.Diffuse.w = 0.8f;
+	Output.Diffuse = float4(Input.Diffuse.rgb, 0.8);
 
 	return Output;
 }

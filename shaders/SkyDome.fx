@@ -68,7 +68,7 @@ float GetFadeOut(float3 Pos)
 
 bool IsTisActive()
 {
-	return _UnderwaterFog.r < 0.01;
+	return _UnderwaterFog.r == 0;
 }
 
 float4 ApplyTis(in out float4 color)

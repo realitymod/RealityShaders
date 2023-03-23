@@ -10,8 +10,8 @@ float4x4 _World : World;
 
 string Category = "Effects\\Lighting";
 
-float4 _LightDir = { 1.0, 0.0, 0.0, 1.0 }; //light Direction
-float4 _LightDiffuse = { 1.0, 1.0, 1.0, 1.0 }; // Light Diffuse
+float4 _LightDir = { 1.0, 0.0, 0.0, 1.0 };
+float4 _LightDiffuse = { 1.0, 1.0, 1.0, 1.0 };
 float4 _MaterialAmbient : MATERIALAMBIENT = { 0.5, 0.5, 0.5, 1.0 };
 float4 _MaterialDiffuse : MATERIALDIFFUSE = { 1.0, 1.0, 1.0, 1.0 };
 
@@ -57,7 +57,7 @@ struct PS2FB
 
 float3 Diffuse(float3 Normal)
 {
-	// N.L Clamped
+	// Clamped N.L
 	return saturate(dot(Normal, _LightDir.xyz));
 }
 

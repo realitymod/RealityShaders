@@ -33,13 +33,12 @@ VS2PS Debug_Linegraph_VS(APP2VS Input)
 	VS2PS Output;
 
 	float2 ScreenPos = Input.ScreenPos + _GraphPos;
-	ScreenPos.x = ScreenPos.x / (_ViewportSize.x * 0.5) - 1.0;
-	ScreenPos.y = -(ScreenPos.y / (_ViewportSize.y * 0.5) - 1.0);
+	ScreenPos = ScreenPos / (_ViewportSize * 0.5) - 1.0;
 
-	Output.HPos.xy = ScreenPos;
-	Output.HPos.z = 0.001;
-	Output.HPos.w = 1.0;
+	Output.HPos = (ScreenPos.x, -ScreenPos.y, 0.001, 1.0);
+
 	Output.Color = Input.Color;
+
 	return Output;
 }
 

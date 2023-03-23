@@ -24,8 +24,8 @@ sampler SampleTex0 = sampler_state
 float _TextureScale : TEXTURESCALE;
 
 float4 _LightDir = { 1.0, 0.0, 0.0, 1.0 }; // Light Direction
-float4 _MaterialAmbient : MATERIALAMBIENT = {0.5, 0.5, 0.5, 1.0};
-float4 _MaterialDiffuse : MATERIALDIFFUSE = {1.0, 1.0, 1.0, 1.0};
+float4 _MaterialAmbient : MATERIALAMBIENT = { 0.5, 0.5, 0.5, 1.0 };
+float4 _MaterialDiffuse : MATERIALDIFFUSE = { 1.0, 1.0, 1.0, 1.0 };
 
 // float4 _Alpha : BLENDALPHA = { 1.0, 1.0, 1.0, 1.0 };
 
@@ -42,7 +42,6 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float4 Diffuse : TEXCOORD1;
 };
 
 struct PS2FB
@@ -53,37 +52,26 @@ struct PS2FB
 	#endif
 };
 
+// Clamped N.L
+float3 GetDotNL(float3 Normal, uniform float3 LightDir)
+{
+	return saturate(dot(Normal, LightDir.xyz));
+}
+
 /*
 	Basic debug shaders
 */
 
-float3 Diffuse(float3 Normal, uniform float4 LightDir)
+struct VS2PS_Basic
 {
-	// N.L Clamped
-	return saturate(dot(Normal, LightDir.xyz));
-}
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
+};
 
-VS2PS Debug_Basic_1_VS(APP2VS Input)
+VS2PS_Basic Debug_Basic_VS(APP2VS Input)
 {
-	VS2PS Output = (VS2PS)0;
-
- 	float3 Pos = mul(Input.Pos, _World);
-	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
-	Output.Pos = Output.HPos;
-	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
-	#endif
-
-	// Lighting. Shade (Ambient + etc.)
-	Output.Diffuse.xyz = _MaterialAmbient.rgb + Diffuse(Input.Normal, _LightDir) * _MaterialDiffuse.xyz;
-	Output.Diffuse.w = _MaterialAmbient.a;
-
-	return Output;
-}
-
-VS2PS Debug_Basic_2_VS(APP2VS Input)
-{
-	VS2PS Output = (VS2PS)0;
+	VS2PS_Basic Output = (VS2PS_Basic)0;
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
@@ -92,18 +80,45 @@ VS2PS Debug_Basic_2_VS(APP2VS Input)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	// Lighting. Shade (Ambient + etc.)
-	Output.Diffuse.xyz = _MaterialAmbient.rgb;
-	Output.Diffuse.w = 0.3f;
+	Output.Normal = Input.Normal;
 
 	return Output;
 }
 
-PS2FB Debug_Basic_PS(VS2PS Input)
+PS2FB Debug_Basic_1_PS(VS2PS_Basic Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	Output.Color = Input.Diffuse;
+	float4 Ambient = _MaterialAmbient;
+	float3 Diffuse = GetDotNL(Input.Normal, _LightDir.xyz) * _MaterialDiffuse.rgb;
+
+	Output.Color = float4(Ambient.rgb + Diffuse, Ambient.a);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
+
+PS2FB Debug_Basic_2_PS(VS2PS_Basic Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	Output.Color = float4(_MaterialAmbient.rgb, 0.3);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
+
+PS2FB Debug_Object_PS(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	Output.Color = _MaterialAmbient;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -131,8 +146,8 @@ technique t0
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Debug_Basic_1_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		VertexShader = compile vs_3_0 Debug_Basic_VS();
+		PixelShader = compile ps_3_0 Debug_Basic_1_PS();
 	}
 }
 
@@ -144,14 +159,12 @@ VS2PS Debug_Occluder_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	float4 Pos = mul(Input.Pos, _World);
-	Output.HPos = mul(Pos, _WorldViewProj);
+	float4 WorldPos = mul(Input.Pos, _World);
+	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos = Output.HPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
-
-	Output.Diffuse = 1.0;
 
 	return Output;
 }
@@ -197,26 +210,35 @@ technique occluder
 	}
 }
 
-VS2PS Debug_Editor_VS(APP2VS Input, uniform float AmbientColorFactor = 1.0)
+/*
+	Debug editor shaders
+*/
+
+VS2PS Debug_Editor_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	float4 Pos = Input.Pos;
-	float4 TempPos = Input.Pos;
-	TempPos.z += 0.5;
+	float2 RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, Input.Pos.z + 0.5);
+	float4 WorldPos = mul(Input.Pos * float4(RadScale, 1.0, 1.0), _World);
 
-	float RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, TempPos.z);
-	Pos.xy *= RadScale;
-	Pos = mul(Pos, _World);
-
-	Output.HPos = mul(Pos, _WorldViewProj);
+	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos = Output.HPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	Output.Diffuse.xyz = _MaterialAmbient.rgb * AmbientColorFactor;
-	Output.Diffuse.w = _MaterialAmbient.a;
+	return Output;
+}
+
+PS2FB Debug_Editor_PS(VS2PS Input, uniform float AmbientColorFactor = 1.0)
+{
+	PS2FB Output = (PS2FB)0;
+
+	Output.Color = float4(_MaterialAmbient.rgb * AmbientColorFactor, _MaterialAmbient.a);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	return Output;
 }
@@ -242,7 +264,7 @@ technique EditorDebug
 		ZFunc = LESSEQUAL;
 
 		VertexShader = compile vs_3_0 Debug_Editor_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		PixelShader = compile ps_3_0 Debug_Editor_PS();
 	}
 
 	pass Pass1
@@ -252,14 +274,25 @@ technique EditorDebug
 		ZEnable = TRUE;
 		FillMode = WIREFRAME;
 
-		VertexShader = compile vs_3_0 Debug_Editor_VS(0.5);
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		VertexShader = compile vs_3_0 Debug_Editor_VS();
+		PixelShader = compile ps_3_0 Debug_Editor_PS(0.5);
 	}
 }
 
-VS2PS Debug_CollisionMesh_VS(APP2VS Input, uniform float MaterialFactor = 1.0)
+/*
+	Debug occluder shaders
+*/
+
+struct VS2PS_CollisionMesh
 {
-	VS2PS Output = (VS2PS)0;
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
+};
+
+VS2PS_CollisionMesh Debug_CollisionMesh_VS(APP2VS Input)
+{
+	VS2PS_CollisionMesh Output = (VS2PS_CollisionMesh)0;
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
@@ -268,8 +301,24 @@ VS2PS Debug_CollisionMesh_VS(APP2VS Input, uniform float MaterialFactor = 1.0)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	Output.Diffuse.xyz = (_MaterialAmbient.rgb * MaterialFactor) + 0.1 * Diffuse(Input.Normal, float4(-1.0, -1.0, 1.0, 0.0)) * (_MaterialDiffuse.rgb * MaterialFactor);
-	Output.Diffuse.w = 0.8f;
+	Output.Normal = Input.Normal;
+
+	return Output;
+}
+
+PS2FB Debug_CollisionMesh_PS(VS2PS_CollisionMesh Input, uniform float MaterialFactor = 1.0)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float DotNL = GetDotNL(Input.Normal, float3(-1.0, -1.0, 1.0));
+	float3 Ambient = (_MaterialAmbient.rgb * MaterialFactor) + 0.1;
+	float3 Diffuse = DotNL * (_MaterialDiffuse.rgb * MaterialFactor);
+
+	Output.Color = float4(Ambient + Diffuse, 0.8);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
 	return Output;
 }
@@ -295,7 +344,7 @@ technique collisionMesh
 		ZFunc = LESSEQUAL;
 
 		VertexShader = compile vs_3_0 Debug_CollisionMesh_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		PixelShader = compile ps_3_0 Debug_CollisionMesh_PS();
 	}
 
 	pass Pass1
@@ -310,8 +359,8 @@ technique collisionMesh
 		ZEnable = TRUE;
 		ZWriteEnable = 1;
 
-		VertexShader = compile vs_3_0 Debug_CollisionMesh_VS(0.5);
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		VertexShader = compile vs_3_0 Debug_CollisionMesh_VS();
+		PixelShader = compile ps_3_0 Debug_CollisionMesh_PS(0.5);
 	}
 
 	pass Pass2
@@ -339,8 +388,8 @@ technique marked
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Debug_Basic_1_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		VertexShader = compile vs_3_0 Debug_Basic_VS();
+		PixelShader = compile ps_3_0 Debug_Basic_1_PS();
 	}
 }
 
@@ -365,8 +414,8 @@ technique gamePlayObject
 
 		ZEnable = TRUE;
 
-		VertexShader = compile vs_3_0 Debug_Basic_2_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		VertexShader = compile vs_3_0 Debug_Basic_VS();
+		PixelShader = compile ps_3_0 Debug_Basic_2_PS();
 	}
 }
 
@@ -395,8 +444,8 @@ technique bounding
 		CullMode = NONE;
 		FillMode = WIREFRAME;
 
-		VertexShader = compile vs_3_0 Debug_Basic_2_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		VertexShader = compile vs_3_0 Debug_Basic_VS();
+		PixelShader = compile ps_3_0 Debug_Basic_2_PS();
 	}
 }
 
@@ -408,7 +457,7 @@ struct VS2PS_Grid
 {
 	float4 HPos : POSITION;
 	float3 Tex0 : TEXCOORD0;
-	float4 Diffuse : TEXCOORD1;
+	float3 Normal : TEXCOORD1;
 };
 
 VS2PS_Grid Debug_Grid_VS(APP2VS Input)
@@ -424,9 +473,7 @@ VS2PS_Grid Debug_Grid_VS(APP2VS Input)
 		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	// Lighting. Shade (Ambient + etc.)
-	Output.Diffuse.xyz = _MaterialAmbient.rgb + Diffuse(Input.Normal, _LightDir) * _MaterialDiffuse.xyz;
-	Output.Diffuse.w = _MaterialAmbient.a;
+	Output.Normal = Input.Normal;
 
 	return Output;
 }
@@ -435,11 +482,12 @@ PS2FB Debug_Grid_PS(VS2PS_Grid Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 Tex = tex2D(SampleTex0, Input.Tex0.xy);
+	float DotNL = GetDotNL(Input.Normal, _LightDir.xyz);
+	float3 Lighting = _MaterialAmbient.rgb + (DotNL * _MaterialDiffuse.rgb);
 
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = Tex * Input.Diffuse;
-	OutputColor.a = (1.0 - Tex.b); // * Input.Diffuse.a;
+	float4 Tex = tex2D(SampleTex0, Input.Tex0.xy);
+	// float4 OutputColor = float4(Tex.rgb * Lighting, _MaterialDiffuse.a);
+	float4 OutputColor = float4(Tex.rgb * Lighting, 1.0 - Tex.b);
 
 	Output.Color = OutputColor;
 
@@ -494,9 +542,6 @@ VS2PS Debug_SpotLight_VS(APP2VS Input)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	Output.Diffuse.rgb = _MaterialAmbient.rgb;
-	Output.Diffuse.a = _MaterialAmbient.a;
-
 	return Output;
 }
 
@@ -523,7 +568,7 @@ technique spotlight
 		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 Debug_SpotLight_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		PixelShader = compile ps_3_0 Debug_Object_PS();
 	}
 
 	pass Pass1
@@ -538,7 +583,7 @@ technique spotlight
 		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Debug_SpotLight_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		PixelShader = compile ps_3_0 Debug_Object_PS();
 	}
 }
 
@@ -557,9 +602,23 @@ VS2PS Debug_PivotBox_VS(APP2VS Input)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	// Lighting. Shade (Ambient + etc.)
-	Output.Diffuse.rgb = _MaterialAmbient.rgb;
-	Output.Diffuse.a = _MaterialAmbient.a;
+	return Output;
+}
+
+VS2PS Debug_Pivot_VS(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
+
+	float4 Pos = Input.Pos;
+	float RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, Pos.z + 0.5);
+	Pos.xy *= RadScale;
+	Pos = mul(Pos, _World);
+
+	Output.HPos = mul(Pos, _WorldViewProj);
+	Output.Pos = Output.HPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	return Output;
 }
@@ -585,7 +644,7 @@ technique pivotBox
 		ZEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Debug_PivotBox_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		PixelShader = compile ps_3_0 Debug_Object_PS();
 	}
 
 	pass Pass1
@@ -600,33 +659,8 @@ technique pivotBox
 		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Debug_PivotBox_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		PixelShader = compile ps_3_0 Debug_Object_PS();
 	}
-}
-
-/*
-	Debug Pivot shaders
-*/
-
-VS2PS Debug_Pivot_VS(APP2VS Input)
-{
-	VS2PS Output = (VS2PS)0;
-
-	float4 Pos = Input.Pos;
-	float RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, Pos.z + 0.5);
-	Pos.xy *= RadScale;
-	Pos = mul(Pos, _World);
-	Output.HPos = mul(Pos, _WorldViewProj);
-	Output.Pos = Output.HPos;
-	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
-	#endif
-
-	// Lighting. Shade (Ambient + etc.)
-	Output.Diffuse.rgb = _MaterialAmbient.rgb;
-	Output.Diffuse.a = _MaterialAmbient.a;
-
-	return Output;
 }
 
 technique pivot
@@ -650,7 +684,7 @@ technique pivot
 		ZEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Debug_Pivot_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		PixelShader = compile ps_3_0 Debug_Object_PS();
 	}
 
 	pass Pass1
@@ -665,7 +699,7 @@ technique pivot
 		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 Debug_Pivot_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		PixelShader = compile ps_3_0 Debug_Object_PS();
 	}
 }
 

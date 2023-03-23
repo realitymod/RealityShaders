@@ -54,7 +54,7 @@
 	*/
 	bool IsTisActive()
 	{
-		return FogColor.r < 0.01;
+		return FogColor.r == 0;
 	}
 
 	/*
