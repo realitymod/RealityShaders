@@ -85,6 +85,22 @@ VS2PS_Basic Debug_Basic_VS(APP2VS Input)
 	return Output;
 }
 
+VS2PS Debug_Cone_VS(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
+
+	float2 RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, Input.Pos.z + 0.5);
+	float4 WorldPos = mul(Input.Pos * float4(RadScale, 1.0, 1.0), _World);
+
+	Output.HPos = mul(WorldPos, _WorldViewProj);
+	Output.Pos = Output.HPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	return Output;
+}
+
 PS2FB Debug_Basic_1_PS(VS2PS_Basic Input)
 {
 	PS2FB Output = (PS2FB)0;
@@ -214,22 +230,6 @@ technique occluder
 	Debug editor shaders
 */
 
-VS2PS Debug_Editor_VS(APP2VS Input)
-{
-	VS2PS Output = (VS2PS)0;
-
-	float2 RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, Input.Pos.z + 0.5);
-	float4 WorldPos = mul(Input.Pos * float4(RadScale, 1.0, 1.0), _World);
-
-	Output.HPos = mul(WorldPos, _WorldViewProj);
-	Output.Pos = Output.HPos;
-	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
-	#endif
-
-	return Output;
-}
-
 PS2FB Debug_Editor_PS(VS2PS Input, uniform float AmbientColorFactor = 1.0)
 {
 	PS2FB Output = (PS2FB)0;
@@ -263,7 +263,7 @@ technique EditorDebug
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 
-		VertexShader = compile vs_3_0 Debug_Editor_VS();
+		VertexShader = compile vs_3_0 Debug_Cone_VS();
 		PixelShader = compile ps_3_0 Debug_Editor_PS();
 	}
 
@@ -274,7 +274,7 @@ technique EditorDebug
 		ZEnable = TRUE;
 		FillMode = WIREFRAME;
 
-		VertexShader = compile vs_3_0 Debug_Editor_VS();
+		VertexShader = compile vs_3_0 Debug_Cone_VS();
 		PixelShader = compile ps_3_0 Debug_Editor_PS(0.5);
 	}
 }
@@ -532,7 +532,7 @@ VS2PS Debug_SpotLight_VS(APP2VS Input)
 
 	float4 Pos = Input.Pos;
 	Pos.z += 0.5;
-	float RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, Pos.z);
+	float2 RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, Pos.z);
 	Pos.xy *= RadScale;
 	Pos = mul(Pos, _World);
 
@@ -605,24 +605,6 @@ VS2PS Debug_PivotBox_VS(APP2VS Input)
 	return Output;
 }
 
-VS2PS Debug_Pivot_VS(APP2VS Input)
-{
-	VS2PS Output = (VS2PS)0;
-
-	float4 Pos = Input.Pos;
-	float RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, Pos.z + 0.5);
-	Pos.xy *= RadScale;
-	Pos = mul(Pos, _World);
-
-	Output.HPos = mul(Pos, _WorldViewProj);
-	Output.Pos = Output.HPos;
-	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
-	#endif
-
-	return Output;
-}
-
 technique pivotBox
 <
 	int Declaration[] =
@@ -683,7 +665,7 @@ technique pivot
 		ZWriteEnable = 0;
 		ZEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_Pivot_VS();
+		VertexShader = compile vs_3_0 Debug_Cone_VS();
 		PixelShader = compile ps_3_0 Debug_Object_PS();
 	}
 
@@ -698,7 +680,7 @@ technique pivot
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_Pivot_VS();
+		VertexShader = compile vs_3_0 Debug_Cone_VS();
 		PixelShader = compile ps_3_0 Debug_Object_PS();
 	}
 }
