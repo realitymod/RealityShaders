@@ -45,8 +45,8 @@ VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared Input)
 	#endif
 
 	// tl: uncompress normal
-	Output.P_Normal_Fade.xyz = normalize((Input.Normal * 2.0) - 1.0);
-	Output.P_Normal_Fade.w = InterpVal;
+	Output.P_Normal_Fade.xyz = (Input.Normal * 2.0) - 1.0;
+	Output.P_Normal_Fade.w = saturate(InterpVal);
 
 	// Calculate triplanar texcoords
 	float3 Tex = 0.0;
