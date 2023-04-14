@@ -142,7 +142,8 @@
 	{
 		float4 ShadowCoords = mul(Pos, LightTrapezMat);
 		float4 LightCoords = mul(Pos, LightMat);
-		ShadowCoords.z = (LightCoords.z * ShadowCoords.w) / LightCoords.w; // (zL*wT)/wL == zL/wL post homo
+		// (L.z/L.w)*T.w == (L.z/L.w) post homo
+		ShadowCoords.z = (LightCoords.z / LightCoords.w) * ShadowCoords.w;
 		return ShadowCoords;
 	}
 
@@ -207,4 +208,12 @@
 		N.y = 2.0;
 		return normalize(N);
 	}
+#endif
+
+#if !defined(REALITY_DEFINES)
+	#define REALITY_DEFINES
+
+	// This hardcoded value fixes a bug with undergrowth's alphatesting
+	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
+	#define FH2_ALPHAREF 127
 #endif

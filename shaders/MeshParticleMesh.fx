@@ -48,6 +48,9 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
 VS2PS Diffuse_VS(APP2VS Input)
@@ -75,11 +78,6 @@ VS2PS Diffuse_VS(APP2VS Input)
 
 	// Pass-through texcoords
 	Output.Tex0 = Input.TexCoord;
-
-	#if defined(LOG_DEPTH)
-		// Output depth (VS)
-		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
-	#endif
 
 	return Output;
 }
@@ -109,6 +107,10 @@ PS2FB Diffuse_PS(VS2PS Input)
 
 	Output.Color = Diffuse;
 
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
 	ApplyFog(Output.Color.rgb, GetFogValue(HPos, 0.0));
 
 	return Output;
@@ -131,12 +133,16 @@ PS2FB Additive_PS(VS2PS Input)
 
 	Output.Color = Diffuse;
 
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
 	return Output;
 }
 
 #define GET_RENDERSTATES_MESH_PARTICLES(ZWRITE, SRCBLEND, DESTBLEND) \
 	ColorWriteEnable = RED|GREEN|BLUE; \
-	CullMode = CCW; \
+	CullMode = NONE; \
 	ZEnable = TRUE; \
 	ZWriteEnable = ZWRITE; \
 	AlphaTestEnable = TRUE; \
