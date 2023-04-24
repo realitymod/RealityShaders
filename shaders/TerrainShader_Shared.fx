@@ -267,8 +267,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	float4 TerrainSunColor = _SunColor * 2.0;
-	float4 TerrainLights = (TerrainSunColor * AccumLights.a) + AccumLights;
+	float4 TerrainLights = (_SunColor * (AccumLights.a * 2.0)) + AccumLights;
 
 	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
@@ -279,7 +278,7 @@ PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
 	// If thermals assume no shadows and gray color
 	if (IsTisActive())
 	{
-		TerrainLights = TerrainSunColor + AccumLights;
+		TerrainLights = _SunColor + AccumLights;
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 

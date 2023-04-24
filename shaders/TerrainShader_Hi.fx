@@ -90,8 +90,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	float3 TerrainSunColor = _SunColor.rgb * 2.0;
-	float3 TerrainLights = (TerrainSunColor * AccumLights.a) + AccumLights.rgb;
+	float3 TerrainLights = (_SunColor.rgb * (AccumLights.a * 2.0)) + AccumLights.rgb;
 
 	#if defined(LIGHTONLY)
 		float3 OutputColor = TerrainLights;
@@ -109,7 +108,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		// If thermals assume no shadows and gray color
 		if (IsTisActive())
 		{
-			TerrainLights = TerrainSunColor + AccumLights.rgb;
+			TerrainLights = _SunColor.rgb + AccumLights.rgb;
 			ColorMap.rgb = 1.0 / 3.0;
 		}
 
