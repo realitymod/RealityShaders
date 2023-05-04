@@ -1,11 +1,10 @@
-#line 2 "RaShader1Dif.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#line 4 "RaShader1Dif.fx"
 
 /*
 	Description: Renders object's diffuse map
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 uniform float4 ObjectSpaceCamPos;
 

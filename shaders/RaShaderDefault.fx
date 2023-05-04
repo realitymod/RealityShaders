@@ -1,10 +1,9 @@
-#line 2 "RaShaderDefault.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "RaShaderDefault.fx"
 
 /*
 	Description: Basic shader that outputs a color
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 uniform float4x4 World;
 uniform float4x4 ViewProjection;

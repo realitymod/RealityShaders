@@ -1,10 +1,9 @@
-#line 2 "LoadingScreen.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "LoadingScreen.fx"
 
 /*
 	Description: Renders loading screen at startup
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

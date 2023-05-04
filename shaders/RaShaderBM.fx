@@ -1,15 +1,14 @@
-#line 2 "RaShaderBM.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#include "shaders/RaDefines.fx"
+#include "shaders/RaShaderBMCommon.fxh"
+#line 6 "RaShaderBM.fx"
 
 /*
 	Description:
 	- Renders lighting for bundledmesh (objects that are dynamic, nonhuman)
 	- Calculates world-space lighting
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
-#include "shaders/RaDefines.fx"
-#include "shaders/RaShaderBMCommon.fxh"
 
 // Dependencies and sanity checks
 

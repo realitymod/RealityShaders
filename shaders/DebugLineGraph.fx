@@ -1,10 +1,9 @@
-#line 2 "DebugLineGraph.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "DebugLineGraph.fx"
 
 /*
 	Description: Renders debug linegraph
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 float2 _GraphPos : GRAPHSIZE;
 float2 _ViewportSize : VIEWPORTSIZE;

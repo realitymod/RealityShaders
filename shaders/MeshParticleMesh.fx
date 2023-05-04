@@ -1,4 +1,6 @@
-#line 2 "MeshParticleMesh.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/FXCommon.fxh"
+#line 4 "MeshParticleMesh.fx"
 
 /*
 	Description:
@@ -6,9 +8,6 @@
 	- Instanced to render up to to 26 particles in a drawcall
 	- TIP: Test the shader with PRBot4/Num6 weapon
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/FXCommon.fxh"
 
 /*
 	[Attributes from app]

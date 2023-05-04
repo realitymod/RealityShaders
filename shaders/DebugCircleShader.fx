@@ -1,10 +1,9 @@
-#line 2 "DebugCircleShader.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "DebugCircleShader.fx"
 
 /*
 	Description: Renders circle for debug shaders
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 float4x4 _WorldViewProj : WorldViewProjection;
 bool _ZBuffer : ZBUFFER;

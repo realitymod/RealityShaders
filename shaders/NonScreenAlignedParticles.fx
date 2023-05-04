@@ -1,11 +1,10 @@
-#line 2 "NonScreenAlignedParticles.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/FXCommon.fxh"
+#line 4 "NonScreenAlignedParticles.fx"
 
 /*
 	Description: Renders non-flat particles
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/FXCommon.fxh"
 
 // Constant array
 struct TemplateParameters

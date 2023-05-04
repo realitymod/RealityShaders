@@ -1,12 +1,11 @@
-#line 2 "RaShaderLeaf.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#line 4 "RaShaderLeaf.fx"
 
 /*
 	Description: Renders objects with leaf-like characteristics
 	Special Thanks: [FH2]Remdul for the overgrowth fix
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 // [Debug data]
 // #define OVERGROWTH

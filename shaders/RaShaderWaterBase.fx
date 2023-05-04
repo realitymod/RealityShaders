@@ -1,11 +1,10 @@
-#line 2 "RaShaderWaterBase.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#line 4 "RaShaderWaterBase.fx"
 
 /*
 	Description: Renders water
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 // Affects how transparency is claculated depending on camera height.
 // Try increasing/decreasing ADD_ALPHA slighty for different results

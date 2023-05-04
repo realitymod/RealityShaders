@@ -1,12 +1,11 @@
-#line 2 "BundledMesh.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "BundledMesh.fx"
 
 /*
 	Description:
 	- Builds shadow and environment maps for bundledmesh (dynamic, nonhuman objects)
 	- Outputs used in RaShaderBM.fx
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

@@ -1,4 +1,5 @@
-#line 2 "RealityGraphics.fxh"
+#include "shaders/SettingsDefines.fxh"
+#line 3 "RealityGraphics.fxh"
 
 /*
 	Third-party shader code
@@ -29,12 +30,6 @@
 	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-
-#if !defined(SETTINGS_DEFINES)
-	#define SETTINGS_DEFINES
-
-	#include "shaders/SettingsDefines.fxh"
-#endif
 
 // Functions from DirectXTK
 #if !defined(DIRECTXTK)

@@ -1,4 +1,5 @@
-#line 2 "PostProduction_nv3x.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "PostProduction_nv3x.fx"
 
 /*
 	Description: Controls the following post-production shaders
@@ -9,8 +10,6 @@
 		5. Flashbang
 	Note: Some TV shaders write to the same render target as optic shaders
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

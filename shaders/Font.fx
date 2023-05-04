@@ -1,11 +1,10 @@
-#line 2 "Font.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#line 4 "Font.fx"
 
 /*
 	Description: Renders game font
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 /*
 	[Attributes from app]

@@ -1,10 +1,9 @@
-#line 2 "DebugD3DXMeshShapeShader.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "DebugD3DXMeshShapeShader.fx"
 
 /*
 	Description: Renders shapes to debug collision mesh, culling, etc.
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 float4x4 _WorldViewProj : WorldViewProjection;
 float4x4 _World : World;

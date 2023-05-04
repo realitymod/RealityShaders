@@ -1,13 +1,12 @@
-#line 2 "StaticMesh.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/CommonPixelLight.fxh"
+#line 4 "StaticMesh.fx"
 
 /*
 	Description:
 	- Builds shadow map for staticmesh (buildings, static props)
 	- Outputs used in RaShaderSTM.fx
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/CommonPixelLight.fxh"
 
 /*
 	[Uniform data from app]

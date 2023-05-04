@@ -1,4 +1,5 @@
-#line 2 "FSQuadDrawer.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "FSQuadDrawer.fx"
 
 /*
 	Description:
@@ -14,8 +15,6 @@
 	3. Updated shaders to Shader Model 3.0 for access to ddx, ddy, and non-gradient texture instructions
 	4. Redid coding conventions
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

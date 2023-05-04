@@ -1,14 +1,13 @@
-#line 2 "RaShaderSTM.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#include "shaders/RaShaderSTMCommon.fxh"
+#line 5 "RaShaderSTM.fx"
 
 /*
 	Description:
 	- Renders lighting for staticmesh (buildings, static props)
 	- Calculates tangent-space lighting
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
-#include "shaders/RaShaderSTMCommon.fxh"
 
 // tl: Alias packed data indices to regular indices:
 #if defined(TexBasePackedInd)

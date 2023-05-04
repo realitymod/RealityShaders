@@ -1,10 +1,9 @@
-#line 2 "SwiffMenu.fx"
+#include "shaders/RaCommon.fxh"
+#line 3 "SwiffMenu.fx"
 
 /*
 	Description: Shaders for main menu
 */
-
-#include "shaders/RaCommon.fxh"
 
 uniform float4x4 WorldView : TRANSFORM;
 uniform float4 DiffuseColor : DIFFUSE;

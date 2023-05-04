@@ -1,4 +1,7 @@
-#line 2 "RaShaderSM.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#include "shaders/RaShaderSMCommon.fxh"
+#line 5 "RaShaderSM.fx"
 
 /*
 	Description:
@@ -6,10 +9,6 @@
 	- Skinning function currently for 2 bones
 	- Calculates world-space lighting
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
-#include "shaders/RaShaderSMCommon.fxh"
 
 // Dep.checks, etc
 

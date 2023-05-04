@@ -1,11 +1,10 @@
-#line 2 "Trail.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/FXCommon.fxh"
+#line 4 "Trail.fx"
 
 /*
 	Description: Renders lighting for particles emit smoke trails
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/FXCommon.fxh"
 
 // UNIFORM INPUTS
 

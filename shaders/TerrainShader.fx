@@ -1,11 +1,10 @@
-#line 2 "TerrainShader.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#line 4 "TerrainShader.fx"
 
 /*
 	Description: Renders lighting for ground terrain
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 /*
 	[Uniform data from app]

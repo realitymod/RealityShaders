@@ -1,4 +1,5 @@
-#line 2 "TerrainShader_Low.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "TerrainShader_Low.fx"
 
 /*
 	Description:
@@ -6,8 +7,6 @@
 	- Renders the terrain's low-setting shading
 	- Renders the terrain's low-setting shadowing
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 technique Low_Terrain
 {

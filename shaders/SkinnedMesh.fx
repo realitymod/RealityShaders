@@ -1,4 +1,5 @@
-#line 2 "SkinnedMesh.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "SkinnedMesh.fx"
 
 /*
 	Description:
@@ -7,8 +8,6 @@
 	- Outputs used in RaShaderSM.fx
 	Author: Mats Dal
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 // Note: obj space light vectors
 uniform float4 _SunLightDirection : SunLightDirection;

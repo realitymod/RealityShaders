@@ -1,10 +1,9 @@
-#line 2 "Lightning.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "Lightning.fx"
 
 /*
 	Description: Renders lightning
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

@@ -1,11 +1,10 @@
-#line 2 "Undergrowth.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#line 4 "Undergrowth.fx"
 
 /*
 	Description: Renders lighting for undergrowth such as grass
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 string Category = "Effects\\Lighting";
 

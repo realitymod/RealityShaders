@@ -1,11 +1,10 @@
-#line 2 "RaShaderTrunkSTMDetail.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#line 4 "RaShaderTrunkSTMDetail.fx"
 
 /*
 	Description: Renders lighting for objects with characteristics of tree-trunks (poles)
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 #if !defined(_HASSHADOW_)
 	#define _HASSHADOW_ 0

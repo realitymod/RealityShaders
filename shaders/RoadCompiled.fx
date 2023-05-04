@@ -1,11 +1,10 @@
-#line 2 "RoadCompiled.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#line 4 "RoadCompiled.fx"
 
 /*
 	Description: Renders lighting for road
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 uniform float4x4 _WorldViewProj : WorldViewProjection;
 uniform float _TexBlendFactor : TexBlendFactor;

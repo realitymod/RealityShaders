@@ -1,11 +1,10 @@
-#line 2 "SkyDome.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "SkyDome.fx"
 
 /*
 	Description: Renders sky and skybox
 	NOTE: We use normal depth calculation for this one because the geometry's far away from the scene
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 uniform float4x4 _ViewProjMatrix : WorldViewProjection;
 uniform float4 _TexOffset : TEXOFFSET;

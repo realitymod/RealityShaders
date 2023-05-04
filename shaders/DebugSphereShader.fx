@@ -1,10 +1,9 @@
-#line 2 "DebugSphereShader.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "DebugSphereShader.fx"
 
 /*
 	Description: Renders debug lightsource spheres
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 float4x4 _WorldViewProj : WorldViewProjection;
 float4x4 _World : World;

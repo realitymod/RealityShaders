@@ -1,10 +1,9 @@
-#line 2 "LightGeom.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "LightGeom.fx"
 
 /*
 	Description: Renders pointlight and spotlights
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

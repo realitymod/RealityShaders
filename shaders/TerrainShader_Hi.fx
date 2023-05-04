@@ -1,4 +1,5 @@
-#line 2 "TerrainShader_Hi.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "TerrainShader_Hi.fx"
 
 /*
 	Description:
@@ -6,8 +7,6 @@
 	- Renders the terrain's high-setting shading
 	- Renders the terrain's high-setting shadowing
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	Terrainmapping shader

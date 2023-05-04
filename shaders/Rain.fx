@@ -1,10 +1,9 @@
-#line 2 "Rain.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "Rain.fx"
 
 /*
 	Description: Renders rain effect
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 float4x4 _WorldViewProj : WORLDVIEWPROJ;
 float4 _CellPositions[32] : CELLPOSITIONS;

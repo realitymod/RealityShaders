@@ -1,11 +1,9 @@
-#line 2 "TerrainShader_Shared.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "TerrainShader_Shared.fx"
 
 /*
 	Description: Shared functions for terrain shader
 */
-
-#include "shaders/RealityGraphics.fxh"
-
 
 struct APP2VS_Shared
 {

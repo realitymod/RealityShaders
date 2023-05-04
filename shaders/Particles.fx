@@ -1,11 +1,10 @@
-#line 2 "Particles.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/FXCommon.fxh"
+#line 4 "Particles.fx"
 
 /*
 	Description: Renders 2D particles
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/FXCommon.fxh"
 
 // Constant array
 struct TemplateParameters

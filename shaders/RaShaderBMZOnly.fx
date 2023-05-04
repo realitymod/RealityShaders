@@ -1,10 +1,12 @@
-#line 2 "RaShaderBMZOnly.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#include "shaders/RaDefines.fx"
+#include "shaders/RaShaderBMCommon.fxh"
+#line 6 "RaShaderBMZOnly.fx"
 
 /*
 	Description: ZOnly shader for bundledmesh (dynamic, nonhuman objects)
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 string reqVertexElement[] =
 {
@@ -36,10 +38,6 @@ string InstanceParameters[] =
 #define NUM_LIGHTS 1
 #define NUM_TEXSETS 1
 #define TexBasePackedInd 0
-
-#include "shaders/RaCommon.fxh"
-#include "shaders/RaDefines.fx"
-#include "shaders/RaShaderBMCommon.fxh"
 
 struct APP2VS
 {

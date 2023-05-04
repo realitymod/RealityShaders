@@ -1,4 +1,6 @@
-#line 2 "RaShader1Dif1BoneSkinned.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#line 4 "RaShader1Dif1BoneSkinned.fx"
 
 /*
 	Description: Renders object's diffuse map
@@ -8,9 +10,6 @@
 	describes the direction to the light source. These variables are
 	initialized from the application.
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 uniform bool AlphaBlendEnable = false;
 uniform float4x4 Bones[26];

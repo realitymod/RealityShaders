@@ -1,4 +1,5 @@
-#line 2 "FXCommon.fxh"
+#include "shaders/RaCommon.fxh"
+#line 3 "FXCommon.fxh"
 
 /*
 	Description: Shared code in particle shaders
@@ -6,8 +7,6 @@
 
 #if !defined(FXCOMMON_FXH)
 	#define FXCOMMON_FXH
-
-	#include "shaders/RaCommon.fxh"
 
 	// Common parameters
 	uniform float4x4 _ViewMat : ViewMat;

@@ -1,10 +1,9 @@
-#line 2 "PortedFontShader.fx"
+#include "shaders/RealityGraphics.fxh"
+#line 3 "PortedFontShader.fx"
 
 /*
 	Description: Renders command-line font
 */
-
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	[Attributes from app]

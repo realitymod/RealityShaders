@@ -1,11 +1,10 @@
-#line 2 "RaShaderTrunkOG.fx"
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#line 4 "RaShaderTrunkOG.fx"
 
 /*
 	Description: Renders lighting for tree-trunk overgrowth
 */
-
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 uniform float4 OverGrowthAmbient;
 uniform float4 ObjectSpaceCamPos;
