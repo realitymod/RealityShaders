@@ -1,3 +1,4 @@
+#line 2 "Particles.fx"
 
 /*
 	Description: Renders 2D particles

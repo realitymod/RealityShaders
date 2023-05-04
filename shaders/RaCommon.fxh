@@ -1,3 +1,4 @@
+#line 2 "RaCommon.fxh"
 
 /*
 	Description: Shared functions for BF2's main 3D shaders

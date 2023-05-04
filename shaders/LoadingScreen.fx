@@ -1,3 +1,4 @@
+#line 2 "LoadingScreen.fx"
 
 /*
 	Description: Renders loading screen at startup

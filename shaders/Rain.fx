@@ -1,3 +1,4 @@
+#line 2 "Rain.fx"
 
 /*
 	Description: Renders rain effect

@@ -1,3 +1,4 @@
+#line 2 "RaShaderTrunkSTMDetail.fx"
 
 /*
 	Description: Renders lighting for objects with characteristics of tree-trunks (poles)

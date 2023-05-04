@@ -1,3 +1,4 @@
+#line 2 "FXCommon.fxh"
 
 /*
 	Description: Shared code in particle shaders

@@ -1,3 +1,4 @@
+#line 2 "TerrainShader_Hi.fx"
 
 /*
 	Description:

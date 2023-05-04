@@ -1,3 +1,4 @@
+#line 2 "FSQuadDrawer.fx"
 
 /*
 	Description:

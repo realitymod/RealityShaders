@@ -1,3 +1,4 @@
+#line 2 "Trail.fx"
 
 /*
 	Description: Renders lighting for particles emit smoke trails

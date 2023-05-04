@@ -1,3 +1,4 @@
+#line 2 "PostProduction_nv3x.fx"
 
 /*
 	Description: Controls the following post-production shaders

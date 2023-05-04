@@ -1,3 +1,4 @@
+#line 2 "RaShaderEditorRoad.fx"
 
 /*
 	Description: Renders road for editor

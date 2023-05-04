@@ -1,3 +1,4 @@
+#line 2 "RaShaderRoadDetail.fx"
 
 #define USE_DETAIL
 

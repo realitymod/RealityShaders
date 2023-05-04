@@ -1,3 +1,4 @@
+#line 2 "RaShaderTrunkOG.fx"
 
 /*
 	Description: Renders lighting for tree-trunk overgrowth

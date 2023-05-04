@@ -1,3 +1,4 @@
+#line 2 "RaShaderLeaf.fx"
 
 /*
 	Description: Renders objects with leaf-like characteristics

@@ -1,3 +1,4 @@
+#line 2 "Font.fx"
 
 /*
 	Description: Renders game font

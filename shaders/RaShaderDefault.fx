@@ -1,3 +1,4 @@
+#line 2 "RaShaderDefault.fx"
 
 /*
 	Description: Basic shader that outputs a color

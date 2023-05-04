@@ -1,3 +1,4 @@
+#line 2 "Undergrowth.fx"
 
 /*
 	Description: Renders lighting for undergrowth such as grass

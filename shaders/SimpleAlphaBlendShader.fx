@@ -1,3 +1,4 @@
+#line 2 "SimpleAlphaBlendShader.fx"
 
 /*
 	Description: Renders simple blendop shader

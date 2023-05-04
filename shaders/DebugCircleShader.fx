@@ -1,3 +1,4 @@
+#line 2 "DebugCircleShader.fx"
 
 /*
 	Description: Renders circle for debug shaders

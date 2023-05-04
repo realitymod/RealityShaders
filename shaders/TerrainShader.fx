@@ -1,3 +1,4 @@
+#line 2 "TerrainShader.fx"
 
 /*
 	Description: Renders lighting for ground terrain

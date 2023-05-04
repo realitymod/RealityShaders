@@ -1,3 +1,4 @@
+#line 2 "RaShader1Dif.fx"
 
 /*
 	Description: Renders object's diffuse map

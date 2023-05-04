@@ -1,3 +1,4 @@
+#line 2 "SwiffMenu.fx"
 
 /*
 	Description: Shaders for main menu

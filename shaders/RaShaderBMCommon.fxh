@@ -1,3 +1,4 @@
+#line 2 "RaShaderBMCommon.fxh"
 
 /*
 	Data for RaShaderBM

@@ -1,3 +1,4 @@
+#line 2 "RealityGraphics.fxh"
 
 /*
 	Third-party shader code

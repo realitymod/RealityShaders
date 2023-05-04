@@ -1,3 +1,4 @@
+#line 2 "DebugLineGraph.fx"
 
 /*
 	Description: Renders debug linegraph

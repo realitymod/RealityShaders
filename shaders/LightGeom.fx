@@ -1,3 +1,4 @@
+#line 2 "LightGeom.fx"
 
 /*
 	Description: Renders pointlight and spotlights

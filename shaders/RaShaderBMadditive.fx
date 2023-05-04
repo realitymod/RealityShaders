@@ -1,3 +1,4 @@
+#line 2 "RaShaderBMadditive.fx"
 
 /*
 	Description: Renders additive lighting for bundledmesh (dynamic, nonhuman objects)

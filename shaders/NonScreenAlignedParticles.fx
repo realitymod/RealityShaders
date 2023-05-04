@@ -1,3 +1,4 @@
+#line 2 "NonScreenAlignedParticles.fx"
 
 /*
 	Description: Renders non-flat particles

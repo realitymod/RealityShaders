@@ -1,3 +1,4 @@
+#line 2 "RaShaderBMZOnly.fx"
 
 /*
 	Description: ZOnly shader for bundledmesh (dynamic, nonhuman objects)

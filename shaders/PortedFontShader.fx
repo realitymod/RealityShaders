@@ -1,3 +1,4 @@
+#line 2 "PortedFontShader.fx"
 
 /*
 	Description: Renders command-line font

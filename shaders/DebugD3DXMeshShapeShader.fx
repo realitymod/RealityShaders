@@ -1,3 +1,4 @@
+#line 2 "DebugD3DXMeshShapeShader.fx"
 
 /*
 	Description: Renders shapes to debug collision mesh, culling, etc.

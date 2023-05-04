@@ -1,3 +1,4 @@
+#line 2 "DebugSphereShader.fx"
 
 /*
 	Description: Renders debug lightsource spheres

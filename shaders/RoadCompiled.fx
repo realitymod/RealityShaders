@@ -1,3 +1,4 @@
+#line 2 "RoadCompiled.fx"
 
 /*
 	Description: Renders lighting for road

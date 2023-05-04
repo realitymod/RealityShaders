@@ -1,3 +1,4 @@
+#line 2 "RaShaderBM.fx"
 
 /*
 	Description:

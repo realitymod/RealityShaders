@@ -1,3 +1,4 @@
+#line 2 "RaShaderWater3D.fx"
 
 #define USE_LIGHTMAP
 #define USE_SHADOWS
