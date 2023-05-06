@@ -1,6 +1,5 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/CommonPixelLight.fxh"
-#line 4 "StaticMesh.fx"
 
 /*
 	Description:

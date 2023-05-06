@@ -1,6 +1,5 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/FXCommon.fxh"
-#line 4 "MeshParticleMesh.fx"
 
 /*
 	Description:

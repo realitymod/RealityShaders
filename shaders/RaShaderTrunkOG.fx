@@ -1,6 +1,5 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
-#line 4 "RaShaderTrunkOG.fx"
 
 /*
 	Description: Renders lighting for tree-trunk overgrowth

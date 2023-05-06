@@ -1,6 +1,5 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
-#line 4 "RaShaderWaterBase.fx"
 
 /*
 	Description: Renders water

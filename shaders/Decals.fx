@@ -1,6 +1,5 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
-#line 4 "Decals.fx"
 
 /*
 	Description: Renders decals such as bullet holes

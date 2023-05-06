@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "DebugLineGraph.fx"
 
 /*
 	Description: Renders debug linegraph

@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "DebugSphereShader.fx"
 
 /*
 	Description: Renders debug lightsource spheres

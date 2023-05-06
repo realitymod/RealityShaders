@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "Rain.fx"
 
 /*
 	Description: Renders rain effect

@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "SimpleAlphaBlendShader.fx"
 
 /*
 	Description: Renders simple blendop shader

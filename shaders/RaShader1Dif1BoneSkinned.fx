@@ -1,6 +1,5 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
-#line 4 "RaShader1Dif1BoneSkinned.fx"
 
 /*
 	Description: Renders object's diffuse map

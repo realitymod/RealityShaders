@@ -1,6 +1,5 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
-#line 4 "RaShaderEditorRoad.fx"
 
 /*
 	Description: Renders road for editor

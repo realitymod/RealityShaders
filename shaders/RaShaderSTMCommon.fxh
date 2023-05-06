@@ -1,4 +1,3 @@
-#line 2 "RaShaderSTMCommon.fxh"
 
 /*
 	Data for RaShaderSTM

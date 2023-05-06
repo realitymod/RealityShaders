@@ -1,7 +1,6 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaShaderSTMCommon.fxh"
-#line 5 "RaShaderSTM.fx"
 
 /*
 	Description:

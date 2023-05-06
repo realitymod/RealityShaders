@@ -1,6 +1,5 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
-#line 4 "RaShaderLeaf.fx"
 
 /*
 	Description: Renders objects with leaf-like characteristics

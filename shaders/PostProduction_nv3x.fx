@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "PostProduction_nv3x.fx"
 
 /*
 	Description: Controls the following post-production shaders

@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "SkyDome.fx"
 
 /*
 	Description: Renders sky and skybox

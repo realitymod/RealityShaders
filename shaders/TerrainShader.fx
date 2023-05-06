@@ -1,6 +1,5 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
-#line 4 "TerrainShader.fx"
 
 /*
 	Description: Renders lighting for ground terrain

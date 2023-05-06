@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "TerrainShader_Low.fx"
 
 /*
 	Description:

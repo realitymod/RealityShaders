@@ -1,5 +1,4 @@
 #include "shaders/SettingsDefines.fxh"
-#line 3 "RealityGraphics.fxh"
 
 /*
 	Third-party shader code

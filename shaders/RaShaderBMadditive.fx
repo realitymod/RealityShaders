@@ -1,7 +1,6 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaShaderBMCommon.fxh"
-#line 5 "RaShaderBMadditive.fx"
 
 /*
 	Description: Renders additive lighting for bundledmesh (dynamic, nonhuman objects)

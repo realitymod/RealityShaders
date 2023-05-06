@@ -1,6 +1,5 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/FXCommon.fxh"
-#line 4 "NonScreenAlignedParticles.fx"
 
 /*
 	Description: Renders non-flat particles

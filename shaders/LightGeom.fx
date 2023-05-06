@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "LightGeom.fx"
 
 /*
 	Description: Renders pointlight and spotlights

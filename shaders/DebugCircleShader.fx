@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "DebugCircleShader.fx"
 
 /*
 	Description: Renders circle for debug shaders

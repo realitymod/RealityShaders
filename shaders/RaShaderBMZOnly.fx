@@ -2,7 +2,6 @@
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaDefines.fx"
 #include "shaders/RaShaderBMCommon.fxh"
-#line 6 "RaShaderBMZOnly.fx"
 
 /*
 	Description: ZOnly shader for bundledmesh (dynamic, nonhuman objects)

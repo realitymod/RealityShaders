@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "PortedFontShader.fx"
 
 /*
 	Description: Renders command-line font

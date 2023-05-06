@@ -1,5 +1,4 @@
 #include "shaders/RealityGraphics.fxh"
-#line 3 "RaShaderDefault.fx"
 
 /*
 	Description: Basic shader that outputs a color

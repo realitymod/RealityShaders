@@ -2,7 +2,6 @@
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaDefines.fx"
 #include "shaders/RaShaderBMCommon.fxh"
-#line 6 "RaShaderBM.fx"
 
 /*
 	Description:
@@ -219,7 +218,9 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos - WorldPos);
 
+	// NOTE: We copy the ColorMap for alpha compositing
 	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
+	float4 ColorTex = ColorMap;
 
 	#if _HASNORMALMAP_
 		// Transform from tangent-space to world-space
@@ -256,12 +257,12 @@ PS2FB BundledMesh_PS(VS2PS Input)
 			float HemiLerp = GetHemiLerp(WorldPos, NormalVec);
 			float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 		#else
-			float3 Ambient = Lights[0].color.w;
+			float3 Ambient = Lights[0].color.a;
 		#endif
 	#endif
 
 	#if _HASCOLORMAPGLOSS_
-		float Gloss = ColorMap.a;
+		float Gloss = ColorTex.a;
 	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
 		float Gloss = NormalMap.a;
 	#else
@@ -271,7 +272,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	#if _HASENVMAP_
 		float3 Reflection = -reflect(ViewVec, NormalVec);
 		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
-		ColorMap.rgb = lerp(ColorMap, EnvMapColor, Gloss / 4.0);
+		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
 	#endif
 
 	#if _HASGIMAP_
@@ -301,7 +302,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 
 	// there is no Gloss map so alpha means transparency
 	#if _POINTLIGHT_ && !_HASCOLORMAPGLOSS_
-		Light.Diffuse *= ColorMap.a;
+		Light.Diffuse *= ColorTex.a;
 	#endif
 
 	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
@@ -317,7 +318,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	*/
 
 	#if _POINTLIGHT_
-		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
+		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos) * Attenuation;
 	#endif
 
 	// Thermals
@@ -349,25 +350,30 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		Calculate alpha transparency
 	*/
 
-	float Alpha = 1.0;
-
 	#if _HASENVMAP_
 		float FresnelFactor = ComputeFresnelFactor(NormalVec, ViewVec);
-		Alpha = lerp(ColorMap.a, 1.0, FresnelFactor);
+		ColorTex.a = lerp(ColorTex.a, 1.0, FresnelFactor);
 	#endif
 
+	// Unaltered alpha should be 1.0 for debug reasons
+	Output.Color.a = 1.0;
+
 	#if _HASDOT3ALPHATEST_
-		Alpha = dot(ColorMap.rgb, 1.0);
+		Output.Color.a = dot(ColorTex.rgb, 1.0);
 	#else
 		#if _HASCOLORMAPGLOSS_
-			Alpha = 1.0;
+			Output.Color.a = 1.0;
 		#else
-			Alpha = ColorMap.a;
+			Output.Color.a = ColorTex.a;
 		#endif
 	#endif
 
+	#if _POINTLIGHT_
+		Output.Color.a *= Attenuation;
+	#endif
+
 	Output.Color.rgb = OutputColor.rgb;
-	Output.Color.a = Alpha * Transparency.a;
+	Output.Color.a *= Transparency.a;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
