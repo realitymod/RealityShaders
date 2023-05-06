@@ -218,9 +218,14 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos - WorldPos);
 
-	// NOTE: We copy the ColorMap for alpha compositing
+	// NOTE: We copy ColorMap to ColorTex to preserve original alpha & gloss data
 	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
 	float4 ColorTex = ColorMap;
+	#if _HASENVMAP_
+		float3 Reflection = -reflect(ViewVec, NormalVec);
+		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
+		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
+	#endif
 
 	#if _HASNORMALMAP_
 		// Transform from tangent-space to world-space
@@ -269,12 +274,6 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		float Gloss = StaticGloss;
 	#endif
 
-	#if _HASENVMAP_
-		float3 Reflection = -reflect(ViewVec, NormalVec);
-		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
-		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
-	#endif
-
 	#if _HASGIMAP_
 		float4 GI = tex2D(SampleGIMap, Input.Tex0);
 		float4 GI_TIS = GI; // M
@@ -300,7 +299,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	Light.Diffuse = Light.Diffuse * LightFactors;
 	Light.Specular = Light.Specular * LightFactors;
 
-	// there is no Gloss map so alpha means transparency
+	// There is no Gloss map, so alpha means transparency
 	#if _POINTLIGHT_ && !_HASCOLORMAPGLOSS_
 		Light.Diffuse *= ColorTex.a;
 	#endif
@@ -329,7 +328,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 			{
 				if (GI_TIS.g < 0.01)
 				{
-					OutputColor.rgb = float3(lerp(0.43, 0.17, ColorMap.b), 1.0, 0.0);
+					OutputColor.rgb = float3(lerp(0.43, 0.17, ColorTex.b), 1.0, 0.0);
 				}
 				else
 				{
@@ -339,10 +338,10 @@ PS2FB BundledMesh_PS(VS2PS Input)
 			else
 			{
 				// Normal Wrecks also cold
-				OutputColor.rgb = float3(lerp(0.43, 0.17, ColorMap.b), 1.0, 0.0);
+				OutputColor.rgb = float3(lerp(0.43, 0.17, ColorTex.b), 1.0, 0.0);
 			}
 		#else
-			OutputColor.rgb = float3(lerp(0.64, 0.3, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
+			OutputColor.rgb = float3(lerp(0.64, 0.3, ColorTex.b), 1.0, 0.0); // M // 0.61, 0.25
 		#endif
 	}
 
