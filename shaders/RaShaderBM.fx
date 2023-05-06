@@ -206,26 +206,31 @@ PS2FB BundledMesh_PS(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	// Get world-space properties
+	/*
+		Get world-space data
+	*/
+
 	float3 WorldPos = Input.Pos;
 	float3 WorldTangent = normalize(Input.WorldTangent);
 	float3 WorldBinormal = normalize(Input.WorldBinormal);
 	float3 WorldNormal = normalize(Input.WorldNormal);
 	float3x3 WorldTBN = float3x3(WorldTangent, WorldBinormal, WorldNormal);
 
-	// Get world-space vectors
 	float3 WorldLightVec = GetLightVec(WorldPos.xyz);
 	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos - WorldPos);
 
-	// NOTE: We copy ColorMap to ColorTex to preserve original alpha & gloss data
+	/*
+		Get texture data
+	*/
+
+	// Get color texture data //
+
+	// We copy ColorMap to ColorTex to preserve original alpha data
 	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
 	float4 ColorTex = ColorMap;
-	#if _HASENVMAP_
-		float3 Reflection = -reflect(ViewVec, NormalVec);
-		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
-		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
-	#endif
+
+	// Get normal texture data //
 
 	#if _HASNORMALMAP_
 		// Transform from tangent-space to world-space
@@ -235,6 +240,8 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	#else
 		float3 NormalVec = normalize(WorldNormal);
 	#endif
+
+	// Get shadow texture data //
 
 	#if _HASSHADOW_
 		float ShadowDir = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
@@ -252,6 +259,20 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		Calculate diffuse + specular lighting
 	*/
 
+	#if _HASCOLORMAPGLOSS_
+		float Gloss = ColorTex.a;
+	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
+		float Gloss = NormalMap.a;
+	#else
+		float Gloss = StaticGloss;
+	#endif
+
+	#if _HASENVMAP_
+		float3 Reflection = -reflect(ViewVec, NormalVec);
+		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
+		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
+	#endif
+
 	#if _POINTLIGHT_
 		float3 Ambient = 0.0;
 	#else
@@ -264,14 +285,6 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		#else
 			float3 Ambient = Lights[0].color.a;
 		#endif
-	#endif
-
-	#if _HASCOLORMAPGLOSS_
-		float Gloss = ColorTex.a;
-	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
-		float Gloss = NormalMap.a;
-	#else
-		float Gloss = StaticGloss;
 	#endif
 
 	#if _HASGIMAP_
@@ -351,7 +364,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 
 	#if _HASENVMAP_
 		float FresnelFactor = ComputeFresnelFactor(NormalVec, ViewVec);
-		ColorTex.a = lerp(ColorTex.a, 1.0, FresnelFactor);
+		ColorMap.a = lerp(ColorMap.a, 1.0, FresnelFactor);
 	#endif
 
 	// Unaltered alpha should be 1.0 for debug reasons
@@ -363,7 +376,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		#if _HASCOLORMAPGLOSS_
 			Output.Color.a = 1.0;
 		#else
-			Output.Color.a = ColorTex.a;
+			Output.Color.a = ColorMap.a;
 		#endif
 	#endif
 
