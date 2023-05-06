@@ -61,6 +61,7 @@ uniform float _DeltaV : DELTAV;
 
 uniform texture Tex0 : TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0, CLAMP)
+CREATE_SAMPLER(SampleTex0_Mirror, Tex0, MIRROR)
 
 uniform texture Tex1 : TEXLAYER1;
 CREATE_SAMPLER(SampleTex1, Tex1, CLAMP)
@@ -116,15 +117,15 @@ float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 	// 1 4 7
 	// 2 5 8
 	float4 Tex[BlurTaps];
-	Tex[0] = tex2D(SampleTex0, ColumnTex[0].xy);
-	Tex[1] = tex2D(SampleTex0, ColumnTex[0].xz);
-	Tex[2] = tex2D(SampleTex0, ColumnTex[0].xw);
-	Tex[3] = tex2D(SampleTex0, ColumnTex[1].xy);
-	Tex[4] = tex2D(SampleTex0, ColumnTex[1].xz);
-	Tex[5] = tex2D(SampleTex0, ColumnTex[1].xw);
-	Tex[6] = tex2D(SampleTex0, ColumnTex[2].xy);
-	Tex[7] = tex2D(SampleTex0, ColumnTex[2].xz);
-	Tex[8] = tex2D(SampleTex0, ColumnTex[2].xw);
+	Tex[0] = tex2D(SampleTex0_Mirror, ColumnTex[0].xy);
+	Tex[1] = tex2D(SampleTex0_Mirror, ColumnTex[0].xz);
+	Tex[2] = tex2D(SampleTex0_Mirror, ColumnTex[0].xw);
+	Tex[3] = tex2D(SampleTex0_Mirror, ColumnTex[1].xy);
+	Tex[4] = tex2D(SampleTex0_Mirror, ColumnTex[1].xz);
+	Tex[5] = tex2D(SampleTex0_Mirror, ColumnTex[1].xw);
+	Tex[6] = tex2D(SampleTex0_Mirror, ColumnTex[2].xy);
+	Tex[7] = tex2D(SampleTex0_Mirror, ColumnTex[2].xz);
+	Tex[8] = tex2D(SampleTex0_Mirror, ColumnTex[2].xw);
 
 	float4 Blur = 0.0;
 	for(int i = 0; i < BlurTaps; i++)
