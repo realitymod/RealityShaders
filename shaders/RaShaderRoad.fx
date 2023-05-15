@@ -165,7 +165,7 @@ PS2FB Road_PS(VS2PS Input)
 	}
 
 	#if defined(NO_BLEND)
-		Diffuse.a = ZFade;
+		Diffuse.a = (Diffuse.a <= 0.95) ? 1.0 : ZFade;
 	#else
 		Diffuse.a *= ZFade;
 	#endif
