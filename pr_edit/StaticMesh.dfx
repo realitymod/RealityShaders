@@ -1,0 +1,73 @@
+#line 2 "StaticMesh.dfx"
+#include "shaders/datatypes.fx"
+//#include "Shaders/commonVertexLight.fx"
+#include "shaders/commonSamplers.dfx"
+#include "shaders/common.dfx"
+ 
+// material and modifier bits, this list should match the one found in the StaticMeshMaterialDrawer BitFlags enum
+
+const dword _haslightmap_ : LITERAL;
+const dword _hasbase_ : LITERAL;
+const dword _hasdetail_ : LITERAL;
+const dword _hasdirt_ : LITERAL;
+const dword _hascrack_ : LITERAL;
+const dword _hasparallax_ : LITERAL;
+const dword _hasbasen_ : LITERAL;
+const dword _hasdetailn_ : LITERAL;
+const dword _hascrackn_ : LITERAL;
+const dword _hasDirShadow_ : LITERAL;
+
+// end if material and modifer bits
+const dword _hastexture_ : LITERAL;
+const dword _has2xtexture_ : LITERAL;
+const dword _haslighting_ : LITERAL;
+const dword _haspixellight_ : LITERAL;
+const dword _haspixelnormalize_ : LITERAL;
+
+// lighting test
+const int _numPointLights_ : LITERAL;
+const dword _numSpotLights_ : LITERAL;
+const dword _numProjSpotLights_ : LITERAL;
+
+//#define _STATICMESH_VARIABLESHADER_ staticmeshvariable
+//#define _STATICMESH_MULTIPASS_ staticmeshmultipass
+//#define _STATICMESH_ZONLYSHADER_ zonlyvariable
+
+// Uniform VS Constant inputs!
+float4x4 vsWorldViewProj : register(vs_1_1, c0);
+float4 vsLightmapOffset : register(vs_1_1, c4);
+float4 vsLightDirObjSpace : register(vs_1_1, c5);
+float4 vsEyePosObjSpace : register(vs_1_1, c6);
+float4 vsTexProjOffset : register(vs_1_1, c7);
+float4x4 vsShadowProjMat : register(vs_1_1, c8);
+float4x4 vsShadowTrapMat : register(vs_1_1, c17);
+float4 vsSunColor : register(vs_1_1, c12) = float4(1.2,1.2,1.1,1);
+float4 vsSkyColor : register(vs_1_1, c13) = float4(0.55,0.55,0.7,1);
+float4 vsLightPosObjSpace[3] : register(vs_1_1, c14);
+// float4 vsLight1PosObjSpace : register(vs_1_1, c15);
+// float4 vsLight2PosObjSpace : register(vs_1_1, c16);
+
+// float4 vsSunColor : register(vs_1_1, c16);
+
+// float4 eyePos : EyePos : register(c8);
+
+// Uniform PS Constant inputs!
+float4 psSunColor : register(c0) = float4(1.2,1.2,1.1,1);
+float4 psParallaxScaleBias : register(c1);
+float4 psViewPortMap : register(c2);
+float4 psSkyColor : register(c3) = float4(0.55,0.55,0.7,1);
+float4 psSkyNormal : register(c4) = float4(0.78,0.52,0.65,1);
+float3 psLightColors[3] : register(c5);
+
+
+// float4 vsEyePosObjSpace : register(c2);
+// float4 psLightDirObjSpace : register(c0);
+
+// float4 light0pos : register(c2);
+
+// float3 skyColor = float3(0.55,0.55,0.7);
+// float3 skyNormal = float3(0.78,0.52,0.65);
+// float3 sunColor = float3(1.2,1.2,1.1);
+
+
+#include "Shaders/StaticMesh_dx9.dfx"

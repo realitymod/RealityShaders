@@ -1,0 +1,666 @@
+#line 2 "StaticMesh_dx9.dfx"
+
+// Oscar: Keep off...change in the editor instead!!!!
+//#define skyColor float3(1.15,1.2,1.3)
+//#define sunColor float3(1.2,1.2,1.1)
+#define skyNormal float3(0.78,0.52,0.65)
+#define SPECULARCOLOR float3(0.3,0.3,0.35)
+//#define SPECULARCOLOR float3(1,1,1)
+
+//#define staticLightColor float3(0.5, 0.7, 0.0)
+
+
+#define OUTPUTSPECULAR 0
+
+struct appdata_variable {
+	float4 Pos : POSITION;
+	float3 Normal : NORMAL;
+//--	float4 LightIndex : BLENDINDICES;
+	float3 Tan : TANGENT;
+	float2 TexLMap : TEXCOORD0;
+	float2 TexBase : TEXCOORD1;
+	float2 TexDetail : TEXCOORD2;
+	float2 TexDirtMap : TEXCOORD3;
+	float2 TexCrack : TEXCOORD4;
+};
+
+#define DiffuseColor LightPos[0].rgb // Define alias
+#define SpecularColor LightPos[1].rgb // Define alias
+#define TexShadow TexPos // Define alias
+#define TexDirt LightPos[2] // Define alias
+
+struct VS_OUT_variable {
+	float4 HPos : POSITION0;
+	float4 InvDot : COLOR0;
+//--	float4 PointColor : COLOR1;
+	float3 TanLightVec : TEXCOORD0;
+	float4 TexLMapAndBase : TEXCOORD1;
+	float4 TexDetailAndCrack : TEXCOORD2;		
+	float3 TanEyeVec : TEXCOORD3;
+	float4 TexPos : TEXCOORD4;
+	float4 LightPos[3] : TEXCOORD5;
+	float Fog : FOG;
+};
+
+//-- Test array for point (static) ligthmap colors
+static float4 light_color[6] =
+{
+	float4(0.0, 0, 0.0, 0),
+	float4(0, 1.0, 0, 0),
+	float4(0, 0, 1.0, 0),
+	float4(1.0, 1.0, 0, 0),
+	float4(0, 1.0, 1.0, 0),
+	float4(1.0, 0, 1.0, 0)
+};
+
+
+// ******************************************
+// common vertex shader methods
+//
+void calculateTangentVectors(float3 Normal, float3 Tan, float3 objPos, float3 objEyePos, out float3 tanLVec, out float3 tanEVec)
+{
+	// Cross product to create BiNormal
+	float3 binormal = normalize(cross(Tan, Normal));
+	
+	// calculate the objI
+	float3x3 TanBasis = float3x3(Tan, binormal, Normal);
+	float3x3 objI = transpose(TanBasis);
+
+	// Transform light dir to tan space
+	tanLVec = mul(-vsLightDirObjSpace, objI);
+
+	// Transform eye pos to tangent space 
+	float3 objEyeVec = objEyePos - objPos;
+	tanEVec = mul(objEyeVec, objI);
+} 
+
+void calculateTangentVectorsWithLights(float3 Normal, float3 Tan, float3 objPos, float3 objEyePos, float4 objLightPos[3], out float3 tanLVec, out float3 tanEVec, out float4 tanLightPos[3])
+{
+	// Cross product to create BiNormal
+	float3 binormal = normalize(cross(Tan, Normal));
+	
+	// calculate the objI
+	float3x3 TanBasis = float3x3(Tan, binormal, Normal);
+	float3x3 objI = transpose(TanBasis);
+
+	// Transform light dir to tan space
+	tanLVec = mul(-vsLightDirObjSpace, objI);
+
+	// Transform eye pos to tangent space 
+	float3 objEyeVec = objEyePos - objPos;
+	tanEVec = mul(objEyeVec, objI);
+
+	// Transform pointLight0 to tangent space
+	// float3 tempVec = objLightPos[0].xyz - objPos;
+	tanLightPos[0] = 0;
+	tanLightPos[1] = 0;
+	tanLightPos[2] = 0;
+	for (int i=0; i<_NUMPOINTLIGHTS_; i++)
+		tanLightPos[i] = float4(mul(objLightPos[i].xyz - objPos, objI), objLightPos[i].w);
+	
+} 
+
+
+
+VS_OUT_variable vsStaticMesh(appdata_variable input)
+{
+	VS_OUT_variable Out = (VS_OUT_variable)0;
+ 
+ 	// output position early
+ 	Out.HPos = mul(input.Pos, transpose(vsWorldViewProj));
+
+	Out.InvDot = 1-(saturate(dot(input.Normal*0.2, -vsLightDirObjSpace)));
+
+	// if(_haspixellight_)
+	if(_HASPIXELLIGHT_)
+	{
+	 	// calculate tangent light/half/eye
+	 	// float3 tanEVec = 0;
+	 	if(_hasbasen_||_hasdetailn_ || _hascrackn_ || _hasparallax_)
+			calculateTangentVectors(input.Normal, input.Tan, input.Pos, vsEyePosObjSpace, Out.TanLightVec, Out.TanEyeVec);
+		// if(_hasparallax_)
+		// Out.TanEyeVec = tanEVec;
+	
+		// Out.TanHalfVec = (normalize(Out.TanLightVec) + normalize(Out.TanEyeVec)) * 0.5;
+	}
+	else
+	{
+		float diff = dot(input.Normal, -vsLightDirObjSpace);
+		float3 objEyeVec = normalize(vsEyePosObjSpace - input.Pos);
+		float3 halfVec = (-vsLightDirObjSpace + objEyeVec) * 0.5;
+		float spec = dot(input.Normal, halfVec);
+		float4 light = lit(diff, spec, 32);
+		
+		Out.DiffuseColor = light.y * vsSunColor;
+		Out.SpecularColor = light.z * float3(0.7,.7,.7);
+// diffuse = bumpedDiff * float3(1.25,1.1,1.0) + bumpedSky * float3(0.8,0.8,1);
+// Out.DiffuseColor = float3(1,1,0);
+// Out.SpecularColor = float3(0,1,1);
+	}
+
+	//-- Get pointlight lightmap color from index
+	//-- int4 IndexVector = D3DCOLORtoUBYTE4(input.LightIndex);
+	//-- int IndexArray[4] = (int[4])IndexVector;
+	//-- Out.PointColor = light_color[IndexArray[0]];
+
+
+	// if(_haslightmap_)
+	if(_HASLIGHTMAP_)
+		Out.TexLMapAndBase.xy = input.TexLMap.xy* vsLightmapOffset.xy + vsLightmapOffset.zw;
+	// if(_hasbase_)
+	if(_HASBASE_)
+		Out.TexLMapAndBase.wz = input.TexBase.xy;
+		// Out.TexLMapAndBase.zw = input.TexBase.xy;
+	// if(_hasdetail_)
+	if(_HASDETAIL_)
+		Out.TexDetailAndCrack.xy = input.TexDetail.xy;
+	// if(_hasdirt_)
+	if(_HASDIRT_)
+		Out.TexDirt.xy = input.TexDirtMap.xy;
+		// Out.TexDetailAndDirt.zw = input.TexDirtMap.xy;
+	// if(_hascrack_)
+	if(_HASCRACK_)
+		Out.TexDetailAndCrack.wz = input.TexCrack.xy;
+		
+  	Out.Fog = calcFog(Out.HPos.w);
+
+	return Out;
+}
+
+float4 getLightmap(VS_OUT_variable indata)
+{
+	
+	// if(_haslightmap_)
+	if(_HASLIGHTMAP_)
+	{
+		float2 atlasCoords = indata.TexLMapAndBase.xy;// * vsLightmapOffset.xy + vsLightmapOffset.zw;
+		return tex2D(wrapBilinSamplers0, atlasCoords);
+	}
+	else
+		return float4(1,1,1,1);
+}
+
+float2 calculateParallaxCoordinatesFromAlpha(float2 inHeightTexCoords, sampler2D inHeightSampler, float4 inScaleBias, float3 inEyeVecNormalized)
+{
+	float2 height = tex2D(inHeightSampler, inHeightTexCoords).aa;
+	float2 eyeVecN = inEyeVecNormalized.xy * float2(1,-1);
+
+	height = height * inScaleBias.xy + inScaleBias.wz;
+	return inHeightTexCoords + height * eyeVecN.xy;
+}
+
+float4 getCompositeDiffuse(VS_OUT_variable indata, float3 normalizedTanEyeVec)
+{
+	float4 base, detail, dirt, crack;
+
+	float4 totalDiffuse = 0;
+	// if(_hasbase_)
+	if(_HASBASE_)
+	{
+		base = tex2D(wrapBilinSamplers1, indata.TexLMapAndBase.wz);
+		// base = tex2D(wrapBilinSamplers1, indata.TexLMapAndBase.zw);
+		// totalDiffuse.rgb = base;
+		totalDiffuse = base;
+	}
+
+	// if(_hasdetail_)
+	if(_HASDETAIL_)
+	{
+		// if(_hasparallax_)
+		if(_HASPARALLAX_)
+			detail = tex2D(wrapAnisoSamplers2, calculateParallaxCoordinatesFromAlpha(indata.TexDetailAndCrack.xy, wrapAnisoSamplers2, psParallaxScaleBias, normalizedTanEyeVec));
+		else
+			detail = tex2D(wrapAnisoSamplers2, indata.TexDetailAndCrack.xy);
+
+		totalDiffuse.rgb *= detail.rgb;
+		totalDiffuse.a = detail.a;
+	}
+		
+	// if(_hasdirt_)
+	if(_HASDIRT_)
+	{
+		// dirt = tex2D(wrapAnisoSamplers3, indata.TexDetailAndDirt.zw);
+		dirt = tex2D(wrapAnisoSamplers3, indata.TexDirt.xy);
+		totalDiffuse.rgb *= dirt;
+	}
+		
+	// if(_hascrack_)
+	if(_HASCRACK_)
+	{
+		crack = tex2D(wrapAnisoSamplers4, indata.TexDetailAndCrack.wz);
+		// totalDiffuse.rgb = totalDiffuse.rgb*(1-crack.a) + crack.rgb*crack.a;
+		totalDiffuse.rgb = lerp(totalDiffuse.rgb, crack.rgb, crack.a);
+	}
+	
+	return totalDiffuse;
+}
+
+
+// This also includes the composite gloss map
+float4 getCompositeNormals(VS_OUT_variable indata, float3 normalizedTanEyeVec)
+{
+	float4 totalNormal = 0;
+	
+	if(_HASBASEN_)
+		totalNormal = tex2D(wrapBilinSamplers5, indata.TexLMapAndBase.wz);
+
+	if(_HASDETAILN_)
+	{
+		if(_HASPARALLAX_)		
+		{
+			totalNormal = tex2D(wrapBilinSamplers5, calculateParallaxCoordinatesFromAlpha(indata.TexDetailAndCrack.xy, wrapAnisoSamplers2, psParallaxScaleBias, normalizedTanEyeVec));
+		}
+		else
+		{
+			totalNormal = tex2D(wrapBilinSamplers5, indata.TexDetailAndCrack.xy);
+		}
+
+	}
+
+	
+	// if(_hascrackn_)
+	if(_HASCRACKN_)
+	{
+		float4 cracknormal = tex2D(wrapBilinSamplers6, indata.TexDetailAndCrack.wz);
+		float crackmask = tex2D(wrapAnisoSamplers4, indata.TexDetailAndCrack.wz).a;
+		// totalNormal = totalNormal * (1-crackmask) + cracknormal * crackmask;
+		totalNormal = lerp(totalNormal, cracknormal, crackmask);
+	}
+	
+	totalNormal.xyz = totalNormal.xyz * 2 - 1;
+
+	return totalNormal;
+}
+
+
+/*
+float3 getNormalizedHalfVec(float3 normLightVec, float3 normTanEyeVec)
+{
+	// return (normalize(indata.TanLightVec) + normalize(indata.TanEyeVec)) * 0.5;
+	return (normTanEyeVec + normLightVec) * 0.5;
+	// return normalize(indata.TanHalfVec);
+}
+*/
+
+float3 getDiffuseVertexLighting(float4 lightmap, VS_OUT_variable indata)
+{
+	// outColor.rgb = outColor.rgb * indata.DiffuseColor * lightmap.g + lightmap.a;// + indata.SpecularColor;
+	// return float4(1,1,1,1);
+	float3 skyDiffuse = /*0.52 * indata.InvDot */ 0.52 * lightmap.b * vsSkyColor;
+	//-- float3 skyDiffuse =  0.3 * lightmap.b * skyColor + lightmap.r * indata.PointColor * 0.3;
+
+	
+	return lerp(skyDiffuse, indata.DiffuseColor, lightmap.g);
+}
+
+
+float3 getDiffusePixelLighting(float4 lightmap, float3 compNormals, float3 normalizedLightVec, VS_OUT_variable indata)
+{
+	float3 diffuse = dot(compNormals.xyz, normalizedLightVec);
+	float3 bumpedSky = lightmap.b * dot(compNormals, skyNormal) * psSkyColor;
+	
+	
+	
+	// float3 bumpedDiff = diffuse * psSunColor;
+	// we add ambient here as well to get correct ambient for surfaces parallel to the sun
+	float3 bumpedDiff = diffuse * psSunColor + bumpedSky*indata.InvDot;
+
+	diffuse = lerp(bumpedSky * indata.InvDot, bumpedDiff, lightmap.g);
+	//-- diffuse = lerp((bumpedSky + indata.PointColor) * 0.5 * indata.InvDot, bumpedDiff, lightmap.g);
+		
+	return diffuse;
+}
+
+float getSpecularPixelLighting(float4 lightmap, float4 compNormals, float3 normalizedLightVec, float3 normalizedEyeVec)
+{
+	float3 halfVec = normalize(normalizedLightVec + normalizedEyeVec);// * 0.5;
+	// float3 halfVec = (normalize(normalizedLightVec) + normalize(normalizedEyeVec)) / 2;
+	
+	float specular = pow(dot((compNormals.xyz), halfVec), 32) * compNormals.a;
+	
+	// move this to second pass (or in the single pass case to the main ps)
+	// specular *= saturate(3*lightmap.g);/* * 0.2;*/
+	// specular *= saturate(3*lightmap.g);/* * 0.2;*/
+	// mask
+	specular *= lightmap.g;
+		
+	return specular;
+}
+
+
+float4 psStaticMesh(VS_OUT_variable indata) : COLOR
+{
+	float4 outColor = 0;
+
+	// this can be optimized in the vertex path
+	float3 normEyeVec = normalize(indata.TanEyeVec);
+
+	// float4 compDiffuse = getCompositeDiffuse(indata, normEyeVec);
+	
+	outColor = getCompositeDiffuse(indata, normEyeVec);
+	outColor.rgb *= 2;
+	// outColor.rgb = (2*compDiffuse);
+
+	if(_HASPIXELLIGHT_)
+	{
+		float4 lightmap = getLightmap(indata);
+		float4 compNormals = getCompositeNormals(indata, normEyeVec);
+		float3 normLightVec = normalize(indata.TanLightVec);
+		
+		float3 diffuse = saturate(getDiffusePixelLighting(lightmap, compNormals.rgb, normLightVec, indata));
+		float specular = saturate(getSpecularPixelLighting(lightmap, compNormals, normLightVec, normEyeVec));
+		if (OUTPUTSPECULAR)
+			return float4(specular * SPECULARCOLOR,1);
+
+		// return float4(diffuse,1);
+
+		/// -- TEMPORARY: Single pointlight color added trivially so artists can experiment with pointlights -- JMI
+		// outColor.rgb = (outColor.rgb * diffuse) + (specular * SPECULARCOLOR);
+		outColor.rgb = (outColor.rgb * diffuse) + (specular * SPECULARCOLOR);
+		
+
+		if(_HASLIGHTMAP_)
+		{
+			outColor.rgb += (psLightColors[0] * lightmap.r);
+		}
+	}
+	else
+	{
+		float4 lightmap = getLightmap(indata);	
+		// outColor.rgb = outColor.rgb * indata.DiffuseColor * lightmap.g + lightmap.a;// + indata.SpecularColor;
+		// outColor.rgb = outColor.rgb * indata.DiffuseColor;
+		outColor.rgb = outColor.rgb * getDiffuseVertexLighting(lightmap, indata);
+		if(_HASLIGHTMAP_)
+		{
+			outColor.rgb += (psLightColors[0] * lightmap.r);
+		}
+		// outColor = lightmap; //.rgb = float3(1,0,0);
+	}
+
+	return outColor;
+}
+	
+technique _STATICMESH_VARIABLESHADER_
+{
+	pass p0
+	{
+		// AlphaTestEnable = TRUE;
+		// AlphaRef = 0;
+		// AlphaFunc = GREATER;
+		
+		ZEnable = TRUE;
+		// This is controlled from code for alphaTest to work correctly (we need lessequal when we lay down z in this pass)
+		// ZWriteEnable = FALSE;
+		// ZFunc = LESSEQUAL;
+		FogEnable = TRUE;
+		CullMode = CCW;
+		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
+
+		VertexShader = compile vs_1_1 vsStaticMesh();
+		PixelShader = compile PS2_EXT psStaticMesh();
+	}
+}
+
+
+
+/////////////////////////////////////////////////////////////////////
+// Lighting pass
+VS_OUT_variable vsStaticMeshMultiPassLighting(appdata_variable input)
+{
+	// do lighting
+	VS_OUT_variable Out = (VS_OUT_variable)0;
+	 
+ 	// output position early
+ 	Out.HPos = mul(input.Pos, transpose(vsWorldViewProj));
+ 	Out.InvDot = 1-(saturate(dot(input.Normal*0.2, -vsLightDirObjSpace)));
+ 	
+	if(_HASPIXELLIGHT_)
+	{
+		
+	 	// calculate tangent light/half/eye
+	 	if(_HASBASEN_||_HASDETAILN_ || _HASCRACKN_ || _HASPARALLAX_)
+	 	{
+	 		// if (_NUMPOINTLIGHTS_ > 0)
+	 		//{
+	 			calculateTangentVectorsWithLights(input.Normal, input.Tan, input.Pos, vsEyePosObjSpace, vsLightPosObjSpace, Out.TanLightVec, Out.TanEyeVec, Out.LightPos);
+	 		//}
+	 		// else
+	 		//{
+				// calculateTangentVectors(input.Normal, input.Tan, input.Pos, vsEyePosObjSpace, Out.TanLightVec, tanEVec);
+			//}
+		}
+	}
+	else
+	{
+		float diff = dot(input.Normal, -vsLightDirObjSpace);
+		float3 objEyeVec = normalize(vsEyePosObjSpace - input.Pos);
+		float3 halfVec = (-vsLightDirObjSpace + objEyeVec) * 0.5;
+		float spec = dot(input.Normal, halfVec);
+		float4 light = lit(diff, spec, 32);
+		Out.DiffuseColor = light.y * vsSunColor;
+		Out.SpecularColor = light.z * float3(0.7,.7,.7);
+	}
+
+	if(_HASLIGHTMAP_)
+		Out.TexLMapAndBase.xy = input.TexLMap.xy* vsLightmapOffset.xy + vsLightmapOffset.zw;
+	if(_HASBASE_)
+		Out.TexLMapAndBase.wz = input.TexBase.xy;
+	if(_HASDETAIL_)
+		Out.TexDetailAndCrack.xy = input.TexDetail.xy;
+	if(_HASCRACK_)
+		Out.TexDetailAndCrack.wz = input.TexCrack.xy;
+	if (_HASDIRSHADOW_)
+	{
+		float4 TexShadow2 = mul(input.Pos, transpose(vsShadowProjMat));
+		Out.TexShadow = mul(input.Pos, transpose(vsShadowTrapMat));
+		Out.TexShadow.z = (TexShadow2.z/TexShadow2.w) * Out.TexShadow.w;
+	}
+	
+	Out.Fog = calcFog(Out.HPos.w);
+	
+	return Out;
+}
+
+float4 psStaticMeshMultiPassLighting(VS_OUT_variable indata) : COLOR
+{
+	float4 outColor;
+	// project shadows
+	
+	float dirShadow = 1;
+	if (_HASDIRSHADOW_)
+	{		
+		// indata.TexShadow.xy = clamp(indata.TexShadow.xy, psViewPortMap.xy, psViewPortMap.wz);
+
+		float2 texel = float2(1.0/1024.0, 1.0/1024.0);
+		float4 samples;
+
+		samples.x = tex2Dproj(clampPointSamplers7, indata.TexShadow);
+		samples.y = tex2Dproj(clampPointSamplers7, indata.TexShadow + float4(texel.x, 0, 0, 0));
+		samples.z = tex2Dproj(clampPointSamplers7, indata.TexShadow + float4(0, texel.y, 0, 0));
+		samples.w = tex2Dproj(clampPointSamplers7, indata.TexShadow + float4(texel.x, texel.y, 0, 0));
+		
+		float4 cmpbits = samples >= saturate(indata.TexShadow.z/indata.TexShadow.w);
+		dirShadow = dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));			
+	}
+// return dirShadow;
+	float4 lightmap = getLightmap(indata);
+	lightmap.g *= dirShadow;
+	
+		
+	if(_HASPIXELLIGHT_)
+	{
+		float3 normLightVec = normalize(indata.TanLightVec);
+		float3 normEyeVec = normalize(indata.TanEyeVec);		
+		float4 compNormals = getCompositeNormals(indata, normEyeVec);
+
+
+		// do lighting 
+		float3 diffuse = getDiffusePixelLighting(lightmap, compNormals.rgb, normLightVec, indata);		
+		
+		for (int i=0; i<_NUMPOINTLIGHTS_; i++)
+		{
+			float3 pointDiff = saturate(dot(compNormals.xyz, normalize(indata.LightPos[i].xyz))) * psLightColors[i];
+			float sat = 1.0 - saturate(dot(indata.LightPos[i].xyz, indata.LightPos[i].xyz) * indata.LightPos[i].w);
+			diffuse += saturate(pointDiff * sat);
+		}
+				
+		// store diffuse in rgb and single color specular in alpha
+		outColor = float4(diffuse, getSpecularPixelLighting(lightmap, compNormals, normLightVec, normEyeVec));
+	}
+	else
+		outColor = float4(getDiffuseVertexLighting(lightmap, indata), 0);
+
+	return outColor;
+}
+
+//
+// Color Pass
+//
+
+VS_OUT_variable vsStaticMeshMultiPassColor(appdata_variable input)
+{
+	// do color
+	VS_OUT_variable Out = (VS_OUT_variable)0;
+	 
+ 	// output position early
+ 	Out.HPos = mul(input.Pos, transpose(vsWorldViewProj));
+ 	
+ 	Out.TexPos.xy = Out.HPos.xy/Out.HPos.w;
+ 	Out.TexPos.xy = (Out.TexPos.xy + 1) / 2;
+ 	Out.TexPos.y = 1-Out.TexPos.y;
+ 	Out.TexPos.xy += vsTexProjOffset;
+	Out.TexPos.xy = Out.TexPos.xy * Out.HPos.w;
+	Out.TexPos.zw = Out.HPos.zw;
+ 	
+ 	
+ 	if(_HASPIXELLIGHT_)
+	{
+	 	if(_HASPARALLAX_)
+	 		calculateTangentVectors(input.Normal, input.Tan, input.Pos, vsEyePosObjSpace, Out.TanLightVec, Out.TanEyeVec);
+		
+	}
+	else
+	{
+		float diff = dot(input.Normal, -vsLightDirObjSpace);
+		float3 objEyeVec = normalize(vsEyePosObjSpace - input.Pos);
+		float3 halfVec = (-vsLightDirObjSpace + objEyeVec) * 0.5;
+		float spec = dot(input.Normal, halfVec);
+		float4 light = lit(diff, spec, 32);
+		Out.DiffuseColor = light.y * float3(1.25,1.1,1.0);
+		Out.SpecularColor = light.z * float3(0.7,.7,.7);
+	}
+
+	if(_HASLIGHTMAP_)
+		Out.TexLMapAndBase.xy = input.TexLMap.xy* vsLightmapOffset.xy + vsLightmapOffset.zw;
+	if(_HASBASE_)
+		Out.TexLMapAndBase.wz = input.TexBase.xy;
+	if(_HASDETAIL_)
+		Out.TexDetailAndCrack.xy = input.TexDetail.xy;
+	if(_HASDIRT_)
+		Out.TexDirt.xy = input.TexDirtMap.xy;
+	if(_HASCRACK_)
+		Out.TexDetailAndCrack.wz = input.TexCrack.xy;
+ 		
+ 	Out.Fog = calcFog(Out.HPos.w);
+ 			
+ 	return Out;
+}
+
+float4 psStaticMeshMultiPassColor(VS_OUT_variable indata) : COLOR
+{
+	float4 outColor = 1;
+
+
+	float3 normEyeVec = normalize(indata.TanEyeVec);		
+
+// float3 normEyeVec = indata.TanEyeVec;		
+
+	float4 compDiffuse = getCompositeDiffuse(indata, normEyeVec);
+	compDiffuse.rgb *= 2;
+	
+	float4 accumLight = tex2Dproj(clampPointSamplers7, indata.TexPos);
+	
+	// return float4(accumLight.rgb,1);
+	if(OUTPUTSPECULAR)
+		return float4(accumLight.a*SPECULARCOLOR,1);
+
+	outColor.rgb = (compDiffuse*accumLight.rgb) + (accumLight.a*SPECULARCOLOR);
+	outColor.a = compDiffuse.a;
+	
+	
+	return outColor;
+}
+
+
+technique _STATICMESH_MULTIPASS_
+{
+	pass lighting
+	{
+		AlphaBlendEnable = FALSE;	
+		FogEnable = false;
+		ZEnable = TRUE;
+		// ZWriteEnable = FALSE;
+		ZFunc = EQUAL;
+		CullMode = CCW;
+		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
+
+		VertexShader = compile vs_1_1 vsStaticMeshMultiPassLighting();
+		PixelShader = compile PS2_EXT psStaticMeshMultiPassLighting();
+		// PixelShader = compile ps_2_a psStaticMeshMultiPassLighting();
+	}
+
+	pass color
+	{
+		AlphaBlendEnable = FALSE;
+// SrcBlend = SRCALPHA;
+// DestBlend = INVSRCALPHA;
+
+		SrcBlend = ZERO;// DESTCOLOR;
+		DestBlend = SRCCOLOR;
+		FogEnable = TRUE;
+	
+		ZEnable = TRUE;
+		// ZWriteEnable = FALSE;
+		ZFunc = EQUAL;
+		CullMode = CCW;
+		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
+
+		VertexShader = compile vs_1_1 vsStaticMeshMultiPassColor();
+		PixelShader = compile PS2_EXT psStaticMeshMultiPassColor();
+	}
+	
+}
+
+
+
+struct appdata_ZOnly {
+    float4 Pos : POSITION;    
+};
+
+float4 vsZOnly(appdata_ZOnly input) : POSITION
+{
+// return mul(input.Pos, mWorldViewProj);
+ 	return mul(input.Pos, transpose(vsWorldViewProj));
+}
+
+technique _STATICMESH_ZONLYSHADER_
+{
+	pass p0 
+	{
+		ZWriteEnable = TRUE;
+		ZFunc = LESSEQUAL;
+		
+		ColorWriteEnable = 0;
+CullMode = CCW;
+		
+		AlphaBlendEnable = FALSE;
+		AlphaTestEnable = FALSE;
+
+ 		VertexShader = compile vs_1_1 vsZOnly();
+ 		PixelShader = asm {
+ 			ps.1.1
+ 			def c0, 1, 0, 0, 1
+ 			mov r0, c0
+ 		};
+ 	}
+}
