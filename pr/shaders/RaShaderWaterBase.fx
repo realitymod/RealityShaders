@@ -146,6 +146,7 @@ VS2PS Water_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
+	// Get world-space data
 	float4 WorldPos = mul(Input.Pos, World);
 	Output.HPos = mul(WorldPos, ViewProjection);
 	Output.Pos.xyz = WorldPos.xyz;
@@ -153,6 +154,7 @@ VS2PS Water_VS(APP2VS Input)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
+	// Get texture surface data
 	float3 Tex = 0.0;
 	#if defined(USE_3DTEXTURE)
 		Tex.xy = (WorldPos.xz / float2(29.13, 31.81)) + (WaterScroll.xy * WaterCycleTime);

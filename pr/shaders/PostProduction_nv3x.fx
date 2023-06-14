@@ -103,34 +103,48 @@ VS2PS_Quad Basic_VS(APP2VS_Quad Input)
 	return Output;
 }
 
+float4 GetTex(float2 Tex, float4 Offset)
+{
+	return (Tex.xyyy * float4(1.0, 1.0, 0.0, 0.0)) + Offset;
+}
+
 float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 {
 	const float2 BlurSize = 0.02;
 	const int BlurTaps = 9;
+	const float Weight = 1.0 / float(BlurTaps);
 
-	float4 ColumnTex[3];
-	ColumnTex[0] = Input.TexCoord0.xyyy + (float4(-1.0, +1.0, 0.0, -1.0) * BlurSize.xyyy);
-	ColumnTex[1] = Input.TexCoord0.xyyy + (float4( 0.0, +1.0, 0.0, -1.0) * BlurSize.xyyy);
-	ColumnTex[2] = Input.TexCoord0.xyyy + (float4(+1.0, +1.0, 0.0, -1.0) * BlurSize.xyyy);
+	float4 Offsets[9] =
+	{
+		float4(-0.02, 0.02, 0.0, 0.0),
+		float4(-0.02, 0.00, 0.0, 0.0),
+		float4(-0.02,-0.02, 0.0, 0.0),
+		float4( 0.00, 0.02, 0.0, 0.0),
+		float4( 0.00, 0.00, 0.0, 0.0),
+		float4( 0.00,-0.02, 0.0, 0.0),
+		float4( 0.02, 0.02, 0.0, 0.0),
+		float4( 0.02, 0.00, 0.0, 0.0),
+		float4( 0.02,-0.02, 0.0, 0.0),
+	};
 
 	// 0 3 6
 	// 1 4 7
 	// 2 5 8
 	float4 Tex[BlurTaps];
-	Tex[0] = tex2D(SampleTex0_Mirror, ColumnTex[0].xy);
-	Tex[1] = tex2D(SampleTex0_Mirror, ColumnTex[0].xz);
-	Tex[2] = tex2D(SampleTex0_Mirror, ColumnTex[0].xw);
-	Tex[3] = tex2D(SampleTex0_Mirror, ColumnTex[1].xy);
-	Tex[4] = tex2D(SampleTex0_Mirror, ColumnTex[1].xz);
-	Tex[5] = tex2D(SampleTex0_Mirror, ColumnTex[1].xw);
-	Tex[6] = tex2D(SampleTex0_Mirror, ColumnTex[2].xy);
-	Tex[7] = tex2D(SampleTex0_Mirror, ColumnTex[2].xz);
-	Tex[8] = tex2D(SampleTex0_Mirror, ColumnTex[2].xw);
+	Tex[0] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[0]));
+	Tex[1] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[1]));
+	Tex[2] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[2]));
+	Tex[3] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[3]));
+	Tex[4] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[4]));
+	Tex[5] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[5]));
+	Tex[6] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[6]));
+	Tex[7] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[7]));
+	Tex[8] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[8]));
 
 	float4 Blur = 0.0;
 	for(int i = 0; i < BlurTaps; i++)
 	{
-		Blur += (Tex[i] * (1.0 / float(BlurTaps)));
+		Blur += (Tex[i] * Weight);
 	}
 
 	float4 Color = Tex[4];

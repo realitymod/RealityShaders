@@ -48,9 +48,25 @@
 	uniform float4 FogRange : fogRange;
 	uniform float4 FogColor : fogColor;
 	
+
 	/*
-		Shared Thermal code
+		Shared transformation code
 	*/
+
+	float3 GetWorldLightPos(float3 ObjectLightPos)
+	{
+		return mul(float4(ObjectLightPos, 1.0), World);
+	}
+
+	float3 GetWorldLightDir(float3 ObjectLightDir)
+	{
+		return mul(ObjectLightDir, (float3x3)World);
+	}
+
+	/*
+		Shared thermal code
+	*/
+
 	bool IsTisActive()
 	{
 		return FogColor.r == 0;

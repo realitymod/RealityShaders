@@ -217,7 +217,7 @@ float3 GetLightmap(VS2PS Input)
 	#endif
 }
 
-float3 GetLightVec(float3 ObjectPos)
+float3 GetObjectLightVec(float3 ObjectPos)
 {
 	#if _POINTLIGHT_
 		return Lights[0].pos - ObjectPos;
@@ -238,7 +238,7 @@ PS2FB StaticMesh_PS(VS2PS Input)
 	float3x3 ObjectTBN = float3x3(ObjectTangent, ObjectBinormal, ObjectNormal);
 
 	// mul(mat, vec) == mul(vec, transpose(mat))
-	float3 ObjectLightVec = GetLightVec(ObjectPos);
+	float3 ObjectLightVec = GetObjectLightVec(ObjectPos);
 	float3 LightVec = normalize(mul(ObjectTBN, ObjectLightVec));
 	float3 ViewVec = normalize(mul(ObjectTBN, ObjectSpaceCamPos - ObjectPos));
 

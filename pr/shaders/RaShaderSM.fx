@@ -87,12 +87,12 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	// Get skinned object-space properties
+	// Get skinned object-space data
 	float4 ObjectPosition = Input.Pos;
 	float4x3 SkinnedObjMat = GetSkinnedObjectMatrix(Input);
 	float4 SkinnedObjPos = float4(mul(ObjectPosition, SkinnedObjMat), 1.0);
 
-	// Get world-space properties
+	// Get world-space data
 	float4 WorldPos = mul(SkinnedObjPos, World);
 	float3x3 WorldMat = mul(GetBoneMatrix(Input, 0), (float3x3)World);
 	#if _OBJSPACENORMALMAP_ // [Object Space] -> [Skinned Object Space] -> [Skinned World Space]
@@ -107,7 +107,7 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 		Output.Normal = WorldTBN[2];
 	#endif
 
-	// Output HPos
+	// Output HPos data
 	Output.HPos = mul(SkinnedObjPos, WorldViewProjection);
 	Output.Pos.xyz = WorldPos.xyz;
 	#if defined(LOG_DEPTH)
@@ -128,12 +128,12 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 }
 
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
-float3 GetLightVec(float3 WorldPos)
+float3 GetWorldLightVec(float3 WorldPos)
 {
 	#if _POINTLIGHT_
-		return mul(float4(Lights[0].pos, 1.0), World) - WorldPos;
+		return GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 	#else
-		return mul(-Lights[0].dir, (float3x3)World);
+		return GetWorldLightDir(-Lights[0].dir.xyz);
 	#endif
 }
 
@@ -167,7 +167,7 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 	float3x3 WorldTBN = float3x3(WorldTangent, WorldBinormal, WorldNormal);
 
 	// mul(mat, vec) ==	mul(vec, transpose(mat))
-	float3 WorldLightVec = GetLightVec(WorldPos);
+	float3 WorldLightVec = GetWorldLightVec(WorldPos);
 	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 

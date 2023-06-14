@@ -57,17 +57,16 @@
 	#define _HASSHADOW_ 0
 #endif
 
-/*
-	// #define _DEBUG_
-	#if defined(_DEBUG_)
-		#define _HASUVANIMATION_ 1
-		#define _USEHEMIMAP_ 1
-		#define _HASSHADOW_ 1
-		#define _HASSHADOWOCCLUSION_ 1
-		#define _HASNORMALMAP_ 1
-		#define _HASGIMAP_ 1
-	#endif
-*/
+#undef _DEBUG_
+// #define _DEBUG_
+#if defined(_DEBUG_)
+	#define _HASUVANIMATION_ 1
+	#define _USEHEMIMAP_ 1
+	#define _HASSHADOW_ 1
+	#define _HASSHADOWOCCLUSION_ 1
+	#define _HASNORMALMAP_ 1
+	#define _HASGIMAP_ 1
+#endif
 
 struct APP2VS
 {
@@ -175,7 +174,7 @@ VS2PS BundledMesh_VS(APP2VS Input)
 }
 
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
-float3 GetLightVec(float3 WorldPos)
+float3 GetWorldLightVec(float3 WorldPos)
 {
 	#if _POINTLIGHT_
 		return Lights[0].pos - WorldPos;
@@ -216,7 +215,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	float3 WorldNormal = normalize(Input.WorldNormal);
 	float3x3 WorldTBN = float3x3(WorldTangent, WorldBinormal, WorldNormal);
 
-	float3 WorldLightVec = GetLightVec(WorldPos.xyz);
+	float3 WorldLightVec = GetWorldLightVec(WorldPos.xyz);
 	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos - WorldPos);
 

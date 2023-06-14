@@ -6,12 +6,14 @@
 	Special Thanks: [FH2]Remdul for the overgrowth fix
 */
 
-// [Debug data]
-// #define OVERGROWTH
-// #define _POINTLIGHT_
-// #define _HASSHADOW_ 1
-// #define HASALPHA2MASK 1
-// [Debug data]
+#undef _DEBUG_
+// #define _DEBUG_
+#if defined(_DEBUG_)
+	#define OVERGROWTH
+	#define _POINTLIGHT_
+	#define _HASSHADOW_ 1
+	#define HASALPHA2MASK 1
+#endif
 
 // Speed to always add to wind, decrease for less movement
 #define WIND_ADD 5
@@ -102,6 +104,13 @@ struct APP2VS
 	float2 Tex0 : TEXCOORD0;
 };
 
+struct WorldSpaceData
+{
+	float3 Pos;
+	float3 LightVec;
+	float3 Normal;
+};
+
 struct VS2PS
 {
 	float4 HPos : POSITION;
@@ -120,35 +129,26 @@ struct PS2FB
 	#endif
 };
 
-struct Vertex
+WorldSpaceData GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 {
-	float3 WorldPos;
-	float3 LightVec;
-};
-
-float3 GetWorldLightPos()
-{
-	return mul(float4(Lights[0].pos.xyz, 1.0), World);
-}
-
-Vertex GetVertexAttrib(float3 ObjectPos)
-{
-	Vertex Output = (Vertex)0;
+	WorldSpaceData Output = (WorldSpaceData)0;
 
 	// Compute world-space position
 	#if defined(OVERGROWTH)
 		ObjectPos *= PosUnpack.xyz;
-		Output.WorldPos = ObjectPos + (WorldSpaceCamPos.xyz - ObjectSpaceCamPos.xyz);
+		Output.Pos = ObjectPos + (WorldSpaceCamPos.xyz - ObjectSpaceCamPos.xyz);
 	#else
-		Output.WorldPos = mul(float4(ObjectPos.xyz, 1.0), World).xyz;
+		Output.Pos = mul(float4(ObjectPos.xyz, 1.0), World).xyz;
 	#endif
 
 	// Compute world-space light vector
 	#if defined(_POINTLIGHT_)
-		Output.LightVec = GetWorldLightPos() - Output.WorldPos;
+		Output.LightVec = GetWorldLightPos(Lights[0].pos.xyz) - Output.Pos;
 	#else
-		Output.LightVec = mul(-Lights[0].dir.xyz, (float3x3)World);
+		Output.LightVec = GetWorldLightDir(-Lights[0].dir.xyz);
 	#endif
+
+	Output.Normal = mul(ObjectNormal, (float3x3)World);
 
 	return Output;
 }
@@ -157,6 +157,7 @@ VS2PS Leaf_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
+	// Calculate object-space position data
 	#if !defined(OVERGROWTH)
 		Input.Pos *= PosUnpack;
 		float Wind = WindSpeed + WIND_ADD;
@@ -166,13 +167,7 @@ VS2PS Leaf_VS(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 
-	Vertex Vtx = GetVertexAttrib(Input.Pos.xyz);
-
-	Output.Pos.xyz = Vtx.WorldPos;
-	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
-	#endif
-
+	// Calculate texture surface data
 	Output.Tex0.xy = Input.Tex0;
 	#if defined(OVERGROWTH)
 		Input.Normal = normalize((Input.Normal * 2.0) - 1.0);
@@ -182,16 +177,25 @@ VS2PS Leaf_VS(APP2VS Input)
 		Output.Tex0.xy *= TexUnpack;
 	#endif
 
-	#if defined(_POINTLIGHT_)
-		float3 LightVec = normalize(Lights[0].pos.xyz - Input.Pos.xyz);
-	#else
-		float3 LightVec = -Lights[0].dir.xyz;
+	// Transform our object-space vertex position and normal into world-space
+	WorldSpaceData WorldData = GetWorldSpaceData(Input.Pos.xyz, Input.Normal);
+
+	// Calculate vertex position data
+	Output.Pos.xyz = WorldData.Pos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	// Calculate per-vertex lighting
-	Output.Tex0.z = dot(Input.Normal, LightVec);
+	// Calculate world-space, per-vertex lighting
+	#if defined(_POINTLIGHT_)
+		float3 LightVec = normalize(WorldData.LightVec);
+	#else
+		float3 LightVec = WorldData.LightVec;
+	#endif
+	Output.Tex0.z = dot(WorldData.Normal, LightVec);
 	Output.Tex0.z = saturate((Output.Tex0.z * 0.5) + 0.5);
 
+	// Calculate the LOD scale for far-away leaf objects
 	#if defined(OVERGROWTH)
 		Output.Tex0.w = Input.Pos.w / 32767.0;
 	#else
@@ -226,7 +230,7 @@ PS2FB Leaf_PS(VS2PS Input)
 	float4 OutputColor = DiffuseMap * float4(VertexColor, Transparency.r * 2.0);
 
 	#if defined(OVERGROWTH) && HASALPHA2MASK
-		OutputColor.a *= 2.0 * DiffuseMap.a;
+		OutputColor.a *= (DiffuseMap.a * 2.0);
 	#endif
 
 	Output.Color = OutputColor;
@@ -238,8 +242,8 @@ PS2FB Leaf_PS(VS2PS Input)
 	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos);
 
 	#if defined(_POINTLIGHT_)
-		float3 LightVec = GetWorldLightPos() - WorldPos;
-		Output.Color.rgb *= GetLightAttenuation(LightVec, Lights[0].attenuation);
+		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
+		Output.Color.rgb *= GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		Output.Color.rgb *= FogValue;
 	#endif
 
