@@ -34,7 +34,8 @@ string GlobalParametersBase[] =
 	"StaticSpecularColor",
 	"FogRange",
 	"FogColor",
-	"StaticGloss"
+	"StaticGloss",
+	"WorldSpaceCamPos"
 };
 
 // This is the common template parameters (none for this shader)
@@ -53,7 +54,8 @@ string InstanceParametersBase[] =
 	"Transparency",
 	"ObjectSpaceCamPos",
 	"Lights",
-	"AlphaTest"
+	"AlphaTest",
+	"World"
 };
 
 //

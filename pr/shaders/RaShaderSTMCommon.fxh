@@ -7,6 +7,7 @@
 #define ndetail 0x10
 
 uniform float4 ObjectSpaceCamPos;
+uniform float4 WorldSpaceCamPos;
 uniform float4 PosUnpack;
 uniform float TexUnpack;
 uniform float2 NormalUnpack;

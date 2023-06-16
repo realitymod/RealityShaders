@@ -210,14 +210,15 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	*/
 
 	float3 WorldPos = Input.Pos;
-	float3 WorldTangent = normalize(Input.WorldTangent);
-	float3 WorldBinormal = normalize(Input.WorldBinormal);
-	float3 WorldNormal = normalize(Input.WorldNormal);
-	float3x3 WorldTBN = float3x3(WorldTangent, WorldBinormal, WorldNormal);
-
 	float3 WorldLightVec = GetWorldLightVec(WorldPos.xyz);
 	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos - WorldPos);
+	float3x3 WorldTBN =
+	{
+		normalize(Input.WorldTangent),
+		normalize(Input.WorldBinormal),
+		normalize(Input.WorldNormal)
+	};
 
 	/*
 		Get texture data
@@ -237,7 +238,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		float3 NormalVec = normalize((NormalMap.xyz * 2.0) - 1.0);
 		NormalVec = normalize(mul(NormalVec, WorldTBN));
 	#else
-		float3 NormalVec = normalize(WorldNormal);
+		float3 NormalVec = normalize(WorldTBN[2]);
 	#endif
 
 	// Get shadow texture data //

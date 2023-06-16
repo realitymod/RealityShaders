@@ -17,6 +17,7 @@
 	#define _HASSHADOW_ 0
 #endif
 
+#undef _DEBUG_
 // #define _DEBUG_
 #if defined(_DEBUG_)
 	#define _HASNORMALMAP_ 1
@@ -43,9 +44,9 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 
-	float3 Tangent : TEXCOORD1;
-	float3 Binormal : TEXCOORD2;
-	float3 Normal : TEXCOORD3;
+	float3 WorldTangent : TEXCOORD1;
+	float3 WorldBinormal : TEXCOORD2;
+	float3 WorldNormal : TEXCOORD3;
 
 	float2 Tex0 : TEXCOORD4;
 	float4 ShadowTex : TEXCOORD5;
@@ -95,16 +96,16 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	// Get world-space data
 	float4 WorldPos = mul(SkinnedObjPos, World);
 	float3x3 WorldMat = mul(GetBoneMatrix(Input, 0), (float3x3)World);
-	#if _OBJSPACENORMALMAP_ // [Object Space] -> [Skinned Object Space] -> [Skinned World Space]
-		Output.Tangent = WorldMat[0];
-		Output.Binormal = WorldMat[1];
-		Output.Normal = WorldMat[2];
-	#else // [Tangent Space] -> [Object Space] -> [Skinned Object Space] -> [Skinned World Space]
+	#if _OBJSPACENORMALMAP_ // [object-space] -> [skinned object-space] -> [skinned world-space]
+		Output.WorldTangent = WorldMat[0];
+		Output.WorldBinormal = WorldMat[1];
+		Output.WorldNormal = WorldMat[2];
+	#else // [tangent-space] -> [object-space] -> [skinned object-space] -> [skinned world-space]
 		float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
 		float3x3 WorldTBN = mul(ObjectTBN, WorldMat);
-		Output.Tangent = WorldTBN[0];
-		Output.Binormal = WorldTBN[1];
-		Output.Normal = WorldTBN[2];
+		Output.WorldTangent = WorldTBN[0];
+		Output.WorldBinormal = WorldTBN[1];
+		Output.WorldNormal = WorldTBN[2];
 	#endif
 
 	// Output HPos data
@@ -161,15 +162,15 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 
 	// Get world-space properties
 	float3 WorldPos = Input.Pos.xyz;
-	float3 WorldTangent = normalize(Input.Tangent);
-	float3 WorldBinormal = normalize(Input.Binormal);
-	float3 WorldNormal = normalize(Input.Normal);
-	float3x3 WorldTBN = float3x3(WorldTangent, WorldBinormal, WorldNormal);
-
-	// mul(mat, vec) ==	mul(vec, transpose(mat))
 	float3 WorldLightVec = GetWorldLightVec(WorldPos);
 	float3 LightVec = normalize(WorldLightVec);
 	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
+	float3x3 WorldTBN =
+	{
+		normalize(Input.WorldTangent),
+		normalize(Input.WorldBinormal),
+		normalize(Input.WorldNormal)
+	};
 
 	// (.a) stores the glossmap
 	#if _HASNORMALMAP_
@@ -177,7 +178,7 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 		NormalVec.xyz = normalize((NormalVec.xyz * 2.0) - 1.0);
 		NormalVec.xyz = normalize(mul(NormalVec.xyz, WorldTBN));
 	#else
-		float4 NormalVec = float4(WorldNormal, 0.0);
+		float4 NormalVec = float4(WorldTBN[2], 0.0);
 	#endif
 
 	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);

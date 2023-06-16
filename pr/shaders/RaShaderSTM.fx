@@ -12,19 +12,15 @@
 #if defined(TexBasePackedInd)
 	#define BaseTexID TexBasePackedInd
 #endif
-
 #if defined(TexDetailPackedInd)
 	#define DetailTexID TexDetailPackedInd
 #endif
-
 #if defined(TexDirtPackedInd)
 	#define DirtTexID TexDirtPackedInd
 #endif
-
 #if defined(TexCrackPackedInd)
 	#define CrackTexID TexCrackPackedInd
 #endif
-
 #if defined(TexLightMapPackedInd)
 	#define LightMapTexID TexLightMapPackedInd
 #endif
@@ -36,6 +32,13 @@
 // Only use crackmap if we have a per-pixel normalmap
 #if !defined(PERPIXEL)
 	#undef _CRACK_
+#endif
+
+#undef _DEBUG_
+// #define _DEBUG_
+#if defined(_DEBUG_)
+	#define PERPIXEL
+	#define POINTLIGHT
 #endif
 
 #define PARALLAX_BIAS 0.0025
@@ -56,9 +59,9 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 
-	float3 ObjectTangent : TEXCOORD1;
-	float3 ObjectBinormal : TEXCOORD2;
-	float3 ObjectNormal : TEXCOORD3;
+	float3 WorldTangent : TEXCOORD1;
+	float3 WorldBinormal : TEXCOORD2;
+	float3 WorldNormal : TEXCOORD3;
 
 	float4 BaseAndDetail : TEXCOORD4; // .xy = BaseTex; .zw = DetailTex;
 	float4 DirtAndCrack : TEXCOORD5; // .xy = DirtTex; .zw = CrackTex;
@@ -87,7 +90,7 @@ VS2PS StaticMesh_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	// Get object-space properties
+	// Get object-space data
 	float4 ObjectPos = float4(Input.Pos.xyz, 1.0) * PosUnpack;
 	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
 	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
@@ -95,15 +98,16 @@ VS2PS StaticMesh_VS(APP2VS Input)
 
 	// Output HPos
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
-	Output.Pos.xyz = ObjectPos.xyz;
+
+	// Output world-space data
+	Output.Pos.xyz = GetWorldPos(ObjectPos.xyz);
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
-
-	// Output object-space properties
-	Output.ObjectTangent = ObjectTBN[0];
-	Output.ObjectBinormal = ObjectTBN[1];
-	Output.ObjectNormal = ObjectTBN[2];
+	float3x3 WorldTBN = mul(ObjectTBN, (float3x3)World);
+	Output.WorldTangent = WorldTBN[0];
+	Output.WorldBinormal = WorldTBN[1];
+	Output.WorldNormal = WorldTBN[2];
 
 	#if _BASE_
 		Output.BaseAndDetail.xy = Input.TexSets[BaseTexID].xy * TexUnpack;
@@ -130,7 +134,6 @@ VS2PS StaticMesh_VS(APP2VS Input)
 	return Output;
 }
 
-// TODO: Ask Project Reality Team for editor shader source
 float2 GetParallax(float2 TexCoords, float3 ViewVec)
 {
 	float Height = tex2D(SampleNormalMap, TexCoords).a;
@@ -140,7 +143,7 @@ float2 GetParallax(float2 TexCoords, float3 ViewVec)
 	return TexCoords + ((Height * ViewVec.xy) * PARALLAX_BIAS);
 }
 
-float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
+float4 GetDiffuseMap(VS2PS Input, float3 TanViewVec, out float DiffuseGloss)
 {
 	float4 Diffuse = 1.0;
 	DiffuseGloss = StaticGloss;
@@ -181,31 +184,31 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanEyeVec, out float DiffuseGloss)
 }
 
 // This also includes the composite Gloss map
-float3 GetNormalMap(VS2PS Input, float3 TanEyeVec)
+float3 GetNormalMap(VS2PS Input, float3 TanViewVec, float3x3 WorldTBN)
 {
-	float3 Normals = float3(0.0, 0.0, 1.0);
-
-	#if	_NBASE_
-		Normals = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
-	#endif
-
-	#if _PARALLAXDETAIL_
-		Normals = tex2D(SampleNormalMap, GetParallax(Input.BaseAndDetail.zw, TanEyeVec)).xyz;
-	#elif _NDETAIL_
-		Normals = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
-	#endif
-
-	#if _NCRACK_
-		float3 CrackNormal = tex2D(SampleCrackNormalMap, Input.DirtAndCrack.zw).xyz;
-		float CrackMask = tex2D(SampleCrackMap, Input.DirtAndCrack.zw).a;
-		Normals = lerp(Normals, CrackNormal, CrackMask);
-	#endif
-
 	#if defined(PERPIXEL)
-		Normals = normalize((Normals * 2.0) - 1.0);
-	#endif
+		float3 TangentNormals = float3(0.0, 0.0, 1.0);
+		#if	_NBASE_
+			TangentNormals = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
+		#endif
+		#if _PARALLAXDETAIL_
+			TangentNormals = tex2D(SampleNormalMap, GetParallax(Input.BaseAndDetail.zw, TanViewVec)).xyz;
+		#elif _NDETAIL_
+			TangentNormals = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
+		#endif
+		#if _NCRACK_
+			float3 CrackTangentNormals = tex2D(SampleCrackNormalMap, Input.DirtAndCrack.zw).xyz;
+			float CrackMask = tex2D(SampleCrackMap, Input.DirtAndCrack.zw).a;
+			TangentNormals = lerp(TangentNormals, CrackTangentNormals, CrackMask);
+		#endif
 
-	return Normals;
+		// [tangent-space] -> [object-space] -> [world-space]
+		TangentNormals = normalize((TangentNormals * 2.0) - 1.0);
+		float3 WorldNormals = normalize(mul(TangentNormals, WorldTBN));
+		return WorldNormals;
+	#else
+		return WorldTBN[2];
+	#endif
 }
 
 float3 GetLightmap(VS2PS Input)
@@ -217,46 +220,53 @@ float3 GetLightmap(VS2PS Input)
 	#endif
 }
 
-float3 GetObjectLightVec(float3 ObjectPos)
+float3 GetWorldLightVec(float3 WorldPos)
 {
 	#if _POINTLIGHT_
-		return Lights[0].pos - ObjectPos;
+		return GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 	#else
-		return -Lights[0].dir;
+		return GetWorldLightDir(-Lights[0].dir.xyz);
 	#endif
 }
 
 PS2FB StaticMesh_PS(VS2PS Input)
 {
+	// Initialize variables
+	float4 OutputColor = 1.0;
 	PS2FB Output = (PS2FB)0;
 
-	// Get object-space properties
-	float3 ObjectPos = Input.Pos.xyz;
-	float3 ObjectTangent = normalize(Input.ObjectTangent);
-	float3 ObjectBinormal = normalize(Input.ObjectBinormal);
-	float3 ObjectNormal = normalize(Input.ObjectNormal);
-	float3x3 ObjectTBN = float3x3(ObjectTangent, ObjectBinormal, ObjectNormal);
+	// Get world-space data
+	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldLightVec = GetWorldLightVec(WorldPos);
+	float3 NWorldLightVec = normalize(WorldLightVec);
+	float3 WorldViewVec = normalize(WorldSpaceCamPos - WorldPos);
+	float3x3 WorldTBN =
+	{
+		normalize(Input.WorldTangent),
+		normalize(Input.WorldBinormal),
+		normalize(Input.WorldNormal)
+	};
 
+	// Get tangent-space data
 	// mul(mat, vec) == mul(vec, transpose(mat))
-	float3 ObjectLightVec = GetObjectLightVec(ObjectPos);
-	float3 LightVec = normalize(mul(ObjectTBN, ObjectLightVec));
-	float3 ViewVec = normalize(mul(ObjectTBN, ObjectSpaceCamPos - ObjectPos));
+	float3 TanViewVec = normalize(mul(WorldTBN, WorldViewVec));
 
-	float4 OutputColor = 1.0;
+	// Prepare texture data
 	float Gloss;
-	float4 ColorMap = GetDiffuseMap(Input, ViewVec, Gloss);
-	float3 NormalVec = GetNormalMap(Input, ViewVec);
+	float4 ColorMap = GetDiffuseMap(Input, TanViewVec, Gloss);
+	float3 WorldNormals = GetNormalMap(Input, TanViewVec, WorldTBN);
 
-	ColorPair Light = ComputeLights(NormalVec, LightVec, ViewVec, SpecularPower);
+	// Prepare lighting data
+	ColorPair Light = ComputeLights(WorldNormals, NWorldLightVec, WorldViewVec, SpecularPower);
 	Light.Diffuse = (Light.Diffuse * Lights[0].color);
 	Light.Specular = (Light.Specular * Gloss) * Lights[0].color;
 
 	#if _POINTLIGHT_
-		float Attenuation = GetLightAttenuation(ObjectLightVec, Lights[0].attenuation);
+		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		Light.Diffuse *= Attenuation;
 		Light.Specular *= Attenuation;
 		OutputColor.rgb = (ColorMap.rgb * Light.Diffuse) + Light.Specular;
-		OutputColor.rgb *= GetFogValue(ObjectPos, ObjectSpaceCamPos);
+		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
@@ -265,30 +275,28 @@ PS2FB StaticMesh_PS(VS2PS Input)
 		#endif
 
 		// We divide the normal by 5.0 to prevent complete darkness for surfaces facing away from the sun
-		float DotLN = saturate(dot(NormalVec.xyz / 5.0, -Lights[0].dir));
-		float InvDotLN = saturate((1.0 - DotLN) * 0.65);
+		float DotLN = saturate(dot(WorldNormals / 5.0, NWorldLightVec));
+		float IDotLN = saturate((1.0 - DotLN) * 0.65);
 
 		// We add ambient to get correct ambient for surfaces parallel to the sun
-		float3 Ambient = (StaticSkyColor * InvDotLN) * Lightmap.b;
+		float3 Ambient = (StaticSkyColor * IDotLN) * Lightmap.b;
 		float3 BumpedDiffuse = Light.Diffuse + Ambient;
 
 		Light.Diffuse = lerp(Ambient, BumpedDiffuse, Lightmap.g);
 		Light.Diffuse += (Lightmap.r * SinglePointColor);
 		Light.Specular = Light.Specular * Lightmap.g;
 
-		OutputColor.rgb = ((ColorMap.rgb * 2.0) * Light.Diffuse) + Light.Specular;
+		OutputColor.rgb = (ColorMap.rgb * (Light.Diffuse * 2.0)) + Light.Specular;
 	#endif
 
-	OutputColor.a = ColorMap.a;
-
-	Output.Color = OutputColor;
+	Output.Color = float4(OutputColor.rgb, ColorMap.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(ObjectPos, ObjectSpaceCamPos));
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 
 	return Output;
