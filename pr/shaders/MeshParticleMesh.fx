@@ -28,12 +28,12 @@ uniform float4x3 _MatOneBoneSkinning[26]: matONEBONESKINNING; /* : register(c50)
 
 struct APP2VS
 {
-   	float4 Pos : POSITION;
-   	float3 Normal : NORMAL;
-   	float4 BlendIndices : BLENDINDICES;
-   	float2 TexCoord : TEXCOORD0;
-   	float3 Tan : TANGENT;
-   	float3 Binorm : BINORMAL;
+	float4 Pos : POSITION;
+	float3 Normal : NORMAL;
+	float4 BlendIndices : BLENDINDICES;
+	float2 TexCoord : TEXCOORD0;
+	float3 Tan : TANGENT;
+	float3 Binorm : BINORMAL;
 };
 
 struct VS2PS
@@ -47,16 +47,13 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
 };
 
 VS2PS Diffuse_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-   	// Compensate for lack of UBYTE4 on Geforce3
+	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
 
@@ -64,7 +61,7 @@ VS2PS Diffuse_VS(APP2VS Input)
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos.xyz = Pos.xyz;
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = ApplyLogarithmicDepth(Output.HPos.w + 1.0); // Output depth
 	#endif
 
 	// Compute Cubic polynomial factors.
@@ -106,10 +103,6 @@ PS2FB Diffuse_PS(VS2PS Input)
 
 	Output.Color = Diffuse;
 
-	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
-	#endif
-
 	ApplyFog(Output.Color.rgb, GetFogValue(HPos, 0.0));
 
 	return Output;
@@ -131,10 +124,6 @@ PS2FB Additive_PS(VS2PS Input)
 	Diffuse.rgb *= Diffuse.a;
 
 	Output.Color = Diffuse;
-
-	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
-	#endif
 
 	return Output;
 }

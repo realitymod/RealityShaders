@@ -26,18 +26,18 @@
 #endif
 
 #if (_NBASE_ || _NDETAIL_ || _NCRACK_ || _PARALLAXDETAIL_)
-	#define PERPIXEL
+	#define _PERPIXEL_
 #endif
 
 // Only use crackmap if we have a per-pixel normalmap
-#if !defined(PERPIXEL)
+#if !defined(_PERPIXEL_)
 	#undef _CRACK_
 #endif
 
 #undef _DEBUG_
 // #define _DEBUG_
 #if defined(_DEBUG_)
-	#define PERPIXEL
+	#define _PERPIXEL_
 	#define POINTLIGHT
 #endif
 
@@ -186,7 +186,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanViewVec, out float DiffuseGloss)
 // This also includes the composite Gloss map
 float3 GetNormalMap(VS2PS Input, float3 TanViewVec, float3x3 WorldTBN)
 {
-	#if defined(PERPIXEL)
+	#if defined(_PERPIXEL_)
 		float3 TangentNormals = float3(0.0, 0.0, 1.0);
 		#if	_NBASE_
 			TangentNormals = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
