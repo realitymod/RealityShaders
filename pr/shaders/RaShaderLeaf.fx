@@ -10,7 +10,7 @@
 // #define _DEBUG_
 #if defined(_DEBUG_)
 	#define OVERGROWTH
-	#define _POINTLIGHT_
+	#define _POINTLIGHT_ 1
 	#define _HASSHADOW_ 1
 	#define HASALPHA2MASK 1
 #endif
@@ -52,7 +52,7 @@ string GlobalParameters[] =
 	#endif
 	"GlobalTime",
 	"FogRange",
-	#if !defined(_POINTLIGHT_)
+	#if !_POINTLIGHT_
 		"FogColor",
 	#endif
 	"WorldSpaceCamPos",
@@ -70,7 +70,7 @@ string InstanceParameters[] =
 	"WindSpeed",
 	"Lights",
 	"ObjectSpaceCamPos",
-	#if !defined(_POINTLIGHT_)
+	#if !_POINTLIGHT_
 		"OverGrowthAmbient"
 	#endif
 };
@@ -108,6 +108,7 @@ struct WorldSpaceData
 {
 	float3 Pos;
 	float3 LightVec;
+	float3 NLightVec;
 	float3 Normal;
 };
 
@@ -119,7 +120,6 @@ struct VS2PS
 	#if _HASSHADOW_
 		float4 TexShadow : TEXCOORD2;
 	#endif
-	float3 WorldNormal : TEXCOORD3;
 };
 
 struct PS2FB
@@ -129,6 +129,16 @@ struct PS2FB
 		float Depth : DEPTH;
 	#endif
 };
+
+// NOTE: This returns un-normalized for point, because point needs to be attenuated.
+float3 GetWorldLightVec(float3 WorldPos)
+{
+	#if _POINTLIGHT_
+		return GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
+	#else
+		return GetWorldLightDir(-Lights[0].dir.xyz);
+	#endif
+}
 
 WorldSpaceData GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 {
@@ -142,12 +152,8 @@ WorldSpaceData GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 		Output.Pos = mul(float4(ObjectPos.xyz, 1.0), World).xyz;
 	#endif
 
-	// Compute world-space light vector
-	#if defined(_POINTLIGHT_)
-		Output.LightVec = GetWorldLightPos(Lights[0].pos.xyz) - Output.Pos;
-	#else
-		Output.LightVec = GetWorldLightDir(-Lights[0].dir.xyz);
-	#endif
+	Output.LightVec = GetWorldLightVec(Output.Pos);
+	Output.NLightVec = normalize(Output.LightVec);
 
 	Output.Normal = GetWorldNormal(ObjectNormal);
 
@@ -186,15 +192,9 @@ VS2PS Leaf_VS(APP2VS Input)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
-	Output.WorldNormal = WorldData.Normal;
 
 	// Calculate world-space, per-vertex lighting
-	#if defined(_POINTLIGHT_)
-		float3 WorldLightVec = normalize(WorldData.LightVec);
-	#else
-		float3 WorldLightVec = WorldData.LightVec;
-	#endif
-	Output.Tex0.z = dot(WorldData.Normal, WorldLightVec);
+	Output.Tex0.z = dot(WorldData.Normal, WorldData.NLightVec);
 	Output.Tex0.z = saturate((Output.Tex0.z * 0.5) + 0.5);
 
 	// Calculate the LOD scale for far-away leaf objects
@@ -237,22 +237,19 @@ PS2FB Leaf_PS(VS2PS Input)
 
 	Output.Color = OutputColor;
 
-	// debug
-	Output.Color = float4(Input.WorldNormal.xyz * 0.5 + 0.5, 1.0);
-
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos);
 
-	#if defined(_POINTLIGHT_)
+	#if _POINTLIGHT_
 		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 		Output.Color.rgb *= GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		Output.Color.rgb *= FogValue;
 	#endif
 
-	#if !defined(_POINTLIGHT_)
+	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, FogValue);
 	#endif
 
@@ -271,7 +268,7 @@ technique defaultTechnique
 		AlphaTestEnable = TRUE;
 		AlphaRef = 127;
 
-		#if defined(_POINTLIGHT_)
+		#if _POINTLIGHT_
 			AlphaBlendEnable = TRUE;
 			SrcBlend = ONE;
 			DestBlend = ONE;

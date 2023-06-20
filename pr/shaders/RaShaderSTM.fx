@@ -291,9 +291,6 @@ PS2FB StaticMesh_PS(VS2PS Input)
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);
 
-	// debug
-	Output.Color = float4(WorldNormal.xyz * 0.5 + 0.5, 1.0);
-
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif

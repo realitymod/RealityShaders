@@ -387,9 +387,6 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	Output.Color.rgb = OutputColor.rgb;
 	Output.Color.a *= Transparency.a;
 
-	// debug
-	Output.Color = float4(WorldNormal.xyz * 0.5 + 0.5, 1.0);
-
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif

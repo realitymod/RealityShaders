@@ -147,6 +147,7 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 	// Get world-space data
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldLightVec = GetWorldLightDir(-Lights[0].dir);
+	float3 WorldNLightVec = normalize(WorldLightVec);
 	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
 
 	// Get texture data
@@ -156,7 +157,7 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 	#endif
 
 	// Get diffuse lighting
-	float3 Diffuse = ComputeLambert(WorldNormal, WorldLightVec) * Lights[0].color;
+	float3 Diffuse = ComputeLambert(WorldNormal, WorldNLightVec) * Lights[0].color;
 	#if _HASSHADOW_
 		Diffuse = Diffuse * GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#endif
@@ -166,9 +167,6 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 	OutputColor.rgb = (DiffuseMap.rgb * Diffuse.rgb) * 2.0;
 	OutputColor.a = Transparency.a * 2.0;
 	Output.Color = OutputColor;
-
-	// debug
-	Output.Color = float4(WorldNormal * 0.5 + 0.5, 1.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

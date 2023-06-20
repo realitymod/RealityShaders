@@ -120,9 +120,6 @@ PS2FB TrunkOG_PS(VS2PS Input)
 	OutputColor.a = Transparency.a;
 
 	Output.Color = OutputColor;
-	
-	// debug
-	Output.Color = float4(WorldNormal * 0.5 + 0.5, 1.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

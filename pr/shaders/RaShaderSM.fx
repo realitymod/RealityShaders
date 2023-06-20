@@ -246,9 +246,6 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 
 	Output.Color = OutputColor;
 
-	// debug
-	Output.Color = float4(WorldNormal.xyz * 0.5 + 0.5, 1.0);
-
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
