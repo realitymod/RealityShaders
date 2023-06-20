@@ -21,8 +21,8 @@ string TemplateParameters[] =
 
 string InstanceParameters[] =
 {
-	"World",
 	"WorldViewProjection",
+	"World",
 	"Lights",
 	"ObjectSpaceCamPos",
 	"OverGrowthAmbient",
@@ -83,8 +83,12 @@ VS2PS TrunkOG_VS(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 
+	// Get OverGrowth world-space position
+	float3 ObjectPos = Input.Pos.xyz * PosUnpack.xyz;
+	float3 WorldPos = ObjectPos + (WorldSpaceCamPos.xyz - ObjectSpaceCamPos.xyz);
+
 	// Get world-space data
-	Output.Pos.xyz = GetWorldPos(Input.Pos * PosUnpack);
+	Output.Pos.xyz = WorldPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
@@ -106,11 +110,12 @@ PS2FB TrunkOG_PS(VS2PS Input)
 	float LodScale = Input.Tex0.z;
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
-	float3 WorldLightDir = GetWorldLightDir(-Lights[0].dir);
+	float3 WorldLightVec = GetWorldLightDir(-Lights[0].dir);
+	float3 WorldNLightVec = normalize(WorldLightVec);
 
 	// Get diffuse lighting
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy) * 2.0;
-	float DotLN = ComputeLambert(WorldNormal, WorldLightDir);
+	float DotLN = ComputeLambert(WorldNormal, WorldNLightVec);
 
 	float3 Color = (DotLN * LodScale) * (Lights[0].color * LodScale);
 	Color += (OverGrowthAmbient.rgb * LodScale);

@@ -146,9 +146,9 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 
 	// Get world-space data
 	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
 	float3 WorldLightVec = GetWorldLightDir(-Lights[0].dir);
 	float3 WorldNLightVec = normalize(WorldLightVec);
-	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
 
 	// Get texture data
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.TexA.xy);

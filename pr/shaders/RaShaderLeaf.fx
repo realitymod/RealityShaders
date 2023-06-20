@@ -144,7 +144,7 @@ WorldSpaceData GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 {
 	WorldSpaceData Output = (WorldSpaceData)0;
 
-	// Compute world-space position
+	// Get OverGrowth world-space position
 	#if defined(OVERGROWTH)
 		ObjectPos *= PosUnpack.xyz;
 		Output.Pos = ObjectPos + (WorldSpaceCamPos.xyz - ObjectSpaceCamPos.xyz);
