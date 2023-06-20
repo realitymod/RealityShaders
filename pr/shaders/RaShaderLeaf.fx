@@ -119,6 +119,7 @@ struct VS2PS
 	#if _HASSHADOW_
 		float4 TexShadow : TEXCOORD2;
 	#endif
+	float3 WorldNormal : TEXCOORD3;
 };
 
 struct PS2FB
@@ -148,7 +149,7 @@ WorldSpaceData GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 		Output.LightVec = GetWorldLightDir(-Lights[0].dir.xyz);
 	#endif
 
-	Output.Normal = mul(ObjectNormal, (float3x3)World);
+	Output.Normal = GetWorldNormal(ObjectNormal);
 
 	return Output;
 }
@@ -185,14 +186,15 @@ VS2PS Leaf_VS(APP2VS Input)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
+	Output.WorldNormal = WorldData.Normal;
 
 	// Calculate world-space, per-vertex lighting
 	#if defined(_POINTLIGHT_)
-		float3 LightVec = normalize(WorldData.LightVec);
+		float3 WorldLightVec = normalize(WorldData.LightVec);
 	#else
-		float3 LightVec = WorldData.LightVec;
+		float3 WorldLightVec = WorldData.LightVec;
 	#endif
-	Output.Tex0.z = dot(WorldData.Normal, LightVec);
+	Output.Tex0.z = dot(WorldData.Normal, WorldLightVec);
 	Output.Tex0.z = saturate((Output.Tex0.z * 0.5) + 0.5);
 
 	// Calculate the LOD scale for far-away leaf objects
@@ -234,6 +236,9 @@ PS2FB Leaf_PS(VS2PS Input)
 	#endif
 
 	Output.Color = OutputColor;
+
+	// debug
+	Output.Color = float4(Input.WorldNormal.xyz * 0.5 + 0.5, 1.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

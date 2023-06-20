@@ -14,7 +14,7 @@ uniform float4 OverGrowthAmbient;
 uniform float4 PosUnpack;
 uniform float2 NormalUnpack;
 uniform float TexUnpack;
-uniform float4 ObjectSpaceCamPos;
+uniform float4 WorldSpaceCamPos;
 Light Lights[1];
 
 string GlobalParameters[] =
@@ -24,6 +24,7 @@ string GlobalParameters[] =
 	#endif
 	"FogRange",
 	"FogColor",
+	"WorldSpaceCamPos"
 };
 
 string TemplateParameters[] =
@@ -45,9 +46,9 @@ string InstanceParameters[] =
 	#endif
 	"WorldViewProjection",
 	"Transparency",
-	"ObjectSpaceCamPos",
 	"Lights",
 	"OverGrowthAmbient",
+	"World"
 };
 
 // INPUTS TO THE VERTEX SHADER FROM THE APP
@@ -93,7 +94,7 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 
-	float3 Normals : TEXCOORD1;
+	float3 WorldNormal : TEXCOORD1;
 	float4 TexA : TEXCOORD2; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
 	#if _HASSHADOW_
 		float4 TexShadow : TEXCOORD3;
@@ -112,22 +113,28 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	Input.Pos *= PosUnpack;
-	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
-	Output.Pos.xyz = Input.Pos.xyz;
+	// Get object-space data
+	float4 ObjectPos = Input.Pos * PosUnpack;
+	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
+
+	// Output HPos
+	Output.HPos = mul(float4(ObjectPos.xyz, 1.0), WorldViewProjection);
+
+	// Get world-space data
+	Output.Pos.xyz = GetWorldPos(ObjectPos.xyz);
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
+	Output.WorldNormal.xyz = GetWorldNormal(ObjectNormal);
 
-	Output.Normals.xyz = normalize(Input.Normal * NormalUnpack.x + NormalUnpack.y);
-
+	// Get surface-space data
 	Output.TexA.xy = Input.Tex0 * TexUnpack;
 	#if !defined(BASEDIFFUSEONLY)
 		Output.TexA.zw = Input.Tex1 * TexUnpack;
 	#endif
 
 	#if _HASSHADOW_
-		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
+		Output.TexShadow = GetShadowProjection(float4(ObjectPos.xyz, 1.0));
 	#endif
 
 	return Output;
@@ -137,13 +144,19 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float3 Normals = normalize(Input.Normals.xyz);
+	// Get world-space data
+	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldLightVec = GetWorldLightDir(-Lights[0].dir);
+	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
+
+	// Get texture data
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.TexA.xy);
 	#if !defined(BASEDIFFUSEONLY)
 		DiffuseMap *= tex2D(SampleDetailMap, Input.TexA.zw);
 	#endif
 
-	float3 Diffuse = LambertLighting(Normals, -Lights[0].dir) * Lights[0].color;
+	// Get diffuse lighting
+	float3 Diffuse = ComputeLambert(WorldNormal, WorldLightVec) * Lights[0].color;
 	#if _HASSHADOW_
 		Diffuse = Diffuse * GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#endif
@@ -152,14 +165,16 @@ PS2FB TrunkSTMDetail_PS(VS2PS Input)
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (DiffuseMap.rgb * Diffuse.rgb) * 2.0;
 	OutputColor.a = Transparency.a * 2.0;
-
 	Output.Color = OutputColor;
+
+	// debug
+	Output.Color = float4(WorldNormal * 0.5 + 0.5, 1.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, ObjectSpaceCamPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	return Output;
 };

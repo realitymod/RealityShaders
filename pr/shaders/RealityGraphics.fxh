@@ -76,14 +76,14 @@
 		return Output;
 	}
 
-	float LambertLighting(float3 Normal, float3 LightVec)
+	float ComputeLambert(float3 Normal, float3 LightVec)
 	{
 		return saturate(dot(Normal, LightVec));
 	}
 
-	float ComputeFresnelFactor(float3 WorldNormal, float3 ViewVec)
+	float ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewVec)
 	{
-		float ViewAngle = dot(WorldNormal, ViewVec);
+		float ViewAngle = dot(WorldNormal, WorldViewVec);
 		return saturate(1.0 - abs(ViewAngle));
 	}
 

@@ -93,6 +93,9 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	float4x3 SkinnedObjMat = GetSkinnedObjectMatrix(Input);
 	float4 SkinnedObjPos = float4(mul(ObjectPosition, SkinnedObjMat), 1.0);
 
+	// Output HPos data
+	Output.HPos = mul(SkinnedObjPos, WorldViewProjection);
+
 	// Get world-space data
 	float4 WorldPos = mul(SkinnedObjPos, World);
 	float3x3 WorldMat = mul(GetBoneMatrix(Input, 0), (float3x3)World);
@@ -107,10 +110,7 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 		Output.WorldBinormal = WorldTBN[1];
 		Output.WorldNormal = WorldTBN[2];
 	#endif
-
-	// Output HPos data
-	Output.HPos = mul(SkinnedObjPos, WorldViewProjection);
-	Output.Pos.xyz = WorldPos.xyz;
+	Output.Pos.xyz = WorldPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
@@ -163,8 +163,8 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 	// Get world-space properties
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldLightVec = GetWorldLightVec(WorldPos);
-	float3 LightVec = normalize(WorldLightVec);
-	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
+	float3 WorldNLightVec = normalize(WorldLightVec);
+	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 	float3x3 WorldTBN =
 	{
 		normalize(Input.WorldTangent),
@@ -174,11 +174,11 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 
 	// (.a) stores the glossmap
 	#if _HASNORMALMAP_
-		float4 NormalVec = tex2D(SampleNormalMap, Input.Tex0);
-		NormalVec.xyz = normalize((NormalVec.xyz * 2.0) - 1.0);
-		NormalVec.xyz = normalize(mul(NormalVec.xyz, WorldTBN));
+		float4 WorldNormal = tex2D(SampleNormalMap, Input.Tex0);
+		WorldNormal.xyz = normalize((WorldNormal.xyz * 2.0) - 1.0);
+		WorldNormal.xyz = normalize(mul(WorldNormal.xyz, WorldTBN));
 	#else
-		float4 NormalVec = float4(WorldTBN[2], 0.0);
+		float4 WorldNormal = float4(WorldTBN[2], 0.0);
 	#endif
 
 	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
@@ -200,9 +200,9 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 GroundUV = GetGroundUV(WorldPos, NormalVec);
+			float2 GroundUV = GetGroundUV(WorldPos, WorldNormal);
 			float4 GroundColor = tex2D(SampleHemiMap, GroundUV);
-			float HemiLerp = GetHemiLerp(WorldPos, NormalVec);
+			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
 			float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 		#else
 			float3 Ambient = Lights[0].color.w;
@@ -215,8 +215,8 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 		const float Attenuation = 1.0;
 	#endif
 
-	float Gloss = NormalVec.a;
-	ColorPair Light = ComputeLights(NormalVec, LightVec, ViewVec, SpecularPower);
+	float Gloss = WorldNormal.a;
+	ColorPair Light = ComputeLights(WorldNormal, WorldNLightVec, WorldViewVec, SpecularPower);
 	Light.Diffuse = (Light.Diffuse * Lights[0].color);
 	Light.Specular = ((Light.Specular * Gloss) * Lights[0].color);
 
@@ -245,6 +245,9 @@ PS2FB SkinnedMesh_PS(VS2PS Input)
 	}
 
 	Output.Color = OutputColor;
+
+	// debug
+	Output.Color = float4(WorldNormal.xyz * 0.5 + 0.5, 1.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

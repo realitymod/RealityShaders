@@ -181,11 +181,12 @@ PS2FB Shared_PointLight_PS(VS2PS_Shared_PointLight Input)
 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.Normal);
+	float3 WorldLightVec = _PointLight.pos - WorldPos;
+	float3 WorldNLightVec = normalize(WorldLightVec);
 
 	// Calculate lighting in the vertex shader (precision reasons)
-	float3 LightVec = _PointLight.pos - WorldPos;
-	float Attenuation = GetLightAttenuation(LightVec, _PointLight.attSqrInv);
-	float3 DotNL = dot(WorldNormal, normalize(LightVec)) * Attenuation;
+	float Attenuation = GetLightAttenuation(WorldLightVec, _PointLight.attSqrInv);
+	float3 DotNL = dot(WorldNormal, WorldNLightVec) * Attenuation;
 
 	Output.Color = float4(_PointLight.col * DotNL, 0.0);
 

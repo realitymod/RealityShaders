@@ -54,17 +54,22 @@
 
 	float3 GetWorldPos(float3 ObjectPos)
 	{
-		return mul(float4(ObjectPos, 1.0), World).xyz;
+		return mul(float4(ObjectPos, 1.0), World);
+	}
+
+	float3 GetWorldNormal(float3 ObjectNormal)
+	{
+		return normalize(mul(ObjectNormal, (float3x3)World));
 	}
 
 	float3 GetWorldLightPos(float3 ObjectLightPos)
 	{
-		return mul(float4(ObjectLightPos, 1.0), World).xyz;
+		return mul(float4(ObjectLightPos, 1.0), World);
 	}
 
 	float3 GetWorldLightDir(float3 ObjectLightDir)
 	{
-		return mul(ObjectLightDir, (float3x3)World).xyz;
+		return mul(ObjectLightDir, (float3x3)World);
 	}
 
 	/*

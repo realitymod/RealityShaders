@@ -5,23 +5,11 @@
 	Description: Renders object's diffuse map
 */
 
-uniform float4 ObjectSpaceCamPos;
-
-uniform texture DiffuseMap;
-sampler SampleDiffuseMap = sampler_state
-{
-	Texture = (DiffuseMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
-
 string GlobalParameters[] =
 {
 	"FogColor",
-	"FogRange"
+	"FogRange",
+	"WorldSpaceCamPos"
 };
 
 string TemplateParameters[] =
@@ -43,6 +31,20 @@ string reqVertexElement[] =
 {
 	"Position",
 	"TBase2D"
+};
+
+uniform float4 ObjectSpaceCamPos;
+uniform float4 WorldSpaceCamPos;
+
+uniform texture DiffuseMap;
+sampler SampleDiffuseMap = sampler_state
+{
+	Texture = (DiffuseMap);
+	MipFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
 struct APP2VS
@@ -71,7 +73,9 @@ VS2PS Diffuse_VS(APP2VS Input)
 	VS2PS Output = (VS2PS)0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
-	Output.Pos.xyz = Input.Pos.xyz;
+
+	// Get world-space data
+	Output.Pos.xyz = GetWorldPos(Input.Pos.xyz);
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
@@ -85,13 +89,15 @@ PS2FB Diffuse_PS(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
+	float3 WorldPos = Input.Pos.xyz;
+
 	Output.Color = tex2D(SampleDiffuseMap, Input.Tex0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, ObjectSpaceCamPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	return Output;
 };

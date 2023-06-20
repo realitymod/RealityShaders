@@ -187,25 +187,25 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanViewVec, out float DiffuseGloss)
 float3 GetNormalMap(VS2PS Input, float3 TanViewVec, float3x3 WorldTBN)
 {
 	#if defined(_PERPIXEL_)
-		float3 TangentNormals = float3(0.0, 0.0, 1.0);
+		float3 TangentNormal = float3(0.0, 0.0, 1.0);
 		#if	_NBASE_
-			TangentNormals = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
+			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
 		#endif
 		#if _PARALLAXDETAIL_
-			TangentNormals = tex2D(SampleNormalMap, GetParallax(Input.BaseAndDetail.zw, TanViewVec)).xyz;
+			TangentNormal = tex2D(SampleNormalMap, GetParallax(Input.BaseAndDetail.zw, TanViewVec)).xyz;
 		#elif _NDETAIL_
-			TangentNormals = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
+			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 		#endif
 		#if _NCRACK_
 			float3 CrackTangentNormals = tex2D(SampleCrackNormalMap, Input.DirtAndCrack.zw).xyz;
 			float CrackMask = tex2D(SampleCrackMap, Input.DirtAndCrack.zw).a;
-			TangentNormals = lerp(TangentNormals, CrackTangentNormals, CrackMask);
+			TangentNormal = lerp(TangentNormal, CrackTangentNormals, CrackMask);
 		#endif
 
 		// [tangent-space] -> [object-space] -> [world-space]
-		TangentNormals = normalize((TangentNormals * 2.0) - 1.0);
-		float3 WorldNormals = normalize(mul(TangentNormals, WorldTBN));
-		return WorldNormals;
+		TangentNormal = normalize((TangentNormal * 2.0) - 1.0);
+		float3 WorldNormal = normalize(mul(TangentNormal, WorldTBN));
+		return WorldNormal;
 	#else
 		return WorldTBN[2];
 	#endif
@@ -254,10 +254,10 @@ PS2FB StaticMesh_PS(VS2PS Input)
 	// Prepare texture data
 	float Gloss;
 	float4 ColorMap = GetDiffuseMap(Input, TanViewVec, Gloss);
-	float3 WorldNormals = GetNormalMap(Input, TanViewVec, WorldTBN);
+	float3 WorldNormal = GetNormalMap(Input, TanViewVec, WorldTBN);
 
 	// Prepare lighting data
-	ColorPair Light = ComputeLights(WorldNormals, NWorldLightVec, WorldViewVec, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal, NWorldLightVec, WorldViewVec, SpecularPower);
 	Light.Diffuse = (Light.Diffuse * Lights[0].color);
 	Light.Specular = (Light.Specular * Gloss) * Lights[0].color;
 
@@ -275,7 +275,7 @@ PS2FB StaticMesh_PS(VS2PS Input)
 		#endif
 
 		// We divide the normal by 5.0 to prevent complete darkness for surfaces facing away from the sun
-		float DotLN = saturate(dot(WorldNormals / 5.0, NWorldLightVec));
+		float DotLN = saturate(dot(WorldNormal / 5.0, NWorldLightVec));
 		float IDotLN = saturate((1.0 - DotLN) * 0.65);
 
 		// We add ambient to get correct ambient for surfaces parallel to the sun
@@ -290,6 +290,9 @@ PS2FB StaticMesh_PS(VS2PS Input)
 	#endif
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);
+
+	// debug
+	Output.Color = float4(WorldNormal.xyz * 0.5 + 0.5, 1.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

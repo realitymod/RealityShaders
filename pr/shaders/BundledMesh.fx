@@ -248,7 +248,7 @@ float4 Diffuse_PS(VS2PS_Diffuse Input) : COLOR
 	float3 LightVec = normalize(ObjSpaceLightDir);
 
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.TexCoord);
-	float4 Diffuse = saturate(LambertLighting(Normal, LightVec) + 0.8);
+	float4 Diffuse = saturate(ComputeLambert(Normal, LightVec) + 0.8);
 	Diffuse.a = 1.0;
 
 	return DiffuseMap * Diffuse;

@@ -208,14 +208,14 @@ PS2FB Water_PS(in VS2PS Input)
 	#endif
 
 	float3 WorldPos = Input.Pos.xyz;
-	float3 LightVec = normalize(-Lights[0].dir);
-	float3 ViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
+	float3 WorldLightVec = normalize(-Lights[0].dir);
+	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
-	float3 Reflection = normalize(reflect(-ViewVec, TangentNormal));
+	float3 Reflection = normalize(reflect(-WorldViewVec, TangentNormal));
 	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
 
 	float LightFactors = SpecularColor.a * ShadowFactor;
-	float3 DotLR = saturate(dot(LightVec, Reflection));
+	float3 DotLR = saturate(dot(WorldLightVec, Reflection));
 	float3 Specular = pow(abs(DotLR), SpecularPower) * SpecularColor.rgb;
 
 	float4 OutputColor = 0.0;
@@ -229,7 +229,7 @@ PS2FB Water_PS(in VS2PS Input)
 		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
-	float Fresnel = BASE_TRANSPARENCY - pow(dot(TangentNormal, ViewVec), POW_TRANSPARENCY);
+	float Fresnel = BASE_TRANSPARENCY - pow(dot(TangentNormal, WorldViewVec), POW_TRANSPARENCY);
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.w);
 
 	Output.Color = OutputColor;

@@ -10,21 +10,6 @@
 	initialized from the application.
 */
 
-uniform bool AlphaBlendEnable = false;
-uniform float4x4 Bones[26];
-uniform float4 ObjectSpaceCamPos;
-
-uniform texture DiffuseMap;
-sampler SampleDiffuseMap = sampler_state
-{
-	Texture = (DiffuseMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
-
 string TemplateParameters[] =
 {
 	"DiffuseMap",
@@ -43,6 +28,21 @@ string reqVertexElement[] =
 	"Position",
 	"TBase2D",
 	"Bone4Idcs"
+};
+
+uniform bool AlphaBlendEnable = false;
+uniform float4x4 Bones[26];
+uniform float4 ObjectSpaceCamPos;
+
+uniform texture DiffuseMap;
+sampler SampleDiffuseMap = sampler_state
+{
+	Texture = (DiffuseMap);
+	MipFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
 struct APP2VS

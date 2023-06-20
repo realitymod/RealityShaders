@@ -211,8 +211,8 @@ PS2FB BundledMesh_PS(VS2PS Input)
 
 	float3 WorldPos = Input.Pos;
 	float3 WorldLightVec = GetWorldLightVec(WorldPos.xyz);
-	float3 LightVec = normalize(WorldLightVec);
-	float3 ViewVec = normalize(WorldSpaceCamPos - WorldPos);
+	float3 WorldNLightVec = normalize(WorldLightVec);
+	float3 WorldViewVec = normalize(WorldSpaceCamPos - WorldPos);
 	float3x3 WorldTBN =
 	{
 		normalize(Input.WorldTangent),
@@ -235,10 +235,10 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	#if _HASNORMALMAP_
 		// Transform from tangent-space to world-space
 		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
-		float3 NormalVec = normalize((NormalMap.xyz * 2.0) - 1.0);
-		NormalVec = normalize(mul(NormalVec, WorldTBN));
+		float3 WorldNormal = normalize((NormalMap.xyz * 2.0) - 1.0);
+		WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 	#else
-		float3 NormalVec = normalize(WorldTBN[2]);
+		float3 WorldNormal = normalize(WorldTBN[2]);
 	#endif
 
 	// Get shadow texture data //
@@ -268,7 +268,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	#endif
 
 	#if _HASENVMAP_
-		float3 Reflection = -reflect(ViewVec, NormalVec);
+		float3 Reflection = -reflect(WorldViewVec, WorldNormal);
 		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
 		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
 	#endif
@@ -278,9 +278,9 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 GroundUV = GetGroundUV(WorldPos, NormalVec);
+			float2 GroundUV = GetGroundUV(WorldPos, WorldNormal);
 			float4 GroundColor = tex2D(SampleHemiMap, GroundUV);
-			float HemiLerp = GetHemiLerp(WorldPos, NormalVec);
+			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
 			float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
 		#else
 			float3 Ambient = Lights[0].color.a;
@@ -304,7 +304,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 		const float Attenuation = 1.0;
 	#endif
 
-	ColorPair Light = ComputeLights(NormalVec, LightVec, ViewVec, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal, WorldNLightVec, WorldViewVec, SpecularPower);
 	Light.Diffuse = (Light.Diffuse * Lights[0].color);
 	Light.Specular = ((Light.Specular * Gloss) * Lights[0].color);
 
@@ -363,7 +363,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	*/
 
 	#if _HASENVMAP_
-		float FresnelFactor = ComputeFresnelFactor(NormalVec, ViewVec);
+		float FresnelFactor = ComputeFresnelFactor(WorldNormal, WorldViewVec);
 		ColorMap.a = lerp(ColorMap.a, 1.0, FresnelFactor);
 	#endif
 
@@ -386,6 +386,9 @@ PS2FB BundledMesh_PS(VS2PS Input)
 
 	Output.Color.rgb = OutputColor.rgb;
 	Output.Color.a *= Transparency.a;
+
+	// debug
+	Output.Color = float4(WorldNormal.xyz * 0.5 + 0.5, 1.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
