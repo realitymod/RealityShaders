@@ -95,7 +95,7 @@ struct VS2PS_ThermalVision
 };
 
 
-VS2PS_Quad Basic_VS(APP2VS_Quad Input)
+VS2PS_Quad VS_Basic(APP2VS_Quad Input)
 {
 	VS2PS_Quad Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
@@ -108,7 +108,7 @@ float4 GetTex(float2 Tex, float4 Offset)
 	return (Tex.xyyy * float4(1.0, 1.0, 0.0, 0.0)) + Offset;
 }
 
-float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
+float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR
 {
 	const float2 BlurSize = 0.02;
 	const int BlurTaps = 9;
@@ -172,8 +172,8 @@ technique Tinnitus
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Basic_VS();
-		PixelShader = compile ps_3_0 Tinnitus_PS();
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Tinnitus();
 	}
 }
 
@@ -181,12 +181,12 @@ technique Tinnitus
 	Glow shaders
 */
 
-float4 Glow_PS(VS2PS_Quad Input) : COLOR
+float4 PS_Glow(VS2PS_Quad Input) : COLOR
 {
 	return tex2D(SampleTex0, Input.TexCoord0);
 }
 
-float4 Glow_Material_PS(VS2PS_Quad Input) : COLOR
+float4 PS_Glow_Material(VS2PS_Quad Input) : COLOR
 {
 	float4 Diffuse = tex2D(SampleTex0, Input.TexCoord0);
 	// return (1.0 - Diffuse.a);
@@ -204,8 +204,8 @@ technique Glow
 		SrcBlend = SRCCOLOR;
 		DestBlend = ONE;
 
-		VertexShader = compile vs_3_0 Basic_VS();
-		PixelShader = compile ps_3_0 Glow_PS();
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Glow();
 	}
 }
 
@@ -227,8 +227,8 @@ technique GlowMaterial
 		SrcBlend = SRCCOLOR;
 		DestBlend = ONE;
 
-		VertexShader = compile vs_3_0 Basic_VS();
-		PixelShader = compile ps_3_0 Glow_Material_PS();
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Glow_Material();
 	}
 }
 
@@ -246,7 +246,7 @@ uniform float _Granularity : TVGRANULARITY; // = 3.5;
 uniform float _TVAmbient : TVAMBIENT; // = 0.15
 uniform float3 _TVColor : TVCOLOR;
 
-VS2PS_ThermalVision ThermalVision_VS(APP2VS_Quad Input)
+VS2PS_ThermalVision VS_ThermalVision(APP2VS_Quad Input)
 {
 	VS2PS_ThermalVision Output;
 	Input.Pos.xy = sign(Input.Pos.xy);
@@ -257,7 +257,7 @@ VS2PS_ThermalVision ThermalVision_VS(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 ThermalVision_PS(VS2PS_ThermalVision Input) : COLOR
+float4 PS_ThermalVision(VS2PS_ThermalVision Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	float2 ImgCoord = Input.TexCoord2;
@@ -307,7 +307,7 @@ float4 ThermalVision_PS(VS2PS_ThermalVision Input) : COLOR
 	TV Effect with usage of gradient texture
 */
 
-float4 ThermalVision_Gradient_PS(VS2PS_ThermalVision Input) : COLOR
+float4 PS_ThermalVision_Gradient(VS2PS_ThermalVision Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 
@@ -342,8 +342,8 @@ technique TVEffect
 		StencilEnable = FALSE;
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 ThermalVision_VS();
-		PixelShader = compile ps_3_0 ThermalVision_PS();
+		VertexShader = compile vs_3_0 VS_ThermalVision();
+		PixelShader = compile ps_3_0 PS_ThermalVision();
 	}
 }
 
@@ -355,8 +355,8 @@ technique TVEffect_Gradient_Tex
 		StencilEnable = FALSE;
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 ThermalVision_VS();
-		PixelShader = compile ps_3_0 ThermalVision_Gradient_PS();
+		VertexShader = compile vs_3_0 VS_ThermalVision();
+		PixelShader = compile ps_3_0 PS_ThermalVision_Gradient();
 	}
 }
 
@@ -371,7 +371,7 @@ struct VS2PS_Distortion
 	float2 TexCoord1 : TEXCOORD1;
 };
 
-VS2PS_Distortion WaveDistortion_VS(APP2VS_Quad Input)
+VS2PS_Distortion VS_WaveDistortion(APP2VS_Quad Input)
 {
 	VS2PS_Distortion Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
@@ -380,7 +380,7 @@ VS2PS_Distortion WaveDistortion_VS(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 WaveDistortion_PS(VS2PS_Distortion Input) : COLOR
+float4 PS_WaveDistortion(VS2PS_Distortion Input) : COLOR
 {
 	return 0.0;
 }
@@ -399,8 +399,8 @@ technique WaveDistortion
 
 		SRGBWriteEnable = FALSE;
 
-		VertexShader = compile vs_3_0 WaveDistortion_VS();
-		PixelShader = compile ps_3_0 WaveDistortion_PS();
+		VertexShader = compile vs_3_0 VS_WaveDistortion();
+		PixelShader = compile ps_3_0 PS_WaveDistortion();
 	}
 }
 
@@ -415,7 +415,7 @@ technique WaveDistortion
 	Theory is that the texture getting temporally blended or sampled has been rewritten before the blendop
 */
 
-float4 Flashbang_PS(VS2PS_Quad Input) : COLOR
+float4 PS_Flashbang(VS2PS_Quad Input) : COLOR
 {
 	float4 Sample0 = tex2D(SampleTex0, Input.TexCoord0);
 	float4 Sample1 = tex2D(SampleTex1, Input.TexCoord0);
@@ -441,7 +441,7 @@ technique Flashbang
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Basic_VS();
-		PixelShader = compile ps_3_0 Flashbang_PS();
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Flashbang();
 	}
 }

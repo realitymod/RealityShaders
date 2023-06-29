@@ -111,7 +111,7 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 	return Output;
 }
 
-VS2PS Decals_VS(APP2VS Input)
+VS2PS VS_Decals(APP2VS Input)
 {
 	return GetVertexDecals(Input, false);
 }
@@ -143,7 +143,7 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 	return OutputColor;
 }
 
-PS2FB Decals_PS(VS2PS Input)
+PS2FB PS_Decals(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -185,14 +185,14 @@ technique Decal
 	pass Pass0
 	{
 		GET_RENDERSTATES_DECAL
-		VertexShader = compile vs_3_0 Decals_VS();
-		PixelShader = compile ps_3_0 Decals_PS();
+		VertexShader = compile vs_3_0 VS_Decals();
+		PixelShader = compile ps_3_0 PS_Decals();
 	}
 
 	pass Pass1
 	{
 		GET_RENDERSTATES_DECAL
-		VertexShader = compile vs_3_0 Decals_VS();
-		PixelShader = compile ps_3_0 Decals_PS();
+		VertexShader = compile vs_3_0 VS_Decals();
+		PixelShader = compile ps_3_0 PS_Decals();
 	}
 }

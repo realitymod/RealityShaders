@@ -39,7 +39,7 @@ struct VS2PS_ShapeTexture
 	float4 Selector : TEXCOORD2;
 };
 
-VS2PS_Shape Shape_VS(float3 Position : POSITION, float4 VertexColor : COLOR0)
+VS2PS_Shape VS_Shape(float3 Position : POSITION, float4 VertexColor : COLOR0)
 {
 	VS2PS_Shape Output = (VS2PS_Shape)0;
 	Output.HPos = float4(Position.xy, 0.0, 1.0); // mul(float4(Position.xy, 0.0, 1.0), WorldView);
@@ -47,7 +47,7 @@ VS2PS_Shape Shape_VS(float3 Position : POSITION, float4 VertexColor : COLOR0)
 	return Output;
 }
 
-VS2PS_Shape Line_VS(float3 Position : POSITION)
+VS2PS_Shape VS_Line(float3 Position : POSITION)
 {
 	VS2PS_Shape Output = (VS2PS_Shape)0;
 	// Output.HPos = mul(float4(Position.xy, 0.0, 1.0), WorldView);
@@ -57,7 +57,7 @@ VS2PS_Shape Line_VS(float3 Position : POSITION)
 	return Output;
 }
 
-VS2PS_ShapeTexture ShapeTexture_VS(float3 Position : POSITION)
+VS2PS_ShapeTexture VS_ShapeTexture(float3 Position : POSITION)
 {
 	VS2PS_ShapeTexture Output = (VS2PS_ShapeTexture)0;
 
@@ -72,7 +72,7 @@ VS2PS_ShapeTexture ShapeTexture_VS(float3 Position : POSITION)
 	return Output;
 }
 
-float4 RegularWrap_PS(VS2PS_ShapeTexture Input) : COLOR
+float4 PS_RegularWrap(VS2PS_ShapeTexture Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	float4 Tex = tex2D(SampleTexMap_Wrap, Input.TexCoord);
@@ -81,7 +81,7 @@ float4 RegularWrap_PS(VS2PS_ShapeTexture Input) : COLOR
 	return OutputColor;
 }
 
-float4 RegularClamp_PS(VS2PS_ShapeTexture Input) : COLOR
+float4 PS_RegularClamp(VS2PS_ShapeTexture Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	float4 Tex = tex2D(SampleTexMap_Clamp, Input.TexCoord);
@@ -90,12 +90,12 @@ float4 RegularClamp_PS(VS2PS_ShapeTexture Input) : COLOR
 	return OutputColor;
 }
 
-float4 Diffuse_PS(VS2PS_Shape Input) : COLOR
+float4 PS_Diffuse(VS2PS_Shape Input) : COLOR
 {
 	return Input.Diffuse;
 }
 
-float4 Line_PS(VS2PS_Shape Input) : COLOR
+float4 PS_Line(VS2PS_Shape Input) : COLOR
 {
 	return Input.Diffuse;
 }
@@ -104,8 +104,8 @@ technique Shape
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_3_0 Shape_VS();
-		PixelShader = compile ps_3_0 Diffuse_PS();
+		VertexShader = compile vs_3_0 VS_Shape();
+		PixelShader = compile ps_3_0 PS_Diffuse();
 	}
 }
 
@@ -113,8 +113,8 @@ technique ShapeTextureWrap
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_3_0 ShapeTexture_VS();
-		PixelShader = compile ps_3_0 RegularWrap_PS();
+		VertexShader = compile vs_3_0 VS_ShapeTexture();
+		PixelShader = compile ps_3_0 PS_RegularWrap();
 	}
 }
 
@@ -122,8 +122,8 @@ technique ShapeTextureClamp
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_3_0 ShapeTexture_VS();
-		PixelShader  = compile ps_3_0 RegularClamp_PS();
+		VertexShader = compile vs_3_0 VS_ShapeTexture();
+		PixelShader  = compile ps_3_0 PS_RegularClamp();
 	}
 }
 
@@ -132,7 +132,7 @@ technique Line
 	pass Pass0
 	{
 		AlphaTestEnable = FALSE;
-		VertexShader = compile vs_3_0 Line_VS();
-		PixelShader = compile ps_3_0 Line_PS();
+		VertexShader = compile vs_3_0 VS_Line();
+		PixelShader = compile ps_3_0 PS_Line();
 	}
 }

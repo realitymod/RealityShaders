@@ -91,7 +91,7 @@ struct VS2PS_SkyDome
 	float4 TexA : TEXCOORD1; // .xy = SkyTex; .zw = CloudTex
 };
 
-VS2PS_SkyDome SkyDome_VS(APP2VS Input)
+VS2PS_SkyDome VS_SkyDome(APP2VS Input)
 {
 	VS2PS_SkyDome Output;
 
@@ -104,7 +104,7 @@ VS2PS_SkyDome SkyDome_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB SkyDome_UnderWater_PS(VS2PS_SkyDome Input)
+PS2FB PS_SkyDome_UnderWater(VS2PS_SkyDome Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -120,7 +120,7 @@ PS2FB SkyDome_UnderWater_PS(VS2PS_SkyDome Input)
 	return Output;
 }
 
-PS2FB SkyDome_PS(VS2PS_SkyDome Input)
+PS2FB PS_SkyDome(VS2PS_SkyDome Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -138,7 +138,7 @@ PS2FB SkyDome_PS(VS2PS_SkyDome Input)
 	return Output;
 }
 
-PS2FB SkyDome_Lit_PS(VS2PS_SkyDome Input)
+PS2FB PS_SkyDome_Lit(VS2PS_SkyDome Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -169,7 +169,7 @@ struct VS2PS_DualClouds
 	float4 CloudTex : TEXCOORD2; // .xy = CloudTex0; .zw = CloudTex1
 };
 
-VS2PS_DualClouds SkyDome_DualClouds_VS(APP2VS Input)
+VS2PS_DualClouds VS_SkyDome_DualClouds(APP2VS Input)
 {
 	VS2PS_DualClouds Output;
 
@@ -183,7 +183,7 @@ VS2PS_DualClouds SkyDome_DualClouds_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB SkyDome_DualClouds_PS(VS2PS_DualClouds Input)
+PS2FB PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -214,7 +214,7 @@ struct VS2PS_NoClouds
 	float2 Tex0 : TEXCOORD1;
 };
 
-VS2PS_NoClouds SkyDome_NoClouds_VS(APP2VS_NoClouds Input)
+VS2PS_NoClouds VS_SkyDome_NoClouds(APP2VS_NoClouds Input)
 {
 	VS2PS_NoClouds Output;
 
@@ -227,7 +227,7 @@ VS2PS_NoClouds SkyDome_NoClouds_VS(APP2VS_NoClouds Input)
 	return Output;
 }
 
-PS2FB SkyDome_NoClouds_PS(VS2PS_NoClouds Input)
+PS2FB PS_SkyDome_NoClouds(VS2PS_NoClouds Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -242,7 +242,7 @@ PS2FB SkyDome_NoClouds_PS(VS2PS_NoClouds Input)
 	return Output;
 }
 
-PS2FB SkyDome_NoClouds_Lit_PS(VS2PS_NoClouds Input)
+PS2FB PS_SkyDome_NoClouds_Lit(VS2PS_NoClouds Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -264,7 +264,7 @@ PS2FB SkyDome_NoClouds_Lit_PS(VS2PS_NoClouds Input)
 	SkyDome with Sun flare shaders
 */
 
-VS2PS_NoClouds SkyDome_SunFlare_VS(APP2VS_NoClouds Input)
+VS2PS_NoClouds VS_SkyDome_SunFlare(APP2VS_NoClouds Input)
 {
 	VS2PS_NoClouds Output = (VS2PS_NoClouds)0;
 
@@ -276,7 +276,7 @@ VS2PS_NoClouds SkyDome_SunFlare_VS(APP2VS_NoClouds Input)
 	return Output;
 }
 
-PS2FB SkyDome_SunFlare_PS(VS2PS_NoClouds Input)
+PS2FB PS_SkyDome_SunFlare(VS2PS_NoClouds Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -286,7 +286,7 @@ PS2FB SkyDome_SunFlare_PS(VS2PS_NoClouds Input)
 	return Output;
 }
 
-PS2FB SkyDome_Flare_Occlude_PS(VS2PS_NoClouds Input)
+PS2FB PS_SkyDome_Flare_Occlude(VS2PS_NoClouds Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -308,8 +308,8 @@ technique SkyDomeUnderWater
 	pass Sky
 	{
 		GET_RENDERSTATES_SKY
-		VertexShader = compile vs_3_0 SkyDome_VS();
-		PixelShader = compile ps_3_0 SkyDome_UnderWater_PS();
+		VertexShader = compile vs_3_0 VS_SkyDome();
+		PixelShader = compile ps_3_0 PS_SkyDome_UnderWater();
 	}
 }
 
@@ -318,8 +318,8 @@ technique SkyDomeNV3x
 	pass Sky
 	{
 		GET_RENDERSTATES_SKY
-		VertexShader = compile vs_3_0 SkyDome_VS();
-		PixelShader = compile ps_3_0 SkyDome_PS();
+		VertexShader = compile vs_3_0 VS_SkyDome();
+		PixelShader = compile ps_3_0 PS_SkyDome();
 	}
 }
 
@@ -328,8 +328,8 @@ technique SkyDomeNV3xLit
 	pass Sky
 	{
 		GET_RENDERSTATES_SKY
-		VertexShader = compile vs_3_0 SkyDome_VS();
-		PixelShader = compile ps_3_0 SkyDome_Lit_PS();
+		VertexShader = compile vs_3_0 VS_SkyDome();
+		PixelShader = compile ps_3_0 PS_SkyDome_Lit();
 	}
 }
 
@@ -338,8 +338,8 @@ technique SkyDomeNV3xDualClouds
 	pass Sky
 	{
 		GET_RENDERSTATES_SKY
-		VertexShader = compile vs_3_0 SkyDome_DualClouds_VS();
-		PixelShader = compile ps_3_0 SkyDome_DualClouds_PS();
+		VertexShader = compile vs_3_0 VS_SkyDome_DualClouds();
+		PixelShader = compile ps_3_0 PS_SkyDome_DualClouds();
 	}
 }
 
@@ -348,8 +348,8 @@ technique SkyDomeNV3xNoClouds
 	pass Sky
 	{
 		GET_RENDERSTATES_SKY
-		VertexShader = compile vs_3_0 SkyDome_NoClouds_VS();
-		PixelShader = compile ps_3_0 SkyDome_NoClouds_PS();
+		VertexShader = compile vs_3_0 VS_SkyDome_NoClouds();
+		PixelShader = compile ps_3_0 PS_SkyDome_NoClouds();
 	}
 }
 
@@ -358,8 +358,8 @@ technique SkyDomeNV3xNoCloudsLit
 	pass Sky
 	{
 		GET_RENDERSTATES_SKY
-		VertexShader = compile vs_3_0 SkyDome_NoClouds_VS();
-		PixelShader = compile ps_3_0 SkyDome_NoClouds_Lit_PS();
+		VertexShader = compile vs_3_0 VS_SkyDome_NoClouds();
+		PixelShader = compile ps_3_0 PS_SkyDome_NoClouds_Lit();
 	}
 }
 
@@ -378,8 +378,8 @@ technique SkyDomeSunFlare
 		SrcBlend = ONE;
 		DestBlend = ONE;
 
-		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
-		PixelShader = compile ps_3_0 SkyDome_SunFlare_PS();
+		VertexShader = compile vs_3_0 VS_SkyDome_SunFlare();
+		PixelShader = compile ps_3_0 PS_SkyDome_SunFlare();
 	}
 }
 
@@ -402,8 +402,8 @@ technique SkyDomeFlareOccludeCheck
 		AlphaRef = 50; // 255
 		AlphaFunc = GREATER; // LESS
 
-		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
-		PixelShader = compile ps_3_0 SkyDome_Flare_Occlude_PS();
+		VertexShader = compile vs_3_0 VS_SkyDome_SunFlare();
+		PixelShader = compile ps_3_0 PS_SkyDome_Flare_Occlude();
 	}
 }
 
@@ -426,7 +426,7 @@ technique SkyDomeFlareOcclude
 		AlphaRef = 50; // 255
 		AlphaFunc = GREATER; // LESS
 
-		VertexShader = compile vs_3_0 SkyDome_SunFlare_VS();
-		PixelShader = compile ps_3_0 SkyDome_Flare_Occlude_PS();
+		VertexShader = compile vs_3_0 VS_SkyDome_SunFlare();
+		PixelShader = compile ps_3_0 PS_SkyDome_Flare_Occlude();
 	}
 }

@@ -84,7 +84,7 @@ float GetBinormalFlipping(APP2VS Input)
 	return 1.0 + IndexArray[2] * -2.0;
 }
 
-VS2PS SkinnedMesh_VS(APP2VS Input)
+VS2PS VS_SkinnedMesh(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -96,7 +96,7 @@ VS2PS SkinnedMesh_VS(APP2VS Input)
 	// Output HPos data
 	Output.HPos = mul(SkinnedObjPos, WorldViewProjection);
 
-	// Get world-space data
+	// World-space data
 	float4 WorldPos = mul(SkinnedObjPos, World);
 	float3x3 WorldMat = mul(GetBoneMatrix(Input, 0), (float3x3)World);
 	#if _OBJSPACENORMALMAP_ // [object-space] -> [skinned object-space] -> [skinned world-space]
@@ -156,11 +156,11 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 	return saturate(((WorldNormal.y + Offset) * 0.5) + 0.5);
 }
 
-PS2FB SkinnedMesh_PS(VS2PS Input)
+PS2FB PS_SkinnedMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	// Get world-space properties
+	// Get world-space data
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldLightVec = GetWorldLightVec(WorldPos);
 	float3 WorldNLightVec = normalize(WorldLightVec);
@@ -272,7 +272,7 @@ technique VariableTechnique
 			AlphaBlendEnable = FALSE;
 		#endif
 
-		VertexShader = compile vs_3_0 SkinnedMesh_VS();
-		PixelShader = compile ps_3_0 SkinnedMesh_PS();
+		VertexShader = compile vs_3_0 VS_SkinnedMesh();
+		PixelShader = compile ps_3_0 PS_SkinnedMesh();
 	}
 }

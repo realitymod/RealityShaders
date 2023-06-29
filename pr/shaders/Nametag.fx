@@ -92,7 +92,7 @@ struct VS2PS_2TEX
 	Nametag shader
 */
 
-VS2PS Nametag_VS(APP2VS Input)
+VS2PS VS_Nametag(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -109,7 +109,7 @@ VS2PS Nametag_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Nametag_PS(VS2PS Input) : COLOR0
+float4 PS_Nametag(VS2PS Input) : COLOR0
 {
 	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
 	return Tex0 * Input.Color0;
@@ -138,8 +138,8 @@ technique nametag
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Nametag_VS();
-		PixelShader = compile ps_3_0 Nametag_PS();
+		VertexShader = compile vs_3_0 VS_Nametag();
+		PixelShader = compile ps_3_0 PS_Nametag();
 	}
 }
 
@@ -147,7 +147,7 @@ technique nametag
 	Nametag arrow shader
 */
 
-VS2PS Nametag_Arrow_VS(APP2VS Input)
+VS2PS VS_Nametag_Arrow(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -167,7 +167,7 @@ VS2PS Nametag_Arrow_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Nametag_Arrow_PS(VS2PS Input) : COLOR0
+float4 PS_Nametag_Arrow(VS2PS Input) : COLOR0
 {
 	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
 	return Tex0 * Input.Color0;
@@ -196,8 +196,8 @@ technique nametag_arrow
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Nametag_Arrow_VS();
-		PixelShader = compile ps_3_0 Nametag_Arrow_PS();
+		VertexShader = compile vs_3_0 VS_Nametag_Arrow();
+		PixelShader = compile ps_3_0 PS_Nametag_Arrow();
 	}
 }
 
@@ -205,7 +205,7 @@ technique nametag_arrow
 	Nametag healthbar shader
 */
 
-VS2PS_2TEX Nametag_Healthbar_VS(APP2VS Input)
+VS2PS_2TEX VS_Nametag_Healthbar(APP2VS Input)
 {
 	VS2PS_2TEX Output = (VS2PS_2TEX)0;
 
@@ -226,7 +226,7 @@ VS2PS_2TEX Nametag_Healthbar_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Nametag_Healthbar_PS(VS2PS_2TEX Input) : COLOR0
+float4 PS_Nametag_Healthbar(VS2PS_2TEX Input) : COLOR0
 {
 	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
 	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
@@ -256,8 +256,8 @@ technique nametag_healthbar
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Nametag_Healthbar_VS();
-		PixelShader = compile ps_3_0 Nametag_Healthbar_PS();
+		VertexShader = compile vs_3_0 VS_Nametag_Healthbar();
+		PixelShader = compile ps_3_0 PS_Nametag_Healthbar();
 	}
 }
 
@@ -265,7 +265,7 @@ technique nametag_healthbar
 	Nametag vehicle icon shader
 */
 
-VS2PS Nametag_Vehicle_Icons_VS(APP2VS Input)
+VS2PS VS_Nametag_Vehicle_Icons(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -307,7 +307,7 @@ VS2PS Nametag_Vehicle_Icons_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Nametag_Vehicle_Icons_PS(VS2PS Input) : COLOR0
+float4 PS_Nametag_Vehicle_Icons(VS2PS Input) : COLOR0
 {
 	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
 	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
@@ -337,7 +337,7 @@ technique nametag_vehicleIcons
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Nametag_Vehicle_Icons_VS();
-		PixelShader = compile ps_3_0 Nametag_Vehicle_Icons_PS();
+		VertexShader = compile vs_3_0 VS_Nametag_Vehicle_Icons();
+		PixelShader = compile ps_3_0 PS_Nametag_Vehicle_Icons();
 	}
 }

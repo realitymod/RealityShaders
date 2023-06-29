@@ -61,7 +61,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS BM_Additive_VS(APP2VS Input)
+VS2PS VS_BM_Additive(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -80,7 +80,7 @@ VS2PS BM_Additive_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB BM_Additive_PS(VS2PS Input)
+PS2FB PS_BM_Additive(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -115,7 +115,7 @@ technique defaultTechnique
 		SrcBlend = ONE; // SRCALPHA;
 		DestBlend = ONE; // INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 BM_Additive_VS();
-		PixelShader = compile ps_3_0 BM_Additive_PS();
+		VertexShader = compile vs_3_0 VS_BM_Additive();
+		PixelShader = compile ps_3_0 PS_BM_Additive();
 	}
 }

@@ -68,13 +68,13 @@ struct PS2FB
 	#endif
 };
 
-VS2PS Diffuse_VS(APP2VS Input)
+VS2PS VS_Diffuse(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 
-	// Get world-space data
+	// World-space data
 	Output.Pos.xyz = GetWorldPos(Input.Pos.xyz);
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
@@ -85,7 +85,7 @@ VS2PS Diffuse_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Diffuse_PS(VS2PS Input)
+PS2FB PS_Diffuse(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -118,7 +118,7 @@ technique defaultTechnique
 		SrcBlend = (srcBlend);
 		DestBlend = (destBlend);
 
-		VertexShader = compile vs_3_0 Diffuse_VS();
-		PixelShader = compile ps_3_0 Diffuse_PS();
+		VertexShader = compile vs_3_0 VS_Diffuse();
+		PixelShader = compile ps_3_0 PS_Diffuse();
 	}
 }

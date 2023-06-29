@@ -20,8 +20,8 @@ technique Low_Terrain
 
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Shared_ZFillLightMap_VS();
-		PixelShader = compile ps_3_0 Shared_ZFillLightMap_1_PS();
+		VertexShader = compile vs_3_0 VS_Shared_ZFillLightMap();
+		PixelShader = compile ps_3_0 PS_Shared_ZFillLightMap_1();
 	}
 
 	// Pass 1
@@ -37,8 +37,8 @@ technique Low_Terrain
 		SrcBlend = ONE;
 		DestBlend = ONE;
 
-		VertexShader = compile vs_3_0 Shared_PointLight_VS();
-		PixelShader = compile ps_3_0 Shared_PointLight_PS();
+		VertexShader = compile vs_3_0 VS_Shared_PointLight();
+		PixelShader = compile ps_3_0 PS_Shared_PointLight();
 	}
 
 	// Pass 2 (removed)
@@ -55,8 +55,8 @@ technique Low_Terrain
 
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Shared_LowDetail_VS();
-		PixelShader = compile ps_3_0 Shared_LowDetail_PS();
+		VertexShader = compile vs_3_0 VS_Shared_LowDetail();
+		PixelShader = compile ps_3_0 PS_Shared_LowDetail();
 	}
 
 	// Pass 4
@@ -79,8 +79,8 @@ technique Low_Terrain
 
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Shared_DirectionalLightShadows_VS();
-		PixelShader = compile ps_3_0 Shared_DirectionalLightShadows_PS();
+		VertexShader = compile vs_3_0 VS_Shared_DirectionalLightShadows();
+		PixelShader = compile ps_3_0 PS_Shared_DirectionalLightShadows();
 	}
 
 	// Pass 8 (removed)
@@ -99,8 +99,8 @@ technique Low_Terrain
 		SrcBlend = DESTCOLOR;
 		DestBlend = ZERO;
 
-		VertexShader = compile vs_3_0 Shared_DynamicShadowmap_VS();
-		PixelShader = compile ps_3_0 Shared_DynamicShadowmap_PS();
+		VertexShader = compile vs_3_0 VS_Shared_DynamicShadowmap();
+		PixelShader = compile ps_3_0 PS_Shared_DynamicShadowmap();
 	}
 
 	// Pass 10
@@ -129,8 +129,8 @@ technique Low_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 Shared_PointLight_VS();
-		PixelShader = compile ps_3_0 Shared_PointLight_PS();
+		VertexShader = compile vs_3_0 VS_Shared_PointLight();
+		PixelShader = compile ps_3_0 PS_Shared_PointLight();
 	}
 
 	// Pass 14
@@ -146,7 +146,7 @@ technique Low_Terrain
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Shared_UnderWater_VS();
-		PixelShader = compile ps_3_0 Shared_UnderWater_PS();
+		VertexShader = compile vs_3_0 VS_Shared_UnderWater();
+		PixelShader = compile ps_3_0 PS_Shared_UnderWater();
 	}
 }

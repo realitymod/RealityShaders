@@ -25,7 +25,7 @@ struct VS2PS_FullDetail_Hi
 	float4 ZPlaneTex : TEXCOORD6; // .xy = Near; .zw = Far;
 };
 
-VS2PS_FullDetail_Hi FullDetail_Hi_VS(APP2VS_Shared Input)
+VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 {
 	VS2PS_FullDetail_Hi Output = (VS2PS_FullDetail_Hi)0;
 
@@ -157,17 +157,17 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	return Output;
 }
 
-PS2FB FullDetail_Hi_PS(VS2PS_FullDetail_Hi Input)
+PS2FB PS_FullDetail_Hi(VS2PS_FullDetail_Hi Input)
 {
 	return FullDetail_Hi(Input, false, false);
 }
 
-PS2FB FullDetail_Hi_Mounten_PS(VS2PS_FullDetail_Hi Input)
+PS2FB PS_FullDetail_Hi_Mounten(VS2PS_FullDetail_Hi Input)
 {
 	return FullDetail_Hi(Input, true, false);
 }
 
-PS2FB FullDetail_Hi_EnvMap_PS(VS2PS_FullDetail_Hi Input)
+PS2FB PS_FullDetail_Hi_EnvMap(VS2PS_FullDetail_Hi Input)
 {
 	return FullDetail_Hi(Input, false, true);
 }
@@ -193,8 +193,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 Shared_ZFillLightMap_VS();
-		PixelShader = compile ps_3_0 Shared_ZFillLightMap_1_PS();
+		VertexShader = compile vs_3_0 VS_Shared_ZFillLightMap();
+		PixelShader = compile ps_3_0 PS_Shared_ZFillLightMap_1();
 	}
 
 	// Pass 1
@@ -214,8 +214,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 Shared_PointLight_VS();
-		PixelShader = compile ps_3_0 Shared_PointLight_PS();
+		VertexShader = compile vs_3_0 VS_Shared_PointLight();
+		PixelShader = compile ps_3_0 PS_Shared_PointLight();
 	}
 
 	// Pass 2 (removed)
@@ -237,8 +237,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 Shared_LowDetail_VS();
-		PixelShader = compile ps_3_0 Shared_LowDetail_PS();
+		VertexShader = compile vs_3_0 VS_Shared_LowDetail();
+		PixelShader = compile ps_3_0 PS_Shared_LowDetail();
 	}
 
 	// Pass 4
@@ -265,8 +265,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
-		PixelShader = compile ps_3_0 FullDetail_Hi_PS();
+		VertexShader = compile vs_3_0 VS_FullDetail_Hi();
+		PixelShader = compile ps_3_0 PS_FullDetail_Hi();
 	}
 
 	// Pass 5
@@ -286,8 +286,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
-		PixelShader = compile ps_3_0 FullDetail_Hi_Mounten_PS();
+		VertexShader = compile vs_3_0 VS_FullDetail_Hi();
+		PixelShader = compile ps_3_0 PS_FullDetail_Hi_Mounten();
 	}
 
 	// Pass 6 (removed)
@@ -310,8 +310,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 Shared_DirectionalLightShadows_VS();
-		PixelShader = compile ps_3_0 Shared_DirectionalLightShadows_PS();
+		VertexShader = compile vs_3_0 VS_Shared_DirectionalLightShadows();
+		PixelShader = compile ps_3_0 PS_Shared_DirectionalLightShadows();
 	}
 
 	// Pass 8 (removed)
@@ -346,8 +346,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 FullDetail_Hi_VS();
-		PixelShader = compile ps_3_0 FullDetail_Hi_EnvMap_PS();
+		VertexShader = compile vs_3_0 VS_FullDetail_Hi();
+		PixelShader = compile ps_3_0 PS_FullDetail_Hi_EnvMap();
 	}
 
 	// Pass 12 (removed)
@@ -370,8 +370,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 Shared_PointLight_VS();
-		PixelShader = compile ps_3_0 Shared_PointLight_PS();
+		VertexShader = compile vs_3_0 VS_Shared_PointLight();
+		PixelShader = compile ps_3_0 PS_Shared_PointLight();
 	}
 
 	// Pass 14
@@ -395,8 +395,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 Shared_UnderWater_VS();
-		PixelShader = compile ps_3_0 Shared_UnderWater_PS();
+		VertexShader = compile vs_3_0 VS_Shared_UnderWater();
+		PixelShader = compile ps_3_0 PS_Shared_UnderWater();
 	}
 
 	// Pass 15
@@ -411,7 +411,7 @@ technique Hi_Terrain
 
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Shared_ZFillLightMap_VS();
-		PixelShader = compile ps_3_0 Shared_ZFillLightMap_2_PS();
+		VertexShader = compile vs_3_0 VS_Shared_ZFillLightMap();
+		PixelShader = compile ps_3_0 PS_Shared_ZFillLightMap_2();
 	}
 }

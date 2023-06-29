@@ -128,17 +128,17 @@ float4 GetUVRotation(APP2VS Input)
 	return float4(UV.xy + (Input.TexDiffuse * TexUnpack), 0.0, 1.0);
 }
 
-VS2PS BundledMesh_VS(APP2VS Input)
+VS2PS VS_BundledMesh(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	// Get object-space properties
+	// Get object-space data
 	float4 ObjectPos = Input.Pos * PosUnpack; // Unpack object-space position
 	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
 	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
 	float3x3 ObjectTBN = GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
 
-	// Get world-space properties
+	// Get world-space data
 	float4x3 SkinnedWorldMatrix = GetSkinnedWorldMatrix(Input);
 	float4 WorldPos = float4(mul(ObjectPos, SkinnedWorldMatrix), 1.0);
 	float3x3 WorldTBN = mul(ObjectTBN, (float3x3)SkinnedWorldMatrix);
@@ -146,7 +146,7 @@ VS2PS BundledMesh_VS(APP2VS Input)
 	// Output HPos
 	Output.HPos = mul(WorldPos, ViewProjection);
 
-	// Output world-space properties
+	// Output world-space data
 	Output.Pos.xyz = WorldPos.xyz;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
@@ -201,12 +201,12 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 	return saturate(((WorldNormal.y + Offset) * 0.5) + 0.5);
 }
 
-PS2FB BundledMesh_PS(VS2PS Input)
+PS2FB PS_BundledMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
 	/*
-		Get world-space data
+		World-space data
 	*/
 
 	float3 WorldPos = Input.Pos;
@@ -221,7 +221,7 @@ PS2FB BundledMesh_PS(VS2PS Input)
 	};
 
 	/*
-		Get texture data
+		Texture data
 	*/
 
 	// Get color texture data //
@@ -420,7 +420,7 @@ technique Variable
 			ZWriteEnable = (DepthWrite);
 		#endif
 
-		VertexShader = compile vs_3_0 BundledMesh_VS();
-		PixelShader = compile ps_3_0 BundledMesh_PS();
+		VertexShader = compile vs_3_0 VS_BundledMesh();
+		PixelShader = compile ps_3_0 PS_BundledMesh();
 	}
 }

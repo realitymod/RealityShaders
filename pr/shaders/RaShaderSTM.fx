@@ -86,11 +86,11 @@ float GetBinormalFlipping(APP2VS Input)
 	return 1.0 + Input.Pos.w * -2.0;
 }
 
-VS2PS StaticMesh_VS(APP2VS Input)
+VS2PS VS_StaticMesh(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	// Get object-space data
+	// Object-space data
 	float4 ObjectPos = float4(Input.Pos.xyz, 1.0) * PosUnpack;
 	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
 	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
@@ -229,13 +229,13 @@ float3 GetWorldLightVec(float3 WorldPos)
 	#endif
 }
 
-PS2FB StaticMesh_PS(VS2PS Input)
+PS2FB PS_StaticMesh(VS2PS Input)
 {
 	// Initialize variables
 	float4 OutputColor = 1.0;
 	PS2FB Output = (PS2FB)0;
 
-	// Get world-space data
+	// World-space data
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldLightVec = GetWorldLightVec(WorldPos);
 	float3 NWorldLightVec = normalize(WorldLightVec);
@@ -247,7 +247,7 @@ PS2FB StaticMesh_PS(VS2PS Input)
 		normalize(Input.WorldNormal)
 	};
 
-	// Get tangent-space data
+	// Tangent-space data
 	// mul(mat, vec) == mul(vec, transpose(mat))
 	float3 TanViewVec = normalize(mul(WorldTBN, WorldViewVec));
 
@@ -275,11 +275,11 @@ PS2FB StaticMesh_PS(VS2PS Input)
 		#endif
 
 		// We divide the normal by 5.0 to prevent complete darkness for surfaces facing away from the sun
-		float DotLN = saturate(dot(WorldNormal / 5.0, NWorldLightVec));
-		float IDotLN = saturate((1.0 - DotLN) * 0.65);
+		float DotNL = saturate(dot(WorldNormal / 5.0, NWorldLightVec));
+		float IDotNL = saturate((1.0 - DotNL) * 0.65);
 
 		// We add ambient to get correct ambient for surfaces parallel to the sun
-		float3 Ambient = (StaticSkyColor * IDotLN) * Lightmap.b;
+		float3 Ambient = (StaticSkyColor * IDotNL) * Lightmap.b;
 		float3 BumpedDiffuse = Light.Diffuse + Ambient;
 
 		Light.Diffuse = lerp(Ambient, BumpedDiffuse, Lightmap.g);
@@ -321,7 +321,7 @@ technique defaultTechnique
 			DestBlend = ONE;
 		#endif
 
-		VertexShader = compile vs_3_0 StaticMesh_VS();
-		PixelShader = compile ps_3_0 StaticMesh_PS();
+		VertexShader = compile vs_3_0 VS_StaticMesh();
+		PixelShader = compile ps_3_0 PS_StaticMesh();
 	}
 }

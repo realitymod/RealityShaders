@@ -49,7 +49,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS Particle_VS(APP2VS Input)
+VS2PS VS_Particle(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -110,7 +110,7 @@ VS2PS Particle_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Particle_ShowFill_PS(VS2PS Input)
+PS2FB PS_Particle_ShowFill(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -123,7 +123,7 @@ PS2FB Particle_ShowFill_PS(VS2PS Input)
 	return Output;
 }
 
-PS2FB Particle_Low_PS(VS2PS Input)
+PS2FB PS_Particle_Low(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -142,7 +142,7 @@ PS2FB Particle_Low_PS(VS2PS Input)
 	return Output;
 }
 
-PS2FB Particle_Medium_PS(VS2PS Input)
+PS2FB PS_Particle_Medium(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -165,7 +165,7 @@ PS2FB Particle_Medium_PS(VS2PS Input)
 	return Output;
 }
 
-PS2FB Particle_High_PS(VS2PS Input)
+PS2FB PS_Particle_High(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -232,8 +232,8 @@ technique NSAParticleShowFill
 	pass Pass0
 	{
 		GET_RENDERSTATES_NSAP(ONE, ONE)
-		VertexShader = compile vs_3_0 Particle_VS();
-		PixelShader = compile ps_3_0 Particle_ShowFill_PS();
+		VertexShader = compile vs_3_0 VS_Particle();
+		PixelShader = compile ps_3_0 PS_Particle_ShowFill();
 	}
 }
 
@@ -244,8 +244,8 @@ technique NSAParticleLow
 	pass Pass0
 	{
 		GET_RENDERSTATES_NSAP(SRCALPHA, INVSRCALPHA)
-		VertexShader = compile vs_3_0 Particle_VS();
-		PixelShader = compile ps_3_0 Particle_Low_PS();
+		VertexShader = compile vs_3_0 VS_Particle();
+		PixelShader = compile ps_3_0 PS_Particle_Low();
 	}
 }
 
@@ -256,8 +256,8 @@ technique NSAParticleMedium
 	pass Pass0
 	{
 		GET_RENDERSTATES_NSAP(SRCALPHA, INVSRCALPHA)
-		VertexShader = compile vs_3_0 Particle_VS();
-		PixelShader = compile ps_3_0 Particle_Medium_PS();
+		VertexShader = compile vs_3_0 VS_Particle();
+		PixelShader = compile ps_3_0 PS_Particle_Medium();
 	}
 }
 
@@ -268,7 +268,7 @@ technique NSAParticleHigh
 	pass Pass0
 	{
 		GET_RENDERSTATES_NSAP(SRCALPHA, INVSRCALPHA)
-		VertexShader = compile vs_3_0 Particle_VS();
-		PixelShader = compile ps_3_0 Particle_High_PS();
+		VertexShader = compile vs_3_0 VS_Particle();
+		PixelShader = compile ps_3_0 PS_Particle_High();
 	}
 }

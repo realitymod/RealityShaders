@@ -34,7 +34,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS PointLight_VS(APP2VS Input)
+VS2PS VS_PointLight(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -47,7 +47,7 @@ VS2PS PointLight_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB PointLight_PS(VS2PS Input)
+PS2FB PS_PointLight(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -82,8 +82,8 @@ technique Pointlight
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
 
- 		VertexShader = compile vs_3_0 PointLight_VS();
-		PixelShader = compile ps_3_0 PointLight_PS();
+ 		VertexShader = compile vs_3_0 VS_PointLight();
+		PixelShader = compile ps_3_0 PS_PointLight();
 	}
 }
 
@@ -94,7 +94,7 @@ struct VS2PS_Spot
 	float3 LightDir : TEXCOORD1;
 };
 
-VS2PS_Spot SpotLight_VS(APP2VS Input)
+VS2PS_Spot VS_SpotLight(APP2VS Input)
 {
 	VS2PS_Spot Output = (VS2PS_Spot)0;
 
@@ -112,7 +112,7 @@ VS2PS_Spot SpotLight_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB SpotLight_PS(VS2PS_Spot Input)
+PS2FB PS_SpotLight(VS2PS_Spot Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -152,7 +152,7 @@ technique Spotlight
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
 
- 		VertexShader = compile vs_3_0 SpotLight_VS();
-		PixelShader = compile ps_3_0 SpotLight_PS();
+ 		VertexShader = compile vs_3_0 VS_SpotLight();
+		PixelShader = compile ps_3_0 PS_SpotLight();
 	}
 }

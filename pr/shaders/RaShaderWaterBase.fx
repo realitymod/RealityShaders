@@ -142,11 +142,11 @@ struct PS2FB
 	#endif
 };
 
-VS2PS Water_VS(APP2VS Input)
+VS2PS VS_Water(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	// Get world-space data
+	// World-space data
 	float4 WorldPos = mul(Input.Pos, World);
 	Output.HPos = mul(WorldPos, ViewProjection);
 	Output.Pos.xyz = WorldPos.xyz;
@@ -177,7 +177,7 @@ VS2PS Water_VS(APP2VS Input)
 
 #define INV_LIGHTDIR float3(0.4, 0.5, 0.6)
 
-PS2FB Water_PS(in VS2PS Input)
+PS2FB PS_Water(in VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -259,7 +259,7 @@ technique defaultShader
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Water_VS();
-		PixelShader = compile ps_3_0 Water_PS();
+		VertexShader = compile vs_3_0 VS_Water();
+		PixelShader = compile ps_3_0 PS_Water();
 	}
 }

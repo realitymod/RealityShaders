@@ -27,7 +27,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS Debug_Linegraph_VS(APP2VS Input)
+VS2PS VS_Debug_Linegraph(APP2VS Input)
 {
 	VS2PS Output;
 
@@ -41,7 +41,7 @@ VS2PS Debug_Linegraph_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Debug_Linegraph_PS(VS2PS Input) : COLOR
+float4 PS_Debug_Linegraph(VS2PS Input) : COLOR
 {
 	return Input.Color;
 }
@@ -60,7 +60,7 @@ technique Graph <
 	{
 		ZEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_Linegraph_VS();
-		PixelShader = compile ps_3_0 Debug_Linegraph_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Linegraph();
+		PixelShader = compile ps_3_0 PS_Debug_Linegraph();
 	}
 }

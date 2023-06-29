@@ -66,7 +66,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS DiffuseBone_VS(APP2VS Input)
+VS2PS VS_DiffuseBone(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -83,7 +83,7 @@ VS2PS DiffuseBone_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB DiffuseBone_PS(VS2PS Input)
+PS2FB PS_DiffuseBone(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -113,7 +113,7 @@ technique defaultTechnique
 		SrcBlend = (srcBlend);
 		DestBlend = (destBlend);
 
-		VertexShader = compile vs_3_0 DiffuseBone_VS();
-		PixelShader = compile ps_3_0 DiffuseBone_PS();
+		VertexShader = compile vs_3_0 VS_DiffuseBone();
+		PixelShader = compile ps_3_0 PS_DiffuseBone();
 	}
 }

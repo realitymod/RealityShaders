@@ -49,7 +49,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS Point_VS(APP2PS Input)
+VS2PS VS_Point(APP2PS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -74,7 +74,7 @@ VS2PS Point_VS(APP2PS Input)
 	return Output;
 }
 
-PS2FB Point_PS(VS2PS Input)
+PS2FB PS_Point(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -103,8 +103,8 @@ technique Point
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE; // INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Point_VS();
-		PixelShader = compile ps_3_0 Point_PS();
+		VertexShader = compile vs_3_0 VS_Point();
+		PixelShader = compile ps_3_0 PS_Point();
 	}
 }
 
@@ -119,7 +119,7 @@ struct VS2PS_Line
 	float4 Color : TEXCOORD1;
 };
 
-VS2PS_Line Line_VS(APP2PS Input)
+VS2PS_Line VS_Line(APP2PS Input)
 {
 	VS2PS_Line Output = (VS2PS_Line)0;
 
@@ -140,7 +140,7 @@ VS2PS_Line Line_VS(APP2PS Input)
 	return Output;
 }
 
-PS2FB Line_PS(VS2PS_Line Input)
+PS2FB PS_Line(VS2PS_Line Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -167,8 +167,8 @@ technique Line
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE; // INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Line_VS();
-		PixelShader = compile ps_3_0 Line_PS();
+		VertexShader = compile vs_3_0 VS_Line();
+		PixelShader = compile ps_3_0 PS_Line();
 	}
 }
 
@@ -183,7 +183,7 @@ struct VS2PS_Cell
 	float4 Color : TEXCOORD1;
 };
 
-VS2PS_Cell Cells_VS(APP2PS Input)
+VS2PS_Cell VS_Cells(APP2PS Input)
 {
 	VS2PS_Cell Output = (VS2PS_Cell)0;
 
@@ -200,7 +200,7 @@ VS2PS_Cell Cells_VS(APP2PS Input)
 	return Output;
 }
 
-PS2FB Cells_PS(VS2PS_Cell Input)
+PS2FB PS_Cells(VS2PS_Cell Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -227,7 +227,7 @@ technique Cells
 		SrcBlend = SrcAlpha;
 		DestBlend = ONE; // INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Cells_VS();
-		PixelShader = compile ps_3_0 Cells_PS();
+		VertexShader = compile vs_3_0 VS_Cells();
+		PixelShader = compile ps_3_0 PS_Cells();
 	}
 }

@@ -86,7 +86,7 @@ struct VS2PS_Shared_ZFillLightMap
 	float3 Tex0 : TEXCOORD0;
 };
 
-VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared Input)
+VS2PS_Shared_ZFillLightMap VS_Shared_ZFillLightMap(APP2VS_Shared Input)
 {
 	VS2PS_Shared_ZFillLightMap Output = (VS2PS_Shared_ZFillLightMap)0;
 
@@ -109,7 +109,7 @@ VS2PS_Shared_ZFillLightMap Shared_ZFillLightMap_VS(APP2VS_Shared Input)
 
 float4 ZFillLightMapColor : register(c0);
 
-PS2FB Shared_ZFillLightMap_1_PS(VS2PS_Shared_ZFillLightMap Input)
+PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -128,7 +128,7 @@ PS2FB Shared_ZFillLightMap_1_PS(VS2PS_Shared_ZFillLightMap Input)
 	return Output;
 }
 
-PS2FB Shared_ZFillLightMap_2_PS(VS2PS_Shared_ZFillLightMap Input)
+PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -152,7 +152,7 @@ struct VS2PS_Shared_PointLight
 	float3 Normal : TEXCOORD1;
 };
 
-VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
+VS2PS_Shared_PointLight VS_Shared_PointLight(APP2VS_Shared Input)
 {
 	VS2PS_Shared_PointLight Output = (VS2PS_Shared_PointLight)0;
 
@@ -175,7 +175,7 @@ VS2PS_Shared_PointLight Shared_PointLight_VS(APP2VS_Shared Input)
 	return Output;
 }
 
-PS2FB Shared_PointLight_PS(VS2PS_Shared_PointLight Input)
+PS2FB PS_Shared_PointLight(VS2PS_Shared_PointLight Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -215,7 +215,7 @@ struct VS2PS_Shared_LowDetail
 	float2 ZPlaneTex : TEXCOORD6;
 };
 
-VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared Input)
+VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 {
 	VS2PS_Shared_LowDetail Output = (VS2PS_Shared_LowDetail)0;
 
@@ -254,7 +254,7 @@ VS2PS_Shared_LowDetail Shared_LowDetail_VS(APP2VS_Shared Input)
 	return Output;
 }
 
-PS2FB Shared_LowDetail_PS(VS2PS_Shared_LowDetail Input)
+PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -323,7 +323,7 @@ struct VS2PS_Shared_DynamicShadowmap
 	float4 ShadowTex : TEXCOORD0;
 };
 
-VS2PS_Shared_DynamicShadowmap Shared_DynamicShadowmap_VS(APP2VS_Shared Input)
+VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
 {
 	VS2PS_Shared_DynamicShadowmap Output;
 
@@ -339,7 +339,7 @@ VS2PS_Shared_DynamicShadowmap Shared_DynamicShadowmap_VS(APP2VS_Shared Input)
 	return Output;
 }
 
-float4 Shared_DynamicShadowmap_PS(VS2PS_Shared_DynamicShadowmap Input) : COLOR
+float4 PS_Shared_DynamicShadowmap(VS2PS_Shared_DynamicShadowmap Input) : COLOR
 {
 	#if NVIDIA
 		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex);
@@ -354,7 +354,7 @@ float4 Shared_DynamicShadowmap_PS(VS2PS_Shared_DynamicShadowmap Input) : COLOR
 	Applies dynamic shadows to the terrain's light buffer
 
 	NOTE: Do not apply fog in this shader because it only writes to a light buffer, not the terrain itself.
-	NOTE: Final compositing happens in Shared_LowDetail_PS and FullDetail_Hi_PS
+	NOTE: Final compositing happens in PS_Shared_LowDetail and PS_FullDetail_Hi
 */
 
 struct VS2PS_Shared_DirectionalLightShadows
@@ -365,7 +365,7 @@ struct VS2PS_Shared_DirectionalLightShadows
 	float4 ShadowTex : TEXCOORD2;
 };
 
-VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Shared Input)
+VS2PS_Shared_DirectionalLightShadows VS_Shared_DirectionalLightShadows(APP2VS_Shared Input)
 {
 	VS2PS_Shared_DirectionalLightShadows Output = (VS2PS_Shared_DirectionalLightShadows)0;
 
@@ -396,7 +396,7 @@ VS2PS_Shared_DirectionalLightShadows Shared_DirectionalLightShadows_VS(APP2VS_Sh
 	return Output;
 }
 
-PS2FB Shared_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input)
+PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -436,7 +436,7 @@ struct VS2PS_Shared_UnderWater
 	float4 Pos : TEXCOORD0;
 };
 
-VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared Input)
+VS2PS_Shared_UnderWater VS_Shared_UnderWater(APP2VS_Shared Input)
 {
 	VS2PS_Shared_UnderWater Output = (VS2PS_Shared_UnderWater)0;
 
@@ -456,7 +456,7 @@ VS2PS_Shared_UnderWater Shared_UnderWater_VS(APP2VS_Shared Input)
 	return Output;
 }
 
-PS2FB Shared_UnderWater_PS(VS2PS_Shared_UnderWater Input)
+PS2FB PS_Shared_UnderWater(VS2PS_Shared_UnderWater Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -499,7 +499,7 @@ struct VS2PS_Shared_ST_Normal
 	float2 ZPlaneTex : TEXCOORD5;
 };
 
-VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
+VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
 {
 	VS2PS_Shared_ST_Normal Output = (VS2PS_Shared_ST_Normal)0;
 
@@ -534,7 +534,7 @@ VS2PS_Shared_ST_Normal Shared_ST_Normal_VS(APP2VS_Shared_ST_Normal Input)
 	return Output;
 }
 
-PS2FB Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input)
+PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -596,8 +596,8 @@ technique Shared_SurroundingTerrain
 
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Shared_ST_Normal_VS();
-		PixelShader = compile ps_3_0 Shared_ST_Normal_PS();
+		VertexShader = compile vs_3_0 VS_Shared_ST_Normal();
+		PixelShader = compile ps_3_0 PS_Shared_ST_Normal();
 	}
 }
 
@@ -628,7 +628,7 @@ float4 GetOccluderShadow(float4 Pos, float4x4 LightTrapMat, float4x4 LightMat)
 	return ShadowTex;
 }
 
-HI_VS2PS_OccluderShadow Hi_OccluderShadow_VS(HI_APP2VS_OccluderShadow Input)
+HI_VS2PS_OccluderShadow VS_Hi_OccluderShadow(HI_APP2VS_OccluderShadow Input)
 {
 	HI_VS2PS_OccluderShadow Output;
 
@@ -641,7 +641,7 @@ HI_VS2PS_OccluderShadow Hi_OccluderShadow_VS(HI_APP2VS_OccluderShadow Input)
 	return Output;
 }
 
-float4 Hi_OccluderShadow_PS(HI_VS2PS_OccluderShadow Input) : COLOR
+float4 PS_Hi_OccluderShadow(HI_VS2PS_OccluderShadow Input) : COLOR
 {
 	#if NVIDIA
 		return 0.5;
@@ -670,7 +670,7 @@ technique TerrainOccludershadow
 			ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 		#endif
 
-		VertexShader = compile vs_3_0 Hi_OccluderShadow_VS();
-		PixelShader = compile ps_3_0 Hi_OccluderShadow_PS();
+		VertexShader = compile vs_3_0 VS_Hi_OccluderShadow();
+		PixelShader = compile ps_3_0 PS_Hi_OccluderShadow();
 	}
 }

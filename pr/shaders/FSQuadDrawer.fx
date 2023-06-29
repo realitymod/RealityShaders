@@ -108,7 +108,7 @@ struct VS2PS_Blit
 	float2 TexCoord0 : TEXCOORD0;
 };
 
-VS2PS_Blit Blit_VS(APP2VS_Blit Input)
+VS2PS_Blit VS_Blit(APP2VS_Blit Input)
 {
 	VS2PS_Blit Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
@@ -116,7 +116,7 @@ VS2PS_Blit Blit_VS(APP2VS_Blit Input)
 	return Output;
 }
 
-VS2PS_Blit Blit_Custom_VS(APP2VS_Blit Input)
+VS2PS_Blit VS_Blit_Custom(APP2VS_Blit Input)
 {
 	VS2PS_Blit Output;
 	Output.HPos = mul(float4(Input.Pos.xy, 0.0, 1.0), _CustomMtx);
@@ -162,17 +162,17 @@ float4 LinearGaussianBlur(sampler2D Source, float2 TexCoord, bool IsHorizontal)
 	return OutputColor / TotalWeights;
 }
 
-float4 TR_OpticsBlurH_PS(VS2PS_Blit Input) : COLOR
+float4 PS_TR_OpticsBlurH(VS2PS_Blit Input) : COLOR
 {
 	return LinearGaussianBlur(SampleTex0_Mirror, Input.TexCoord0, true);
 }
 
-float4 TR_OpticsBlurV_PS(VS2PS_Blit Input) : COLOR
+float4 PS_TR_OpticsBlurV(VS2PS_Blit Input) : COLOR
 {
 	return LinearGaussianBlur(SampleTex0_Mirror, Input.TexCoord0, false);
 }
 
-float4 TR_OpticsMask_PS(VS2PS_Blit Input) : COLOR
+float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR
 {
 	float2 ScreenSize = 0.0;
 	ScreenSize.x = int(1.0 / abs(ddx(Input.TexCoord0.x)));
@@ -188,22 +188,22 @@ float4 TR_OpticsMask_PS(VS2PS_Blit Input) : COLOR
 	return float4(OutputColor.rgb, BlurAmount); // Alpha (.a) is the mask to be composited in the pixel shader's blend operation
 }
 
-float4 TR_PassthroughBilinear_PS(VS2PS_Blit Input) : COLOR
+float4 PS_TR_PassthroughBilinear(VS2PS_Blit Input) : COLOR
 {
 	return tex2D(SampleTex0_Clamp, Input.TexCoord0);
 }
 
-float4 TR_PassthroughAnisotropy_PS(VS2PS_Blit Input) : COLOR
+float4 PS_TR_PassthroughAnisotropy(VS2PS_Blit Input) : COLOR
 {
 	return tex2D(SampleTex0_Aniso, Input.TexCoord0);
 }
 
-float4 Dummy_PS() : COLOR
+float4 PS_Dummy() : COLOR
 {
 	return 0.0;
 }
 
-VS2PS_Blit Blit_Magnified_PS(APP2VS_Blit Input)
+VS2PS_Blit PS_Blit_Magnified(APP2VS_Blit Input)
 {
 	VS2PS_Blit Output;
 	Output.HPos = float4(Input.Pos.xy * 1.1, 0.0, 1.0);
@@ -211,7 +211,7 @@ VS2PS_Blit Blit_Magnified_PS(APP2VS_Blit Input)
 	return Output;
 }
 
-VS2PS_4Tap ScaleDown4x4_VS(APP2VS_Blit Input)
+VS2PS_4Tap VS_ScaleDown4x4(APP2VS_Blit Input)
 {
 	VS2PS_4Tap Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
@@ -222,7 +222,7 @@ VS2PS_4Tap ScaleDown4x4_VS(APP2VS_Blit Input)
 	return Output;
 }
 
-VS2PS_5Tap Sample5_VS(APP2VS_Blit Input, uniform float Offsets[5], uniform bool Horizontal)
+VS2PS_5Tap VS_Sample5(APP2VS_Blit Input, uniform float Offsets[5], uniform bool Horizontal)
 {
 	VS2PS_5Tap Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
@@ -241,26 +241,26 @@ VS2PS_5Tap Sample5_VS(APP2VS_Blit Input, uniform float Offsets[5], uniform bool 
 	return Output;
 }
 
-float4 Passthrough_PS(VS2PS_Blit Input) : COLOR
+float4 PS_Passthrough(VS2PS_Blit Input) : COLOR
 {
 	return tex2D(SampleTex0_Clamp, Input.TexCoord0);
 }
 
-float4 PassthroughSaturateAlpha_PS(VS2PS_Blit Input) : COLOR
+float4 PS_PassthroughSaturateAlpha(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	OutputColor.a = 1.0;
 	return OutputColor;
 }
 
-float4 CopyRGBToAlpha_PS(VS2PS_Blit Input) : COLOR
+float4 PS_CopyRGBToAlpha(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	OutputColor.a = dot(OutputColor.rgb, 1.0 / 3.0);
 	return OutputColor;
 }
 
-float4 PosTo8Bit_PS(VS2PS_Blit Input) : COLOR
+float4 PS_PosTo8Bit(VS2PS_Blit Input) : COLOR
 {
 	float4 ViewPosition = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	ViewPosition /= 50.0;
@@ -268,28 +268,28 @@ float4 PosTo8Bit_PS(VS2PS_Blit Input) : COLOR
 	return ViewPosition;
 }
 
-float4 NormalTo8Bit_PS(VS2PS_Blit Input) : COLOR
+float4 PS_NormalTo8Bit(VS2PS_Blit Input) : COLOR
 {
 	return (normalize(tex2D(SampleTex0_Clamp, Input.TexCoord0)) * 0.5) + 0.5;
 	// return tex2D(SampleTex0_Clamp, Input.TexCoord0).a;
 }
 
-float4 ShadowMapFrontTo8Bit_PS(VS2PS_Blit Input) : COLOR
+float4 PS_ShadowMapFrontTo8Bit(VS2PS_Blit Input) : COLOR
 {
 	return tex2D(SampleTex0_Clamp, Input.TexCoord0);
 }
 
-float4 ShadowMapBackTo8Bit_PS(VS2PS_Blit Input) : COLOR
+float4 PS_ShadowMapBackTo8Bit(VS2PS_Blit Input) : COLOR
 {
 	return -tex2D(SampleTex0_Clamp, Input.TexCoord0);
 }
 
-float4 ScaleUp4x4_PS(VS2PS_Blit Input) : COLOR
+float4 PS_ScaleUp4x4(VS2PS_Blit Input) : COLOR
 {
 	return tex2D(SampleTex0_Clamp, Input.TexCoord0);
 }
 
-float4 ScaleDown2x2_PS(VS2PS_Blit Input) : COLOR
+float4 PS_ScaleDown2x2(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[0].xy);
@@ -299,7 +299,7 @@ float4 ScaleDown2x2_PS(VS2PS_Blit Input) : COLOR
 	return OutputColor * 0.25;
 }
 
-float4 ScaleDown4x4_PS(in VS2PS_Blit Input) : COLOR
+float4 PS_ScaleDown4x4(in VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	for(int i = 0; i < 16; i++)
@@ -309,7 +309,7 @@ float4 ScaleDown4x4_PS(in VS2PS_Blit Input) : COLOR
 	return OutputColor;
 }
 
-float4 ScaleDown4x4Linear_PS(VS2PS_4Tap Input) : COLOR
+float4 PS_ScaleDown4x4Linear(VS2PS_4Tap Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	OutputColor += tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy);
@@ -319,7 +319,7 @@ float4 ScaleDown4x4Linear_PS(VS2PS_4Tap Input) : COLOR
 	return OutputColor * 0.25;
 }
 
-float4 CheapGaussianBlur5x5_PS(in VS2PS_Blit Input) : COLOR
+float4 PS_CheapGaussianBlur5x5(in VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	for(int i = 0; i < 13; i++)
@@ -329,7 +329,7 @@ float4 CheapGaussianBlur5x5_PS(in VS2PS_Blit Input) : COLOR
 	return OutputColor;
 }
 
-float4 _Gaussian_Blur_5x5_Cheap_Filter_Blend_PS(VS2PS_Blit Input) : COLOR
+float4 PS__Gaussian_Blur_5x5_Cheap_Filter_Blend(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	for(int i = 0; i < 13; i++)
@@ -340,7 +340,7 @@ float4 _Gaussian_Blur_5x5_Cheap_Filter_Blend_PS(VS2PS_Blit Input) : COLOR
 	return OutputColor;
 }
 
-float4 GaussianBlur15x15H_PS(VS2PS_Blit Input) : COLOR
+float4 PS_GaussianBlur15x15H(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	for(int i = 0; i < 15; i++)
@@ -350,7 +350,7 @@ float4 GaussianBlur15x15H_PS(VS2PS_Blit Input) : COLOR
 	return OutputColor;
 }
 
-float4 GaussianBlur15x15V_PS(VS2PS_Blit Input) : COLOR
+float4 PS_GaussianBlur15x15V(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	for(int i = 0; i < 15; i++)
@@ -360,7 +360,7 @@ float4 GaussianBlur15x15V_PS(VS2PS_Blit Input) : COLOR
 	return OutputColor;
 }
 
-float4 Poisson13Blur_PS(VS2PS_Blit Input) : COLOR
+float4 PS_Poisson13Blur(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	float Samples = 1.0;
@@ -381,7 +381,7 @@ float4 Poisson13Blur_PS(VS2PS_Blit Input) : COLOR
 	return OutputColor / Samples;
 }
 
-float4 Poisson13AndDilation_PS(VS2PS_Blit Input) : COLOR
+float4 PS_Poisson13AndDilation(VS2PS_Blit Input) : COLOR
 {
 	float4 Center = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 
@@ -409,7 +409,7 @@ float4 Poisson13AndDilation_PS(VS2PS_Blit Input) : COLOR
 	return OutputColor / OutputColor.a;
 }
 
-float4 GlowFilter_PS(VS2PS_5Tap Input, uniform float Weights[5], uniform bool Horizontal) : COLOR
+float4 PS_GlowFilter(VS2PS_5Tap Input, uniform float Weights[5], uniform bool Horizontal) : COLOR
 {
 	float4 OutputColor = Weights[0] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy);
 	OutputColor += Weights[1] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].zw);
@@ -419,14 +419,14 @@ float4 GlowFilter_PS(VS2PS_5Tap Input, uniform float Weights[5], uniform bool Ho
 	return OutputColor;
 }
 
-float4 HighPassFilter_PS(VS2PS_Blit Input) : COLOR
+float4 PS_HighPassFilter(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	OutputColor -= _HighPassGate;
 	return max(OutputColor, 0.0);
 }
 
-float4 HighPassFilterFade_PS(VS2PS_Blit Input) : COLOR
+float4 PS_HighPassFilterFade(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	OutputColor.rgb = saturate(OutputColor.rgb - _HighPassGate);
@@ -434,12 +434,12 @@ float4 HighPassFilterFade_PS(VS2PS_Blit Input) : COLOR
 	return OutputColor;
 }
 
-float4 Clear_PS(VS2PS_Blit Input) : COLOR
+float4 PS_Clear(VS2PS_Blit Input) : COLOR
 {
 	return 0.0;
 }
 
-float4 ExtractGlowFilter_PS(VS2PS_Blit Input) : COLOR
+float4 PS_ExtractGlowFilter(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	OutputColor.rgb = OutputColor.a;
@@ -447,7 +447,7 @@ float4 ExtractGlowFilter_PS(VS2PS_Blit Input) : COLOR
 	return OutputColor;
 }
 
-float4 ExtractHDRFilterFade_PS(VS2PS_Blit Input) : COLOR
+float4 PS_ExtractHDRFilterFade(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	OutputColor.rgb = saturate(OutputColor.a - _HighPassGate);
@@ -455,14 +455,14 @@ float4 ExtractHDRFilterFade_PS(VS2PS_Blit Input) : COLOR
 	return OutputColor;
 }
 
-float4 LumaAndBrightPass_PS(VS2PS_Blit Input) : COLOR
+float4 PS_LumaAndBrightPass(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0) * _HighPassGate;
 	// float luminance = dot(OutputColor, float3(0.299f, 0.587f, 0.114f));
 	return OutputColor;
 }
 
-float4 BloomFilter_PS(VS2PS_5Tap Input, uniform bool Is_Blur) : COLOR
+float4 PS_BloomFilter(VS2PS_5Tap Input, uniform bool Is_Blur) : COLOR
 {
 	float4 OutputColor = 0.0;
 	OutputColor.a = (Is_Blur) ? _BlurStrength : OutputColor.a;
@@ -479,7 +479,7 @@ float4 BloomFilter_PS(VS2PS_5Tap Input, uniform bool Is_Blur) : COLOR
 	return OutputColor;
 }
 
-float4 ScaleUpBloomFilter_PS(VS2PS_Blit Input) : COLOR
+float4 PS_ScaleUpBloomFilter(VS2PS_Blit Input) : COLOR
 {
 	float Offset = 0.01;
 	// We can use a blur for this
@@ -487,7 +487,7 @@ float4 ScaleUpBloomFilter_PS(VS2PS_Blit Input) : COLOR
 	return Close;
 }
 
-float4 Blur_PS(VS2PS_Blit Input) : COLOR
+float4 PS_Blur(VS2PS_Blit Input) : COLOR
 {
 	return float4(tex2D(SampleTex0_Clamp, Input.TexCoord0).rgb, _BlurStrength);
 }
@@ -518,7 +518,7 @@ float4 Blur_PS(VS2PS_Blit Input) : COLOR
 technique Blit
 {
 	// Pass 0: PassThrough
-	CREATE_PASS(Blit_VS(), Passthrough_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_Passthrough(), FALSE)
 
 	// Pass 1
 	pass Blend
@@ -531,62 +531,62 @@ technique Blit
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 Passthrough_PS();
+		VertexShader = compile vs_3_0 VS_Blit();
+		PixelShader = compile ps_3_0 PS_Passthrough();
 	}
 
 	// Pass 2: PosTo8Bit
-	CREATE_PASS(Blit_VS(), PosTo8Bit_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_PosTo8Bit(), FALSE)
 
 	// Pass 3: NormalTo8Bit
-	CREATE_PASS(Blit_VS(), NormalTo8Bit_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_NormalTo8Bit(), FALSE)
 
 	// Pass 4: ShadowMapFrontTo8Bit
-	CREATE_PASS(Blit_VS(), ShadowMapFrontTo8Bit_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ShadowMapFrontTo8Bit(), FALSE)
 
 	// Pass 5: ShadowMapBackTo8Bit
-	CREATE_PASS(Blit_VS(), ShadowMapBackTo8Bit_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ShadowMapBackTo8Bit(), FALSE)
 
 	// Pass 6: ScaleUp4x4
-	CREATE_PASS(Blit_VS(), ScaleUp4x4_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ScaleUp4x4(), FALSE)
 
 	// Pass 7: ScaleDown2x2
-	CREATE_PASS(Blit_VS(), ScaleDown2x2_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ScaleDown2x2(), FALSE)
 
 	// Pass 8: ScaleDown4x4
-	CREATE_PASS(Blit_VS(), ScaleDown4x4_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ScaleDown4x4(), FALSE)
 
 	// Pass 9: ScaleDown4x4Linear (Tinnitus)
-	CREATE_PASS(ScaleDown4x4_VS(), ScaleDown4x4Linear_PS(), FALSE)
+	CREATE_PASS(VS_ScaleDown4x4(), PS_ScaleDown4x4Linear(), FALSE)
 
 	// Pass 10: CheapGaussianBlur5x5
-	CREATE_PASS(Blit_VS(), CheapGaussianBlur5x5_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_CheapGaussianBlur5x5(), FALSE)
 
 	// Pass 11: GaussianBlur15x15H
-	CREATE_PASS(Blit_VS(), GaussianBlur15x15H_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_GaussianBlur15x15H(), FALSE)
 
 	// Pass 12: GaussianBlur15x15V
-	CREATE_PASS(Blit_VS(), GaussianBlur15x15V_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_GaussianBlur15x15V(), FALSE)
 
 	// Pass 13: Poisson13Blur
-	CREATE_PASS(Blit_VS(), Poisson13Blur_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_Poisson13Blur(), FALSE)
 
 	// Pass 14: Poisson13AndDilation
-	CREATE_PASS(Blit_VS(), Poisson13AndDilation_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_Poisson13AndDilation(), FALSE)
 
 	// Pass 15: ScaleUpBloomFilter
-	CREATE_PASS(Blit_VS(), ScaleUpBloomFilter_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ScaleUpBloomFilter(), FALSE)
 
 	// Pass 16: PassThroughSaturateAlpha
-	CREATE_PASS(Blit_VS(), PassthroughSaturateAlpha_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_PassthroughSaturateAlpha(), FALSE)
 
 	// Pass 17
 	pass CopyRGBToAlpha
 	{
 		ColorWriteEnable = ALPHA;
 
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 CopyRGBToAlpha_PS();
+		VertexShader = compile vs_3_0 VS_Blit();
+		PixelShader = compile ps_3_0 PS_CopyRGBToAlpha();
 	}
 
 	/*
@@ -594,7 +594,7 @@ technique Blit
 	*/
 
 	// Pass 18: PassThroughBilinear
-	CREATE_PASS(Blit_VS(), TR_PassthroughBilinear_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear(), FALSE)
 
 	// Pass 19
 	pass PassThroughBilinearAdditive
@@ -607,8 +607,8 @@ technique Blit
 		SrcBlend = ZERO;
 		DestBlend = ONE;
 
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 TR_PassthroughBilinear_PS();
+		VertexShader = compile vs_3_0 VS_Blit();
+		PixelShader = compile ps_3_0 PS_TR_PassthroughBilinear();
 	}
 
 	// Pass 20: Blur
@@ -627,10 +627,10 @@ technique Blit
 	CREATE_NULL_PASS
 
 	// Pass 25: GlowHorizontalFilter
-	CREATE_PASS(Blit_VS(), TR_OpticsBlurH_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_OpticsBlurH(), FALSE)
 
 	// Pass 26: GlowVerticalFilter
-	CREATE_PASS(Blit_VS(), TR_OpticsBlurV_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_OpticsBlurV(), FALSE)
 
 	// Pass 27: GlowVerticalFilterAdditive
 	CREATE_NULL_PASS
@@ -639,7 +639,7 @@ technique Blit
 	CREATE_NULL_PASS
 
 	// Pass 29: HighPassFilterFade
-	CREATE_PASS(Blit_VS(), TR_PassthroughBilinear_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear(), FALSE)
 
 	// Pass 30: ExtractGlowFilter
 	CREATE_NULL_PASS
@@ -651,8 +651,8 @@ technique Blit
 	pass ClearAlpha
 	{
 		ColorWriteEnable = ALPHA;
-		VertexShader = compile vs_3_0 Blit_Magnified_PS(); // is this needed? -mosq
-		PixelShader = compile ps_3_0 Clear_PS();
+		VertexShader = compile vs_3_0 PS_Blit_Magnified(); // is this needed? -mosq
+		PixelShader = compile ps_3_0 PS_Clear();
 	}
 
 	// Pass 33: Additive
@@ -670,18 +670,18 @@ technique Blit
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 TR_OpticsMask_PS();
+		VertexShader = compile vs_3_0 VS_Blit();
+		PixelShader = compile ps_3_0 PS_TR_OpticsMask();
 	}
 
 	// Pass 35: BloomHorizFilter
-	CREATE_PASS(Blit_VS(), TR_PassthroughBilinear_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear(), FALSE)
 
 	// Pass 36: BloomHorizFilterAdditive
 	CREATE_NULL_PASS
 
 	// Pass 37: BloomVertFilter
-	CREATE_PASS(Blit_VS(), TR_PassthroughBilinear_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear(), FALSE)
 
 	// Pass 38: BloomVAdditive
 	CREATE_NULL_PASS
@@ -696,13 +696,13 @@ technique Blit
 	CREATE_NULL_PASS
 
 	// Pass 42: ScaleDown4x4H
-	CREATE_PASS(Blit_VS(), TR_PassthroughAnisotropy_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughAnisotropy(), FALSE)
 
 	// Pass 43: ScaleDown4x4V
-	CREATE_PASS(Blit_VS(), TR_PassthroughAnisotropy_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughAnisotropy(), FALSE)
 
 	// Pass 44: Clear
-	CREATE_PASS(Blit_VS(), Clear_PS(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_Clear(), FALSE)
 
 	// Pass 45
 	pass BlendCustom
@@ -715,18 +715,18 @@ technique Blit
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Blit_Custom_VS();
-		PixelShader = compile ps_3_0 Passthrough_PS();
+		VertexShader = compile vs_3_0 VS_Blit_Custom();
+		PixelShader = compile ps_3_0 PS_Passthrough();
 	}
 
 }
 
-float4 StencilGather_PS(VS2PS_Blit Input) : COLOR
+float4 PS_StencilGather(VS2PS_Blit Input) : COLOR
 {
 	return _dwordStencilRef / 255.0;
 }
 
-float4 StencilMap_PS(VS2PS_Blit Input) : COLOR
+float4 PS_StencilMap(VS2PS_Blit Input) : COLOR
 {
 	float4 Stencil = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	return tex1D(SampleTex1, Stencil.x / 255.0);
@@ -747,8 +747,8 @@ technique StencilPasses
 		StencilZFail = KEEP;
 		StencilPass = KEEP;
 
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 StencilGather_PS();
+		VertexShader = compile vs_3_0 VS_Blit();
+		PixelShader = compile ps_3_0 PS_StencilGather();
 	}
 
 	pass StencilMap
@@ -757,8 +757,8 @@ technique StencilPasses
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
 		StencilEnable = FALSE;
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 StencilMap_PS();
+		VertexShader = compile vs_3_0 VS_Blit();
+		PixelShader = compile ps_3_0 PS_StencilMap();
 	}
 }
 
@@ -787,7 +787,7 @@ technique ResetStencilCuller
 		StencilPass = (_dwordStencilPass);
 		TwoSidedStencilMode = FALSE;
 
-		VertexShader = compile vs_3_0 Blit_VS();
-		PixelShader = compile ps_3_0 Dummy_PS();
+		VertexShader = compile vs_3_0 VS_Blit();
+		PixelShader = compile ps_3_0 PS_Dummy();
 	}
 }

@@ -92,7 +92,7 @@ float4 GetUndergrowthPos(float4 InputPos, float4 InputPacked)
 	return Pos;
 }
 
-VS2PS Undergrowth_VS(APP2VS Input, uniform bool ShadowMapEnable)
+VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -112,7 +112,7 @@ VS2PS Undergrowth_VS(APP2VS Input, uniform bool ShadowMapEnable)
 	return Output;
 }
 
-PS2FB Undergrowth_PS(VS2PS Input, uniform bool PointLightEnable, uniform int LightCount, uniform bool ShadowMapEnable)
+PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int LightCount, uniform bool ShadowMapEnable)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -185,8 +185,8 @@ technique t0_l0
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_VS(false);
-		PixelShader = compile ps_3_0 Undergrowth_PS(false, 0, false);
+		VertexShader = compile vs_3_0 VS_Undergrowth(false);
+		PixelShader = compile ps_3_0 PS_Undergrowth(false, 0, false);
 	}
 }
 
@@ -198,8 +198,8 @@ technique t0_l1
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_VS(false);
-		PixelShader = compile ps_3_0 Undergrowth_PS(true, 1, false);
+		VertexShader = compile vs_3_0 VS_Undergrowth(false);
+		PixelShader = compile ps_3_0 PS_Undergrowth(true, 1, false);
 	}
 }
 
@@ -211,8 +211,8 @@ technique t0_l2
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_VS(false);
-		PixelShader = compile ps_3_0 Undergrowth_PS(true, 2, false);
+		VertexShader = compile vs_3_0 VS_Undergrowth(false);
+		PixelShader = compile ps_3_0 PS_Undergrowth(true, 2, false);
 	}
 }
 
@@ -224,8 +224,8 @@ technique t0_l3
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_VS(false);
-		PixelShader = compile ps_3_0 Undergrowth_PS(true, 3, false);
+		VertexShader = compile vs_3_0 VS_Undergrowth(false);
+		PixelShader = compile ps_3_0 PS_Undergrowth(true, 3, false);
 	}
 }
 
@@ -237,8 +237,8 @@ technique t0_l4
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_VS(false);
-		PixelShader = compile ps_3_0 Undergrowth_PS(true, 4, false);
+		VertexShader = compile vs_3_0 VS_Undergrowth(false);
+		PixelShader = compile ps_3_0 PS_Undergrowth(true, 4, false);
 	}
 }
 
@@ -250,8 +250,8 @@ technique t0_l0_ds
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_VS(true);
-		PixelShader = compile ps_3_0 Undergrowth_PS(false, 0, true);
+		VertexShader = compile vs_3_0 VS_Undergrowth(true);
+		PixelShader = compile ps_3_0 PS_Undergrowth(false, 0, true);
 	}
 }
 
@@ -263,8 +263,8 @@ technique t0_l1_ds
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_VS(true);
-		PixelShader = compile ps_3_0 Undergrowth_PS(false, 1, true);
+		VertexShader = compile vs_3_0 VS_Undergrowth(true);
+		PixelShader = compile ps_3_0 PS_Undergrowth(false, 1, true);
 	}
 }
 
@@ -276,8 +276,8 @@ technique t0_l2_ds
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_VS(true);
-		PixelShader = compile ps_3_0 Undergrowth_PS(false, 2, true);
+		VertexShader = compile vs_3_0 VS_Undergrowth(true);
+		PixelShader = compile ps_3_0 PS_Undergrowth(false, 2, true);
 	}
 }
 
@@ -289,8 +289,8 @@ technique t0_l3_ds
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_VS(true);
-		PixelShader = compile ps_3_0 Undergrowth_PS(false, 3, true);
+		VertexShader = compile vs_3_0 VS_Undergrowth(true);
+		PixelShader = compile ps_3_0 PS_Undergrowth(false, 3, true);
 	}
 }
 
@@ -302,8 +302,8 @@ technique t0_l4_ds
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_VS(true);
-		PixelShader = compile ps_3_0 Undergrowth_PS(false, 4, true);
+		VertexShader = compile vs_3_0 VS_Undergrowth(true);
+		PixelShader = compile ps_3_0 PS_Undergrowth(false, 4, true);
 	}
 }
 
@@ -330,7 +330,7 @@ struct VS2PS_Simple
 	float4 TerrainColorMap : TEXCOORD4;
 };
 
-VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform bool ShadowMapEnable)
+VS2PS_Simple VS_Undergrowth_Simple(APP2VS_Simple Input, uniform bool ShadowMapEnable)
 {
 	VS2PS_Simple Output = (VS2PS_Simple)0;
 
@@ -351,7 +351,7 @@ VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform bool ShadowMapEn
 	return Output;
 }
 
-PS2FB Undergrowth_Simple_PS(VS2PS_Simple Input, uniform bool PointLightEnable, uniform int LightCount, uniform bool ShadowMapEnable)
+PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, uniform int LightCount, uniform bool ShadowMapEnable)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -419,8 +419,8 @@ technique t0_l0_simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(false);
-		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(false, 0, false);
+		VertexShader = compile vs_3_0 VS_Undergrowth_Simple(false);
+		PixelShader = compile ps_3_0 PS_Undergrowth_Simple(false, 0, false);
 	}
 }
 
@@ -432,8 +432,8 @@ technique t0_l1_simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(false);
-		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, 1, false);
+		VertexShader = compile vs_3_0 VS_Undergrowth_Simple(false);
+		PixelShader = compile ps_3_0 PS_Undergrowth_Simple(true, 1, false);
 	}
 }
 
@@ -445,8 +445,8 @@ technique t0_l2_simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(false);
-		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, 2, false);
+		VertexShader = compile vs_3_0 VS_Undergrowth_Simple(false);
+		PixelShader = compile ps_3_0 PS_Undergrowth_Simple(true, 2, false);
 	}
 }
 
@@ -458,8 +458,8 @@ technique t0_l3_simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(false);
-		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, 3, false);
+		VertexShader = compile vs_3_0 VS_Undergrowth_Simple(false);
+		PixelShader = compile ps_3_0 PS_Undergrowth_Simple(true, 3, false);
 	}
 }
 
@@ -471,8 +471,8 @@ technique t0_l4_simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(false);
-		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, 4, false);
+		VertexShader = compile vs_3_0 VS_Undergrowth_Simple(false);
+		PixelShader = compile ps_3_0 PS_Undergrowth_Simple(true, 4, false);
 	}
 }
 
@@ -484,8 +484,8 @@ technique t0_l0_ds_simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(true);
-		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(false, 0, true);
+		VertexShader = compile vs_3_0 VS_Undergrowth_Simple(true);
+		PixelShader = compile ps_3_0 PS_Undergrowth_Simple(false, 0, true);
 	}
 }
 
@@ -497,8 +497,8 @@ technique t0_l1_ds_simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(true);
-		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, 1, true);
+		VertexShader = compile vs_3_0 VS_Undergrowth_Simple(true);
+		PixelShader = compile ps_3_0 PS_Undergrowth_Simple(true, 1, true);
 	}
 }
 
@@ -510,8 +510,8 @@ technique t0_l2_ds_simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(true);
-		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, 2, true);
+		VertexShader = compile vs_3_0 VS_Undergrowth_Simple(true);
+		PixelShader = compile ps_3_0 PS_Undergrowth_Simple(true, 2, true);
 	}
 }
 
@@ -523,8 +523,8 @@ technique t0_l3_ds_simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(true);
-		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, 3, true);
+		VertexShader = compile vs_3_0 VS_Undergrowth_Simple(true);
+		PixelShader = compile ps_3_0 PS_Undergrowth_Simple(true, 3, true);
 	}
 }
 
@@ -536,8 +536,8 @@ technique t0_l4_ds_simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH
-		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(true);
-		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, 4, true);
+		VertexShader = compile vs_3_0 VS_Undergrowth_Simple(true);
+		PixelShader = compile ps_3_0 PS_Undergrowth_Simple(true, 4, true);
 	}
 }
 
@@ -551,7 +551,7 @@ struct VS2PS_ZOnly
 	float3 Tex0 : TEXCOORD0;
 };
 
-VS2PS_ZOnly Undergrowth_ZOnly_VS(APP2VS Input)
+VS2PS_ZOnly VS_Undergrowth_ZOnly(APP2VS Input)
 {
 	VS2PS_ZOnly Output = (VS2PS_ZOnly)0;
 
@@ -565,7 +565,7 @@ VS2PS_ZOnly Undergrowth_ZOnly_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Undergrowth_ZOnly_PS(VS2PS_ZOnly Input)
+PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -608,8 +608,8 @@ technique ZOnly
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH_ZONLY
-		VertexShader = compile vs_3_0 Undergrowth_ZOnly_VS();
-		PixelShader = compile ps_3_0 Undergrowth_ZOnly_PS();
+		VertexShader = compile vs_3_0 VS_Undergrowth_ZOnly();
+		PixelShader = compile ps_3_0 PS_Undergrowth_ZOnly();
 	}
 }
 
@@ -621,7 +621,7 @@ technique ZOnly_Simple
 	pass Normal
 	{
 		GET_RENDERSTATES_UNDERGROWTH_ZONLY
-		VertexShader = compile vs_3_0 Undergrowth_ZOnly_VS();
-		PixelShader = compile ps_3_0 Undergrowth_ZOnly_PS();
+		VertexShader = compile vs_3_0 VS_Undergrowth_ZOnly();
+		PixelShader = compile ps_3_0 PS_Undergrowth_ZOnly();
 	}
 }

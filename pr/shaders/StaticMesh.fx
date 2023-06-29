@@ -96,7 +96,7 @@ struct VS2PS_Simple
 	float2 TexCoord : TEXCOORD0;
 };
 
-VS2PS_Simple StaticMesh_Simple_VS(APP2VS Input)
+VS2PS_Simple VS_StaticMesh_Simple(APP2VS Input)
 {
 	VS2PS_Simple Output;
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
@@ -104,7 +104,7 @@ VS2PS_Simple StaticMesh_Simple_VS(APP2VS Input)
 	return Output;
 }
 
-float4 StaticMesh_Simple_PS(VS2PS_Simple Input) : COLOR
+float4 PS_StaticMesh_Simple(VS2PS_Simple Input) : COLOR
 {
 	float4 Ambient = float4(1.0, 1.0, 1.0, 0.8);
 	float4 NormalMap = tex2D(SampleTex0_Wrap, Input.TexCoord);
@@ -127,8 +127,8 @@ technique alpha_one
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
 
-		VertexShader = compile vs_3_0 StaticMesh_Simple_VS();
-		PixelShader = compile ps_3_0 StaticMesh_Simple_PS();
+		VertexShader = compile vs_3_0 VS_StaticMesh_Simple();
+		PixelShader = compile ps_3_0 PS_StaticMesh_Simple();
 	}
 }
 
@@ -149,7 +149,7 @@ struct VS2PS_ShadowMap
 	float2 Tex0 : TEXCOORD1;
 };
 
-VS2PS_ShadowMap ShadowMap_VS(APP2VS_ShadowMap Input)
+VS2PS_ShadowMap VS_ShadowMap(APP2VS_ShadowMap Input)
 {
 	VS2PS_ShadowMap Output;
 
@@ -164,7 +164,7 @@ VS2PS_ShadowMap ShadowMap_VS(APP2VS_ShadowMap Input)
 	return Output;
 }
 
-float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
+float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
 {
 	#if NVIDIA
 		return 0;
@@ -173,7 +173,7 @@ float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
 	#endif
 }
 
-float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap Input) : COLOR
+float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR
 {
 	const float AlphaRef = 96.0 / 255.0;
 	float4 Alpha = tex2D(SampleShadowAlpha, Input.Tex0);
@@ -202,8 +202,8 @@ technique DrawShadowMap
 		#endif
 
 		GET_RENDERSTATES_SHADOWMAP
-		VertexShader = compile vs_3_0 ShadowMap_VS();
-		PixelShader = compile ps_3_0 ShadowMap_PS();
+		VertexShader = compile vs_3_0 VS_ShadowMap();
+		PixelShader = compile ps_3_0 PS_ShadowMap();
 	}
 
 	pass DirectionalSpotAlpha
@@ -216,8 +216,8 @@ technique DrawShadowMap
 		#endif
 
 		GET_RENDERSTATES_SHADOWMAP
-		VertexShader = compile vs_3_0 ShadowMap_VS();
-		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
+		VertexShader = compile vs_3_0 VS_ShadowMap();
+		PixelShader = compile ps_3_0 PS_ShadowMap_Alpha();
 	}
 
 	pass Point_
@@ -227,8 +227,8 @@ technique DrawShadowMap
 		#endif
 
 		GET_RENDERSTATES_SHADOWMAP
-		VertexShader = compile vs_3_0 ShadowMap_VS();
-		PixelShader = compile ps_3_0 ShadowMap_PS();
+		VertexShader = compile vs_3_0 VS_ShadowMap();
+		PixelShader = compile ps_3_0 PS_ShadowMap();
 	}
 }
 
@@ -243,8 +243,8 @@ technique DrawShadowMapNV
 		#endif
 
 		GET_RENDERSTATES_SHADOWMAP
-		VertexShader = compile vs_3_0 ShadowMap_VS();
-		PixelShader = compile ps_3_0 ShadowMap_PS();
+		VertexShader = compile vs_3_0 VS_ShadowMap();
+		PixelShader = compile ps_3_0 PS_ShadowMap();
 	}
 
 	pass DirectionalSpotAlpha
@@ -257,8 +257,8 @@ technique DrawShadowMapNV
 		#endif
 
 		GET_RENDERSTATES_SHADOWMAP
-		VertexShader = compile vs_3_0 ShadowMap_VS();
-		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
+		VertexShader = compile vs_3_0 VS_ShadowMap();
+		PixelShader = compile ps_3_0 PS_ShadowMap_Alpha();
 	}
 
 	pass Point_
@@ -268,7 +268,7 @@ technique DrawShadowMapNV
 		#endif
 
 		GET_RENDERSTATES_SHADOWMAP
-		VertexShader = compile vs_3_0 ShadowMap_VS();
-		PixelShader = compile ps_3_0 ShadowMap_PS();
+		VertexShader = compile vs_3_0 VS_ShadowMap();
+		PixelShader = compile ps_3_0 PS_ShadowMap();
 	}
 }

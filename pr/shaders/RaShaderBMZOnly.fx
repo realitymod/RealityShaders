@@ -75,7 +75,7 @@ float4 GetWorldPos(APP2VS Input)
 	return float4(mul(unpackedPos, GetSkinnedWorldMatrix(Input)), 1.0);
 }
 
-VS2PS BM_ZOnly_VS(APP2VS Input)
+VS2PS VS_BM_ZOnly(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -88,7 +88,7 @@ VS2PS BM_ZOnly_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB BM_ZOnly_PS(VS2PS Input)
+PS2FB PS_BM_ZOnly(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 	Output.Color = 0.0;
@@ -113,7 +113,7 @@ technique Variable
 		ColorWriteEnable = 0;
 		CullMode = CCW;
 
-		VertexShader = compile vs_3_0 BM_ZOnly_VS();
-		PixelShader = compile ps_3_0 BM_ZOnly_PS();
+		VertexShader = compile vs_3_0 VS_BM_ZOnly();
+		PixelShader = compile ps_3_0 PS_BM_ZOnly();
 	}
 }

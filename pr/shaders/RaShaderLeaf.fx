@@ -160,7 +160,7 @@ WorldSpaceData GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 	return Output;
 }
 
-VS2PS Leaf_VS(APP2VS Input)
+VS2PS VS_Leaf(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -211,11 +211,11 @@ VS2PS Leaf_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Leaf_PS(VS2PS Input)
+PS2FB PS_Leaf(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float DotLN = Input.Tex0.z;
+	float DotNL = Input.Tex0.z;
 	float LodScale = Input.Tex0.w;
 	float3 WorldPos = Input.Pos.xyz;
 
@@ -227,7 +227,7 @@ PS2FB Leaf_PS(VS2PS Input)
 	#endif
 
 	float3 Ambient = OverGrowthAmbient * LodScale;
-	float3 Diffuse = (DotLN * LodScale) * (Lights[0].color * LodScale);
+	float3 Diffuse = (DotNL * LodScale) * (Lights[0].color * LodScale);
 	float3 VertexColor = Ambient + (Diffuse * Shadow.rgb);
 	float4 OutputColor = DiffuseMap * float4(VertexColor, Transparency.r * 2.0);
 
@@ -278,7 +278,7 @@ technique defaultTechnique
 			DestBlend = (destBlend);
 		#endif
 
-		VertexShader = compile vs_3_0 Leaf_VS();
-		PixelShader = compile ps_3_0 Leaf_PS();
+		VertexShader = compile vs_3_0 VS_Leaf();
+		PixelShader = compile ps_3_0 PS_Leaf();
 	}
 }

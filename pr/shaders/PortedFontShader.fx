@@ -43,7 +43,7 @@ struct VS2PS
 	float2 TexCoord : TEXCOORD1;
 };
 
-VS2PS HPos_VS(APP2VS Input)
+VS2PS VS_HPos(APP2VS Input)
 {
 	VS2PS Output;
 	Output.HPos = Input.HPos;
@@ -52,7 +52,7 @@ VS2PS HPos_VS(APP2VS Input)
 	return Output;
 }
 
-float4 HPos_PS(VS2PS Input) : COLOR
+float4 PS_HPos(VS2PS Input) : COLOR
 {
 	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord);
 	float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
@@ -87,8 +87,8 @@ technique Text <
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_3_0 HPos_VS();
-		PixelShader = compile ps_3_0 HPos_PS();
+		VertexShader = compile vs_3_0 VS_HPos();
+		PixelShader = compile ps_3_0 PS_HPos();
 	}
 }
 
@@ -106,7 +106,7 @@ technique Overlay_States <bool Restore = true;>
 	pass EndStates { }
 }
 
-float4 Overlay_HPos_PS(VS2PS Input) : COLOR
+float4 PS_Overlay_HPos(VS2PS Input) : COLOR
 {
 	float4 InputTexture0 = tex2D(SampleTex0_Wrap, Input.TexCoord);
 	return InputTexture0 * float4(1.0, 1.0, 1.0, _Alpha.a);
@@ -126,7 +126,7 @@ technique Overlay <
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_3_0 HPos_VS();
-		PixelShader = compile ps_3_0 Overlay_HPos_PS();
+		VertexShader = compile vs_3_0 VS_HPos();
+		PixelShader = compile ps_3_0 PS_Overlay_HPos();
 	}
 }

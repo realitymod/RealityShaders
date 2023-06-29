@@ -40,7 +40,7 @@ struct VS2PS
 	float4 Color : TEXCOORD1;
 };
 
-VS2PS Screen_VS(APP2VS Input)
+VS2PS VS_Screen(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
@@ -49,7 +49,7 @@ VS2PS Screen_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Screen_PS(VS2PS Input) : COLOR
+float4 PS_Screen(VS2PS Input) : COLOR
 {
 	float4 InputTexture0 = tex2D(SampleTexMap, Input.Tex);
 	float4 OutputColor;
@@ -66,7 +66,7 @@ technique Screen
 		StencilEnable = FALSE;
 		AlphaTestEnable = FALSE;
 		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_3_0 Screen_VS();
-		PixelShader = compile ps_3_0 Screen_PS();
+		VertexShader = compile vs_3_0 VS_Screen();
+		PixelShader = compile ps_3_0 PS_Screen();
 	}
 }

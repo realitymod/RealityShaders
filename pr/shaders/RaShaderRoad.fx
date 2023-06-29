@@ -107,7 +107,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS Road_VS(APP2VS Input)
+VS2PS VS_Road(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -135,7 +135,7 @@ VS2PS Road_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Road_PS(VS2PS Input)
+PS2FB PS_Road(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -200,7 +200,7 @@ technique defaultTechnique
 		// DepthBias = (RoadDepthBias);
 		// SlopeScaleDepthBias = (RoadSlopeScaleDepthBias);
 
-		VertexShader = compile vs_3_0 Road_VS();
-		PixelShader = compile ps_3_0 Road_PS();
+		VertexShader = compile vs_3_0 VS_Road();
+		PixelShader = compile ps_3_0 PS_Road();
 	}
 }

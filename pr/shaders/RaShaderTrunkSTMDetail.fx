@@ -109,18 +109,18 @@ struct PS2FB
 	#endif
 };
 
-VS2PS TrunkSTMDetail_VS(APP2VS Input)
+VS2PS VS_TrunkSTMDetail(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	// Get object-space data
+	// Object-space data
 	float4 ObjectPos = Input.Pos * PosUnpack;
 	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
 
 	// Output HPos
 	Output.HPos = mul(float4(ObjectPos.xyz, 1.0), WorldViewProjection);
 
-	// Get world-space data
+	// World-space data
 	Output.Pos.xyz = GetWorldPos(ObjectPos.xyz);
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
@@ -140,17 +140,17 @@ VS2PS TrunkSTMDetail_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB TrunkSTMDetail_PS(VS2PS Input)
+PS2FB PS_TrunkSTMDetail(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	// Get world-space data
+	// World-space data
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
 	float3 WorldLightVec = GetWorldLightDir(-Lights[0].dir);
 	float3 WorldNLightVec = normalize(WorldLightVec);
 
-	// Get texture data
+	// Texture data
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.TexA.xy);
 	#if !defined(BASEDIFFUSEONLY)
 		DiffuseMap *= tex2D(SampleDetailMap, Input.TexA.zw);
@@ -188,7 +188,7 @@ technique defaultTechnique
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 
-		VertexShader = compile vs_3_0 TrunkSTMDetail_VS();
-		PixelShader = compile ps_3_0 TrunkSTMDetail_PS();
+		VertexShader = compile vs_3_0 VS_TrunkSTMDetail();
+		PixelShader = compile ps_3_0 PS_TrunkSTMDetail();
 	}
 }

@@ -30,7 +30,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS Debug_Circle_VS(APP2VS Input)
+VS2PS VS_Debug_Circle(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -45,7 +45,7 @@ VS2PS Debug_Circle_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Debug_Circle_PS(VS2PS Input)
+PS2FB PS_Debug_Circle(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -85,8 +85,8 @@ technique t0
 		ZEnable = FALSE;
 		ZFunc = LESSEQUAL;
 
-		VertexShader = compile vs_3_0 Debug_Circle_VS();
-		PixelShader = compile ps_3_0 Debug_Circle_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Circle();
+		PixelShader = compile ps_3_0 PS_Debug_Circle();
 	}
 }
 
@@ -111,7 +111,7 @@ technique t0_usezbuffer
 		ZWriteEnable = 1;
 		ZEnable = TRUE;
 
-		VertexShader = compile vs_3_0 Debug_Circle_VS();
-		PixelShader = compile ps_3_0 Debug_Circle_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Circle();
+		PixelShader = compile ps_3_0 PS_Debug_Circle();
 	}
 }

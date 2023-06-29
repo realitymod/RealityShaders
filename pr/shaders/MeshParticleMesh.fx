@@ -49,7 +49,7 @@ struct PS2FB
 	float4 Color : COLOR;
 };
 
-VS2PS Diffuse_VS(APP2VS Input)
+VS2PS VS_Diffuse(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -89,7 +89,7 @@ float GetLMOffset(float3 Pos)
 }
 
 // Renders 3D debris found in explosions like in PRBot4/Num6
-PS2FB Diffuse_PS(VS2PS Input)
+PS2FB PS_Diffuse(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -109,7 +109,7 @@ PS2FB Diffuse_PS(VS2PS Input)
 }
 
 // Renders circular shockwave found in explosions like in PRBot4/Num6
-PS2FB Additive_PS(VS2PS Input)
+PS2FB PS_Additive(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -145,8 +145,8 @@ technique Diffuse
 	pass Pass0
 	{
 		GET_RENDERSTATES_MESH_PARTICLES(FALSE, SRCALPHA, INVSRCALPHA)
-		VertexShader = compile vs_3_0 Diffuse_VS();
-		PixelShader = compile ps_3_0 Diffuse_PS();
+		VertexShader = compile vs_3_0 VS_Diffuse();
+		PixelShader = compile ps_3_0 PS_Diffuse();
 	}
 }
 
@@ -155,8 +155,8 @@ technique Additive
 	pass Pass0
 	{
 		GET_RENDERSTATES_MESH_PARTICLES(FALSE, ONE, ONE)
-		VertexShader = compile vs_3_0 Diffuse_VS();
-		PixelShader = compile ps_3_0 Additive_PS();
+		VertexShader = compile vs_3_0 VS_Diffuse();
+		PixelShader = compile ps_3_0 PS_Additive();
 	}
 }
 
@@ -165,7 +165,7 @@ technique DiffuseWithZWrite
 	pass Pass0
 	{
 		GET_RENDERSTATES_MESH_PARTICLES(TRUE, SRCALPHA, INVSRCALPHA)
-		VertexShader = compile vs_3_0 Diffuse_VS();
-		PixelShader = compile ps_3_0 Diffuse_PS();
+		VertexShader = compile vs_3_0 VS_Diffuse();
+		PixelShader = compile ps_3_0 PS_Diffuse();
 	}
 }

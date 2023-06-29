@@ -45,7 +45,7 @@ struct VS2PS_REGULAR
 	float4 Diffuse : TEXCOORD1;
 };
 
-VS2PS_REGULAR Regular_VS(APP2VS Input)
+VS2PS_REGULAR VS_Regular(APP2VS Input)
 {
 	VS2PS_REGULAR Output = (VS2PS_REGULAR)0;
 	// Output.Output.HPos = mul(float4(Input.Pos.xy, 0.5, 1.0), _WorldView);
@@ -55,22 +55,22 @@ VS2PS_REGULAR Regular_VS(APP2VS Input)
 	return Output;
 }
 
-float4 Regular_PS(VS2PS_REGULAR Input) : COLOR
+float4 PS_Regular(VS2PS_REGULAR Input) : COLOR
 {
 	return tex2D(SampleTexMap, Input.TexCoord) * Input.Diffuse;
 }
 
-float4 Regular_Scaled_PS(VS2PS_REGULAR Input) : COLOR
+float4 PS_Regular_Scaled(VS2PS_REGULAR Input) : COLOR
 {
 	return tex2D(SampleTexMap_Linear, Input.TexCoord) * Input.Diffuse;
 }
 
-float4 SelectionQuad_VS(float3 Pos : POSITION) : POSITION
+float4 VS_SelectionQuad(float3 Pos : POSITION) : POSITION
 {
 	return mul(float4(Pos.xy, 0.0, 1.0), _WorldView);
 }
 
-float4 SelectionQuad_PS() : COLOR
+float4 PS_SelectionQuad() : COLOR
 {
 	return saturate(_DiffuseColor);
 }
@@ -85,8 +85,8 @@ technique Regular
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Regular_VS();
-		PixelShader = compile ps_3_0 Regular_PS();
+		VertexShader = compile vs_3_0 VS_Regular();
+		PixelShader = compile ps_3_0 PS_Regular();
 	}
 }
 
@@ -100,8 +100,8 @@ technique RegularScaled
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Regular_VS();
-		PixelShader = compile ps_3_0 Regular_Scaled_PS();
+		VertexShader = compile vs_3_0 VS_Regular();
+		PixelShader = compile ps_3_0 PS_Regular_Scaled();
 	}
 }
 
@@ -115,7 +115,7 @@ technique SelectionQuad
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 SelectionQuad_VS();
-		PixelShader = compile ps_3_0 SelectionQuad_PS();
+		VertexShader = compile vs_3_0 VS_SelectionQuad();
+		PixelShader = compile ps_3_0 PS_SelectionQuad();
 	}
 }

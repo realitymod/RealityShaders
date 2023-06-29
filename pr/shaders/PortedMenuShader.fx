@@ -59,7 +59,7 @@ struct VS2PS
 	float2 TexCoord1 : TEXCOORD2;
 };
 
-VS2PS Basic_VS(APP2VS Input)
+VS2PS VS_Basic(APP2VS Input)
 {
 	VS2PS Output;
 	float4x4 WorldViewProj = _WorldMatrix * _ViewMatrix * _ProjMatrix;
@@ -81,17 +81,17 @@ technique Menu_States <bool Restore = true;>
 	pass EndStates { }
 }
 
-float4 Quad_WTex_NoTex_PS(VS2PS Input) : COLOR
+float4 PS_Quad_WTex_NoTex(VS2PS Input) : COLOR
 {
 	return Input.Color;
 }
 
-float4 Quad_WTex_Tex_PS(VS2PS Input) : COLOR
+float4 PS_Quad_WTex_Tex(VS2PS Input) : COLOR
 {
 	return tex2D(SampleTex0, Input.TexCoord0) * Input.Color;
 }
 
-float4 Quad_WTex_Tex_Masked_PS(VS2PS Input) : COLOR
+float4 PS_Quad_WTex_Tex_Masked(VS2PS Input) : COLOR
 {
 	float4 Color = tex2D(SampleTex0, Input.TexCoord0) * Input.Color;
 	// Color *= tex2D(SampleTex1, Input.TexCoord1);
@@ -128,28 +128,28 @@ technique QuadWithTexture
 	{
 		// App alpha/depth settings
 		APP_ALPHA_DEPTH_SETTINGS
-		VertexShader = compile vs_3_0 Basic_VS();
-		PixelShader = compile ps_3_0 Quad_WTex_NoTex_PS();
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Quad_WTex_NoTex();
 	}
 
 	pass Tex
 	{
 		// App alpha/depth settings
 		APP_ALPHA_DEPTH_SETTINGS
-		VertexShader = compile vs_3_0 Basic_VS();
-		PixelShader = compile ps_3_0 Quad_WTex_Tex_PS();
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Quad_WTex_Tex();
 	}
 
 	pass Masked
 	{
 		// App alpha/depth settings
 		APP_ALPHA_DEPTH_SETTINGS
-		VertexShader = compile vs_3_0 Basic_VS();
-		PixelShader = compile ps_3_0 Quad_WTex_Tex_Masked_PS();
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Quad_WTex_Tex_Masked();
 	}
 }
 
-float4 Quad_Cache_PS(VS2PS Input) : COLOR
+float4 PS_Quad_Cache(VS2PS Input) : COLOR
 {
 	float4 InputTexture = tex2D(SampleTex0, Input.TexCoord0);
 	return (InputTexture + 1.0) * Input.Color;
@@ -180,7 +180,7 @@ technique QuadCache
 
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Basic_VS();
-		PixelShader = compile ps_3_0 Quad_Cache_PS();
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Quad_Cache();
 	}
 }

@@ -52,7 +52,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS Trail_VS(APP2VS Input)
+VS2PS VS_Trail(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -120,7 +120,7 @@ VS2PS Trail_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Trail_ShowFill_PS(VS2PS Input)
+PS2FB PS_Trail_ShowFill(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -133,7 +133,7 @@ PS2FB Trail_ShowFill_PS(VS2PS Input)
 	return Output;
 }
 
-PS2FB Trail_Low_PS(VS2PS Input)
+PS2FB PS_Trail_Low(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -154,7 +154,7 @@ PS2FB Trail_Low_PS(VS2PS Input)
 	return Output;
 }
 
-PS2FB Trail_Medium_PS(VS2PS Input)
+PS2FB PS_Trail_Medium(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -179,7 +179,7 @@ PS2FB Trail_Medium_PS(VS2PS Input)
 	return Output;
 }
 
-PS2FB Trail_High_PS(VS2PS Input)
+PS2FB PS_Trail_High(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -244,8 +244,8 @@ technique TrailShowFill
 	pass Pass0
 	{
 		GET_RENDERSTATES_TRAIL(ONE, ONE)
-		VertexShader = compile vs_3_0 Trail_VS();
-		PixelShader = compile ps_3_0 Trail_ShowFill_PS();
+		VertexShader = compile vs_3_0 VS_Trail();
+		PixelShader = compile ps_3_0 PS_Trail_ShowFill();
 	}
 }
 
@@ -256,8 +256,8 @@ technique TrailLow
 	pass Pass0
 	{
 		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
-		VertexShader = compile vs_3_0 Trail_VS();
-		PixelShader = compile ps_3_0 Trail_Low_PS();
+		VertexShader = compile vs_3_0 VS_Trail();
+		PixelShader = compile ps_3_0 PS_Trail_Low();
 	}
 }
 
@@ -268,8 +268,8 @@ technique TrailMedium
 	pass Pass0
 	{
 		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
-		VertexShader = compile vs_3_0 Trail_VS();
-		PixelShader = compile ps_3_0 Trail_Medium_PS();
+		VertexShader = compile vs_3_0 VS_Trail();
+		PixelShader = compile ps_3_0 PS_Trail_Medium();
 	}
 }
 
@@ -280,7 +280,7 @@ technique TrailHigh
 	pass Pass0
 	{
 		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
-		VertexShader = compile vs_3_0 Trail_VS();
-		PixelShader = compile ps_3_0 Trail_High_PS();
+		VertexShader = compile vs_3_0 VS_Trail();
+		PixelShader = compile ps_3_0 PS_Trail_High();
 	}
 }

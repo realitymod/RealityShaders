@@ -75,7 +75,7 @@ float4 ProjToLighting(float4 HPos)
 	return HPos * _TexProjScale + (_TexProjOffset * HPos.w);
 }
 
-VS2PS RoadCompiled_VS(APP2VS Input)
+VS2PS VS_RoadCompiled(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -96,7 +96,7 @@ VS2PS RoadCompiled_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB RoadCompiled_PS(VS2PS Input)
+PS2FB PS_RoadCompiled(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -163,8 +163,8 @@ technique roadcompiledFull
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 RoadCompiled_VS();
-		PixelShader = compile ps_3_0 RoadCompiled_PS();
+		VertexShader = compile vs_3_0 VS_RoadCompiled();
+		PixelShader = compile ps_3_0 PS_RoadCompiled();
 	}
 
 	pass DirectX9
@@ -175,7 +175,7 @@ technique roadcompiledFull
 
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 RoadCompiled_VS();
-		PixelShader = compile ps_3_0 RoadCompiled_PS();
+		VertexShader = compile vs_3_0 VS_RoadCompiled();
+		PixelShader = compile ps_3_0 PS_RoadCompiled();
 	}
 }

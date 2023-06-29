@@ -39,7 +39,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS Default_VS(APP2VS Input)
+VS2PS VS_Default(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 	
@@ -52,7 +52,7 @@ VS2PS Default_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Default_PS(VS2PS Input)
+PS2FB PS_Default(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -80,7 +80,7 @@ technique defaultShader
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Default_VS();
-		PixelShader = compile ps_3_0 Default_PS();
+		VertexShader = compile vs_3_0 VS_Default();
+		PixelShader = compile ps_3_0 PS_Default();
 	}
 }

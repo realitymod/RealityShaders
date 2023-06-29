@@ -60,7 +60,7 @@ float3 Diffuse(float3 Normal)
 	return saturate(dot(Normal, _LightDir.xyz));
 }
 
-VS2PS Debug_Basic_VS(APP2VS Input)
+VS2PS VS_Debug_Basic(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -79,7 +79,7 @@ VS2PS Debug_Basic_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Debug_Basic_PS(VS2PS Input)
+PS2FB PS_Debug_Basic(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -92,7 +92,7 @@ PS2FB Debug_Basic_PS(VS2PS Input)
 	return Output;
 }
 
-PS2FB Debug_Marked_PS(VS2PS Input)
+PS2FB PS_Debug_Marked(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -133,8 +133,8 @@ technique t0
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_3_0 Debug_Basic_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Basic();
+		PixelShader = compile ps_3_0 PS_Debug_Basic();
 	}
 }
 
@@ -157,8 +157,8 @@ technique marked
 		CullMode = NONE;
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_Basic_VS();
-		PixelShader = compile ps_3_0 Debug_Marked_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Basic();
+		PixelShader = compile ps_3_0 PS_Debug_Marked();
 	}
 }
 
@@ -166,7 +166,7 @@ technique marked
 	Debug lightsource shaders
 */
 
-VS2PS Debug_LightSource_VS(APP2VS Input)
+VS2PS VS_Debug_LightSource(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -187,7 +187,7 @@ VS2PS Debug_LightSource_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Debug_LightSource_PS(VS2PS Input)
+PS2FB PS_Debug_LightSource(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -220,8 +220,8 @@ technique lightsource
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;
 
-		VertexShader = compile vs_3_0 Debug_LightSource_VS();
-		PixelShader = compile ps_3_0 Debug_LightSource_PS();
+		VertexShader = compile vs_3_0 VS_Debug_LightSource();
+		PixelShader = compile ps_3_0 PS_Debug_LightSource();
 	}
 
 	pass Pass1
@@ -235,8 +235,8 @@ technique lightsource
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_LightSource_VS();
-		PixelShader = compile ps_3_0 Debug_LightSource_PS();
+		VertexShader = compile vs_3_0 VS_Debug_LightSource();
+		PixelShader = compile ps_3_0 PS_Debug_LightSource();
 	}
 }
 
@@ -260,8 +260,8 @@ technique editor
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;
 
-		VertexShader = compile vs_3_0 Debug_LightSource_VS();
-		PixelShader = compile ps_3_0 Debug_LightSource_PS();
+		VertexShader = compile vs_3_0 VS_Debug_LightSource();
+		PixelShader = compile ps_3_0 PS_Debug_LightSource();
 	}
 
 	pass Pass1
@@ -275,8 +275,8 @@ technique editor
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_LightSource_VS();
-		PixelShader = compile ps_3_0 Debug_LightSource_PS();
+		VertexShader = compile vs_3_0 VS_Debug_LightSource();
+		PixelShader = compile ps_3_0 PS_Debug_LightSource();
 	}
 }
 
@@ -297,7 +297,7 @@ technique EditorDebug
 		ShadeMode = FLAT;
 		FillMode = SOLID;
 
-		VertexShader = compile vs_3_0 Debug_LightSource_VS();
-		PixelShader = compile ps_3_0 Debug_LightSource_PS();
+		VertexShader = compile vs_3_0 VS_Debug_LightSource();
+		PixelShader = compile ps_3_0 PS_Debug_LightSource();
 	}
 }

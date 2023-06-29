@@ -48,7 +48,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS Lightning_VS(APP2VS Input)
+VS2PS VS_Lightning(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -64,7 +64,7 @@ VS2PS Lightning_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Lightning_PS(VS2PS Input)
+PS2FB PS_Lightning(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -95,7 +95,7 @@ technique Lightning
 		DestBlend = ONE;
 
 
-		VertexShader = compile vs_3_0 Lightning_VS();
-		PixelShader = compile ps_3_0 Lightning_PS();
+		VertexShader = compile vs_3_0 VS_Lightning();
+		PixelShader = compile ps_3_0 PS_Lightning();
 	}
 }

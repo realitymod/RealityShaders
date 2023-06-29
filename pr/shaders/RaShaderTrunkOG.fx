@@ -77,7 +77,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS TrunkOG_VS(APP2VS Input)
+VS2PS VS_TrunkOG(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -87,7 +87,7 @@ VS2PS TrunkOG_VS(APP2VS Input)
 	float3 ObjectPos = Input.Pos.xyz * PosUnpack.xyz;
 	float3 WorldPos = ObjectPos + (WorldSpaceCamPos.xyz - ObjectSpaceCamPos.xyz);
 
-	// Get world-space data
+	// World-space data
 	Output.Pos.xyz = WorldPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
@@ -102,11 +102,11 @@ VS2PS TrunkOG_VS(APP2VS Input)
 // There will be small differences between this lighting and the one produced by the static mesh shader,
 // not enough to worry about, ambient is added here and lerped in the static mesh, etc
 // NOTE: could be an issue at some point.
-PS2FB TrunkOG_PS(VS2PS Input)
+PS2FB PS_TrunkOG(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	// Get world-space data
+	// World-space data
 	float LodScale = Input.Tex0.z;
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
@@ -115,9 +115,9 @@ PS2FB TrunkOG_PS(VS2PS Input)
 
 	// Get diffuse lighting
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy) * 2.0;
-	float DotLN = ComputeLambert(WorldNormal, WorldNLightVec);
+	float DotNL = ComputeLambert(WorldNormal, WorldNLightVec);
 
-	float3 Color = (DotLN * LodScale) * (Lights[0].color * LodScale);
+	float3 Color = (DotNL * LodScale) * (Lights[0].color * LodScale);
 	Color += (OverGrowthAmbient.rgb * LodScale);
 
 	float4 OutputColor = 0.0;
@@ -143,7 +143,7 @@ technique defaultTechnique
 			FillMode = WireFrame;
 		#endif
 
-		VertexShader = compile vs_3_0 TrunkOG_VS();
-		PixelShader = compile ps_3_0 TrunkOG_PS();
+		VertexShader = compile vs_3_0 VS_TrunkOG();
+		PixelShader = compile ps_3_0 PS_TrunkOG();
 	}
 }

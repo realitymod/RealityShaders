@@ -68,7 +68,7 @@ struct VS2PS_Basic
 	float3 Normal : TEXCOORD1;
 };
 
-VS2PS_Basic Debug_Basic_VS(APP2VS Input)
+VS2PS_Basic VS_Debug_Basic(APP2VS Input)
 {
 	VS2PS_Basic Output = (VS2PS_Basic)0;
 
@@ -84,7 +84,7 @@ VS2PS_Basic Debug_Basic_VS(APP2VS Input)
 	return Output;
 }
 
-VS2PS Debug_Cone_VS(APP2VS Input)
+VS2PS VS_Debug_Cone(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -100,7 +100,7 @@ VS2PS Debug_Cone_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Debug_Basic_1_PS(VS2PS_Basic Input)
+PS2FB PS_Debug_Basic_1(VS2PS_Basic Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -116,7 +116,7 @@ PS2FB Debug_Basic_1_PS(VS2PS_Basic Input)
 	return Output;
 }
 
-PS2FB Debug_Basic_2_PS(VS2PS_Basic Input)
+PS2FB PS_Debug_Basic_2(VS2PS_Basic Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -129,7 +129,7 @@ PS2FB Debug_Basic_2_PS(VS2PS_Basic Input)
 	return Output;
 }
 
-PS2FB Debug_Object_PS(VS2PS Input)
+PS2FB PS_Debug_Object(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -161,8 +161,8 @@ technique t0
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Debug_Basic_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_1_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Basic();
+		PixelShader = compile ps_3_0 PS_Debug_Basic_1();
 	}
 }
 
@@ -170,7 +170,7 @@ technique t0
 	Debug occluder shaders
 */
 
-VS2PS Debug_Occluder_VS(APP2VS Input)
+VS2PS VS_Debug_Occluder(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -184,7 +184,7 @@ VS2PS Debug_Occluder_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Debug_Occluder_PS(VS2PS Input)
+PS2FB PS_Debug_Occluder(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -220,8 +220,8 @@ technique occluder
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 
-		VertexShader = compile vs_3_0 Debug_Occluder_VS();
-		PixelShader = compile ps_3_0 Debug_Occluder_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Occluder();
+		PixelShader = compile ps_3_0 PS_Debug_Occluder();
 	}
 }
 
@@ -229,7 +229,7 @@ technique occluder
 	Debug editor shaders
 */
 
-PS2FB Debug_Editor_PS(VS2PS Input, uniform float AmbientColorFactor = 1.0)
+PS2FB PS_Debug_Editor(VS2PS Input, uniform float AmbientColorFactor = 1.0)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -262,8 +262,8 @@ technique EditorDebug
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 
-		VertexShader = compile vs_3_0 Debug_Cone_VS();
-		PixelShader = compile ps_3_0 Debug_Editor_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Cone();
+		PixelShader = compile ps_3_0 PS_Debug_Editor();
 	}
 
 	pass Pass1
@@ -273,8 +273,8 @@ technique EditorDebug
 		ZEnable = TRUE;
 		FillMode = WIREFRAME;
 
-		VertexShader = compile vs_3_0 Debug_Cone_VS();
-		PixelShader = compile ps_3_0 Debug_Editor_PS(0.5);
+		VertexShader = compile vs_3_0 VS_Debug_Cone();
+		PixelShader = compile ps_3_0 PS_Debug_Editor(0.5);
 	}
 }
 
@@ -289,7 +289,7 @@ struct VS2PS_CollisionMesh
 	float3 Normal : TEXCOORD1;
 };
 
-VS2PS_CollisionMesh Debug_CollisionMesh_VS(APP2VS Input)
+VS2PS_CollisionMesh VS_Debug_CollisionMesh(APP2VS Input)
 {
 	VS2PS_CollisionMesh Output = (VS2PS_CollisionMesh)0;
 
@@ -305,7 +305,7 @@ VS2PS_CollisionMesh Debug_CollisionMesh_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Debug_CollisionMesh_PS(VS2PS_CollisionMesh Input, uniform float MaterialFactor = 1.0)
+PS2FB PS_Debug_CollisionMesh(VS2PS_CollisionMesh Input, uniform float MaterialFactor = 1.0)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -342,8 +342,8 @@ technique collisionMesh
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 
-		VertexShader = compile vs_3_0 Debug_CollisionMesh_VS();
-		PixelShader = compile ps_3_0 Debug_CollisionMesh_PS();
+		VertexShader = compile vs_3_0 VS_Debug_CollisionMesh();
+		PixelShader = compile ps_3_0 PS_Debug_CollisionMesh();
 	}
 
 	pass Pass1
@@ -358,8 +358,8 @@ technique collisionMesh
 		ZEnable = TRUE;
 		ZWriteEnable = 1;
 
-		VertexShader = compile vs_3_0 Debug_CollisionMesh_VS();
-		PixelShader = compile ps_3_0 Debug_CollisionMesh_PS(0.5);
+		VertexShader = compile vs_3_0 VS_Debug_CollisionMesh();
+		PixelShader = compile ps_3_0 PS_Debug_CollisionMesh(0.5);
 	}
 
 	pass Pass2
@@ -387,8 +387,8 @@ technique marked
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Debug_Basic_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_1_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Basic();
+		PixelShader = compile ps_3_0 PS_Debug_Basic_1();
 	}
 }
 
@@ -413,8 +413,8 @@ technique gamePlayObject
 
 		ZEnable = TRUE;
 
-		VertexShader = compile vs_3_0 Debug_Basic_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_2_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Basic();
+		PixelShader = compile ps_3_0 PS_Debug_Basic_2();
 	}
 }
 
@@ -443,8 +443,8 @@ technique bounding
 		CullMode = NONE;
 		FillMode = WIREFRAME;
 
-		VertexShader = compile vs_3_0 Debug_Basic_VS();
-		PixelShader = compile ps_3_0 Debug_Basic_2_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Basic();
+		PixelShader = compile ps_3_0 PS_Debug_Basic_2();
 	}
 }
 
@@ -459,7 +459,7 @@ struct VS2PS_Grid
 	float3 Normal : TEXCOORD1;
 };
 
-VS2PS_Grid Debug_Grid_VS(APP2VS Input)
+VS2PS_Grid VS_Debug_Grid(APP2VS Input)
 {
 	VS2PS_Grid Output = (VS2PS_Grid)0;
 
@@ -477,7 +477,7 @@ VS2PS_Grid Debug_Grid_VS(APP2VS Input)
 	return Output;
 }
 
-PS2FB Debug_Grid_PS(VS2PS_Grid Input)
+PS2FB PS_Debug_Grid(VS2PS_Grid Input)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -516,8 +516,8 @@ technique grid
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Debug_Grid_VS();
-		PixelShader = compile ps_3_0 Debug_Grid_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Grid();
+		PixelShader = compile ps_3_0 PS_Debug_Grid();
 	}
 }
 
@@ -525,7 +525,7 @@ technique grid
 	Debug SpotLight shaders
 */
 
-VS2PS Debug_SpotLight_VS(APP2VS Input)
+VS2PS VS_Debug_SpotLight(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -566,8 +566,8 @@ technique spotlight
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;
 
-		VertexShader = compile vs_3_0 Debug_SpotLight_VS();
-		PixelShader = compile ps_3_0 Debug_Object_PS();
+		VertexShader = compile vs_3_0 VS_Debug_SpotLight();
+		PixelShader = compile ps_3_0 PS_Debug_Object();
 	}
 
 	pass Pass1
@@ -581,8 +581,8 @@ technique spotlight
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_SpotLight_VS();
-		PixelShader = compile ps_3_0 Debug_Object_PS();
+		VertexShader = compile vs_3_0 VS_Debug_SpotLight();
+		PixelShader = compile ps_3_0 PS_Debug_Object();
 	}
 }
 
@@ -590,7 +590,7 @@ technique spotlight
 	Debug PivotBox shaders
 */
 
-VS2PS Debug_PivotBox_VS(APP2VS Input)
+VS2PS VS_Debug_PivotBox(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
@@ -624,8 +624,8 @@ technique pivotBox
 		ZWriteEnable = 0;
 		ZEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_PivotBox_VS();
-		PixelShader = compile ps_3_0 Debug_Object_PS();
+		VertexShader = compile vs_3_0 VS_Debug_PivotBox();
+		PixelShader = compile ps_3_0 PS_Debug_Object();
 	}
 
 	pass Pass1
@@ -639,8 +639,8 @@ technique pivotBox
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_PivotBox_VS();
-		PixelShader = compile ps_3_0 Debug_Object_PS();
+		VertexShader = compile vs_3_0 VS_Debug_PivotBox();
+		PixelShader = compile ps_3_0 PS_Debug_Object();
 	}
 }
 
@@ -664,8 +664,8 @@ technique pivot
 		ZWriteEnable = 0;
 		ZEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_Cone_VS();
-		PixelShader = compile ps_3_0 Debug_Object_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Cone();
+		PixelShader = compile ps_3_0 PS_Debug_Object();
 	}
 
 	pass Pass1
@@ -679,8 +679,8 @@ technique pivot
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_Cone_VS();
-		PixelShader = compile ps_3_0 Debug_Object_PS();
+		VertexShader = compile vs_3_0 VS_Debug_Cone();
+		PixelShader = compile ps_3_0 PS_Debug_Object();
 	}
 }
 
@@ -701,7 +701,7 @@ struct VS2PS_Frustum
 	float4 Color : TEXCOORD1;
 };
 
-VS2PS_Frustum Debug_Frustum_VS(APP2VS_Frustum Input)
+VS2PS_Frustum VS_Debug_Frustum(APP2VS_Frustum Input)
 {
 	VS2PS_Frustum Output = (VS2PS_Frustum)0;
 
@@ -716,7 +716,7 @@ VS2PS_Frustum Debug_Frustum_VS(APP2VS_Frustum Input)
 	return Output;
 }
 
-PS2FB Debug_Frustum_PS(VS2PS_Frustum Input, uniform float AlphaValue)
+PS2FB PS_Debug_Frustum(VS2PS_Frustum Input, uniform float AlphaValue)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -744,8 +744,8 @@ technique wirefrustum
 		CullMode = NONE;
 		FillMode = SOLID;
 
-		VertexShader = compile vs_3_0 Debug_Frustum_VS();
-		PixelShader = compile ps_3_0 Debug_Frustum_PS(0.025);
+		VertexShader = compile vs_3_0 VS_Debug_Frustum();
+		PixelShader = compile ps_3_0 PS_Debug_Frustum(0.025);
 	}
 
 	pass Pass1
@@ -759,8 +759,8 @@ technique wirefrustum
 		CullMode = NONE;
 		FillMode = SOLID;
 
-		VertexShader = compile vs_3_0 Debug_Frustum_VS();
-		PixelShader = compile ps_3_0 Debug_Frustum_PS(1.0);
+		VertexShader = compile vs_3_0 VS_Debug_Frustum();
+		PixelShader = compile ps_3_0 PS_Debug_Frustum(1.0);
 	}
 }
 
@@ -779,8 +779,8 @@ technique solidfrustum
 		CullMode = NONE;
 		FillMode = SOLID;
 
-		VertexShader = compile vs_3_0 Debug_Frustum_VS();
-		PixelShader = compile ps_3_0 Debug_Frustum_PS(0.25);
+		VertexShader = compile vs_3_0 VS_Debug_Frustum();
+		PixelShader = compile ps_3_0 PS_Debug_Frustum(0.25);
 	}
 
 	pass Pass1
@@ -794,8 +794,8 @@ technique solidfrustum
 		CullMode = NONE;
 		FillMode = SOLID;
 
-		VertexShader = compile vs_3_0 Debug_Frustum_VS();
-		PixelShader = compile ps_3_0 Debug_Frustum_PS(1.0);
+		VertexShader = compile vs_3_0 VS_Debug_Frustum();
+		PixelShader = compile ps_3_0 PS_Debug_Frustum(1.0);
 	}
 }
 
@@ -811,7 +811,7 @@ technique projectorfrustum
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
 
-		VertexShader = compile vs_3_0 Debug_Frustum_VS();
-		PixelShader = compile ps_3_0 Debug_Frustum_PS(1.0);
+		VertexShader = compile vs_3_0 VS_Debug_Frustum();
+		PixelShader = compile ps_3_0 PS_Debug_Frustum(1.0);
 	}
 }
