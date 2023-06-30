@@ -45,6 +45,35 @@ uniform float4 PointColor;
 	#define _WaterColor WaterColor
 #endif
 
+#define CREATE_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, ADDRESS) \
+	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		AddressW = ADDRESS; \
+	}; \
+
+uniform texture CubeMap;
+CREATE_SAMPLER(samplerCUBE, SampleCubeMap, CubeMap, WRAP)
+
+#if defined(USE_3DTEXTURE)
+	uniform texture WaterMap;
+	CREATE_SAMPLER(sampler, SampleWaterMap, WaterMap, WRAP)
+#else
+	uniform texture WaterMapFrame0;
+	CREATE_SAMPLER(sampler, SampleWaterMap0, WaterMapFrame0, WRAP)
+
+	uniform texture WaterMapFrame1;
+	CREATE_SAMPLER(sampler, SampleWaterMap1, WaterMapFrame1, WRAP)
+#endif
+
+uniform texture LightMap;
+CREATE_SAMPLER(sampler, SampleLightMap, LightMap, CLAMP)
+
 string GlobalParameters[] =
 {
 	"WorldSpaceCamPos",
@@ -86,35 +115,6 @@ string reqVertexElement[] =
 	"Position",
 	"TLightMap2D"
 };
-
-#define CREATE_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, ADDRESS) \
-	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = LINEAR; \
-		MagFilter = LINEAR; \
-		MipFilter = LINEAR; \
-		AddressU = ADDRESS; \
-		AddressV = ADDRESS; \
-		AddressW = ADDRESS; \
-	}; \
-
-uniform texture CubeMap;
-CREATE_SAMPLER(samplerCUBE, SampleCubeMap, CubeMap, WRAP)
-
-#if defined(USE_3DTEXTURE)
-	uniform texture WaterMap;
-	CREATE_SAMPLER(sampler, SampleWaterMap, WaterMap, WRAP)
-#else
-	uniform texture WaterMapFrame0;
-	CREATE_SAMPLER(sampler, SampleWaterMap0, WaterMapFrame0, WRAP)
-
-	uniform texture WaterMapFrame1;
-	CREATE_SAMPLER(sampler, SampleWaterMap1, WaterMapFrame1, WRAP)
-#endif
-
-uniform texture LightMap;
-CREATE_SAMPLER(sampler, SampleLightMap, LightMap, CLAMP)
 
 struct APP2VS
 {

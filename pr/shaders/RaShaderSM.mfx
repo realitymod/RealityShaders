@@ -50,7 +50,6 @@ string InstanceParametersBase[] =
 	// "DepthWrite",
 	"AlphaTest",
 	"AlphaTestRef",
-	"ObjectSpaceCamPos",
 	"Lights",
 	"MatBones",
 	"WorldViewProjection",

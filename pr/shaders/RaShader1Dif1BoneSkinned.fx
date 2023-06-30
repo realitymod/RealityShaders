@@ -10,29 +10,8 @@
 	initialized from the application.
 */
 
-string TemplateParameters[] =
-{
-	"DiffuseMap",
-	"ViewProjection"
-};
-
-string InstanceParameters[] =
-{
-	"Bones",
-	"AlphaBlendEnable",
-	"ObjectSpaceCamPos"
-};
-
-string reqVertexElement[] =
-{
-	"Position",
-	"TBase2D",
-	"Bone4Idcs"
-};
-
-uniform bool AlphaBlendEnable = false;
 uniform float4x4 Bones[26];
-uniform float4 ObjectSpaceCamPos;
+uniform bool AlphaBlendEnable = false;
 
 uniform texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
@@ -43,6 +22,25 @@ sampler SampleDiffuseMap = sampler_state
 	MagFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
+};
+
+string TemplateParameters[] =
+{
+	"DiffuseMap",
+	"ViewProjection"
+};
+
+string InstanceParameters[] =
+{
+	"Bones",
+	"AlphaBlendEnable",
+};
+
+string reqVertexElement[] =
+{
+	"Position",
+	"TBase2D",
+	"Bone4Idcs"
 };
 
 struct APP2VS

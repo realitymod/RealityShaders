@@ -15,31 +15,24 @@
 #if !defined(_HASUVANIMATION_)
 	#define _HASUVANIMATION_ 0
 #endif
-
 #if !defined(_HASNORMALMAP_)
 	#define _HASNORMALMAP_ 0
 #endif
-
 #if !defined(_HASGIMAP_)
 	#define _HASGIMAP_ 0
 #endif
-
 #if !defined(_HASENVMAP_)
 	#define _HASENVMAP_ 0
 #endif
-
 #if !defined(_USEHEMIMAP_)
 	#define _USEHEMIMAP_ 0
 #endif
-
 #if !defined(_HASSHADOW_)
 	#define _HASSHADOW_ 0
 #endif
-
 #if !defined(_HASCOLORMAPGLOSS_)
 	#define _HASCOLORMAPGLOSS_ 0
 #endif
-
 #if !defined(_HASDOT3ALPHATEST_)
 	#define _HASDOT3ALPHATEST_ 0
 #endif

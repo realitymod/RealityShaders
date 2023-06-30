@@ -6,21 +6,24 @@
 #define nbase 0x1
 #define ndetail 0x10
 
-uniform float4 ObjectSpaceCamPos;
 uniform float4 WorldSpaceCamPos;
+
 uniform float4 PosUnpack;
 uniform float TexUnpack;
 uniform float2 NormalUnpack;
+
 uniform float4 LightMapOffset;
 uniform bool AlphaBlendEnable;
+
+uniform float4 StaticSunColor;
 uniform float4 StaticSkyColor;
 uniform float4 StaticSpecularColor;
-uniform float SpecularPower;
 uniform float4 PointColor;
-uniform float4 StaticSunColor;
 uniform float4 SinglePointColor;
-uniform float4 ParallaxScaleBias;
+
 uniform float StaticGloss;
+uniform float SpecularPower;
+uniform float4 ParallaxScaleBias;
 
 // Common StaticMesh samplers
 // NOTE: Anisotropic filtering does not bode well with HESCO barriers

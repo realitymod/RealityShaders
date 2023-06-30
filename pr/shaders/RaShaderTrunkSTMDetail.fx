@@ -17,6 +17,23 @@ uniform float TexUnpack;
 uniform float4 WorldSpaceCamPos;
 Light Lights[1];
 
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = WRAP; \
+		AddressV = WRAP; \
+	}; \
+
+uniform texture DetailMap;
+CREATE_SAMPLER(SampleDetailMap, DetailMap)
+
+uniform texture DiffuseMap;
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap)
+
 string GlobalParameters[] =
 {
 	#if _HASSHADOW_
@@ -61,23 +78,6 @@ string reqVertexElement[] =
 		"TDetailPacked2D",
 	#endif
 };
-
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
-	sampler SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = LINEAR; \
-		MagFilter = LINEAR; \
-		MipFilter = LINEAR; \
-		AddressU = WRAP; \
-		AddressV = WRAP; \
-	}; \
-
-uniform texture DetailMap;
-CREATE_SAMPLER(SampleDetailMap, DetailMap)
-
-uniform texture DiffuseMap;
-CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap)
 
 struct APP2VS
 {

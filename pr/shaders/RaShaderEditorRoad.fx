@@ -17,6 +17,29 @@ uniform float4 WorldSpaceCamPos;
 uniform float4 PosUnpack;
 uniform float TexUnpack;
 
+#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = FILTER_STM_DIFF_MIN; \
+		MagFilter = FILTER_STM_DIFF_MAG; \
+		MipFilter = LINEAR; \
+		MaxAnisotropy = 16; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+	}; \
+
+uniform texture DiffuseMap;
+CREATE_DYNAMIC_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP)
+
+#if defined(USE_DETAIL)
+	uniform texture DetailMap;
+	CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap, WRAP)
+#endif
+
+uniform texture LightMap;
+CREATE_DYNAMIC_SAMPLER(SampleLightMap, LightMap, WRAP)
+
 string GlobalParameters[] =
 {
 	"FogRange",
@@ -55,29 +78,6 @@ string reqVertexElement[] =
 		"TDetailPacked2D",
 	#endif
 };
-
-#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
-	sampler SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = FILTER_STM_DIFF_MIN; \
-		MagFilter = FILTER_STM_DIFF_MAG; \
-		MipFilter = LINEAR; \
-		MaxAnisotropy = 16; \
-		AddressU = ADDRESS; \
-		AddressV = ADDRESS; \
-	}; \
-
-uniform texture LightMap;
-CREATE_DYNAMIC_SAMPLER(SampleLightMap, LightMap, WRAP)
-
-#if defined(USE_DETAIL)
-	uniform texture DetailMap;
-	CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap, WRAP)
-#endif
-
-uniform texture DiffuseMap;
-CREATE_DYNAMIC_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP)
 
 struct APP2VS
 {

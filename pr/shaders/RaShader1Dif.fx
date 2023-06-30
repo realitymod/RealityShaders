@@ -5,6 +5,19 @@
 	Description: Renders object's diffuse map
 */
 
+uniform float4 WorldSpaceCamPos;
+
+uniform texture DiffuseMap;
+sampler SampleDiffuseMap = sampler_state
+{
+	Texture = (DiffuseMap);
+	MipFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
 string GlobalParameters[] =
 {
 	"FogColor",
@@ -23,7 +36,6 @@ string InstanceParameters[] =
 {
 	"World",
 	"Transparency",
-	"ObjectSpaceCamPos"
 };
 
 // INPUTS TO THE VERTEX SHADER FROM THE APP
@@ -31,20 +43,6 @@ string reqVertexElement[] =
 {
 	"Position",
 	"TBase2D"
-};
-
-uniform float4 ObjectSpaceCamPos;
-uniform float4 WorldSpaceCamPos;
-
-uniform texture DiffuseMap;
-sampler SampleDiffuseMap = sampler_state
-{
-	Texture = (DiffuseMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
 };
 
 struct APP2VS
@@ -56,8 +54,8 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD1;
-	float2 Tex0 : TEXCOORD0;
+	float4 Pos : TEXCOORD0;
+	float2 Tex0 : TEXCOORD1;
 };
 
 struct PS2FB

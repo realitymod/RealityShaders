@@ -52,7 +52,6 @@ string InstanceParametersBase[] =
 {
 	"WorldViewProjection",
 	"Transparency",
-	"ObjectSpaceCamPos",
 	"Lights",
 	"AlphaTest",
 	"World"

@@ -5,6 +5,23 @@
 	Description: Renders lighting for tree-trunk overgrowth
 */
 
+uniform float4 OverGrowthAmbient;
+uniform float4 ObjectSpaceCamPos;
+uniform float4 WorldSpaceCamPos;
+uniform float4 PosUnpack;
+Light Lights[1];
+
+uniform texture DiffuseMap;
+sampler SampleDiffuseMap = sampler_state
+{
+	Texture = (DiffuseMap);
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
 string GlobalParameters[] =
 {
 	"GlobalTime",
@@ -35,23 +52,6 @@ string reqVertexElement[] =
 	"Position",
 	"Normal",
 	"TBase2D"
-};
-
-uniform float4 OverGrowthAmbient;
-uniform float4 ObjectSpaceCamPos;
-uniform float4 WorldSpaceCamPos;
-uniform float4 PosUnpack;
-Light Lights[1];
-
-uniform texture DiffuseMap;
-sampler SampleDiffuseMap = sampler_state
-{
-	Texture = (DiffuseMap);
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
 };
 
 struct APP2VS

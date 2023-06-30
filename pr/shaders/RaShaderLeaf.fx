@@ -26,11 +26,14 @@
 
 // float3 TreeSkyColor;
 uniform float4 OverGrowthAmbient;
+
 uniform float4 PosUnpack;
 uniform float2 NormalUnpack;
 uniform float TexUnpack;
+
 uniform float4 ObjectSpaceCamPos;
 uniform float4 WorldSpaceCamPos;
+
 uniform float ObjRadius = 2;
 Light Lights[1];
 
