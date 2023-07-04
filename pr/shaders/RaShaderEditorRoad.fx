@@ -145,12 +145,11 @@ PS2FB PS_Editor_Road(VS2PS Input)
 	OutputColor.a *= GetRoadZFade(Input.Pos, WorldSpaceCamPos, RoadFadeOut);
 
 	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, WorldSpaceCamPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, WorldSpaceCamPos));
 
 	return Output;
 };

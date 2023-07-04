@@ -239,21 +239,17 @@ PS2FB PS_Leaf(VS2PS Input)
 	#endif
 
 	Output.Color = OutputColor;
-
-	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
-	#endif
-
 	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos);
-
 	#if _POINTLIGHT_
 		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 		Output.Color.rgb *= GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		Output.Color.rgb *= FogValue;
+	#else
+		ApplyFog(Output.Color.rgb, FogValue);
 	#endif
 
-	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, FogValue);
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

@@ -90,12 +90,11 @@ PS2FB PS_Diffuse(VS2PS Input)
 	float3 WorldPos = Input.Pos.xyz;
 
 	Output.Color = tex2D(SampleDiffuseMap, Input.Tex0);
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	return Output;
 };

@@ -1,5 +1,6 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/FXCommon.fxh"
+#line 2 "MeshParticleMesh"
 
 /*
 	Description:
@@ -39,9 +40,11 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0;
-	float2 Tex0 : TEXCOORD1;
+	float3 WorldPos : TEXCOORD0;
+	float3 ViewPos : TEXCOORD1;
 	float4 Color : TEXCOORD2;
+
+	float2 Tex0 : TEXCOORD3;
 };
 
 struct PS2FB
@@ -59,10 +62,8 @@ VS2PS VS_Diffuse(APP2VS Input)
 
 	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
-	Output.Pos.xyz = Pos.xyz;
-	#if defined(LOG_DEPTH)
-		Output.Pos.w = ApplyLogarithmicDepth(Output.HPos.w + 1.0); // Output depth
-	#endif
+	Output.WorldPos = Pos.xyz;
+	Output.ViewPos = Output.HPos.xyz;
 
 	// Compute Cubic polynomial factors.
 	float Age = _AgeAndAlphaArray[IndexArray[0]][0];
@@ -75,17 +76,12 @@ VS2PS VS_Diffuse(APP2VS Input)
 	// Pass-through texcoords
 	Output.Tex0 = Input.TexCoord;
 
+	// Output depth (VS)
+	#if defined(LOG_DEPTH)
+		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
+	#endif
+
 	return Output;
-}
-
-float2 GetGroundUV(float3 Pos)
-{
-	return ((Pos.xyz + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
-}
-
-float GetLMOffset(float3 Pos)
-{
-	return saturate(saturate((Pos.y - _HemiShadowAltitude) / 10.0) + _LightmapIntensityOffset);
 }
 
 // Renders 3D debris found in explosions like in PRBot4/Num6
@@ -93,17 +89,19 @@ PS2FB PS_Diffuse(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float2 GroundUV = GetGroundUV(Input.Pos.xyz);
-	float LMOffset = GetLMOffset(Input.Pos.xyz);
-	float4 HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
+	// Textures
+	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo, false);
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
+	float4 HemiMap = tex2D(SampleLUT, HemiTex);
 
-	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color; // Diffuse map
-	float4 TLUT = tex2D(SampleLUT, GroundUV); // Hemi map
-	Diffuse.rgb *= GetParticleLighting(TLUT.a, LMOffset, saturate(m_color1AndLightFactor.a));
+	// Lighting
+	float LightMapOffset = GetAltitude(Input.WorldPos, _LightmapIntensityOffset);
+	float3 Lighting = GetParticleLighting(HemiMap.a, LightMapOffset, saturate(m_color1AndLightFactor.a));
+	float4 LightColor = (Input.Color.rgb * Lighting, Input.Color.a);
+	float4 OutputColor = DiffuseMap * LightColor;
 
-	Output.Color = Diffuse;
-
-	ApplyFog(Output.Color.rgb, GetFogValue(HPos, 0.0));
+	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
 
 	return Output;
 }
@@ -113,17 +111,15 @@ PS2FB PS_Additive(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color;
-
-	if(_EffectSunColor.b < -0.1)
-	{
-		Diffuse.rgb = float3(1.0, 0.0, 0.0);
-	}
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color;
+	DiffuseMap.rgb = (_EffectSunColor.b < -0.1) ? DiffuseMap.rgb : float3(1.0, 0.0, 0.0);
 
 	// Mask with alpha since were doing an add
-	Diffuse.rgb *= Diffuse.a;
+	float AlphaMask = DiffuseMap.a * Input.Color.a;
+	float LightColor = (Input.Color.rgb * AlphaMask, 1.0);
+	float4 OutputColor = DiffuseMap * LightColor;
 
-	Output.Color = Diffuse;
+	Output.Color = OutputColor;
 
 	return Output;
 }

@@ -110,6 +110,26 @@
 	}
 #endif
 
+// Common functions between (non)cached shaders
+#if !defined(REALITY_COMMON)
+	#define REALITY_COMMON
+
+	float2 GetHemiTex(float3 WorldPos, float3 WorldNormal, float3 HemiInfo, bool InvertY)
+	{
+		// HemiInfo: Offset x/y heightmapsize z / hemilerpbias w
+		float2 HemiTex = 0.0;
+		HemiTex.xy = ((WorldPos + (HemiInfo.z * 0.5) + WorldNormal).xz - HemiInfo.xy) / HemiInfo.z;
+		HemiTex.y = (InvertY) ? 1.0 - HemiTex.y : HemiTex.y;
+		return HemiTex;
+	}
+	
+	// Gets radial light attenuation value for pointlights
+	float GetLightAttenuation(float3 LightVec, float Attenuation)
+	{
+		return saturate(1.0 - dot(LightVec, LightVec) * Attenuation);
+	}
+#endif
+
 // Depth-based functions
 #if !defined(REALITY_DEPTH)
 	#define REALITY_DEPTH
@@ -177,12 +197,6 @@
 		float3 Binormal = normalize(cross(Tangent, Normal) * Flip);
 
 		return float3x3(Tangent, Binormal, Normal);
-	}
-
-	// Gets radial light attenuation value for pointlights
-	float GetLightAttenuation(float3 LightVec, float Attenuation)
-	{
-		return saturate(1.0 - dot(LightVec, LightVec) * Attenuation);
 	}
 
 	// Sorry DICE, we're yoinking your code - Project Reality

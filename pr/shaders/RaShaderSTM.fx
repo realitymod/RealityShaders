@@ -290,13 +290,12 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	#endif
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);
+	#if !_POINTLIGHT_
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	#endif
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
-	#endif
-
-	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 
 	return Output;

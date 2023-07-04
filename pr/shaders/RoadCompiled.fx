@@ -127,12 +127,11 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	}
 
 	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos));
 
 	return Output;
 }

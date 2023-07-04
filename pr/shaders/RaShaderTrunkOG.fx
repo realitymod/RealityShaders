@@ -125,12 +125,11 @@ PS2FB PS_TrunkOG(VS2PS Input)
 	OutputColor.a = Transparency.a;
 
 	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	return Output;
 };

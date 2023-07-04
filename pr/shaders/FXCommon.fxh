@@ -40,10 +40,15 @@
 	uniform float3 _EffectSunColor : EffectSunColor;
 	uniform float3 _EffectShadowColor : EffectShadowColor;
 
-	float3 GetParticleLighting(float LM, float LMOffset, float LightFactor)
+	float3 GetParticleLighting(float LightMap, float LightMapOffset, float LightFactor)
 	{
-		float LUT = saturate(LM + LMOffset);
+		float LUT = saturate(LightMap + LightMapOffset);
 		float3 Diffuse = lerp(_EffectShadowColor, _EffectSunColor, LUT);
 		return lerp(1.0, Diffuse, LightFactor);
+	}
+
+	float GetAltitude(float3 WorldPos, float Offset)
+	{
+		return saturate(saturate((WorldPos.y - _HemiShadowAltitude) / 10.0) + Offset);
 	}
 #endif

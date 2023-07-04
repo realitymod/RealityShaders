@@ -145,14 +145,12 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#endif
 
 	Output.Color = float4(OutputColor, 1.0);
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	Output.Color.rgb *= ChartContrib;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
-
-	Output.Color.rgb *= ChartContrib;
 
 	return Output;
 }

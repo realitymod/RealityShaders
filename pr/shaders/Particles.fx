@@ -35,17 +35,22 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0;
-	float4 Tex0 : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
-	float2 HemiTex : TEXCOORD2;
-	float3 Color : TEXCOORD3;
-	float4 Maps : TEXCOORD4; // [LightFactor, Alpha, BlendFactor, LMOffset]
+	float3 WorldPos : TEXCOORD0;
+	float3 ViewPos : TEXCOORD1;
+	float3 Color : TEXCOORD2;
+
+	float4 Maps : TEXCOORD3; // [LightMapBlend, Alpha, IntensityBlend, LightMapOffset]
+	float4 Tex0 : TEXCOORD4; // .xy = Diffuse1; .zw = Diffuse2
 };
 
 struct PS2FB
 {
 	float4 Color : COLOR;
 };
+
+/*
+	[Vertex Shaders]
+*/
 
 VS2PS VS_Particle(APP2VS Input)
 {
@@ -76,7 +81,7 @@ VS2PS VS_Particle(APP2VS Input)
 	Output.Maps[0] = Template[ID].m_color1AndLightFactor.a;
 	Output.Maps[1] = AlphaBlendFactor * Alpha;
 	Output.Maps[2] = IntensityBlendFactor;
-	Output.Maps[3] = saturate((Input.Pos.y - _HemiShadowAltitude) / 10.0) + Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.z;
+	Output.Maps[3] = Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.z;
 	Output.Maps = saturate(Output.Maps);
 
 	// Displace vertex
@@ -85,7 +90,8 @@ VS2PS VS_Particle(APP2VS Input)
 	Pos.xy = (Input.DisplaceCoords.xy * Size) + Pos.xy;
 
 	Output.HPos = mul(Pos, _ProjMat);
-	Output.Pos = Pos;
+	Output.WorldPos = Input.Pos.xyz;
+	Output.ViewPos = Pos.xyz;
 
 	// Compute texcoords
 	// Rotate and scale to correct u,v space and zoom in.
@@ -101,12 +107,8 @@ VS2PS VS_Particle(APP2VS Input)
 	// Offset texcoords
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
-	// Hemi lookup coords
-	Output.HemiTex = ((Input.Pos + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;	
- 	Output.HemiTex.y = 1.0 - Output.HemiTex.y;
-
+	// Output depth (VS)
 	#if defined(LOG_DEPTH)
-		// Output depth (VS)
 		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 	#endif
 
@@ -114,8 +116,26 @@ VS2PS VS_Particle(APP2VS Input)
 }
 
 /*
-	Ordinary techniques
+	[Pixel Shaders]
 */
+
+struct VFactors
+{
+	float LightMapBlend;
+	float AlphaBlend;
+	float IntensityBlend;
+	float LightMapOffset;
+};
+
+VFactors GetVFactors(VS2PS Input)
+{
+	VFactors Output = (VFactors)0;
+	Output.LightMapBlend = Input.Maps[0];
+	Output.AlphaBlend = Input.Maps[1];
+	Output.IntensityBlend = Input.Maps[2];
+	Output.LightMapOffset = GetAltitude(Input.WorldPos, Input.Maps[3]);
+	return Output;
+}
 
 PS2FB PS_Particle_ShowFill(VS2PS Input)
 {
@@ -128,13 +148,18 @@ PS2FB PS_Particle_Low(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	OutputColor.rgb *= Input.Color.rgb * _EffectSunColor; // M
-	OutputColor.a *= Input.Maps[1];
+	// Get vertex attributes
+	VFactors V = GetVFactors(Input);
+
+	// Get diffuse map
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+
+	// Apply lighting
+	float4 LightColor = float4(Input.Color.rgb * _EffectSunColor.rgb, V.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
 
 	return Output;
 }
@@ -143,17 +168,21 @@ PS2FB PS_Particle_Medium(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
+	// Get vertex attributes
+	VFactors V = GetVFactors(Input);
+
+	// Get diffuse map
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
+	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, V.IntensityBlend);
 
-	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.Maps[2]);
-	OutputColor.rgb *= GetParticleLighting(1.0, Input.Maps[3], Input.Maps[0]);
-	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.a *= Input.Maps[1];
+	// Apply lighting
+	float3 Lighting = GetParticleLighting(1.0, V.LightMapOffset, V.LightMapBlend);
+	float4 LightColor = float4(Input.Color.rgb * Lighting, V.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
 
 	return Output;
 }
@@ -162,18 +191,25 @@ PS2FB PS_Particle_High(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
+	// Get vertex attributes
+	VFactors V = GetVFactors(Input);
+
+	// Get diffuse map
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
-	float4 TLUT = tex2D(SampleLUT, Input.HemiTex);
+	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, V.IntensityBlend);
 
-	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.Maps[2]);
-	OutputColor.rgb *= GetParticleLighting(TLUT.a, Input.Maps[3], Input.Maps[0]);
-	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.a *= Input.Maps[1];
+	// Get hemi map
+	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo, true);
+	float4 HemiMap = tex2D(SampleLUT, HemiTex);
+
+	// Apply lighting
+	float3 Lighting = GetParticleLighting(HemiMap.a, V.LightMapOffset, V.LightMapBlend);
+	float4 LightColor = float4(Input.Color.rgb * Lighting, V.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
 
 	return Output;
 }
@@ -182,14 +218,20 @@ PS2FB PS_Particle_Low_Additive(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	// Mask with alpha since were doing an add
-	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.rgb *= OutputColor.a * Input.Maps[1];
+	// Get vertex attributes
+	VFactors V = GetVFactors(Input);
 
-	OutputColor.rgb *= GetFogValue(Input.Pos, 0.0);
+	// Textures
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+
+	// Lighting
+	// Mask with alpha since were doing an add
+	float AlphaMask = DiffuseMap.a * V.AlphaBlend;
+	float4 LightColor = float4(Input.Color.rgb * AlphaMask, 1.0);
+	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
+	Output.Color.rgb *= GetFogValue(Input.ViewPos, 0.0);
 
 	return Output;
 }
@@ -198,17 +240,22 @@ PS2FB PS_Particle_High_Additive(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
+	// Get vertex attributes
+	VFactors V = GetVFactors(Input);
+
+	// Textures
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
+	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, V.IntensityBlend);
 
+	// Lighting
 	// Mask with alpha since were doing an add
-	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.Maps[2]);
-	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.rgb *= OutputColor.a * Input.Maps[1];
-
-	OutputColor.rgb *= GetFogValue(Input.Pos, 0.0);
+	float AlphaMask = DiffuseMap.a * V.AlphaBlend;
+	float4 LightColor = float4(Input.Color.rgb * AlphaMask, 1.0);
+	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
+	Output.Color.rgb *= GetFogValue(Input.ViewPos, 0.0);
 
 	return Output;
 }

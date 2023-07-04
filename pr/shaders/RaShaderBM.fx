@@ -144,11 +144,11 @@ VS2PS VS_BundledMesh(APP2VS Input)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
-
 	Output.WorldTangent = WorldTBN[0];
 	Output.WorldBinormal = WorldTBN[1];
 	Output.WorldNormal = WorldTBN[2];
 
+	// Texture-space data
 	#if _HASUVANIMATION_
 		Output.Tex0 = GetUVRotation(Input); // pass-through rotate coords
 	#else
@@ -174,15 +174,6 @@ float3 GetWorldLightVec(float3 WorldPos)
 	#else
 		return -Lights[0].dir;
 	#endif
-}
-
-float2 GetGroundUV(float3 WorldPos, float3 WorldNormal)
-{
-	// HemiMapConstants: Offset x/y heightmapsize z / hemilerpbias w
-	float2 GroundUV = 0.0;
-	GroundUV.xy = ((WorldPos + (HemiMapConstants.z / 2.0) + WorldNormal).xz - HemiMapConstants.xy) / HemiMapConstants.z;
-	GroundUV.y = 1.0 - GroundUV.y;
-	return GroundUV;
 }
 
 float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
@@ -271,10 +262,10 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 GroundUV = GetGroundUV(WorldPos, WorldNormal);
-			float4 GroundColor = tex2D(SampleHemiMap, GroundUV);
+			float2 HemiTex = GetHemiTex(WorldPos, WorldNormal, HemiMapConstants, true);
+			float4 HemiMap = tex2D(SampleHemiMap, HemiTex);
 			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
-			float3 Ambient = lerp(GroundColor, HemiMapSkyColor, HemiLerp);
+			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 		#else
 			float3 Ambient = Lights[0].color.a;
 		#endif
@@ -379,13 +370,12 @@ PS2FB PS_BundledMesh(VS2PS Input)
 
 	Output.Color.rgb = OutputColor.rgb;
 	Output.Color.a *= Transparency.a;
+	#if !_POINTLIGHT_
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	#endif
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
-	#endif
-
-	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 
 	return Output;

@@ -166,13 +166,13 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (DiffuseMap.rgb * Diffuse.rgb) * 2.0;
 	OutputColor.a = Transparency.a * 2.0;
+
 	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	return Output;
 };

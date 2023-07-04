@@ -127,10 +127,9 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 
-	float3 Tex0 : TEXCOORD1;
-	float2 LightMapTex : TEXCOORD2;
+	float2 LightMapTex : TEXCOORD1;
 	#if defined(USE_SHADOWS)
-		float4 ShadowTex : TEXCOORD3;
+		float4 ShadowTex : TEXCOORD2;
 	#endif
 };
 
@@ -155,19 +154,9 @@ VS2PS VS_Water(APP2VS Input)
 	#endif
 
 	// Get texture surface data
-	float3 Tex = 0.0;
-	#if defined(USE_3DTEXTURE)
-		Tex.xy = (WorldPos.xz / float2(29.13, 31.81)) + (WaterScroll.xy * WaterCycleTime);
-		Tex.z = WaterCycleTime * 10.0 + dot(Tex.xy, float2(0.7, 1.13));
-	#else
-		Tex.xy = (WorldPos.xz / float2(99.13, 71.81));
-	#endif
-	Output.Tex0 = Tex;
-
 	#if defined(USE_LIGHTMAP)
 		Output.LightMapTex = (Input.LightMap * LightMapOffset.xy) + LightMapOffset.zw;
 	#endif
-
 	#if defined(USE_SHADOWS)
 		Output.ShadowTex = GetShadowProjection(WorldPos);
 	#endif
@@ -177,9 +166,26 @@ VS2PS VS_Water(APP2VS Input)
 
 #define INV_LIGHTDIR float3(0.4, 0.5, 0.6)
 
+float3 GetWaterTex(float3 WorldPos)
+{
+	float3 WaterTex = 0.0;
+	#if defined(USE_3DTEXTURE)
+		WaterTex.xy = (WorldPos.xz / float2(29.13, 31.81)) + (WaterScroll.xy * WaterCycleTime);
+		WaterTex.z = WaterCycleTime * 10.0 + dot(WaterTex.xy, float2(0.7, 1.13));
+	#else
+		WaterTex.xy = (WorldPos.xz / float2(99.13, 71.81));
+	#endif
+	return WaterTex;
+}
+
 PS2FB PS_Water(in VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
+
+	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldLightVec = normalize(-Lights[0].dir);
+	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
+	float3 WaterTex = GetWaterTex(WorldPos);
 
 	#if defined(USE_LIGHTMAP)
 		float4 LightMap = tex2D(SampleLightMap, Input.LightMapTex);
@@ -193,10 +199,10 @@ PS2FB PS_Water(in VS2PS Input)
 	#endif
 
 	#if defined(USE_3DTEXTURE)
-		float3 TangentNormal = tex3D(SampleWaterMap, Input.Tex0);
+		float3 TangentNormal = tex3D(SampleWaterMap, WaterTex);
 	#else
-		float3 Normal0 = tex2D(SampleWaterMap0, Input.Tex0.xy).xyz;
-		float3 Normal1 = tex2D(SampleWaterMap1, Input.Tex0.xy).xyz;
+		float3 Normal0 = tex2D(SampleWaterMap0, WaterTex.xy).xyz;
+		float3 Normal1 = tex2D(SampleWaterMap1, WaterTex.xy).xyz;
 		float3 TangentNormal = lerp(Normal0, Normal1, WaterCycleTime);
 	#endif
 
@@ -206,10 +212,6 @@ PS2FB PS_Water(in VS2PS Input)
 	#else
 		TangentNormal.xyz = normalize((TangentNormal.xyz * 2.0) - 1.0);
 	#endif
-
-	float3 WorldPos = Input.Pos.xyz;
-	float3 WorldLightVec = normalize(-Lights[0].dir);
-	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
 	float3 Reflection = normalize(reflect(-WorldViewVec, TangentNormal));
 	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
@@ -233,12 +235,11 @@ PS2FB PS_Water(in VS2PS Input)
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.w);
 
 	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 
 	return Output;
 }

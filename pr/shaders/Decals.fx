@@ -61,14 +61,11 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
+	float4 Color : TEXCOORD2;
 
-	float2 Tex0 : TEXCOORD2;
-
-	// Shadow attributes
-	float4 ShadowTex : TEXCOORD3;
-	float4 ViewPortMap : TEXCOORD4;
-
-	float4 Color : TEXCOORD5;
+	float2 Tex0 : TEXCOORD3;
+	float4 ShadowTex : TEXCOORD4;
+	float4 ViewPortMap : TEXCOORD5;
 };
 
 struct PS2FB
@@ -83,8 +80,6 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 {
 	VS2PS Output = (VS2PS)0;
 
-	Output.Tex0 = Input.P_Tex_Index_Alpha.xy;
-
 	float Index = Input.P_Tex_Index_Alpha.z;
 	float4x3 WorldMat = _InstanceTransformations[Index];
 	float3 WorldPos = mul(Input.Pos, WorldMat);
@@ -96,12 +91,9 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 	#endif
 
 	Output.Normal = normalize(mul(Input.Normal.xyz, (float3x3)WorldMat));
+	Output.Color = float4(Input.Color.rgb, Input.P_Tex_Index_Alpha.a);
 
-	float Alpha = Input.P_Tex_Index_Alpha.w;
-	Output.Color.rgb = saturate(Input.Color);
-	Output.Color.a = 1.0 - saturate((Output.HPos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
-	Output.Color.a = saturate(Alpha * Output.Color.a);
-
+	Output.Tex0 = Input.P_Tex_Index_Alpha.xy;
 	if (UseShadow)
 	{
 		Output.ShadowTex = mul(float4(WorldPos, 1.0), _ShadowTransformations[Index]);
@@ -119,6 +111,8 @@ VS2PS VS_Decals(APP2VS Input)
 float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 {
 	float DirShadow = 1.0;
+	float Fade = 1.0 - saturate((Input.Pos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
+	float Alpha = saturate(Fade * Input.Color.a);
 
 	if(UseShadow)
 	{
@@ -138,7 +132,7 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 	float3 Diffuse = ComputeLambert(Normals, -_SunDirection.xyz) * _SunColor * DirShadow;
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
-	float4 OutputColor = DiffuseMap * float4(Lighting, Input.Color.a);
+	float4 OutputColor = DiffuseMap * float4(Lighting, Alpha);
 
 	return OutputColor;
 }
@@ -148,12 +142,11 @@ PS2FB PS_Decals(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	Output.Color = GetPixelDecals(Input, false);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 
 	return Output;
 }

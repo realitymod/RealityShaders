@@ -37,10 +37,10 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0;
+	float4 WorldPos : TEXCOORD0;
+	float3 Color : TEXCOORD1;
 
-	float4 Tex0 : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
-	float3 Color : TEXCOORD2;
+	float4 Tex0 : TEXCOORD2; // .xy = Diffuse1; .zw = Diffuse2
 	float3 Maps : TEXCOORD3; // [AlphaBlend, AnimBlend, LMOffset]
 };
 
@@ -52,6 +52,10 @@ struct PS2FB
 	#endif
 };
 
+/*
+	[Vertex Shaders]
+*/
+
 VS2PS VS_Trail(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
@@ -62,25 +66,28 @@ VS2PS VS_Trail(APP2VS Input)
 	float AnimBlendFactor = Input.IntensityAgeAnimBlendFactorAndAlpha[2];
 	float Alpha = Input.IntensityAgeAnimBlendFactorAndAlpha[3];
 
-	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
-
 	// Compute and age cubic polynomial factors
 	float4 CubicPolynomial = float4(pow(Age, float3(3.0, 2.0, 1.0)), 1.0);
 	float Size = min(dot(Template.m_sizeGraph, CubicPolynomial), 1.0) * Template.m_uvRangeLMapIntensiyAndParticleMaxSize.w;
 	float ColorBlendFactor = min(dot(Template.m_colorBlendGraph, CubicPolynomial), 1.0);
 	float AlphaBlendFactor = min(dot(Template.m_transparencyGraph, CubicPolynomial), 1.0) * Alpha;
 
+	// Displace vertex
+	float4 Pos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
+	Output.HPos = mul(Pos, _ProjMat);
+	Output.WorldPos = float4(Input.Pos, 0.0);
+	#if defined(LOG_DEPTH)
+		Output.WorldPos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
 	// Project eyevec to Tangent vector to get position on axis
 	float3 ViewVec = _EyePos.xyz - Input.Pos.xyz;
 	float TanPos = dot(ViewVec, Input.Tangent);
-
 	// Closest point to camera
 	float3 AxisVec = ViewVec - (Input.Tangent * TanPos);
 	AxisVec = normalize(AxisVec);
-
 	// Find rotation around axis
 	float3 Normal = cross(Input.Tangent, -Input.LocalCoords);
-
 	// Fade values
 	float FadeIn = saturate(Age / Template.m_fadeInOutTileFactorAndUVOffsetVelocity.x);
 	float FadeOut = saturate((1.0 - Age) / Template.m_fadeInOutTileFactorAndUVOffsetVelocity.y);
@@ -89,19 +96,10 @@ VS2PS VS_Trail(APP2VS Input)
 	FadeFactor += _FresnelOffset;
 	FadeFactor *= FadeIn * FadeOut;
 
-	// Displace vertex
-	float4 Pos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
-	Output.HPos = mul(Pos, _ProjMat);
-	Output.Pos = float4(Input.Pos, 0.0);
-	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
-	#endif
-
 	Output.Color = lerp(Template.m_color1AndLightFactor.rgb, Template.m_color2.rgb, ColorBlendFactor);
-
 	Output.Maps[0] = AlphaBlendFactor * FadeFactor;
 	Output.Maps[1] = AnimBlendFactor;
-	Output.Maps[2] = saturate((Input.Pos.y - _HemiShadowAltitude) / 10.0) + Template.m_uvRangeLMapIntensiyAndParticleMaxSize.z;
+	Output.Maps[2] = Template.m_uvRangeLMapIntensiyAndParticleMaxSize.z;
 
 	// Compute texcoords for trail
 	float2 RotatedTexCoords = Input.TexCoords;
@@ -115,21 +113,39 @@ VS2PS VS_Trail(APP2VS Input)
 	RotatedTexCoords.y *= 0.5;
 
 	// Offset texcoords
+	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
+	return Output;
+}
+
+/*
+	[Pixel Shaders]
+*/
+
+struct VFactors
+{
+	float AlphaBlend;
+	float AnimationBlend;
+	float LightMapOffset;
+};
+
+VFactors GetVFactors(VS2PS Input)
+{
+	VFactors Output = (VFactors)0;
+	Output.AlphaBlend = Input.Maps[0];
+	Output.AnimationBlend = Input.Maps[1];
+	Output.LightMapOffset = GetAltitude(Input.WorldPos.xyz, Input.Maps[2]);
 	return Output;
 }
 
 PS2FB PS_Trail_ShowFill(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
-
 	Output.Color = _EffectSunColor.rrrr;
-
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
-
 	return Output;
 }
 
@@ -137,19 +153,20 @@ PS2FB PS_Trail_Low(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float3 LocalPos = Input.Pos.xyz;
+	// Vertex blend factors
+	VFactors V = GetVFactors(Input);
 
-	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.a *= Input.Maps[0];
+	// Lighting
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 LightColor = float4(Input.Color.rgb, V.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _EyePos));
 
 	return Output;
 }
@@ -158,23 +175,25 @@ PS2FB PS_Trail_Medium(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float3 LocalPos = Input.Pos.xyz;
+	// Vertex blend factors
+	VFactors V = GetVFactors(Input);
 
+	// Texture data
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
+	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, V.AnimationBlend);
 
-	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.Maps[1]);
-	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.rgb *= GetParticleLighting(1.0, Input.Maps[2], saturate(Template.m_color1AndLightFactor.a));
-	OutputColor.a *= Input.Maps[0];
+	// Lighting
+	float3 Lighting = GetParticleLighting(1.0, V.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
+	float4 LightColor = float4(Input.Color.rgb * Lighting, V.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _EyePos));
 
 	return Output;
 }
@@ -183,27 +202,29 @@ PS2FB PS_Trail_High(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	// Hemi lookup coords
-	float3 LocalPos = Input.Pos.xyz;
- 	float2 HemiTex = ((LocalPos + (_HemiMapInfo.z * 0.5)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
- 	HemiTex.y = 1.0 - HemiTex.y;
+	// Vertex blend factors
+	VFactors V = GetVFactors(Input);
 
+	// Get diffuse map
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
-	float4 TLUT = tex2D(SampleLUT, HemiTex);
+	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, V.AnimationBlend);
 
-	float4 OutputColor = lerp(TDiffuse1, TDiffuse2, Input.Maps[1]);
-	OutputColor.rgb *= Input.Color.rgb;
-	OutputColor.rgb *= GetParticleLighting(TLUT.a, Input.Maps[2], saturate(Template.m_color1AndLightFactor.a));
-	OutputColor.a *= Input.Maps[0];
+	// Get hemi map
+	float2 HemiTex = GetHemiTex(Input.WorldPos.xyz, 0.0, _HemiMapInfo, true);
+	float4 HemiMap = tex2D(SampleLUT, HemiTex);
+
+	// Apply lighting
+	float3 Lighting = GetParticleLighting(HemiMap.a, V.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
+	float4 LightColor = float4(Input.Color.rgb * Lighting, V.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
-
-	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _EyePos));
 
 	return Output;
 }

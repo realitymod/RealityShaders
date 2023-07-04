@@ -179,15 +179,6 @@ Lighting GetLighting(WorldSpace W)
 	[Shared functions]
 */
 
-float2 GetGroundUV(WorldSpace W)
-{
-	// HemiMapConstants: Offset x/y heightmapsize z / hemilerpbias w
-	float2 GroundUV = 0.0;
-	GroundUV.xy = ((W.Pos + (_HemiMapInfo.z / 2.0) + W.Normal).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
-	GroundUV.y = 1.0 - GroundUV.y;
-	return GroundUV;
-}
-
 float GetHemiLerp(WorldSpace W)
 {
 	return ((W.Normal.y * 0.5) + 0.5) - _HemiMapInfo.w;
@@ -233,11 +224,12 @@ float4 PS_PreSkin(VS2PS_PreSkin Input) : COLOR
 	WorldSpace World = GetWorldSpaceData(Input.WorldPos.xyz, TangentNormal.xyz);
 
 	// Get hemi data
-	float4 GroundColor = tex2D(SampleTex1, GetGroundUV(World));
+	float2 HemiTex = GetHemiTex(World.Pos, World.Normal, _HemiMapInfo, true);
+	float4 HemiMap = tex2D(SampleTex1, HemiTex);
 
 	// Get diffuse
 	Lighting Diffuse = GetLighting(World);
-	float3 Lighting = (Diffuse.Wrap + Diffuse.Rim) * (GroundColor.a * GroundColor.a);
+	float3 Lighting = (Diffuse.Wrap + Diffuse.Rim) * (HemiMap.a * HemiMap.a);
 
 	return float4(Lighting, TangentNormal.a);
 }
@@ -348,8 +340,9 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR
 
 	// Hemi-mapping
 	float HemiLerp = GetHemiLerp(World);
-	float4 GroundColor = tex2D(SampleTex0, GetGroundUV(World));
-	float4 HemiColor = lerp(GroundColor, _SkyColor, HemiLerp);
+	float2 HemiTex = GetHemiTex(World.Pos, World.Normal, _HemiMapInfo, true);
+	float4 HemiMap = tex2D(SampleTex0, HemiTex);
+	float4 HemiColor = lerp(HemiMap, _SkyColor, HemiLerp);
 
 	// Get lighting data
 	// NOTE: Glossmap is in the Diffuse alpha channel.
