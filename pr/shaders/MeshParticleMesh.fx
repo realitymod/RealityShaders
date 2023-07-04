@@ -112,7 +112,7 @@ PS2FB PS_Additive(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color;
-	DiffuseMap.rgb = (_EffectSunColor.b < -0.1) ? DiffuseMap.rgb : float3(1.0, 0.0, 0.0);
+	DiffuseMap.rgb = (_EffectSunColor.b < -0.1) ? float3(1.0, 0.0, 0.0) : DiffuseMap.rgb;
 
 	// Mask with alpha since were doing an add
 	float AlphaMask = DiffuseMap.a * Input.Color.a;
