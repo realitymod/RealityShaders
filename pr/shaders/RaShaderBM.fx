@@ -11,7 +11,7 @@
 
 // Dependencies and sanity checks
 
-// Tmp
+// Temp
 #if !defined(_HASUVANIMATION_)
 	#define _HASUVANIMATION_ 0
 #endif

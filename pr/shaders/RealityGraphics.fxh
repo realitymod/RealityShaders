@@ -2,7 +2,7 @@
 
 /*
 	Third-party shader code
-	Author: [R-CON]papadanku @ 2022
+	Author: [R-DEV]papadanku @ 2023
 */
 
 /*
