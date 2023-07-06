@@ -397,7 +397,7 @@ technique humanskin
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float4 DepthPos : TEXCOORD0;
+	float4 WorldPos : TEXCOORD0;
 	float2 Tex0 : TEXCOORD1;
 };
 
@@ -410,13 +410,12 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
 	int IndexArray[4] = (int[4])IndexVector;
 
-	float4x3 BoneMat = (float4x3)0.0;
-	BoneMat += (_BoneArray[IndexArray[0]] * (BlendWeightsArray[0]));
-	BoneMat += (_BoneArray[IndexArray[1]] * (1.0 - BlendWeightsArray[0]));
-	float4 BonePos = float4(mul(Input.Pos, BoneMat), 1.0);
+	float3 Pos0 = mul(Input.Pos, _BoneArray[IndexArray[0]]);
+	float3 Pos1 = mul(Input.Pos, _BoneArray[IndexArray[1]]);
+	float4 WorldPos = float4(lerp(Pos1, Pos0, BlendWeightsArray[0]), 1.0);
 
-	Output.HPos = GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat);
-	Output.DepthPos = Output.HPos; // Output depth
+	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
+	Output.WorldPos = WorldPos;
 	Output.Tex0 = Input.TexCoord0;
 
 	return Output;
@@ -427,7 +426,9 @@ float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
 	#if NVIDIA
 		return 0.0;
 	#else
-		return Input.DepthPos.z / Input.DepthPos.w;
+		float4 WorldPos = Input.WorldPos;
+		float4 DepthPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
+		return DepthPos.z / DepthPos.w;
 	#endif
 }
 
@@ -438,7 +439,9 @@ float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR
 		return Alpha;
 	#else
 		clip(Alpha);
-		return Input.DepthPos.z / Input.DepthPos.w;
+		float4 WorldPos = Input.WorldPos;
+		float4 DepthPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
+		return DepthPos.z / DepthPos.w;
 	#endif
 }
 

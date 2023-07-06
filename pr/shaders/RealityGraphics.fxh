@@ -164,7 +164,7 @@
 
 	// Description: Compares the depth between the shadowmap's depth (ShadowSampler)
 	// and the vertex position's transformed, light-space depth (ShadowCoords.z)
-	float4 GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
+	float GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
 		float4 Texel = float4(0.5 / 1024.0, 0.5 / 1024.0, 0.0, 0.0);
 		float4 Samples = 0.0;

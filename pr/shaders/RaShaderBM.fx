@@ -74,15 +74,13 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0;
 
+	float3 WorldPos : TEXCOORD0;
 	float3 WorldTangent : TEXCOORD1;
 	float3 WorldBinormal : TEXCOORD2;
 	float3 WorldNormal : TEXCOORD3;
 
-	float2 Tex0 : TEXCOORD4;
-	float4 ShadowTex : TEXCOORD5;
-	float4 OccShadowTex : TEXCOORD6;
+	float3 Tex0 : TEXCOORD4; // .xy = Tex0; .z = Depth
 };
 
 struct PS2FB
@@ -121,6 +119,16 @@ float4 GetUVRotation(APP2VS Input)
 	return float4(UV.xy + (Input.TexDiffuse * TexUnpack), 0.0, 1.0);
 }
 
+// NOTE: This returns un-normalized for point, because point needs to be attenuated.
+float3 GetWorldLightVec(float3 WorldPos)
+{
+	#if _POINTLIGHT_
+		return Lights[0].pos - WorldPos;
+	#else
+		return -Lights[0].dir;
+	#endif
+}
+
 VS2PS VS_BundledMesh(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
@@ -140,40 +148,22 @@ VS2PS VS_BundledMesh(APP2VS Input)
 	Output.HPos = mul(WorldPos, ViewProjection);
 
 	// Output world-space data
-	Output.Pos.xyz = WorldPos.xyz;
-	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
-	#endif
+	Output.WorldPos = WorldPos;
 	Output.WorldTangent = WorldTBN[0];
 	Output.WorldBinormal = WorldTBN[1];
 	Output.WorldNormal = WorldTBN[2];
 
 	// Texture-space data
 	#if _HASUVANIMATION_
-		Output.Tex0 = GetUVRotation(Input); // pass-through rotate coords
+		Output.Tex0.xy = GetUVRotation(Input); // pass-through rotate coords
 	#else
-		Output.Tex0 = Input.TexDiffuse * TexUnpack; // pass-through texcoord
+		Output.Tex0.xy = Input.TexDiffuse * TexUnpack; // pass-through texcoord
 	#endif
-
-	#if _HASSHADOW_
-		Output.ShadowTex = GetShadowProjection(WorldPos);
-	#endif
-
-	#if _HASSHADOWOCCLUSION_
-		Output.OccShadowTex = GetShadowProjection(WorldPos, true);
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 	#endif
 
 	return Output;
-}
-
-// NOTE: This returns un-normalized for point, because point needs to be attenuated.
-float3 GetWorldLightVec(float3 WorldPos)
-{
-	#if _POINTLIGHT_
-		return Lights[0].pos - WorldPos;
-	#else
-		return -Lights[0].dir;
-	#endif
 }
 
 float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
@@ -189,14 +179,11 @@ PS2FB PS_BundledMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	/*
-		World-space data
-	*/
-
-	float3 WorldPos = Input.Pos;
+	// World-space data
+	float4 WorldPos = float4(Input.WorldPos, 1.0);
 	float3 WorldLightVec = GetWorldLightVec(WorldPos.xyz);
 	float3 WorldNLightVec = normalize(WorldLightVec);
-	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos);
+	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 	float3x3 WorldTBN =
 	{
 		normalize(Input.WorldTangent),
@@ -211,14 +198,12 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	// Get color texture data //
 
 	// We copy ColorMap to ColorTex to preserve original alpha data
-	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
+	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 ColorTex = ColorMap;
 
-	// Get normal texture data //
-
+	// Transform from tangent-space to world-space
 	#if _HASNORMALMAP_
-		// Transform from tangent-space to world-space
-		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
+		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0.xy);
 		float3 WorldNormal = normalize((NormalMap.xyz * 2.0) - 1.0);
 		WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 	#else
@@ -226,17 +211,17 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#endif
 
 	// Get shadow texture data //
-
 	#if _HASSHADOW_
-		float ShadowDir = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+		float4 ShadowTex = GetShadowProjection(WorldPos);
+		float Shadow = GetShadowFactor(SampleShadowMap, ShadowTex);
 	#else
-		float ShadowDir = 1.0;
+		float Shadow = 1.0;
 	#endif
-
 	#if _HASSHADOWOCCLUSION_
-		float ShadowOccDir = GetShadowFactor(SampleShadowOccluderMap, Input.OccShadowTex);
+		float4 ShadowOccTex = GetShadowProjection(WorldPos, true);
+		float ShadowOcc = GetShadowFactor(SampleShadowOccluderMap, ShadowOccTex);
 	#else
-		float ShadowOccDir = 1.0;
+		float ShadowOcc = 1.0;
 	#endif
 
 	/*
@@ -262,9 +247,9 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 HemiTex = GetHemiTex(WorldPos, WorldNormal, HemiMapConstants.rgb, true);
+			float2 HemiTex = GetHemiTex(WorldPos.xyz, WorldNormal, HemiMapConstants.rgb, true);
 			float4 HemiMap = tex2D(SampleHemiMap, HemiTex);
-			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
+			float HemiLerp = GetHemiLerp(WorldPos.xyz, WorldNormal);
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 		#else
 			float3 Ambient = Lights[0].color.a;
@@ -272,7 +257,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#endif
 
 	#if _HASGIMAP_
-		float4 GI = tex2D(SampleGIMap, Input.Tex0);
+		float4 GI = tex2D(SampleGIMap, Input.Tex0.xy);
 		float4 GI_TIS = GI; // M
 		if (GI_TIS.a < 0.01)
 		{
@@ -288,7 +273,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		const float Attenuation = 1.0;
 	#endif
 
-	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
+	float3 LightFactors = Attenuation * (Shadow * ShadowOcc);
 	ColorPair Light = ComputeLights(WorldNormal, WorldNLightVec, WorldViewVec, SpecularPower);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * LightFactors;
 	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color.rgb) * LightFactors;
@@ -311,7 +296,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	*/
 
 	#if _POINTLIGHT_
-		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos.xyz) * Attenuation;
+		OutputColor.rgb *= GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz) * Attenuation;
 	#endif
 
 	// Thermals
@@ -368,11 +353,11 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	Output.Color.rgb = OutputColor.rgb;
 	Output.Color.a *= Transparency.a;
 	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz));
 	#endif
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

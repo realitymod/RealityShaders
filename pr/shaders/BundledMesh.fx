@@ -431,7 +431,7 @@ technique Alpha
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float4 DepthPos : TEXCOORD0;
+	float4 WorldPos : TEXCOORD0;
 };
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
@@ -447,7 +447,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	float4 WorldPos = float4(mul(UnpackPos, SkinWorldMat), 1.0);
 
 	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-	Output.DepthPos = Output.HPos; // Output shadow depth
+	Output.WorldPos = WorldPos;
 
 	return Output;
 }
@@ -457,14 +457,16 @@ float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
 	#if NVIDIA
 		return 0.0;
 	#else
-		return Input.DepthPos.z / Input.DepthPos.w;
+		float4 WorldPos = Input.WorldPos;
+		float4 DepthPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
+		return DepthPos.z / DepthPos.w;
 	#endif
 }
 
 struct VS2PS_ShadowMap_Alpha
 {
 	float4 HPos : POSITION;
-	float4 DepthPos : TEXCOORD0;
+	float4 WorldPos : TEXCOORD0;
 	float2 Tex0 : TEXCOORD1;
 };
 
@@ -483,9 +485,7 @@ VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
 
 	// Light-space data
 	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-
-	// Texcoord data
-	Output.DepthPos = Output.HPos; // Output shadow depth
+	Output.WorldPos = WorldPos;
 	Output.Tex0 = Input.TexCoord;
 
 	return Output;
@@ -498,7 +498,9 @@ float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap_Alpha Input) : COLOR
 		return Alpha;
 	#else
 		clip(Alpha);
-		return Input.DepthPos.z / Input.DepthPos.w;
+		float4 WorldPos = Input.WorldPos;
+		float4 DepthPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
+		return DepthPos.z / DepthPos.w;
 	#endif
 }
 

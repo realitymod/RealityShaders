@@ -57,7 +57,7 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0;
+	float4 Pos : TEXCOORD0; // .xyz = WorldPos; .w = Depth
 
 	float3 WorldTangent : TEXCOORD1;
 	float3 WorldBinormal : TEXCOORD2;
@@ -66,7 +66,6 @@ struct VS2PS
 	float4 BaseAndDetail : TEXCOORD4; // .xy = BaseTex; .zw = DetailTex;
 	float4 DirtAndCrack : TEXCOORD5; // .xy = DirtTex; .zw = CrackTex;
 	float4 LightMapTex : TEXCOORD6;
-	float4 ShadowTex : TEXCOORD7;
 };
 
 struct PS2FB
@@ -115,20 +114,14 @@ VS2PS VS_StaticMesh(APP2VS Input)
 	#if _DETAIL_ || _NDETAIL_
 		Output.BaseAndDetail.zw = Input.TexSets[DetailTexID].xy * TexUnpack;
 	#endif
-
 	#if _DIRT_
 		Output.DirtAndCrack.xy = Input.TexSets[DirtTexID].xy * TexUnpack;
 	#endif
 	#if _CRACK_
 		Output.DirtAndCrack.zw = Input.TexSets[CrackTexID].xy * TexUnpack;
 	#endif
-
 	#if	_LIGHTMAP_
 		Output.LightMapTex.xy = Input.TexSets[LightMapTexID].xy * TexUnpack * LightMapOffset.xy + LightMapOffset.zw;
-	#endif
-
-	#if _SHADOW_ && _LIGHTMAP_
-		Output.ShadowTex = GetShadowProjection(ObjectPos);
 	#endif
 
 	return Output;
@@ -236,10 +229,10 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	// World-space data
-	float3 WorldPos = Input.Pos.xyz;
-	float3 WorldLightVec = GetWorldLightVec(WorldPos);
+	float4 WorldPos = float4(Input.Pos.xyz, 1.0);
+	float3 WorldLightVec = GetWorldLightVec(WorldPos.xyz);
 	float3 NWorldLightVec = normalize(WorldLightVec);
-	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos);
+	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 	float3x3 WorldTBN =
 	{
 		normalize(Input.WorldTangent),
@@ -266,12 +259,13 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		DiffuseRGB *= Attenuation;
 		SpecularRGB *= Attenuation;
 		OutputColor.rgb = (ColorMap.rgb * DiffuseRGB) + SpecularRGB;
-		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
+		OutputColor.rgb *= GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
 		#if _LIGHTMAP_ && _SHADOW_
-			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+			float4 ShadowTex = GetShadowProjection(WorldPos);
+			Lightmap.g *= GetShadowFactor(SampleShadowMap, ShadowTex);
 		#endif
 
 		// We divide the normal by 5.0 to prevent complete darkness for surfaces facing away from the sun
@@ -291,7 +285,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);
 	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz));
 	#endif
 
 	#if defined(LOG_DEPTH)

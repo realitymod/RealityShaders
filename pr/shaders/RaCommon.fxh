@@ -146,7 +146,7 @@
 	uniform texture ShadowOccluderMap : SHADOWOCCLUDERMAP;
 	CREATE_SHADOW_SAMPLER(SampleShadowOccluderMap, ShadowOccluderMap)
 
-	// Description: Transforms the vertex position's depth from World/Object space to light space
+	// Description: Transforms the vertex position's depth from world-space to light-space
 	// tl: Make sure Pos and matrices are in same space!
 	float4 GetShadowProjection(float4 Pos, uniform bool IsOccluder = false)
 	{
