@@ -181,21 +181,13 @@
 #if !defined(REALITY_MATH)
 	#define REALITY_MATH
 
-	// Gets orthonormal Tangent-BiNormal-Normal (TBN) matrix
-	// Source: https://en.wikipedia.org/wiki/Gram-Schmidt_process
-	// License: https://creativecommons.org/licenses/by-sa/3.0/
 	float3x3 GetTangentBasis(float3 Tangent, float3 Normal, float Flip)
 	{
 		// Get Tangent and Normal
+		// Cross product and flip to create Binormal
 		Tangent = normalize(Tangent);
 		Normal = normalize(Normal);
-
-		// Re-orthogonalize Tangent with respect to Normal
-		Tangent = normalize(Tangent - (Normal * dot(Tangent, Normal)));
-
-		// Cross product and flip to create Binormal
-		float3 Binormal = normalize(cross(Tangent, Normal) * Flip);
-
+		float3 Binormal = normalize(cross(Tangent, Normal)) * Flip;
 		return float3x3(Tangent, Binormal, Normal);
 	}
 
