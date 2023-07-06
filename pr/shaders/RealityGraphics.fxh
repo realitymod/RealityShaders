@@ -53,8 +53,8 @@
 
 	struct ColorPair
 	{
-		float3 Diffuse;
-		float3 Specular;
+		float Diffuse;
+		float Specular;
 	};
 
 	ColorPair ComputeLights

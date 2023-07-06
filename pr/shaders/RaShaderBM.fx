@@ -196,7 +196,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	float3 WorldPos = Input.Pos;
 	float3 WorldLightVec = GetWorldLightVec(WorldPos.xyz);
 	float3 WorldNLightVec = normalize(WorldLightVec);
-	float3 WorldViewVec = normalize(WorldSpaceCamPos - WorldPos);
+	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos);
 	float3x3 WorldTBN =
 	{
 		normalize(Input.WorldTangent),
@@ -262,7 +262,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 HemiTex = GetHemiTex(WorldPos, WorldNormal, HemiMapConstants, true);
+			float2 HemiTex = GetHemiTex(WorldPos, WorldNormal, HemiMapConstants.rgb, true);
 			float4 HemiMap = tex2D(SampleHemiMap, HemiTex);
 			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
@@ -288,33 +288,30 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		const float Attenuation = 1.0;
 	#endif
 
-	ColorPair Light = ComputeLights(WorldNormal, WorldNLightVec, WorldViewVec, SpecularPower);
-	Light.Diffuse = (Light.Diffuse * Lights[0].color);
-	Light.Specular = ((Light.Specular * Gloss) * Lights[0].color);
-
 	float3 LightFactors = Attenuation * (ShadowDir * ShadowOccDir);
-	Light.Diffuse = Light.Diffuse * LightFactors;
-	Light.Specular = Light.Specular * LightFactors;
+	ColorPair Light = ComputeLights(WorldNormal, WorldNLightVec, WorldViewVec, SpecularPower);
+	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * LightFactors;
+	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color.rgb) * LightFactors;
 
 	// There is no Gloss map, so alpha means transparency
 	#if _POINTLIGHT_ && !_HASCOLORMAPGLOSS_
-		Light.Diffuse *= ColorTex.a;
+		DiffuseRGB *= ColorTex.a;
 	#endif
 
 	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
 	// Prevents non-detailed bundledmesh from looking shiny
 	#if !_HASCOLORMAPGLOSS_ && !_HASNORMALMAP_
-		Light.Specular = 0.0;
+		SpecularRGB = 0.0;
 	#endif
 	float4 OutputColor = 1.0;
-	OutputColor.rgb = ((ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular) * GI.rgb;
+	OutputColor.rgb = ((ColorMap.rgb * (Ambient + DiffuseRGB)) + SpecularRGB) * GI.rgb;
 
 	/*
 		Calculate fogging and other occluders
 	*/
 
 	#if _POINTLIGHT_
-		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos) * Attenuation;
+		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos.xyz) * Attenuation;
 	#endif
 
 	// Thermals
@@ -371,7 +368,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	Output.Color.rgb = OutputColor.rgb;
 	Output.Color.a *= Transparency.a;
 	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
 
 	#if defined(LOG_DEPTH)

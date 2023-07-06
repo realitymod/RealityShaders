@@ -107,7 +107,7 @@ struct APP2VS
 	float2 Tex0 : TEXCOORD0;
 };
 
-struct WorldSpaceData
+struct WorldSpace
 {
 	float3 Pos;
 	float3 LightVec;
@@ -143,9 +143,9 @@ float3 GetWorldLightVec(float3 WorldPos)
 	#endif
 }
 
-WorldSpaceData GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
+WorldSpace GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 {
-	WorldSpaceData Output = (WorldSpaceData)0;
+	WorldSpace Output = (WorldSpace)0;
 
 	// Get OverGrowth world-space position
 	#if defined(OVERGROWTH)
@@ -188,16 +188,16 @@ VS2PS VS_Leaf(APP2VS Input)
 	#endif
 
 	// Transform our object-space vertex position and normal into world-space
-	WorldSpaceData WorldData = GetWorldSpaceData(Input.Pos.xyz, Input.Normal);
+	WorldSpace W = GetWorldSpaceData(Input.Pos.xyz, Input.Normal);
 
 	// Calculate vertex position data
-	Output.Pos.xyz = WorldData.Pos;
+	Output.Pos.xyz = W.Pos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
 	// Calculate world-space, per-vertex lighting
-	Output.Tex0.z = dot(WorldData.Normal, WorldData.NLightVec);
+	Output.Tex0.z = dot(W.Normal, W.NLightVec);
 	Output.Tex0.z = saturate((Output.Tex0.z * 0.5) + 0.5);
 
 	// Calculate the LOD scale for far-away leaf objects
@@ -239,7 +239,7 @@ PS2FB PS_Leaf(VS2PS Input)
 	#endif
 
 	Output.Color = OutputColor;
-	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos);
+	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos.xyz);
 	#if _POINTLIGHT_
 		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 		Output.Color.rgb *= GetLightAttenuation(WorldLightVec, Lights[0].attenuation);

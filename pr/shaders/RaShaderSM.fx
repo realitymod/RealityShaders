@@ -69,12 +69,11 @@ float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 	return MatBones[IndexArray[Bone]];
 }
 
-float4x3 GetSkinnedObjectMatrix(APP2VS Input)
+float4 SkinObjectPos(APP2VS Input)
 {
-	float4x3 BoneMatrix = (float4x3)0;
-	BoneMatrix += (GetBoneMatrix(Input, 0) * (Input.BlendWeights));
-	BoneMatrix += (GetBoneMatrix(Input, 1) * (1.0 - Input.BlendWeights));
-	return BoneMatrix;
+	float3 Pos1 = mul(Input.Pos, GetBoneMatrix(Input, 0));
+	float3 Pos2 = mul(Input.Pos, GetBoneMatrix(Input, 1));
+	return float4(lerp(Pos2, Pos1, Input.BlendWeights), 1.0);
 }
 
 float GetBinormalFlipping(APP2VS Input)
@@ -89,38 +88,37 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	VS2PS Output = (VS2PS)0;
 
 	// Get skinned object-space data
-	float4 ObjectPosition = Input.Pos;
-	float4x3 SkinnedObjMat = GetSkinnedObjectMatrix(Input);
-	float4 SkinnedObjPos = float4(mul(ObjectPosition, SkinnedObjMat), 1.0);
+	float4 ObjectPos = SkinObjectPos(Input);
+	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
 
 	// Output HPos data
-	Output.HPos = mul(SkinnedObjPos, WorldViewProjection);
+	Output.HPos = mul(ObjectPos, WorldViewProjection);
 
 	// World-space data
-	float4 WorldPos = mul(SkinnedObjPos, World);
-	float3x3 WorldMat = mul(GetBoneMatrix(Input, 0), (float3x3)World);
-	#if _OBJSPACENORMALMAP_ // [object-space] -> [skinned object-space] -> [skinned world-space]
+	float4 WorldPos = mul(ObjectPos, World);
+	float3x3 WorldMat = mul((float3x3)GetBoneMatrix(Input, 0), (float3x3)World);
+	#if _OBJSPACENORMALMAP_
+		// [object-space] -> [skinned object-space] -> [skinned world-space]
 		Output.WorldTangent = WorldMat[0];
 		Output.WorldBinormal = WorldMat[1];
 		Output.WorldNormal = WorldMat[2];
-	#else // [tangent-space] -> [object-space] -> [skinned object-space] -> [skinned world-space]
-		float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
+	#else
+		// [tangent-space] -> [object-space] -> [skinned object-space] -> [skinned world-space]
 		float3x3 WorldTBN = mul(ObjectTBN, WorldMat);
 		Output.WorldTangent = WorldTBN[0];
 		Output.WorldBinormal = WorldTBN[1];
 		Output.WorldNormal = WorldTBN[2];
 	#endif
-	Output.Pos.xyz = WorldPos;
+	Output.Pos = WorldPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
+	// Texture-space data
 	Output.Tex0 = Input.TexCoord0;
-
 	#if _HASSHADOW_
 		Output.ShadowTex = GetShadowProjection(WorldPos);
 	#endif
-
 	#if _HASSHADOWOCCLUSION_
 		Output.OccShadowTex = GetShadowProjection(WorldPos, true);
 	#endif
@@ -167,7 +165,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	#if _HASNORMALMAP_
 		float4 WorldNormal = tex2D(SampleNormalMap, Input.Tex0);
 		WorldNormal.xyz = normalize((WorldNormal.xyz * 2.0) - 1.0);
-		WorldNormal.xyz = normalize(mul(WorldNormal.xyz, WorldTBN));
+		WorldNormal.xyz = mul(WorldNormal.xyz, WorldTBN);
 	#else
 		float4 WorldNormal = float4(WorldTBN[2], 0.0);
 	#endif
@@ -196,7 +194,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 		#else
-			float3 Ambient = Lights[0].color.w;
+			float3 Ambient = Lights[0].color.a;
 		#endif
 	#endif
 
@@ -207,22 +205,18 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	#endif
 
 	float Gloss = WorldNormal.a;
-	ColorPair Light = ComputeLights(WorldNormal, WorldNLightVec, WorldViewVec, SpecularPower);
-	Light.Diffuse = (Light.Diffuse * Lights[0].color);
-	Light.Specular = ((Light.Specular * Gloss) * Lights[0].color);
-
 	float3 LightFactors = Attenuation * (ShadowDir * OccShadowDir);
-	Light.Diffuse *= LightFactors;
-	Light.Specular *= LightFactors;
+	ColorPair Light = ComputeLights(WorldNormal, WorldNLightVec, WorldViewVec, SpecularPower);
+	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color) * LightFactors;
+	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color) * LightFactors;
 
 	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
 	// Prevents non-detailed bundledmesh from looking shiny
 	#if !_HASNORMALMAP_
 		Light.Specular = 0.0;
 	#endif
-
 	float4 OutputColor = 1.0;
-	OutputColor.rgb = (ColorMap.rgb * (Ambient + Light.Diffuse)) + Light.Specular;
+	OutputColor.rgb = (ColorMap.rgb * (Ambient + DiffuseRGB)) + SpecularRGB;
 	OutputColor.a = ColorMap.a * Transparency.a;
 
 	// Thermals

@@ -239,7 +239,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldLightVec = GetWorldLightVec(WorldPos);
 	float3 NWorldLightVec = normalize(WorldLightVec);
-	float3 WorldViewVec = normalize(WorldSpaceCamPos - WorldPos);
+	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos);
 	float3x3 WorldTBN =
 	{
 		normalize(Input.WorldTangent),
@@ -258,14 +258,14 @@ PS2FB PS_StaticMesh(VS2PS Input)
 
 	// Prepare lighting data
 	ColorPair Light = ComputeLights(WorldNormal, NWorldLightVec, WorldViewVec, SpecularPower);
-	Light.Diffuse = (Light.Diffuse * Lights[0].color);
-	Light.Specular = (Light.Specular * Gloss) * Lights[0].color;
+	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color);
+	float3 SpecularRGB = (Light.Specular * Gloss) * Lights[0].color;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
-		Light.Diffuse *= Attenuation;
-		Light.Specular *= Attenuation;
-		OutputColor.rgb = (ColorMap.rgb * Light.Diffuse) + Light.Specular;
+		DiffuseRGB *= Attenuation;
+		SpecularRGB *= Attenuation;
+		OutputColor.rgb = (ColorMap.rgb * DiffuseRGB) + SpecularRGB;
 		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
@@ -280,18 +280,18 @@ PS2FB PS_StaticMesh(VS2PS Input)
 
 		// We add ambient to get correct ambient for surfaces parallel to the sun
 		float3 Ambient = (StaticSkyColor * IDotNL) * Lightmap.b;
-		float3 BumpedDiffuse = Light.Diffuse + Ambient;
+		float3 BumpedDiffuse = DiffuseRGB + Ambient;
 
-		Light.Diffuse = lerp(Ambient, BumpedDiffuse, Lightmap.g);
-		Light.Diffuse += (Lightmap.r * SinglePointColor);
-		Light.Specular = Light.Specular * Lightmap.g;
+		DiffuseRGB = lerp(Ambient, BumpedDiffuse, Lightmap.g);
+		DiffuseRGB += (Lightmap.r * SinglePointColor);
+		SpecularRGB *= Lightmap.g;
 
-		OutputColor.rgb = (ColorMap.rgb * (Light.Diffuse * 2.0)) + Light.Specular;
+		OutputColor.rgb = (ColorMap.rgb * (DiffuseRGB * 2.0)) + SpecularRGB;
 	#endif
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);
 	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
 
 	#if defined(LOG_DEPTH)
