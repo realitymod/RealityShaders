@@ -122,7 +122,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float4 Base = tex2D(SampleColorMap, Input.TexA.xy);
 	float3 TerrainColor = tex2D(SampleTerrainColorMap, Input.TexA.zw);
 	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.TexA.zw);
-	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
+	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
 	if (IsTisActive())
@@ -141,7 +141,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale) * 2.0;
 	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
-	TerrainLight += (TerrainSunColor) * (TerrainShadow.rgb * TerrainLightMap.y);
+	TerrainLight += (TerrainSunColor * (TerrainShadow * TerrainLightMap.y));
 	TerrainLight += Lights;
 
 	float4 OutputColor = 0.0;
@@ -360,7 +360,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	float3 TerrainSunColor = _SunColor * 2.0;
 
 	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
-	float4 TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
+	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
 	if (IsTisActive())
@@ -379,7 +379,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z) * 2.0;
 	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
-	TerrainLight += (TerrainSunColor * (TerrainShadow.rgb * TerrainLightMap.y));
+	TerrainLight += (TerrainSunColor * (TerrainShadow * TerrainLightMap.y));
 	TerrainLight += Lights;
 
 	float4 OutputColor = 0.0;

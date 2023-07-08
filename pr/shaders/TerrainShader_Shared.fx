@@ -401,20 +401,13 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 	#if HIGHTERRAIN || MIDTERRAIN
-		float4 AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+		float AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
-		float4 AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
+		float AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
 	#endif
 
 	float4 Light = _GIColor * LightMap.z;
-	if (AvgShadowValue.z < LightMap.y)
-	{
-		Light.w = AvgShadowValue.z;
-	}
-	else
-	{
-		Light.w = LightMap.y;
-	}
+	Light.w = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
 
 	Output.Color = Light;
 

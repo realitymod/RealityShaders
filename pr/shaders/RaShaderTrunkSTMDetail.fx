@@ -158,9 +158,11 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	// Get diffuse lighting
 	float3 Diffuse = ComputeLambert(WorldNormal, WorldLightDir) * Lights[0].color;
 	#if _HASSHADOW_
-		Diffuse = Diffuse * GetShadowFactor(SampleShadowMap, Input.TexShadow);
+		float Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
+	#else
+		float Shadow = 1.0;
 	#endif
-	Diffuse = saturate(OverGrowthAmbient.rgb + Diffuse);
+	Diffuse = saturate(OverGrowthAmbient.rgb + (Diffuse * Shadow));
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (DiffuseMap.rgb * Diffuse.rgb) * 2.0;

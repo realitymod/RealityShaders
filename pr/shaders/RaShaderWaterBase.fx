@@ -193,9 +193,9 @@ PS2FB PS_Water(in VS2PS Input)
 		float4 LightMap = PointColor;
 	#endif
 
-	float ShadowFactor = LightMap.g;
+	float Shadow = LightMap.g;
 	#if defined(USE_SHADOWS)
-		ShadowFactor *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+		Shadow *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#endif
 
 	#if defined(USE_3DTEXTURE)
@@ -216,12 +216,12 @@ PS2FB PS_Water(in VS2PS Input)
 	float3 Reflection = normalize(reflect(-WorldViewDir, TangentNormal));
 	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
 
-	float LightFactors = SpecularColor.a * ShadowFactor;
+	float LightFactors = SpecularColor.a * Shadow;
 	float3 DotLR = saturate(dot(WorldLightDir, Reflection));
 	float3 Specular = pow(abs(DotLR), SpecularPower) * SpecularColor.rgb;
 
 	float4 OutputColor = 0.0;
-	float LerpMod = -(1.0 - saturate(ShadowFactor + SHADOW_FACTOR));
+	float LerpMod = -(1.0 - saturate(Shadow + SHADOW_FACTOR));
 	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 	OutputColor.rgb = WaterLerp + (Specular * LightFactors);
 
