@@ -180,13 +180,13 @@ float4 PS_Lighting(VS2PS_Specular Input) : COLOR
 	float3 WorldEyeVec = _ViewInverseMatrix[3].xyz - WorldPos;
 
 	// Transform vectors from world space to tangent space
-	float3 WorldLightVec = normalize(MatsLightDir);
-	float3 WorldViewVec = normalize(WorldEyeVec);
+	float3 WorldLightDir = normalize(MatsLightDir);
+	float3 WorldViewDir = normalize(WorldEyeVec);
 	float3 WorldNormal = normalize((TangentNormal * 2.0) - 1.0);
 	WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 
 	// Get lighting data
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightVec, WorldViewVec);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir);
 	float3 Diffuse = DiffuseMap * (Ambient + Light.Diffuse);
 	float3 Specular = Light.Specular * Gloss;
 	float3 Lighting = saturate(Diffuse + Specular);
@@ -245,7 +245,6 @@ float4 PS_Diffuse(VS2PS_Diffuse Input) : COLOR
 	// World-space data
 	float3 WorldNormal = normalize(Input.WorldNormal);
 	float3 WorldLightDir = normalize(-MatsLightDir);
-	float3 LightVec = normalize(WorldLightDir);
 
 	// Get lighting data
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
@@ -377,7 +376,7 @@ float4 PS_EnvMap_Alpha(VS2PS_EnvMap_Alpha Input) : COLOR
 	// Get world-space data
 	float Reflection = _EyePos.w;
 	float3 WorldPos = Input.WorldPos;
-	float3 WorldViewVec = normalize(WorldPos.xyz - _EyePos.xyz);
+	float3 WorldViewDir = normalize(WorldPos.xyz - _EyePos.xyz);
 	float3x3 WorldTBN =
 	{
 		normalize(Input.WorldTangent),
@@ -389,7 +388,7 @@ float4 PS_EnvMap_Alpha(VS2PS_EnvMap_Alpha Input) : COLOR
 	WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 
 	// Get reflection data
-	float3 EnvMapTex = reflect(WorldViewVec, WorldNormal);
+	float3 EnvMapTex = reflect(WorldViewDir, WorldNormal);
 	float3 EnvMap = texCUBE(SampleCubeTex3, EnvMapTex) * (Reflection * TangentNormal.a);
 	float3 Lighting = ((DiffuseMap.rgb * AccumLight.rgb) + EnvMap) + AccumLight.a;
 
@@ -431,7 +430,7 @@ technique Alpha
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float4 WorldPos : TEXCOORD0;
+	float4 DepthPos : TEXCOORD0;
 };
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
@@ -447,7 +446,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	float4 WorldPos = float4(mul(UnpackPos, SkinWorldMat), 1.0);
 
 	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-	Output.WorldPos = WorldPos;
+	Output.DepthPos = Output.HPos; // Output shadow depth
 
 	return Output;
 }
@@ -457,16 +456,14 @@ float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
 	#if NVIDIA
 		return 0.0;
 	#else
-		float4 WorldPos = Input.WorldPos;
-		float4 DepthPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-		return DepthPos.z / DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 
 struct VS2PS_ShadowMap_Alpha
 {
 	float4 HPos : POSITION;
-	float4 WorldPos : TEXCOORD0;
+	float4 DepthPos : TEXCOORD0;
 	float2 Tex0 : TEXCOORD1;
 };
 
@@ -485,7 +482,9 @@ VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
 
 	// Light-space data
 	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-	Output.WorldPos = WorldPos;
+
+	// Texcoord data
+	Output.DepthPos = Output.HPos; // Output shadow depth
 	Output.Tex0 = Input.TexCoord;
 
 	return Output;
@@ -498,9 +497,7 @@ float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap_Alpha Input) : COLOR
 		return Alpha;
 	#else
 		clip(Alpha);
-		float4 WorldPos = Input.WorldPos;
-		float4 DepthPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-		return DepthPos.z / DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 

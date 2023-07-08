@@ -95,7 +95,10 @@ struct VS2PS
 	float4 Pos : TEXCOORD0;
 
 	float3 WorldNormal : TEXCOORD1;
-	float4 Tex : TEXCOORD2; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
+	float4 TexA : TEXCOORD2; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
+	#if _HASSHADOW_
+		float4 TexShadow : TEXCOORD3;
+	#endif
 };
 
 struct PS2FB
@@ -124,10 +127,14 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 	#endif
 	Output.WorldNormal.xyz = GetWorldNormal(ObjectNormal);
 
-	// Get texture-space data
-	Output.Tex.xy = Input.Tex0 * TexUnpack;
+	// Get surface-space data
+	Output.TexA.xy = Input.Tex0 * TexUnpack;
 	#if !defined(BASEDIFFUSEONLY)
-		Output.Tex.zw = Input.Tex1 * TexUnpack;
+		Output.TexA.zw = Input.Tex1 * TexUnpack;
+	#endif
+
+	#if _HASSHADOW_
+		Output.TexShadow = GetShadowProjection(float4(ObjectPos.xyz, 1.0));
 	#endif
 
 	return Output;
@@ -138,33 +145,29 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	// World-space data
-	float4 WorldPos = float4(Input.Pos.xyz, 1.0);
+	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
-	float3 WorldLightVec = GetWorldLightDir(-Lights[0].dir);
-	float3 WorldNLightVec = normalize(WorldLightVec);
+	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
 
 	// Texture data
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex.xy);
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.TexA.xy);
 	#if !defined(BASEDIFFUSEONLY)
-		DiffuseMap *= tex2D(SampleDetailMap, Input.Tex.zw);
+		DiffuseMap *= tex2D(SampleDetailMap, Input.TexA.zw);
 	#endif
 
 	// Get diffuse lighting
-	float3 Diffuse = ComputeLambert(WorldNormal, WorldNLightVec) * Lights[0].color;
+	float3 Diffuse = ComputeLambert(WorldNormal, WorldLightDir) * Lights[0].color;
 	#if _HASSHADOW_
-		float4 ShadowTex = GetShadowProjection(WorldPos);
-		float Shadow = GetShadowFactor(SampleShadowMap, ShadowTex);
-	#else
-		float Shadow = 1.0;
+		Diffuse = Diffuse * GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#endif
-	Diffuse = saturate(OverGrowthAmbient.rgb + (Diffuse * Shadow));
+	Diffuse = saturate(OverGrowthAmbient.rgb + Diffuse);
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (DiffuseMap.rgb * Diffuse.rgb) * 2.0;
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

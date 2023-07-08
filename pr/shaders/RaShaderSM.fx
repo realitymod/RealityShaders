@@ -42,13 +42,15 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
 
-	float4 WorldPos : TEXCOORD0;
 	float3 WorldTangent : TEXCOORD1;
 	float3 WorldBinormal : TEXCOORD2;
 	float3 WorldNormal : TEXCOORD3;
 
-	float3 Tex0 : TEXCOORD4; // .xy = Tex0; .z = Depth
+	float2 Tex0 : TEXCOORD4;
+	float4 ShadowTex : TEXCOORD5;
+	float4 ShadowOccTex : TEXCOORD6;
 };
 
 struct PS2FB
@@ -93,6 +95,8 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
 
 	// World-space data
+	float4 WorldPos = mul(float4(Input.Pos.xyz, 1.0), World);
+	float4 SkinWorldPos = mul(ObjectPos, World);
 	float3x3 WorldMat = mul((float3x3)GetBoneMatrix(Input, 0), (float3x3)World);
 	#if _OBJSPACENORMALMAP_
 		// [object-space] -> [skinned object-space] -> [skinned world-space]
@@ -107,15 +111,21 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 		Output.WorldNormal = WorldTBN[2];
 	#endif
 	#if _OBJSPACENORMALMAP_ || !_HASNORMALMAP_
-		Output.WorldPos = mul(float4(Input.Pos.xyz, 1.0), World);
+		Output.Pos = WorldPos;
 	#else
-		Output.WorldPos = mul(ObjectPos, World);
+		Output.Pos = SkinWorldPos;
 	#endif
-	
-	// Texture-space data
-	Output.Tex0.xy = Input.TexCoord0;
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	// Texture-space data
+	Output.Tex0 = Input.TexCoord0;
+	#if _HASSHADOW_
+		Output.ShadowTex = GetShadowProjection(SkinWorldPos);
+	#endif
+	#if _HASSHADOWOCCLUSION_
+		Output.ShadowOccTex = GetShadowProjection(SkinWorldPos, true);
 	#endif
 
 	return Output;
@@ -145,10 +155,10 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	// Get world-space data
-	float4 WorldPos = Input.WorldPos;
-	float3 WorldLightVec = GetWorldLightVec(WorldPos.xyz);
-	float3 WorldNLightVec = normalize(WorldLightVec);
-	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
+	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldLightVec = GetWorldLightVec(WorldPos);
+	float3 WorldLightDir = normalize(WorldLightVec);
+	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 	float3x3 WorldTBN =
 	{
 		normalize(Input.WorldTangent),
@@ -156,26 +166,24 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 		normalize(Input.WorldNormal)
 	};
 
-	// Normal.a stores the glossmap
-	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	// (.a) stores the glossmap
 	#if _HASNORMALMAP_
-		float4 WorldNormal = tex2D(SampleNormalMap, Input.Tex0.xy);
+		float4 WorldNormal = tex2D(SampleNormalMap, Input.Tex0);
 		WorldNormal.xyz = normalize((WorldNormal.xyz * 2.0) - 1.0);
 		WorldNormal.xyz = mul(WorldNormal.xyz, WorldTBN);
 	#else
 		float4 WorldNormal = float4(WorldTBN[2], 0.0);
 	#endif
 
+	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
+
 	#if _HASSHADOW_
-		float4 ShadowTex = GetShadowProjection(WorldPos);
-		float Shadow = GetShadowFactor(SampleShadowMap, ShadowTex);
+		float Shadow = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
 		float Shadow = 1.0;
 	#endif
-
 	#if _HASSHADOWOCCLUSION_
-		float4 ShadowOccTex = GetShadowProjection(WorldPos, true);
-		float ShadowOcc = GetShadowFactor(SampleShadowOccluderMap, ShadowOccTex);
+		float ShadowOcc = GetShadowFactor(SampleShadowOccluderMap, Input.ShadowOccTex);
 	#else
 		float ShadowOcc = 1.0;
 	#endif
@@ -185,9 +193,9 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 HemiTex = GetHemiTex(WorldPos.xyz, WorldNormal, HemiMapConstants, true);
+			float2 HemiTex = GetHemiTex(WorldPos, WorldNormal, HemiMapConstants, true);
 			float4 HemiMap = tex2D(SampleHemiMap, HemiTex);
-			float HemiLerp = GetHemiLerp(WorldPos.xyz, WorldNormal);
+			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 		#else
 			float3 Ambient = Lights[0].color.a;
@@ -202,7 +210,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	float Gloss = WorldNormal.a;
 	float3 LightFactors = Attenuation * (Shadow * ShadowOcc);
-	ColorPair Light = ComputeLights(WorldNormal.xyz, WorldNLightVec, WorldViewVec, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal.xyz, WorldLightDir, WorldViewDir, SpecularPower);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * LightFactors;
 	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color.rgb) * LightFactors;
 
@@ -227,11 +235,11 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	Output.Color = OutputColor;
 	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz));
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

@@ -110,9 +110,9 @@ VS2PS VS_Decals(APP2VS Input)
 
 float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 {
-	float DirShadow = 1.0;
 	float Fade = 1.0 - saturate((Input.Pos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
 	float Alpha = saturate(Fade * Input.Color.a);
+	float Shadow = 1.0;
 
 	if(UseShadow)
 	{
@@ -124,12 +124,12 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 		Samples.z = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy + float2(0.0, Texel.y));
 		Samples.w = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy + Texel);
 		float4 Cmpbits = Samples >= saturate(Input.ShadowTex.z);
-		DirShadow = dot(Cmpbits, 0.25);
+		Shadow = dot(Cmpbits, 0.25);
 	}
 
 	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex0);
 	float3 Normals = normalize(Input.Normal.xyz);
-	float3 Diffuse = ComputeLambert(Normals, -_SunDirection.xyz) * _SunColor * DirShadow;
+	float3 Diffuse = ComputeLambert(Normals, -_SunDirection.xyz) * _SunColor * Shadow;
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
 	float4 OutputColor = DiffuseMap * float4(Lighting, Alpha);

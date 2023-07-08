@@ -45,8 +45,6 @@ uniform float4 PointColor;
 	#define _WaterColor WaterColor
 #endif
 
-#define INV_LIGHTDIR float3(0.4, 0.5, 0.6)
-
 #define CREATE_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, ADDRESS) \
 	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
 	{ \
@@ -128,7 +126,11 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float3 Tex0 : TEXCOORD1; // .xy = LightMapTex; .z = Depth
+
+	float2 LightMapTex : TEXCOORD1;
+	#if defined(USE_SHADOWS)
+		float4 ShadowTex : TEXCOORD2;
+	#endif
 };
 
 struct PS2FB
@@ -146,18 +148,23 @@ VS2PS VS_Water(APP2VS Input)
 	// World-space data
 	float4 WorldPos = mul(Input.Pos, World);
 	Output.HPos = mul(WorldPos, ViewProjection);
-	Output.Pos = WorldPos;
-
-	// Texture-space data
-	#if defined(USE_LIGHTMAP)
-		Output.Tex0.xy = (Input.LightMap * LightMapOffset.xy) + LightMapOffset.zw;
-	#endif
+	Output.Pos.xyz = WorldPos.xyz;
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	// Get texture surface data
+	#if defined(USE_LIGHTMAP)
+		Output.LightMapTex = (Input.LightMap * LightMapOffset.xy) + LightMapOffset.zw;
+	#endif
+	#if defined(USE_SHADOWS)
+		Output.ShadowTex = GetShadowProjection(WorldPos);
 	#endif
 
 	return Output;
 }
+
+#define INV_LIGHTDIR float3(0.4, 0.5, 0.6)
 
 float3 GetWaterTex(float3 WorldPos)
 {
@@ -175,21 +182,20 @@ PS2FB PS_Water(in VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 WorldPos = Input.Pos;
-	float3 WorldLightVec = normalize(-Lights[0].dir);
-	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
-	float3 WaterTex = GetWaterTex(WorldPos.xyz);
+	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldLightDir = normalize(-Lights[0].dir);
+	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
+	float3 WaterTex = GetWaterTex(WorldPos);
 
 	#if defined(USE_LIGHTMAP)
-		float4 LightMap = tex2D(SampleLightMap, Input.Tex0);
+		float4 LightMap = tex2D(SampleLightMap, Input.LightMapTex);
 	#else
 		float4 LightMap = PointColor;
 	#endif
 
-	float Shadow = LightMap.g;
+	float ShadowFactor = LightMap.g;
 	#if defined(USE_SHADOWS)
-		float4 ShadowTex = GetShadowProjection(WorldPos);
-		Shadow *= GetShadowFactor(SampleShadowMap, ShadowTex);
+		ShadowFactor *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#endif
 
 	#if defined(USE_3DTEXTURE)
@@ -207,15 +213,15 @@ PS2FB PS_Water(in VS2PS Input)
 		TangentNormal.xyz = normalize((TangentNormal.xyz * 2.0) - 1.0);
 	#endif
 
-	float3 Reflection = normalize(reflect(-WorldViewVec, TangentNormal));
+	float3 Reflection = normalize(reflect(-WorldViewDir, TangentNormal));
 	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
 
-	float LightFactors = SpecularColor.a * Shadow;
-	float3 DotLR = saturate(dot(WorldLightVec, Reflection));
+	float LightFactors = SpecularColor.a * ShadowFactor;
+	float3 DotLR = saturate(dot(WorldLightDir, Reflection));
 	float3 Specular = pow(abs(DotLR), SpecularPower) * SpecularColor.rgb;
 
 	float4 OutputColor = 0.0;
-	float LerpMod = -(1.0 - saturate(Shadow + SHADOW_FACTOR));
+	float LerpMod = -(1.0 - saturate(ShadowFactor + SHADOW_FACTOR));
 	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 	OutputColor.rgb = WaterLerp + (Specular * LightFactors);
 
@@ -225,14 +231,14 @@ PS2FB PS_Water(in VS2PS Input)
 		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
-	float Fresnel = BASE_TRANSPARENCY - pow(dot(TangentNormal, WorldViewVec), POW_TRANSPARENCY);
+	float Fresnel = BASE_TRANSPARENCY - pow(dot(TangentNormal, WorldViewDir), POW_TRANSPARENCY);
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.w);
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

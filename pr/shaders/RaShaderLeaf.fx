@@ -111,7 +111,7 @@ struct WorldSpace
 {
 	float3 Pos;
 	float3 LightVec;
-	float3 NLightVec;
+	float3 LightDir;
 	float3 Normal;
 };
 
@@ -120,6 +120,9 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 	float4 Tex0 : TEXCOORD1;
+	#if _HASSHADOW_
+		float4 TexShadow : TEXCOORD2;
+	#endif
 };
 
 struct PS2FB
@@ -153,7 +156,7 @@ WorldSpace GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 	#endif
 
 	Output.LightVec = GetWorldLightVec(Output.Pos);
-	Output.NLightVec = normalize(Output.LightVec);
+	Output.LightDir = normalize(Output.LightVec);
 
 	Output.Normal = GetWorldNormal(ObjectNormal);
 
@@ -194,7 +197,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	#endif
 
 	// Calculate world-space, per-vertex lighting
-	Output.Tex0.z = dot(W.Normal, W.NLightVec);
+	Output.Tex0.z = dot(W.Normal, W.LightDir);
 	Output.Tex0.z = saturate((Output.Tex0.z * 0.5) + 0.5);
 
 	// Calculate the LOD scale for far-away leaf objects
@@ -205,6 +208,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	#endif
 
 	#if _HASSHADOW_
+		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
 	#endif
 
 	return Output;
@@ -214,14 +218,13 @@ PS2FB PS_Leaf(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 WorldPos = float4(Input.Pos.xyz, 1.0);
 	float DotNL = Input.Tex0.z;
 	float LodScale = Input.Tex0.w;
+	float3 WorldPos = Input.Pos.xyz;
 
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	#if _HASSHADOW_
-		float4 ShadowTex = GetShadowProjection(WorldPos);
-		float4 Shadow = GetShadowFactor(SampleShadowMap, ShadowTex);
+		float4 Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#else
 		float4 Shadow = 1.0;
 	#endif
@@ -236,9 +239,9 @@ PS2FB PS_Leaf(VS2PS Input)
 	#endif
 
 	Output.Color = OutputColor;
-	float FogValue = GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz);
+	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos.xyz);
 	#if _POINTLIGHT_
-		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos.xyz;
+		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 		Output.Color.rgb *= GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		Output.Color.rgb *= FogValue;
 	#else

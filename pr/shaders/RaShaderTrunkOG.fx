@@ -110,12 +110,11 @@ PS2FB PS_TrunkOG(VS2PS Input)
 	float LodScale = Input.Tex0.z;
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
-	float3 WorldLightVec = GetWorldLightDir(-Lights[0].dir);
-	float3 WorldNLightVec = normalize(WorldLightVec);
+	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
 
 	// Get diffuse lighting
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy) * 2.0;
-	float DotNL = ComputeLambert(WorldNormal, WorldNLightVec);
+	float DotNL = ComputeLambert(WorldNormal, WorldLightDir);
 
 	float3 Color = (DotNL * LodScale) * (Lights[0].color * LodScale);
 	Color += (OverGrowthAmbient.rgb * LodScale);
@@ -125,7 +124,7 @@ PS2FB PS_TrunkOG(VS2PS Input)
 	OutputColor.a = Transparency.a;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

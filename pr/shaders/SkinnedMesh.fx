@@ -134,8 +134,8 @@ struct WorldSpace
 {
 	float3 Pos;
 	float3 Normal;
-	float3 LightVec;
-	float3 ViewVec;
+	float3 LightDir;
+	float3 ViewDir;
 };
 
 WorldSpace GetWorldSpaceData(float3 WorldPos, float3 TangentNormal)
@@ -143,8 +143,8 @@ WorldSpace GetWorldSpaceData(float3 WorldPos, float3 TangentNormal)
 	WorldSpace Output = (WorldSpace)0;
 
 	Output.Pos = WorldPos;
-	Output.LightVec = normalize(GetWorldLightDir(-_SunLightDirection.xyz));
-	Output.ViewVec = normalize(GetWorldViewVec(WorldPos));
+	Output.LightDir = normalize(GetWorldLightDir(-_SunLightDirection.xyz));
+	Output.ViewDir = normalize(GetWorldViewVec(WorldPos));
 
 	Output.Normal = normalize((TangentNormal * 2.0) - 1.0);
 	Output.Normal = normalize(mul(Output.Normal, (float3x3)_World));
@@ -163,9 +163,9 @@ Lighting GetLighting(WorldSpace W)
 	Lighting Output = (Lighting)0;
 
 	// Get dot-products
-	float DotNL = dot(W.Normal, W.LightVec);
-	float DotNV = dot(W.Normal, W.ViewVec);
-	float DotLV = dot(W.LightVec, W.ViewVec);
+	float DotNL = dot(W.Normal, W.LightDir);
+	float DotNV = dot(W.Normal, W.ViewDir);
+	float DotLV = dot(W.LightDir, W.ViewDir);
 	float IDotNV = 1.0 - DotNV;
 
 	// Calculate lighting
@@ -351,7 +351,7 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR
 	float ShadowIntensity = pow(saturate(DiffuseLight.g), 2.0);
 
 	// Composite diffuse lighting
-	ColorPair Light = ComputeLights(World.Normal.xyz, World.LightVec, World.ViewVec);
+	ColorPair Light = ComputeLights(World.Normal.xyz, World.LightDir, World.ViewDir);
 	Light.Specular *= DiffuseMap.a * ShadowIntensity;
 	float3 Lighting = saturate((DiffuseMap * (Ambient + Diffuse)) + Light.Specular);
 
@@ -397,7 +397,7 @@ technique humanskin
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float4 WorldPos : TEXCOORD0;
+	float4 DepthPos : TEXCOORD0;
 	float2 Tex0 : TEXCOORD1;
 };
 
@@ -410,12 +410,13 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
 	int IndexArray[4] = (int[4])IndexVector;
 
-	float3 Pos0 = mul(Input.Pos, _BoneArray[IndexArray[0]]);
-	float3 Pos1 = mul(Input.Pos, _BoneArray[IndexArray[1]]);
-	float4 WorldPos = float4(lerp(Pos1, Pos0, BlendWeightsArray[0]), 1.0);
+	float4x3 BoneMat = (float4x3)0.0;
+	BoneMat += (_BoneArray[IndexArray[0]] * (BlendWeightsArray[0]));
+	BoneMat += (_BoneArray[IndexArray[1]] * (1.0 - BlendWeightsArray[0]));
+	float4 BonePos = float4(mul(Input.Pos, BoneMat), 1.0);
 
-	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-	Output.WorldPos = WorldPos;
+	Output.HPos = GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat);
+	Output.DepthPos = Output.HPos; // Output depth
 	Output.Tex0 = Input.TexCoord0;
 
 	return Output;
@@ -426,9 +427,7 @@ float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
 	#if NVIDIA
 		return 0.0;
 	#else
-		float4 WorldPos = Input.WorldPos;
-		float4 DepthPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-		return DepthPos.z / DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 
@@ -439,9 +438,7 @@ float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR
 		return Alpha;
 	#else
 		clip(Alpha);
-		float4 WorldPos = Input.WorldPos;
-		float4 DepthPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-		return DepthPos.z / DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 

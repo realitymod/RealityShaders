@@ -57,7 +57,7 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0; // .xyz = WorldPos; .w = Depth
+	float4 Pos : TEXCOORD0;
 
 	float3 WorldTangent : TEXCOORD1;
 	float3 WorldBinormal : TEXCOORD2;
@@ -66,6 +66,7 @@ struct VS2PS
 	float4 BaseAndDetail : TEXCOORD4; // .xy = BaseTex; .zw = DetailTex;
 	float4 DirtAndCrack : TEXCOORD5; // .xy = DirtTex; .zw = CrackTex;
 	float4 LightMapTex : TEXCOORD6;
+	float4 ShadowTex : TEXCOORD7;
 };
 
 struct PS2FB
@@ -114,29 +115,35 @@ VS2PS VS_StaticMesh(APP2VS Input)
 	#if _DETAIL_ || _NDETAIL_
 		Output.BaseAndDetail.zw = Input.TexSets[DetailTexID].xy * TexUnpack;
 	#endif
+
 	#if _DIRT_
 		Output.DirtAndCrack.xy = Input.TexSets[DirtTexID].xy * TexUnpack;
 	#endif
 	#if _CRACK_
 		Output.DirtAndCrack.zw = Input.TexSets[CrackTexID].xy * TexUnpack;
 	#endif
+
 	#if	_LIGHTMAP_
 		Output.LightMapTex.xy = Input.TexSets[LightMapTexID].xy * TexUnpack * LightMapOffset.xy + LightMapOffset.zw;
+	#endif
+
+	#if _SHADOW_ && _LIGHTMAP_
+		Output.ShadowTex = GetShadowProjection(ObjectPos);
 	#endif
 
 	return Output;
 }
 
-float2 GetParallax(float2 TexCoords, float3 ViewVec)
+float2 GetParallax(float2 TexCoords, float3 ViewDir)
 {
 	float Height = tex2D(SampleNormalMap, TexCoords).a;
 	Height = (Height * 2.0) - 1.0;
 	Height = Height * ParallaxScaleBias.xy + ParallaxScaleBias.wz;
-	ViewVec = ViewVec * float3(1.0, -1.0, 1.0);
-	return TexCoords + ((Height * ViewVec.xy) * PARALLAX_BIAS);
+	ViewDir = ViewDir * float3(1.0, -1.0, 1.0);
+	return TexCoords + ((Height * ViewDir.xy) * PARALLAX_BIAS);
 }
 
-float4 GetDiffuseMap(VS2PS Input, float3 TanViewVec, out float DiffuseGloss)
+float4 GetDiffuseMap(VS2PS Input, float3 TanViewDir, out float DiffuseGloss)
 {
 	float4 Diffuse = 1.0;
 	DiffuseGloss = StaticGloss;
@@ -177,7 +184,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanViewVec, out float DiffuseGloss)
 }
 
 // This also includes the composite Gloss map
-float3 GetNormalMap(VS2PS Input, float3 TanViewVec, float3x3 WorldTBN)
+float3 GetNormalMap(VS2PS Input, float3 TanViewDir, float3x3 WorldTBN)
 {
 	#if defined(_PERPIXEL_)
 		float3 TangentNormal = float3(0.0, 0.0, 1.0);
@@ -185,7 +192,7 @@ float3 GetNormalMap(VS2PS Input, float3 TanViewVec, float3x3 WorldTBN)
 			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
 		#endif
 		#if _PARALLAXDETAIL_
-			TangentNormal = tex2D(SampleNormalMap, GetParallax(Input.BaseAndDetail.zw, TanViewVec)).xyz;
+			TangentNormal = tex2D(SampleNormalMap, GetParallax(Input.BaseAndDetail.zw, TanViewDir)).xyz;
 		#elif _NDETAIL_
 			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 		#endif
@@ -229,10 +236,10 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	// World-space data
-	float4 WorldPos = float4(Input.Pos.xyz, 1.0);
-	float3 WorldLightVec = GetWorldLightVec(WorldPos.xyz);
-	float3 NWorldLightVec = normalize(WorldLightVec);
-	float3 WorldViewVec = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
+	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldLightVec = GetWorldLightVec(WorldPos);
+	float3 WorldLightDir = normalize(WorldLightVec);
+	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
 	float3x3 WorldTBN =
 	{
 		normalize(Input.WorldTangent),
@@ -242,15 +249,15 @@ PS2FB PS_StaticMesh(VS2PS Input)
 
 	// Tangent-space data
 	// mul(mat, vec) == mul(vec, transpose(mat))
-	float3 TanViewVec = normalize(mul(WorldTBN, WorldViewVec));
+	float3 TanViewDir = normalize(mul(WorldTBN, WorldViewDir));
 
 	// Prepare texture data
 	float Gloss;
-	float4 ColorMap = GetDiffuseMap(Input, TanViewVec, Gloss);
-	float3 WorldNormal = GetNormalMap(Input, TanViewVec, WorldTBN);
+	float4 ColorMap = GetDiffuseMap(Input, TanViewDir, Gloss);
+	float3 WorldNormal = GetNormalMap(Input, TanViewDir, WorldTBN);
 
 	// Prepare lighting data
-	ColorPair Light = ComputeLights(WorldNormal, NWorldLightVec, WorldViewVec, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color);
 	float3 SpecularRGB = (Light.Specular * Gloss) * Lights[0].color;
 
@@ -259,17 +266,16 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		DiffuseRGB *= Attenuation;
 		SpecularRGB *= Attenuation;
 		OutputColor.rgb = (ColorMap.rgb * DiffuseRGB) + SpecularRGB;
-		OutputColor.rgb *= GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz);
+		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
 		#if _LIGHTMAP_ && _SHADOW_
-			float4 ShadowTex = GetShadowProjection(WorldPos);
-			Lightmap.g *= GetShadowFactor(SampleShadowMap, ShadowTex);
+			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
 		// We divide the normal by 5.0 to prevent complete darkness for surfaces facing away from the sun
-		float DotNL = saturate(dot(WorldNormal / 5.0, NWorldLightVec));
+		float DotNL = saturate(dot(WorldNormal / 5.0, WorldLightDir));
 		float IDotNL = saturate((1.0 - DotNL) * 0.65);
 
 		// We add ambient to get correct ambient for surfaces parallel to the sun
@@ -285,7 +291,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);
 	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, WorldSpaceCamPos.xyz));
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
 
 	#if defined(LOG_DEPTH)

@@ -59,14 +59,14 @@
 
 	ColorPair ComputeLights
 	(
-		float3 Normal, float3 LightVec, float3 ViewVec,
+		float3 Normal, float3 LightDir, float3 ViewDir,
 		uniform float SpecPower = 32.0, uniform bool NormSpec = false
 	)
 	{
 		ColorPair Output = (ColorPair)0;
 
-		float3 HalfVec = normalize(LightVec + ViewVec);
-		float3 DotNL = saturate(dot(Normal, LightVec));
+		float3 HalfVec = normalize(LightDir + ViewDir);
+		float3 DotNL = saturate(dot(Normal, LightDir));
 		float3 DotNH = saturate(dot(Normal, HalfVec));
 		float3 ZeroNL = step(0.0, DotNL);
 
@@ -76,14 +76,14 @@
 		return Output;
 	}
 
-	float ComputeLambert(float3 Normal, float3 LightVec)
+	float ComputeLambert(float3 Normal, float3 LightDir)
 	{
-		return saturate(dot(Normal, LightVec));
+		return saturate(dot(Normal, LightDir));
 	}
 
-	float ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewVec)
+	float ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewDir)
 	{
-		float ViewAngle = dot(WorldNormal, WorldViewVec);
+		float ViewAngle = dot(WorldNormal, WorldViewDir);
 		return saturate(1.0 - abs(ViewAngle));
 	}
 
@@ -164,7 +164,7 @@
 
 	// Description: Compares the depth between the shadowmap's depth (ShadowSampler)
 	// and the vertex position's transformed, light-space depth (ShadowCoords.z)
-	float GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
+	float4 GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
 		float4 Texel = float4(0.5 / 1024.0, 0.5 / 1024.0, 0.0, 0.0);
 		float4 Samples = 0.0;

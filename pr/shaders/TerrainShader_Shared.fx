@@ -182,11 +182,11 @@ PS2FB PS_Shared_PointLight(VS2PS_Shared_PointLight Input)
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.Normal);
 	float3 WorldLightVec = _PointLight.pos - WorldPos;
-	float3 WorldNLightVec = normalize(WorldLightVec);
+	float3 WorldLightDir = normalize(WorldLightVec);
 
 	// Calculate lighting in the vertex shader (precision reasons)
 	float Attenuation = GetLightAttenuation(WorldLightVec, _PointLight.attSqrInv);
-	float3 DotNL = dot(WorldNormal, WorldNLightVec) * Attenuation;
+	float3 DotNL = dot(WorldNormal, WorldLightDir) * Attenuation;
 
 	Output.Color = float4(_PointLight.col * DotNL, 0.0);
 
@@ -319,7 +319,7 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 struct VS2PS_Shared_DynamicShadowmap
 {
 	float4 HPos : POSITION;
-	float4 WorldPos : TEXCOORD0;
+	float4 ShadowTex : TEXCOORD0;
 };
 
 VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
@@ -331,23 +331,19 @@ VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
 	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.WorldPos = WorldPos;
+
+	Output.ShadowTex = mul(WorldPos, _LightViewProj);
+	Output.ShadowTex.z = Output.ShadowTex.w;
 
 	return Output;
 }
 
 float4 PS_Shared_DynamicShadowmap(VS2PS_Shared_DynamicShadowmap Input) : COLOR
 {
-	// Get ShadowTex
-	float4 WorldPos = Input.WorldPos;
-	float4 ShadowTex = mul(WorldPos, _LightViewProj);
-	ShadowTex.z = ShadowTex.w;
-
-	// Shadowing
 	#if NVIDIA
-		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, ShadowTex);
+		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex);
 	#else
-		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, ShadowTex) == 1.0;
+		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex) == 1.0;
 	#endif
 	return AvgShadowValue.x;
 }
@@ -363,8 +359,9 @@ float4 PS_Shared_DynamicShadowmap(VS2PS_Shared_DynamicShadowmap Input) : COLOR
 struct VS2PS_Shared_DirectionalLightShadows
 {
 	float4 HPos : POSITION;
-	float4 WorldPos : TEXCOORD0;
-	float3 Tex0 : TEXCOORD1; // .xy = Tex0; .z = Depth
+	float4 Pos : TEXCOORD0;
+	float2 Tex0 : TEXCOORD1;
+	float4 ShadowTex : TEXCOORD2;
 };
 
 VS2PS_Shared_DirectionalLightShadows VS_Shared_DirectionalLightShadows(APP2VS_Shared Input)
@@ -379,12 +376,21 @@ VS2PS_Shared_DirectionalLightShadows VS_Shared_DirectionalLightShadows(APP2VS_Sh
 	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.WorldPos = WorldPos;
-
-	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Pos = Output.HPos;
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
+
+	Output.ShadowTex = mul(WorldPos, _LightViewProj);
+	float LightZ = mul(WorldPos, _LightViewProjOrtho).z;
+
+	#if NVIDIA
+		Output.ShadowTex.z = LightZ * Output.ShadowTex.w;
+	#else
+		Output.ShadowTex.z = LightZ;
+	#endif
+
+	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
 
 	return Output;
 }
@@ -393,31 +399,27 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 {
 	PS2FB Output = (PS2FB)0;
 
-	// Get ShadowTex
-	float4 WorldPos = Input.WorldPos;
-	float4 ShadowTex = mul(WorldPos, _LightViewProj);
-	float LightZ = mul(WorldPos, _LightViewProjOrtho).z;
-	#if NVIDIA
-		ShadowTex.z = LightZ * ShadowTex.w;
-	#else
-		ShadowTex.z = LightZ;
-	#endif
-
-	// Shadowing textures
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 	#if HIGHTERRAIN || MIDTERRAIN
-		float AvgShadowValue = GetShadowFactor(SampleShadowMap, ShadowTex);
+		float4 AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
-		float AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, ShadowTex);
+		float4 AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
 	#endif
 
 	float4 Light = _GIColor * LightMap.z;
-	Light.w = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
+	if (AvgShadowValue.z < LightMap.y)
+	{
+		Light.w = AvgShadowValue.z;
+	}
+	else
+	{
+		Light.w = LightMap.y;
+	}
 
 	Output.Color = Light;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -612,7 +614,7 @@ struct HI_APP2VS_OccluderShadow
 struct HI_VS2PS_OccluderShadow
 {
 	float4 HPos : POSITION;
-	float4 WorldPos : TEXCOORD0;
+	float4 DepthPos : TEXCOORD0;
 };
 
 float4 GetOccluderShadow(float4 Pos, float4x4 LightTrapMat, float4x4 LightMat)
@@ -630,9 +632,8 @@ HI_VS2PS_OccluderShadow VS_Hi_OccluderShadow(HI_APP2VS_OccluderShadow Input)
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
 	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy);
-
 	Output.HPos = GetOccluderShadow(WorldPos, _vpLightTrapezMat, _vpLightMat);
-	Output.WorldPos = WorldPos;
+	Output.DepthPos = Output.HPos; // Output shadow depth
 
 	return Output;
 }
@@ -642,9 +643,7 @@ float4 PS_Hi_OccluderShadow(HI_VS2PS_OccluderShadow Input) : COLOR
 	#if NVIDIA
 		return 0.5;
 	#else
-		float4 WorldPos = Input.WorldPos;
-		float4 DepthPos = GetOccluderShadow(WorldPos, _vpLightTrapezMat, _vpLightMat);
-		return DepthPos.z / DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 

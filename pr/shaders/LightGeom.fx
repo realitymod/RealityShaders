@@ -91,7 +91,7 @@ struct VS2PS_Spot
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float3 LightDir : TEXCOORD1;
+	float3 SpotDir : TEXCOORD1;
 };
 
 VS2PS_Spot VS_SpotLight(APP2VS Input)
@@ -107,7 +107,7 @@ VS2PS_Spot VS_SpotLight(APP2VS Input)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	Output.LightDir = mul(_SpotDir, (float3x3)_WorldView);
+	Output.SpotDir = mul(_SpotDir, (float3x3)_WorldView);
 
 	return Output;
 }
@@ -116,9 +116,9 @@ PS2FB PS_SpotLight(VS2PS_Spot Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float3 LightVec = normalize(Input.Pos.xyz);
-	float3 LightDir = normalize(Input.LightDir.xyz);
-	float DotLD = saturate(dot(LightVec, LightDir));
+	float3 LightDir = normalize(Input.Pos.xyz);
+	float3 SpotDir = normalize(Input.SpotDir.xyz);
+	float DotLD = saturate(dot(LightDir, SpotDir));
 	float ConicalAtt = saturate((DotLD * DotLD) - (1.0 - _ConeAngle));
 
 	Output.Color = _LightColor * ConicalAtt;
