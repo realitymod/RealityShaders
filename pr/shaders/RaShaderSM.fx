@@ -214,10 +214,10 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * LightFactors;
 	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color.rgb) * LightFactors;
 
-	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
+	// Only add SpecularRGB to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
 	// Prevents non-detailed bundledmesh from looking shiny
 	#if !_HASNORMALMAP_
-		Light.Specular = 0.0;
+		SpecularRGB = 0.0;
 	#endif
 	float4 OutputColor = 1.0;
 	OutputColor.rgb = (ColorMap.rgb * (Ambient + DiffuseRGB)) + SpecularRGB;
