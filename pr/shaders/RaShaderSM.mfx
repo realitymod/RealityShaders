@@ -55,6 +55,7 @@ string InstanceParametersBase[] =
 	"WorldViewProjection",
 	"World",
 	"Transparency",
+	"ObjectSpaceCamPos",
 };
 
 //

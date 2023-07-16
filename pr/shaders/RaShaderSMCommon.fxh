@@ -12,6 +12,7 @@ string DeprecationList[] =
 	{ "hascolormapgloss", "" },
 };
 
+uniform float4 ObjectSpaceCamPos;
 uniform float4 WorldSpaceCamPos;
 
 uniform int AlphaTestRef = 0;

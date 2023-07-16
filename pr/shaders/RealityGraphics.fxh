@@ -66,9 +66,9 @@
 		ColorPair Output = (ColorPair)0;
 
 		float3 HalfVec = normalize(LightDir + ViewDir);
-		float3 DotNL = saturate(dot(Normal, LightDir));
-		float3 DotNH = saturate(dot(Normal, HalfVec));
-		float3 ZeroNL = step(0.0, DotNL);
+		float DotNL = saturate(dot(Normal, LightDir));
+		float DotNH = saturate(dot(Normal, HalfVec));
+		float ZeroNL = step(0.0, DotNL);
 
 		Output.Diffuse = DotNL * ZeroNL;
 		float Cons = (NormSpec) ? (SpecPower + 8.0) / 8.0 : 1.0;

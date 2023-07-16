@@ -6,7 +6,7 @@
 	Description:
 	- Renders lighting for skinnedmesh (objects that are dynamic, human-like with bones)
 	- Skinning function currently for 2 bones
-	- Calculates world-space lighting
+	- Calculates direction lighting dependant on the space of the normalmap
 */
 
 // Dep.checks, etc
@@ -51,6 +51,9 @@ struct VS2PS
 	float2 Tex0 : TEXCOORD4;
 	float4 ShadowTex : TEXCOORD5;
 	float4 ShadowOccTex : TEXCOORD6;
+
+	float3 LightDir : TEXCOORD7;
+	float3 ViewDir : TEXCOORD8;
 };
 
 struct PS2FB
@@ -69,13 +72,6 @@ float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 	return MatBones[IndexArray[Bone]];
 }
 
-float4 SkinObjectPos(APP2VS Input)
-{
-	float3 Pos1 = mul(Input.Pos, GetBoneMatrix(Input, 0));
-	float3 Pos2 = mul(Input.Pos, GetBoneMatrix(Input, 1));
-	return float4(lerp(Pos2, Pos1, Input.BlendWeights), 1.0);
-}
-
 float GetBinormalFlipping(APP2VS Input)
 {
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
@@ -83,12 +79,56 @@ float GetBinormalFlipping(APP2VS Input)
 	return 1.0 + IndexArray[2] * -2.0;
 }
 
+struct Bone
+{
+	float4x3 Mat[2];
+	float Weight[2];
+};
+
+Bone GetBoneData(APP2VS Input)
+{
+	Bone Output = (Bone)0;
+	Output.Mat[0] = GetBoneMatrix(Input, 0);
+	Output.Mat[1] = GetBoneMatrix(Input, 1);
+	Output.Weight[0] = Input.BlendWeights;
+	Output.Weight[1] = 1.0 - Input.BlendWeights;
+	return Output;
+}
+
+float4 GetObjectPos(APP2VS Input, Bone B)
+{
+	float3 Pos = 0.0;
+	Pos += (mul(Input.Pos, B.Mat[0]) * B.Weight[0]);
+	Pos += (mul(Input.Pos, B.Mat[1]) * B.Weight[1]);
+	return float4(Pos, 1.0);
+}
+
+float3 GetObjectDir(Bone B, float3 SObjectDir)
+{
+	float3 Dir = 0.0;
+	Dir += (mul((float3x3)B.Mat[0], SObjectDir) * B.Weight[0]);
+	Dir += (mul((float3x3)B.Mat[1], SObjectDir) * B.Weight[1]);
+	return Dir;
+}
+
+float3 GetTangentDir(Bone B, float3x3 ObjectTBN, float3 SObjectDir)
+{
+	float3x3 Mat1 = mul(ObjectTBN, (float3x3)B.Mat[0]);
+	float3x3 Mat2 = mul(ObjectTBN, (float3x3)B.Mat[1]);
+
+	float3 Dir = 0.0;
+	Dir += (mul(Mat1, SObjectDir) * B.Weight[0]);
+	Dir += (mul(Mat2, SObjectDir) * B.Weight[1]);
+	return Dir;
+}
+
 VS2PS VS_SkinnedMesh(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
 	// Get skinned object-space data
-	float4 ObjectPos = SkinObjectPos(Input);
+	Bone B = GetBoneData(Input);
+	float4 ObjectPos = GetObjectPos(Input, B);
 	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
 
 	// Output HPos data
@@ -110,11 +150,7 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 		Output.WorldBinormal = WorldTBN[1];
 		Output.WorldNormal = WorldTBN[2];
 	#endif
-	#if _OBJSPACENORMALMAP_ || !_HASNORMALMAP_
-		Output.Pos = WorldPos;
-	#else
-		Output.Pos = SkinWorldPos;
-	#endif
+	Output.Pos = SkinWorldPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
@@ -128,17 +164,22 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 		Output.ShadowOccTex = GetShadowProjection(SkinWorldPos, true);
 	#endif
 
-	return Output;
-}
-
-// NOTE: This returns un-normalized for point, because point needs to be attenuated.
-float3 GetWorldLightVec(float3 WorldPos)
-{
-	#if _POINTLIGHT_
-		return GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
+	// Lighting data
+	float3 ViewDir = normalize(ObjectSpaceCamPos.xyz - ObjectPos.xyz);
+	float3 LightDir = -Lights[0].dir.xyz;
+	#if _OBJSPACENORMALMAP_
+		// Object-space normalmap
+		// [skinned-object-space] -> [object_space]
+		Output.ViewDir = normalize(GetObjectDir(B, ViewDir));
+		Output.LightDir = normalize(GetObjectDir(B, LightDir));
 	#else
-		return GetWorldLightDir(-Lights[0].dir.xyz);
+		// Tangent-space normalmap, or no normalmap
+		// [skinned-object-space] -> [object-space] -> [tangent-space]
+		Output.ViewDir = normalize(GetTangentDir(B, ObjectTBN, ViewDir));
+		Output.LightDir = normalize(GetTangentDir(B, ObjectTBN, LightDir));
 	#endif
+
+	return Output;
 }
 
 float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
@@ -154,11 +195,17 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
+	// Lighting data
+	float3 LightDir = normalize(Input.LightDir);
+	float3 ViewDir = normalize(Input.ViewDir);
+
+	// Texture-space data
+	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
+	float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
+	NormalMap.xyz = normalize((NormalMap.xyz * 2.0) - 1.0);
+
 	// Get world-space data
 	float3 WorldPos = Input.Pos.xyz;
-	float3 WorldLightVec = GetWorldLightVec(WorldPos);
-	float3 WorldLightDir = normalize(WorldLightVec);
-	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 	float3x3 WorldTBN =
 	{
 		normalize(Input.WorldTangent),
@@ -168,14 +215,10 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	// (.a) stores the glossmap
 	#if _HASNORMALMAP_
-		float4 WorldNormal = tex2D(SampleNormalMap, Input.Tex0);
-		WorldNormal.xyz = normalize((WorldNormal.xyz * 2.0) - 1.0);
-		WorldNormal.xyz = mul(WorldNormal.xyz, WorldTBN);
+		float3 WorldNormal = mul(NormalMap.xyz, WorldTBN);
 	#else
-		float4 WorldNormal = float4(WorldTBN[2], 0.0);
+		float3 WorldNormal = WorldTBN[2];
 	#endif
-
-	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
 
 	#if _HASSHADOW_
 		float Shadow = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
@@ -189,7 +232,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	#endif
 
 	#if _POINTLIGHT_
-		float3 Ambient = 0.0;
+		float Ambient = 0.0;
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
@@ -198,28 +241,31 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 		#else
-			float3 Ambient = Lights[0].color.a;
+			float Ambient = Lights[0].color.a;
 		#endif
 	#endif
 
 	#if _POINTLIGHT_
+		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 	#else
 		const float Attenuation = 1.0;
 	#endif
 
-	float Gloss = WorldNormal.a;
-	float3 LightFactors = Attenuation * (Shadow * ShadowOcc);
-	ColorPair Light = ComputeLights(WorldNormal.xyz, WorldLightDir, WorldViewDir, SpecularPower);
-	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * LightFactors;
-	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color.rgb) * LightFactors;
-
 	// Only add SpecularRGB to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
 	// Prevents non-detailed bundledmesh from looking shiny
-	#if !_HASNORMALMAP_
-		SpecularRGB = 0.0;
+	#if _HASNORMALMAP_
+		float Gloss = NormalMap.a;
+		ColorPair Light = ComputeLights(NormalMap.xyz, LightDir, ViewDir, SpecularPower);
+	#else
+		float Gloss = 0.0;
+		ColorPair Light = ComputeLights(float3(0.0, 0.0, 1.0), LightDir, ViewDir, SpecularPower);
 	#endif
+
 	float4 OutputColor = 1.0;
+	float LightFactors = Attenuation * (Shadow * ShadowOcc);
+	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * LightFactors;
+	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color.rgb) * LightFactors;
 	OutputColor.rgb = (ColorMap.rgb * (Ambient + DiffuseRGB)) + SpecularRGB;
 	OutputColor.a = ColorMap.a * Transparency.a;
 
