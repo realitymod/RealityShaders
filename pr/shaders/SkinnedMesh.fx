@@ -158,14 +158,14 @@ struct Lighting
 	float Rim;
 };
 
-Lighting GetLighting(WorldSpace W)
+Lighting GetLighting(WorldSpace WS)
 {
 	Lighting Output = (Lighting)0;
 
 	// Get dot-products
-	float DotNL = dot(W.Normal, W.LightDir);
-	float DotNV = dot(W.Normal, W.ViewDir);
-	float DotLV = dot(W.LightDir, W.ViewDir);
+	float DotNL = dot(WS.Normal, WS.LightDir);
+	float DotNV = dot(WS.Normal, WS.ViewDir);
+	float DotLV = dot(WS.LightDir, WS.ViewDir);
 	float IDotNV = 1.0 - DotNV;
 
 	// Calculate lighting
@@ -179,9 +179,9 @@ Lighting GetLighting(WorldSpace W)
 	[Shared functions]
 */
 
-float GetHemiLerp(WorldSpace W)
+float GetHemiLerp(WorldSpace WS)
 {
-	return ((W.Normal.y * 0.5) + 0.5) - _HemiMapInfo.w;
+	return ((WS.Normal.y * 0.5) + 0.5) - _HemiMapInfo.w;
 }
 
 /*
@@ -221,14 +221,14 @@ float4 PS_PreSkin(VS2PS_PreSkin Input) : COLOR
 	float4 TangentNormal = tex2D(SampleTex0, Input.Tex0.xy);
 
 	// World-space data
-	WorldSpace World = GetWorldSpaceData(Input.WorldPos.xyz, TangentNormal.xyz);
+	WorldSpace WS = GetWorldSpaceData(Input.WorldPos.xyz, TangentNormal.xyz);
 
 	// Get hemi data
-	float2 HemiTex = GetHemiTex(World.Pos, World.Normal, _HemiMapInfo, true);
+	float2 HemiTex = GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo, true);
 	float4 HemiMap = tex2D(SampleTex1, HemiTex);
 
 	// Get diffuse
-	Lighting Diffuse = GetLighting(World);
+	Lighting Diffuse = GetLighting(WS);
 	float3 Lighting = (Diffuse.Wrap + Diffuse.Rim) * (HemiMap.a * HemiMap.a);
 
 	return float4(Lighting, TangentNormal.a);
@@ -270,7 +270,7 @@ float4 PS_ShadowedPreSkin(VS2PS_ShadowedPreSkin Input) : COLOR
 	float4 TangentNormal = tex2D(SampleTex0, Input.Tex0.xy);
 
 	// World-space data
-	WorldSpace World = GetWorldSpaceData(Input.WorldPos.xyz, TangentNormal.xyz);
+	WorldSpace WS = GetWorldSpaceData(Input.WorldPos.xyz, TangentNormal.xyz);
 
 	float2 Texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
 	float4 Samples;
@@ -290,7 +290,7 @@ float4 PS_ShadowedPreSkin(VS2PS_ShadowedPreSkin Input) : COLOR
 	float AvgShadowValue = dot(CMPBits, 0.25);
 	float TotalShadow = AvgShadowValue.x * StaticSamples.x;
 
-	Lighting Diffuse = GetLighting(World);
+	Lighting Diffuse = GetLighting(WS);
 
 	float4 OutputColor = 0.0;
 	OutputColor.r = (Diffuse.Rim + Diffuse.Wrap);
@@ -336,11 +336,11 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR
 	float4 DiffuseLight = tex2D(SampleTex3, Input.Tex0);
 
 	// World-space data
-	WorldSpace World = GetWorldSpaceData(Input.WorldPos.xyz, TangentNormal.xyz);
+	WorldSpace WS = GetWorldSpaceData(Input.WorldPos.xyz, TangentNormal.xyz);
 
 	// Hemi-mapping
-	float HemiLerp = GetHemiLerp(World);
-	float2 HemiTex = GetHemiTex(World.Pos, World.Normal, _HemiMapInfo, true);
+	float HemiLerp = GetHemiLerp(WS);
+	float2 HemiTex = GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo, true);
 	float4 HemiMap = tex2D(SampleTex0, HemiTex);
 	float4 HemiColor = lerp(HemiMap, _SkyColor, HemiLerp);
 
@@ -351,7 +351,7 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR
 	float ShadowIntensity = pow(saturate(DiffuseLight.g), 2.0);
 
 	// Composite diffuse lighting
-	ColorPair Light = ComputeLights(World.Normal.xyz, World.LightDir, World.ViewDir);
+	ColorPair Light = ComputeLights(WS.Normal.xyz, WS.LightDir, WS.ViewDir);
 	Light.Specular *= DiffuseMap.a * ShadowIntensity;
 	float3 Lighting = saturate((DiffuseMap * (Ambient + Diffuse)) + Light.Specular);
 

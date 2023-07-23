@@ -188,16 +188,16 @@ VS2PS VS_Leaf(APP2VS Input)
 	#endif
 
 	// Transform our object-space vertex position and normal into world-space
-	WorldSpace W = GetWorldSpaceData(Input.Pos.xyz, Input.Normal);
+	WorldSpace WS = GetWorldSpaceData(Input.Pos.xyz, Input.Normal);
 
 	// Calculate vertex position data
-	Output.Pos.xyz = W.Pos;
+	Output.Pos.xyz = WS.Pos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
 	// Calculate world-space, per-vertex lighting
-	Output.Tex0.z = dot(W.Normal, W.LightDir);
+	Output.Tex0.z = dot(WS.Normal, WS.LightDir);
 	Output.Tex0.z = saturate((Output.Tex0.z * 0.5) + 0.5);
 
 	// Calculate the LOD scale for far-away leaf objects

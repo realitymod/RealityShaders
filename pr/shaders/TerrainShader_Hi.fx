@@ -15,60 +15,64 @@ struct VS2PS_FullDetail_Hi
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float4 P_Normal_Fade : TEXCOORD1; // .xyz = Normal; .w = InterpVal;
-
-	float4 TexA : TEXCOORD2; // .xy = ColorTex; .zw = DetailTex;
+	float3 Normal : TEXCOORD1;
+	float3 Tex0 : TEXCOORD2; // .xy = Input.Pos0.xy; .z = InterpVal;
 	float4 LightTex : TEXCOORD3;
-
-	float4 YPlaneTex : TEXCOORD4; // .xy = Near; .zw = Far;
-	float4 XPlaneTex : TEXCOORD5; // .xy = Near; .zw = Far;
-	float4 ZPlaneTex : TEXCOORD6; // .xy = Near; .zw = Far;
 };
 
 VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 {
 	VS2PS_FullDetail_Hi Output = (VS2PS_FullDetail_Hi)0;
-
-	float4 WorldPos = 0.0;
-	WorldPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
-	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy);
-
-	float YDelta, InterpVal;
-	MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z, YDelta, InterpVal);
+	WorldSpace WS = GetWorldSpaceData(Input);
 
 	// tl: output HPos as early as possible.
-	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos.xyz = WorldPos.xyz;
+	Output.HPos = mul(WS.Pos, _ViewProj);
+	Output.Pos.xyz = WS.Pos.xyz;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
 	// tl: uncompress normal
-	Output.P_Normal_Fade.xyz = (Input.Normal * 2.0) - 1.0;
-	Output.P_Normal_Fade.w = saturate(InterpVal);
-
-	// Calculate triplanar texcoords
-	float3 Tex = 0.0;
-	Tex.x = Input.Pos0.x * _TexScale.x;
-	Tex.y = WorldPos.y * _TexScale.y;
-	Tex.z = Input.Pos0.y * _TexScale.z;
-	float2 XPlaneTexCoord = Tex.zy;
-	float2 YPlaneTexCoord = Tex.xz;
-	float2 ZPlaneTexCoord = Tex.xy;
-
-	Output.TexA.xy = (YPlaneTexCoord * _ColorLightTex.x) + _ColorLightTex.y;
-	Output.TexA.zw = (YPlaneTexCoord * _DetailTex.x) + _DetailTex.y;
-
+	Output.Normal.xyz = (Input.Normal * 2.0) - 1.0;
+	Output.Tex0 = float3(Input.Pos0.xy, saturate(WS.LerpValue));
 	Output.LightTex = ProjToLighting(Output.HPos);
 
-	Output.YPlaneTex.xy = (YPlaneTexCoord * _NearTexTiling.z);
-	Output.YPlaneTex.zw = (YPlaneTexCoord * _FarTexTiling.z);
+	return Output;
+}
 
-	Output.XPlaneTex.xy = (XPlaneTexCoord * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
-	Output.XPlaneTex.zw = (XPlaneTexCoord * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+struct HD
+{
+	float2 NearYPlane;
+	float2 NearXPlane;
+	float2 NearZPlane;
+	float2 FarYPlane;
+	float2 FarXPlane;
+	float2 FarZPlane;
+	float2 ColorLight;
+	float2 Detail;
+};
 
-	Output.ZPlaneTex.xy = (ZPlaneTexCoord * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
-	Output.ZPlaneTex.zw = (ZPlaneTexCoord * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+HD GetHD(float3 WorldPos, float2 Tex)
+{
+	HD Output = (HD)0;
+
+	// Calculate triplanar texcoords
+	float3 WorldTex = 0.0;
+	WorldTex.x = Tex.x * _TexScale.x;
+	WorldTex.y = WorldPos.y * _TexScale.y;
+	WorldTex.z = Tex.y * _TexScale.z;
+
+	float2 XPlaneTex = WorldTex.zy;
+	float2 YPlaneTex = WorldTex.xz;
+	float2 ZPlaneTex = WorldTex.xy;
+	Output.NearYPlane = (YPlaneTex * _NearTexTiling.z);
+	Output.NearXPlane = (XPlaneTex * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
+	Output.NearZPlane = (ZPlaneTex * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
+	Output.FarYPlane = (YPlaneTex * _FarTexTiling.z);
+	Output.FarXPlane = (XPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	Output.FarZPlane = (ZPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	Output.ColorLight = (YPlaneTex * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Detail = (YPlaneTex * _DetailTex.x) + _DetailTex.y;
 
 	return Output;
 }
@@ -77,31 +81,31 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
-	float4 Component = tex2D(SampleTex2_Clamp, Input.TexA.zw);
-	float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
-
+	float LerpValue = Input.Tex0.z;
 	float3 WorldPos = Input.Pos.xyz;
-	float3 WorldNormal = normalize(Input.P_Normal_Fade.xyz);
-	float LerpValue = Input.P_Normal_Fade.w;
+	float3 WorldNormal = normalize(Input.Normal);
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
+	HD Tex = GetHD(WorldPos, Input.Tex0.xy);
+
+	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
+	float4 Component = tex2D(SampleTex2_Clamp, Tex.Detail);
 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
-
 	float3 TerrainLights = (_SunColor.rgb * (AccumLights.a * 2.0)) + AccumLights.rgb;
+	float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
 
 	#if defined(LIGHTONLY)
 		float3 OutputColor = TerrainLights;
 	#else
-		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.TexA.xy);
-		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.TexA.zw);
-		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy);
-		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy);
-		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.ZPlaneTex.xy);
-		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw);
-		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw);
-		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw);
+		float3 ColorMap = tex2D(SampleTex0_Clamp, Tex.ColorLight);
+		float4 LowComponent = tex2D(SampleTex5_Clamp, Tex.Detail);
+		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Tex.NearXPlane);
+		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Tex.NearYPlane);
+		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, Tex.NearZPlane);
+		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.FarXPlane);
+		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.FarYPlane);
+		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.FarZPlane);
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color
