@@ -83,6 +83,8 @@ struct VS2PS
 	float2 Tex0 : TEXCOORD4;
 	float4 ShadowTex : TEXCOORD5;
 	float4 ShadowOccTex : TEXCOORD6;
+
+	float3 SkinLightDir : TEXCOORD7;
 };
 
 struct PS2FB
@@ -144,9 +146,13 @@ VS2PS VS_BundledMesh(APP2VS Input)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
-	Output.WorldTangent = WorldTBN[0];
-	Output.WorldBinormal = WorldTBN[1];
-	Output.WorldNormal = WorldTBN[2];
+	#if _HASNORMALMAP_
+		Output.WorldTangent = WorldTBN[0];
+		Output.WorldBinormal = WorldTBN[1];
+		Output.WorldNormal = WorldTBN[2];
+	#else
+		Output.WorldNormal = WorldTBN[2];
+	#endif
 
 	// Texture-space data
 	#if _HASUVANIMATION_
@@ -154,25 +160,34 @@ VS2PS VS_BundledMesh(APP2VS Input)
 	#else
 		Output.Tex0 = Input.TexDiffuse * TexUnpack; // pass-through texcoord
 	#endif
-
 	#if _HASSHADOW_
 		Output.ShadowTex = GetShadowProjection(WorldPos);
 	#endif
-
 	#if _HASSHADOWOCCLUSION_
 		Output.ShadowOccTex = GetShadowProjection(WorldPos, true);
+	#endif
+
+	// Special data
+	#if _HASCOCKPIT_
+		Output.SkinLightDir = mul(-Lights[0].dir.xyz, SkinnedWorldMatrix);
 	#endif
 
 	return Output;
 }
 
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
-float3 GetWorldLightVec(float3 WorldPos)
+float3 GetWorldLightVec(VS2PS Input, float3 WorldPos)
 {
 	#if _POINTLIGHT_
 		return Lights[0].pos - WorldPos;
 	#else
-		return -Lights[0].dir;
+		#if _HASCOCKPIT_
+			// Use skinned lighting vector to part to create static cockpit lighting
+			float3 LightVec = Input.SkinLightDir;
+		#else 
+			float3 LightVec = -Lights[0].dir;
+		#endif
+		return LightVec;
 	#endif
 }
 
@@ -194,39 +209,34 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	*/
 
 	float3 WorldPos = Input.Pos;
-	float3 WorldLightVec = GetWorldLightVec(WorldPos.xyz);
+	float3 WorldLightVec = GetWorldLightVec(Input, WorldPos);
 	float3 WorldLightDir = normalize(WorldLightVec);
 	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
-	float3x3 WorldTBN =
-	{
-		normalize(Input.WorldTangent),
-		normalize(Input.WorldBinormal),
-		normalize(Input.WorldNormal)
-	};
+	#if _HASNORMALMAP_
+		// Transform from tangent-space to world-space
+		float3x3 WorldTBN =
+		{
+			normalize(Input.WorldTangent),
+			normalize(Input.WorldBinormal),
+			normalize(Input.WorldNormal)
+		};
+		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
+		float3 WorldNormal = normalize((NormalMap.xyz * 2.0) - 1.0);
+		WorldNormal = normalize(mul(WorldNormal, WorldTBN));
+	#else
+		float3 WorldNormal = normalize(Input.WorldNormal);
+	#endif
 
 	/*
 		Texture data
 	*/
 
-	// Get color texture data //
-
+	// Get color texture data
 	// We copy ColorMap to ColorTex to preserve original alpha data
 	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
 	float4 ColorTex = ColorMap;
 
-	// Get normal texture data //
-
-	#if _HASNORMALMAP_
-		// Transform from tangent-space to world-space
-		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
-		float3 WorldNormal = normalize((NormalMap.xyz * 2.0) - 1.0);
-		WorldNormal = normalize(mul(WorldNormal, WorldTBN));
-	#else
-		float3 WorldNormal = normalize(WorldTBN[2]);
-	#endif
-
-	// Get shadow texture data //
-
+	// Get shadow texture data
 	#if _HASSHADOW_
 		float Shadow = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else

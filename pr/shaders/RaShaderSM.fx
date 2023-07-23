@@ -138,16 +138,20 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	float4 WorldPos = mul(float4(Input.Pos.xyz, 1.0), World);
 	float4 SkinWorldPos = mul(ObjectPos, World);
 	float3x3 WorldMat = mul((float3x3)GetBoneMatrix(Input, 0), (float3x3)World);
-	#if _OBJSPACENORMALMAP_
-		// [object-space] -> [skinned object-space] -> [skinned world-space]
-		Output.WorldTangent = WorldMat[0];
-		Output.WorldBinormal = WorldMat[1];
-		Output.WorldNormal = WorldMat[2];
+	float3x3 WorldTBN = mul(ObjectTBN, WorldMat);
+	#if _HASNORMALMAP_
+		#if _OBJSPACENORMALMAP_
+			// [object-space] -> [skinned object-space] -> [skinned world-space]
+			Output.WorldTangent = WorldMat[0];
+			Output.WorldBinormal = WorldMat[1];
+			Output.WorldNormal = WorldMat[2];
+		#else
+			// [tangent-space] -> [object-space] -> [skinned object-space] -> [skinned world-space]
+			Output.WorldTangent = WorldTBN[0];
+			Output.WorldBinormal = WorldTBN[1];
+			Output.WorldNormal = WorldTBN[2];
+		#endif
 	#else
-		// [tangent-space] -> [object-space] -> [skinned object-space] -> [skinned world-space]
-		float3x3 WorldTBN = mul(ObjectTBN, WorldMat);
-		Output.WorldTangent = WorldTBN[0];
-		Output.WorldBinormal = WorldTBN[1];
 		Output.WorldNormal = WorldTBN[2];
 	#endif
 	Output.Pos = SkinWorldPos;
@@ -201,23 +205,22 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	// Texture-space data
 	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
+	// NormalMap.a stores the glossmap
 	float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
 	NormalMap.xyz = normalize((NormalMap.xyz * 2.0) - 1.0);
 
 	// Get world-space data
 	float3 WorldPos = Input.Pos.xyz;
-	float3x3 WorldTBN =
-	{
-		normalize(Input.WorldTangent),
-		normalize(Input.WorldBinormal),
-		normalize(Input.WorldNormal)
-	};
-
-	// (.a) stores the glossmap
 	#if _HASNORMALMAP_
+		float3x3 WorldTBN =
+		{
+			normalize(Input.WorldTangent),
+			normalize(Input.WorldBinormal),
+			normalize(Input.WorldNormal)
+		};
 		float3 WorldNormal = mul(NormalMap.xyz, WorldTBN);
 	#else
-		float3 WorldNormal = WorldTBN[2];
+		float3 WorldNormal = normalize(Input.WorldNormal);
 	#endif
 
 	#if _HASSHADOW_

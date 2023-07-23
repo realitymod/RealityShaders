@@ -58,7 +58,7 @@ uniform texture DetailMap;
 CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap)
 
 uniform texture DirtMap;
-CREATE_SAMPLER(SampleDirtMap, DirtMap)
+CREATE_DYNAMIC_SAMPLER(SampleDirtMap, DirtMap)
 
 uniform texture CrackMap;
 CREATE_DYNAMIC_SAMPLER(SampleCrackMap, CrackMap)
@@ -67,7 +67,7 @@ uniform texture CrackNormalMap;
 CREATE_SAMPLER(SampleCrackNormalMap, CrackNormalMap)
 
 uniform texture DiffuseMap;
-CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap)
+CREATE_DYNAMIC_SAMPLER(SampleDiffuseMap, DiffuseMap)
 
 uniform texture NormalMap;
 CREATE_SAMPLER(SampleNormalMap, NormalMap)

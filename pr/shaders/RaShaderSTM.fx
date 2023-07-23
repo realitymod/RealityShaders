@@ -115,18 +115,15 @@ VS2PS VS_StaticMesh(APP2VS Input)
 	#if _DETAIL_ || _NDETAIL_
 		Output.BaseAndDetail.zw = Input.TexSets[DetailTexID].xy * TexUnpack;
 	#endif
-
 	#if _DIRT_
 		Output.DirtAndCrack.xy = Input.TexSets[DirtTexID].xy * TexUnpack;
 	#endif
 	#if _CRACK_
 		Output.DirtAndCrack.zw = Input.TexSets[CrackTexID].xy * TexUnpack;
 	#endif
-
 	#if	_LIGHTMAP_
 		Output.LightMapTex.xy = Input.TexSets[LightMapTexID].xy * TexUnpack * LightMapOffset.xy + LightMapOffset.zw;
 	#endif
-
 	#if _SHADOW_ && _LIGHTMAP_
 		Output.ShadowTex = GetShadowProjection(ObjectPos);
 	#endif
