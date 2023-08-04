@@ -10,7 +10,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define BLUR_RADIUS 16.0
+#define BLUR_RADIUS 2.0
 
 /*
 	[Attributes from app]
@@ -110,7 +110,6 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos)
     float4 Weight = 0.0;
 
     const float Pi2 = acos(-1.0) * 2.0;
-    float2 PixelSize = abs(float2(ddx(Tex.x), ddy(Tex.y)));
     float Noise = Pi2 * GetGradientNoise(Pos.xy);
 
     float2 Rotation = 0.0;
@@ -128,7 +127,7 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos)
 			AngleShift *= float(i);
 
             float2 SampleOffset = mul(AngleShift * BLUR_RADIUS, RotationMatrix);
-            OutputColor += tex2D(Source, Tex + (SampleOffset * PixelSize));
+            OutputColor += tex2D(Source, Tex + (SampleOffset * 0.01));
             Weight++;
         }
     }
