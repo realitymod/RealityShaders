@@ -30,6 +30,14 @@
 	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#if !defined(REALITY_DEFINES)
+	#define REALITY_DEFINES
+
+	// This hardcoded value fixes a bug with undergrowth's alphatesting
+	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
+	#define FH2_ALPHAREF 127
+#endif
+
 // Functions from DirectXTK
 #if !defined(DIRECTXTK)
 	#define DIRECTXTK
@@ -128,6 +136,17 @@
 	{
 		return saturate(1.0 - dot(LightVec, LightVec) * Attenuation);
 	}
+
+	/*
+        Interleaved Gradient Noise Dithering
+        ---
+        http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
+    */
+
+    float GetGradientNoise(float2 Position)
+    {
+        return frac(52.9829189 * frac(dot(Position, float2(0.06711056, 0.00583715))));
+    }
 #endif
 
 // Depth-based functions
@@ -168,10 +187,10 @@
 	{
 		float4 Texel = float4(0.5 / 1024.0, 0.5 / 1024.0, 0.0, 0.0);
 		float4 Samples = 0.0;
-		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords);
-		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, 0.0, 0.0, 0.0));
-		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(0.0, Texel.y, 0.0, 0.0));
-		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel);
+		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords).r;
+		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, 0.0, 0.0, 0.0)).r;
+		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(0.0, Texel.y, 0.0, 0.0)).r;
+		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel).r;
 		float4 CMPBits = step(saturate(GetSlopedBasedBias(ShadowCoords.z)), Samples);
 		return dot(CMPBits, 0.25);
 	}
@@ -209,12 +228,4 @@
 		N.y = 2.0;
 		return normalize(N);
 	}
-#endif
-
-#if !defined(REALITY_DEFINES)
-	#define REALITY_DEFINES
-
-	// This hardcoded value fixes a bug with undergrowth's alphatesting
-	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
-	#define FH2_ALPHAREF 127
 #endif

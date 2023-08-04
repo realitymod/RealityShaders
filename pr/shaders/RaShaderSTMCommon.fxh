@@ -26,20 +26,7 @@ uniform float SpecularPower;
 uniform float4 ParallaxScaleBias;
 
 // Common StaticMesh samplers
-// NOTE: Anisotropic filtering does not bode well with HESCO barriers
-
 #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
-	sampler SAMPLER_NAME = sampler_state \
-	{ \
-		Texture = (TEXTURE); \
-		MinFilter = LINEAR; \
-		MagFilter = LINEAR; \
-		MipFilter = LINEAR; \
-		AddressU = WRAP; \
-		AddressV = WRAP; \
-	}; \
-
-#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -55,19 +42,19 @@ uniform texture LightMap;
 CREATE_SAMPLER(SampleLightMap, LightMap)
 
 uniform texture DetailMap;
-CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap)
+CREATE_SAMPLER(SampleDetailMap, DetailMap)
 
 uniform texture DirtMap;
-CREATE_DYNAMIC_SAMPLER(SampleDirtMap, DirtMap)
+CREATE_SAMPLER(SampleDirtMap, DirtMap)
 
 uniform texture CrackMap;
-CREATE_DYNAMIC_SAMPLER(SampleCrackMap, CrackMap)
+CREATE_SAMPLER(SampleCrackMap, CrackMap)
 
 uniform texture CrackNormalMap;
 CREATE_SAMPLER(SampleCrackNormalMap, CrackNormalMap)
 
 uniform texture DiffuseMap;
-CREATE_DYNAMIC_SAMPLER(SampleDiffuseMap, DiffuseMap)
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap)
 
 uniform texture NormalMap;
 CREATE_SAMPLER(SampleNormalMap, NormalMap)

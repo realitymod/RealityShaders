@@ -10,6 +10,8 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
+#define BLUR_RADIUS 16.0
+
 /*
 	[Attributes from app]
 */
@@ -94,7 +96,6 @@ struct VS2PS_ThermalVision
 	float2 TexCoord2 : TEXCOORD2;
 };
 
-
 VS2PS_Quad VS_Basic(APP2VS_Quad Input)
 {
 	VS2PS_Quad Output;
@@ -103,54 +104,46 @@ VS2PS_Quad VS_Basic(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 GetTex(float2 Tex, float4 Offset)
+float4 GetBlur(sampler Source, float2 Tex, float2 Pos)
 {
-	return (Tex.xyyy * float4(1.0, 1.0, 0.0, 0.0)) + Offset;
+    float4 OutputColor = 0.0;
+    float4 Weight = 0.0;
+
+    const float Pi2 = acos(-1.0) * 2.0;
+    float2 PixelSize = abs(float2(ddx(Tex.x), ddy(Tex.y)));
+    float Noise = Pi2 * GetGradientNoise(Pos.xy);
+
+    float2 Rotation = 0.0;
+    sincos(Noise, Rotation.y, Rotation.x);
+    float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y,
+                                      -Rotation.y, Rotation.x);
+    
+    [unroll] for(int i = 1; i < 4; ++i)
+    {
+        [unroll] for(int j = 0; j < 4 * i; ++j)
+        {
+			const float Shift = (Pi2 / (4.0 * float(i))) * float(j);
+			float2 AngleShift = 0.0;
+			sincos(Shift, AngleShift.x, AngleShift.y);
+			AngleShift *= float(i);
+
+            float2 SampleOffset = mul(AngleShift * BLUR_RADIUS, RotationMatrix);
+            OutputColor += tex2D(Source, Tex + (SampleOffset * PixelSize));
+            Weight++;
+        }
+    }
+
+    return OutputColor / Weight;
 }
 
-float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR
+float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
 {
-	const float2 BlurSize = 0.02;
-	const int BlurTaps = 9;
-	const float Weight = 1.0 / float(BlurTaps);
-
-	float4 Offsets[9] =
-	{
-		float4(-0.02, 0.02, 0.0, 0.0),
-		float4(-0.02, 0.00, 0.0, 0.0),
-		float4(-0.02,-0.02, 0.0, 0.0),
-		float4( 0.00, 0.02, 0.0, 0.0),
-		float4( 0.00, 0.00, 0.0, 0.0),
-		float4( 0.00,-0.02, 0.0, 0.0),
-		float4( 0.02, 0.02, 0.0, 0.0),
-		float4( 0.02, 0.00, 0.0, 0.0),
-		float4( 0.02,-0.02, 0.0, 0.0),
-	};
-
-	// 0 3 6
-	// 1 4 7
-	// 2 5 8
-	float4 Tex[BlurTaps];
-	Tex[0] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[0]));
-	Tex[1] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[1]));
-	Tex[2] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[2]));
-	Tex[3] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[3]));
-	Tex[4] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[4]));
-	Tex[5] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[5]));
-	Tex[6] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[6]));
-	Tex[7] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[7]));
-	Tex[8] = tex2Dlod(SampleTex0_Mirror, GetTex(Input.TexCoord0.xy, Offsets[8]));
-
-	float4 Blur = 0.0;
-	for(int i = 0; i < BlurTaps; i++)
-	{
-		Blur += (Tex[i] * Weight);
-	}
-
-	float4 Color = Tex[4];
-	float2 UV = Input.TexCoord0;
+	// Sample blur and color
+	float4 Blur = GetBlur(SampleTex0_Mirror, Input.TexCoord0, ScreenPos);
+	float4 Color = tex2D(SampleTex0_Mirror, Input.TexCoord0);
 
 	// Parabolic function for x opacity to darken the edges, exponential function for opacity to darken the lower part of the screen
+	float2 UV = Input.TexCoord0;
 	float Darkness = max(4.0 * UV.x * UV.x - 4.0 * UV.x + 1.0, saturate((pow(2.5, UV.y) - UV.y / 2.0 - 1.0)));
 
 	// Weight the blurred version more heavily as you go lower on the screen
