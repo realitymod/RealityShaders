@@ -104,7 +104,7 @@ VS2PS_Quad VS_Basic(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 GetBlur(sampler Source, float2 Tex, float2 Pos)
+float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float SpreadFactor)
 {
 	float4 OutputColor = 0.0;
 	float4 Weight = 0.0;
@@ -126,6 +126,7 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos)
 			AngleShift *= float(i);
 
 			float2 SampleOffset = mul(AngleShift * BLUR_RADIUS, RotationMatrix);
+			SampleOffset *= SpreadFactor;
 			OutputColor += tex2D(Source, Tex + (SampleOffset * 0.01));
 			Weight++;
 		}
@@ -136,21 +137,18 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos)
 
 float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
 {
-	// Sample blur and color
-	float4 Blur = GetBlur(SampleTex0_Mirror, Input.TexCoord0, ScreenPos);
-	float4 Color = tex2D(SampleTex0_Mirror, Input.TexCoord0);
-
 	// Parabolic function for x opacity to darken the edges, exponential function for opacity to darken the lower part of the screen
 	float2 UV = Input.TexCoord0;
 	float Parabolic = (4.0 * (UV.x * UV.x)) - (4.0 * UV.x) + 1.0;
 	float Exponential = saturate((pow(2.5, UV.y) - UV.y / 2.0 - 1.0));
 	float Darkness = max(Parabolic, Exponential);
 
-	// Weight the blurred version more heavily as you go lower on the screen
-	float4 OutputColor = lerp(Color, Blur, saturate(2.0 * (pow(4.0, UV.y) - UV.y - 1.0)));
+	// Spread the blur as you go lower on the screen
+	float SpreadFactor = saturate(2.0 * (pow(4.0, UV.y) - UV.y - 1.0));
+	float4 Color = GetBlur(SampleTex0_Mirror, Input.TexCoord0, ScreenPos, SpreadFactor);
 
 	// Darken the left, right, and bottom edges of the final product
-	OutputColor = lerp(OutputColor, float4(0.0, 0.0, 0.0, 1.0), Darkness);
+	float4 OutputColor = lerp(Color, float4(0.0, 0.0, 0.0, 1.0), Darkness);
 	return float4(OutputColor.rgb, saturate(2.0 * _BackBufferLerpBias));
 }
 
