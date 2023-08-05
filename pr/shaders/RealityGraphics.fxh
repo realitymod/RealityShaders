@@ -130,7 +130,7 @@
 		HemiTex.y = (InvertY) ? 1.0 - HemiTex.y : HemiTex.y;
 		return HemiTex;
 	}
-	
+
 	// Gets radial light attenuation value for pointlights
 	float GetLightAttenuation(float3 LightVec, float Attenuation)
 	{
@@ -138,15 +138,25 @@
 	}
 
 	/*
-        Interleaved Gradient Noise Dithering
-        ---
-        http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
-    */
+		Interleaved Gradient Noise Dithering
+		---
+		http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
+	*/
 
-    float GetGradientNoise(float2 Position)
-    {
-        return frac(52.9829189 * frac(dot(Position, float2(0.06711056, 0.00583715))));
-    }
+	float GetGradientNoise(float2 Position)
+	{
+		return frac(52.9829189 * frac(dot(Position, float2(0.06711056, 0.00583715))));
+	}
+
+	float2 GetPixelSize(float2 Tex)
+	{
+		return abs(float2(ddx(Tex.x), ddy(Tex.y)));
+	}
+
+	int2 GetScreenSize(float2 Tex)
+	{
+		return int2(1.0 / GetPixelSize(Tex));
+	}
 #endif
 
 // Depth-based functions

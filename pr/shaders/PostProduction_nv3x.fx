@@ -10,7 +10,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define BLUR_RADIUS 2.0
+#define BLUR_RADIUS 1.0
 
 /*
 	[Attributes from app]
@@ -106,33 +106,32 @@ VS2PS_Quad VS_Basic(APP2VS_Quad Input)
 
 float4 GetBlur(sampler Source, float2 Tex, float2 Pos)
 {
-    float4 OutputColor = 0.0;
-    float4 Weight = 0.0;
+	float4 OutputColor = 0.0;
+	float4 Weight = 0.0;
 
-    const float Pi2 = acos(-1.0) * 2.0;
-    float Noise = Pi2 * GetGradientNoise(Pos.xy);
+	const float Pi2 = acos(-1.0) * 2.0;
+	float Noise = Pi2 * GetGradientNoise(Pos.xy);
 
-    float2 Rotation = 0.0;
-    sincos(Noise, Rotation.y, Rotation.x);
-    float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y,
-                                      -Rotation.y, Rotation.x);
-    
-    [unroll] for(int i = 1; i < 4; ++i)
-    {
-        [unroll] for(int j = 0; j < 4 * i; ++j)
-        {
+	float2 Rotation = 0.0;
+	sincos(Noise, Rotation.y, Rotation.x);
+	float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
+
+	[unroll] for(int i = 1; i < 4; ++i)
+	{
+		[unroll] for(int j = 0; j < 4 * i; ++j)
+		{
 			const float Shift = (Pi2 / (4.0 * float(i))) * float(j);
 			float2 AngleShift = 0.0;
 			sincos(Shift, AngleShift.x, AngleShift.y);
 			AngleShift *= float(i);
 
-            float2 SampleOffset = mul(AngleShift * BLUR_RADIUS, RotationMatrix);
-            OutputColor += tex2D(Source, Tex + (SampleOffset * 0.01));
-            Weight++;
-        }
-    }
+			float2 SampleOffset = mul(AngleShift * BLUR_RADIUS, RotationMatrix);
+			OutputColor += tex2D(Source, Tex + (SampleOffset * 0.01));
+			Weight++;
+		}
+	}
 
-    return OutputColor / Weight;
+	return OutputColor / Weight;
 }
 
 float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
@@ -143,7 +142,9 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
 
 	// Parabolic function for x opacity to darken the edges, exponential function for opacity to darken the lower part of the screen
 	float2 UV = Input.TexCoord0;
-	float Darkness = max(4.0 * UV.x * UV.x - 4.0 * UV.x + 1.0, saturate((pow(2.5, UV.y) - UV.y / 2.0 - 1.0)));
+	float Parabolic = (4.0 * (UV.x * UV.x)) - (4.0 * UV.x) + 1.0;
+	float Exponential = saturate((pow(2.5, UV.y) - UV.y / 2.0 - 1.0));
+	float Darkness = max(Parabolic, Exponential);
 
 	// Weight the blurred version more heavily as you go lower on the screen
 	float4 OutputColor = lerp(Color, Blur, saturate(2.0 * (pow(4.0, UV.y) - UV.y - 1.0)));

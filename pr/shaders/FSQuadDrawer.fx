@@ -11,8 +11,6 @@
 	Changes:
 	1. Removed Shader Model 1.4 shaders (these were done because arbitrary texture coordinate swizzling wasn't a thing in Shader Model 1.x)
 	2. Many shaders now use bilinear filtering instead of point filtering (linear filtering was more expensive for certain cards back then)
-	3. Updated shaders to Shader Model 3.0 for access to ddx, ddy, and non-gradient texture instructions
-	4. Redid coding conventions
 */
 
 /*
@@ -142,20 +140,20 @@ static const float Weights[5] =
 	0.012539291705835646
 };
 
-float4 LinearGaussianBlur(sampler2D Source, float2 TexCoord, bool IsHorizontal)
+float4 GetLinearGaussianBlur(sampler2D Source, float2 Tex, bool IsHorizontal)
 {
 	float4 OutputColor = 0.0;
 	float4 TotalWeights = 0.0;
-	float2 PixelSize = float2(ddx(TexCoord.x), ddy(TexCoord.y));
+	float2 PixelSize = GetPixelSize(Tex);
 
-	OutputColor += tex2D(Source, TexCoord + (Offsets[0].xy * PixelSize)) * Weights[0];
+	OutputColor += tex2D(Source, Tex + (Offsets[0].xy * PixelSize)) * Weights[0];
 	TotalWeights += Weights[0];
 
 	for(int i = 1; i < 5; i++)
 	{
 		float2 Offset = (IsHorizontal) ? Offsets[i].yx : Offsets[i].xy;
-		OutputColor += tex2D(Source, TexCoord + (Offset * PixelSize)) * Weights[i];
-		OutputColor += tex2D(Source, TexCoord - (Offset * PixelSize)) * Weights[i];
+		OutputColor += tex2D(Source, Tex + (Offset * PixelSize)) * Weights[i];
+		OutputColor += tex2D(Source, Tex - (Offset * PixelSize)) * Weights[i];
 		TotalWeights += (Weights[i] * 2.0);
 	}
 
@@ -164,19 +162,17 @@ float4 LinearGaussianBlur(sampler2D Source, float2 TexCoord, bool IsHorizontal)
 
 float4 PS_TR_OpticsBlurH(VS2PS_Blit Input) : COLOR
 {
-	return LinearGaussianBlur(SampleTex0_Mirror, Input.TexCoord0, true);
+	return GetLinearGaussianBlur(SampleTex0_Mirror, Input.TexCoord0, true);
 }
 
 float4 PS_TR_OpticsBlurV(VS2PS_Blit Input) : COLOR
 {
-	return LinearGaussianBlur(SampleTex0_Mirror, Input.TexCoord0, false);
+	return GetLinearGaussianBlur(SampleTex0_Mirror, Input.TexCoord0, false);
 }
 
 float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR
 {
-	float2 ScreenSize = 0.0;
-	ScreenSize.x = int(1.0 / abs(ddx(Input.TexCoord0.x)));
-	ScreenSize.y = int(1.0 / abs(ddy(Input.TexCoord0.y)));
+	float2 ScreenSize = GetScreenSize(Input.TexCoord0);
 	float AspectRatio = ScreenSize.x / ScreenSize.y;
 
 	float Radius1 = _BlurStrength / 1000.0; // 0.2 by default (floor() isn't used for perfomance reasons)
