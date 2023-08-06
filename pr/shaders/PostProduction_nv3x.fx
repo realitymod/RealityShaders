@@ -125,9 +125,8 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float SpreadFactor)
 			sincos(Shift, AngleShift.x, AngleShift.y);
 			AngleShift *= float(i);
 
-			float2 SampleOffset = mul(AngleShift * BLUR_RADIUS, RotationMatrix);
-			SampleOffset *= SpreadFactor;
-			OutputColor += tex2D(Source, Tex + (SampleOffset * 0.01));
+			float2 Offset = mul((AngleShift * SpreadFactor) * BLUR_RADIUS, RotationMatrix);
+			OutputColor += tex2D(Source, Tex + (Offset * 0.01));
 			Weight++;
 		}
 	}
@@ -137,18 +136,23 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float SpreadFactor)
 
 float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
 {
-	// Parabolic function for x opacity to darken the edges, exponential function for opacity to darken the lower part of the screen
-	float2 UV = Input.TexCoord0;
-	float Parabolic = (4.0 * (UV.x * UV.x)) - (4.0 * UV.x) + 1.0;
-	float Exponential = saturate((pow(2.5, UV.y) - UV.y / 2.0 - 1.0));
-	float Darkness = max(Parabolic, Exponential);
+	// Get texture coordinates
+	float2 Tex1 = Input.TexCoord0;
+	float2 Tex2 = (Tex1 * 2.0) - 1.0;
 
 	// Spread the blur as you go lower on the screen
-	float SpreadFactor = saturate(2.0 * (pow(4.0, UV.y) - UV.y - 1.0));
+	float SpreadFactor = saturate((Tex1.y * Tex1.y) * 4.0);
 	float4 Color = GetBlur(SampleTex0_Mirror, Input.TexCoord0, ScreenPos, SpreadFactor);
 
-	// Darken the left, right, and bottom edges of the final product
-	float4 OutputColor = lerp(Color, float4(0.0, 0.0, 0.0, 1.0), Darkness);
+	// Get mask that darkens the left, right, and bottom edges
+	// Parabolic: Darken left and right edges
+	// Quadratic: Darken bottom edge
+	float Parabolic = Tex2.x * Tex2.x;
+	float Quadratic = Tex1.y * Tex1.y;
+	float Mask = saturate(max(Parabolic, Quadratic));
+
+	// Composite final product
+	float4 OutputColor = lerp(Color, float4(0.0, 0.0, 0.0, 1.0), Mask);
 	return float4(OutputColor.rgb, saturate(2.0 * _BackBufferLerpBias));
 }
 
