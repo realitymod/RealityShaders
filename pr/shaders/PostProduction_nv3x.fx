@@ -134,22 +134,29 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float SpreadFactor)
 	return OutputColor / Weight;
 }
 
+/*
+	Tinnitus using Ronja Böhringer's signed distance fields
+	---
+	Changes:
+		- Scaled the edge math to output [-1, 1] range instead of [-0.5, 0.5]
+		- Used squared Euclidean distance
+	---
+	https://github.com/ronja-tutorials/ShaderTutorials
+*/
+
 float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
 {
 	// Get texture coordinates
 	float2 Tex1 = Input.TexCoord0;
-	float2 Tex2 = (Tex1 * 2.0) - 1.0;
 
 	// Spread the blur as you go lower on the screen
 	float SpreadFactor = saturate((Tex1.y * Tex1.y) * 4.0);
 	float4 Color = GetBlur(SampleTex0_Mirror, Input.TexCoord0, ScreenPos, SpreadFactor);
 
-	// Get mask that darkens the left, right, and bottom edges
-	// Parabolic: Darken left and right edges
-	// Quadratic: Darken bottom edge
-	float Parabolic = Tex2.x * Tex2.x;
-	float Quadratic = Tex1.y * Tex1.y;
-	float Mask = saturate(max(Parabolic, Quadratic));
+	// Get SDF mask that darkens the left, right, and bottom edges
+	float2 Tex2 = float2((Tex1.x * 2.0) - 1.0, Tex1.y);
+	float2 Edge = max((abs(Tex2) * 2.0) - 1.0, 0.0);
+	float Mask = saturate(dot(Edge, Edge));
 
 	// Composite final product
 	float4 OutputColor = lerp(Color, float4(0.0, 0.0, 0.0, 1.0), Mask);
