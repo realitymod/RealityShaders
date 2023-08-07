@@ -10,7 +10,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define BLUR_RADIUS 1.0
+#define BLUR_RADIUS 0.5
 
 /*
 	[Attributes from app]
@@ -111,6 +111,7 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float SpreadFactor)
 
 	const float Pi2 = acos(-1.0) * 2.0;
 	float Noise = Pi2 * GetGradientNoise(Pos.xy);
+	float AspectRatio = GetAspectRatio(GetScreenSize(Tex));
 
 	float2 Rotation = 0.0;
 	sincos(Noise, Rotation.y, Rotation.x);
@@ -125,7 +126,10 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float SpreadFactor)
 			sincos(Shift, AngleShift.x, AngleShift.y);
 			AngleShift *= float(i);
 
-			float2 Offset = mul((AngleShift * SpreadFactor) * BLUR_RADIUS, RotationMatrix);
+			float2 Offset = mul(AngleShift, RotationMatrix);
+			Offset *= BLUR_RADIUS;
+			Offset *= SpreadFactor;
+			Offset.x *= AspectRatio;
 			OutputColor += tex2D(Source, Tex + (Offset * 0.01));
 			Weight++;
 		}
@@ -150,7 +154,7 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
 	float2 Tex1 = Input.TexCoord0;
 
 	// Spread the blur as you go lower on the screen
-	float SpreadFactor = saturate((Tex1.y * Tex1.y) * 4.0);
+	float SpreadFactor = saturate(1.0 - Tex1.y);
 	float4 Color = GetBlur(SampleTex0_Mirror, Input.TexCoord0, ScreenPos, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and bottom edges

@@ -157,6 +157,11 @@
 	{
 		return int2(1.0 / GetPixelSize(Tex));
 	}
+
+	float GetAspectRatio(float2 ScreenSize)
+	{
+		return ScreenSize.y * (1.0 / ScreenSize.x);
+	}
 #endif
 
 // Depth-based functions
