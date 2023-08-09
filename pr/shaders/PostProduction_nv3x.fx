@@ -88,14 +88,6 @@ struct VS2PS_Quad
 	float2 TexCoord0 : TEXCOORD0;
 };
 
-struct VS2PS_ThermalVision
-{
-	float4 HPos : POSITION;
-	float2 TexCoord0 : TEXCOORD0;
-	float2 TexCoord1 : TEXCOORD1;
-	float2 TexCoord2 : TEXCOORD2;
-};
-
 VS2PS_Quad VS_Basic(APP2VS_Quad Input)
 {
 	VS2PS_Quad Output;
@@ -116,7 +108,7 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float LerpBias)
 	// Get texcoord data
 	float Noise = Pi2 * GetGradientNoise(Pos);
 	float AspectRatio = GetAspectRatio(GetScreenSize(Tex));
-	float SpreadFactor = saturate(1.0 - Tex.y);
+	float SpreadFactor = saturate(1.0 - (Tex.y * Tex.y));
 
 	float2 Rotation = 0.0;
 	sincos(Noise, Rotation.y, Rotation.x);
@@ -257,6 +249,14 @@ uniform float _DistortionFreq : DISTORTIONFREQ; //= 0.500000;
 uniform float _Granularity : TVGRANULARITY; // = 3.5;
 uniform float _TVAmbient : TVAMBIENT; // = 0.15
 uniform float3 _TVColor : TVCOLOR;
+
+struct VS2PS_ThermalVision
+{
+	float4 HPos : POSITION;
+	float2 TexCoord0 : TEXCOORD0;
+	float2 TexCoord1 : TEXCOORD1;
+	float2 TexCoord2 : TEXCOORD2;
+};
 
 VS2PS_ThermalVision VS_ThermalVision(APP2VS_Quad Input)
 {
