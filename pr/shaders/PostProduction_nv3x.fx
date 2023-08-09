@@ -10,7 +10,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define BLUR_RADIUS 0.5
+#define BLUR_RADIUS 1.0
 
 /*
 	[Attributes from app]
@@ -104,14 +104,19 @@ VS2PS_Quad VS_Basic(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float SpreadFactor)
+float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float LerpBias)
 {
+	// Initialize values
 	float4 OutputColor = 0.0;
 	float4 Weight = 0.0;
 
+	// Get constants
 	const float Pi2 = acos(-1.0) * 2.0;
-	float Noise = Pi2 * GetGradientNoise(Pos.xy);
+
+	// Get texcoord data
+	float Noise = Pi2 * GetGradientNoise(Pos);
 	float AspectRatio = GetAspectRatio(GetScreenSize(Tex));
+	float SpreadFactor = saturate(1.0 - Tex.y);
 
 	float2 Rotation = 0.0;
 	sincos(Noise, Rotation.y, Rotation.x);
@@ -127,9 +132,10 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float SpreadFactor)
 			AngleShift *= float(i);
 
 			float2 Offset = mul(AngleShift, RotationMatrix);
+			Offset.x *= AspectRatio;
 			Offset *= BLUR_RADIUS;
 			Offset *= SpreadFactor;
-			Offset.x *= AspectRatio;
+			Offset *= LerpBias;
 			OutputColor += tex2D(Source, Tex + (Offset * 0.01));
 			Weight++;
 		}
@@ -150,21 +156,21 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float SpreadFactor)
 
 float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
 {
-	// Get texture coordinates
-	float2 Tex1 = Input.TexCoord0;
+	// Get texture data
+	float LerpBias = saturate(2.0 * _BackBufferLerpBias);
 
 	// Spread the blur as you go lower on the screen
-	float SpreadFactor = saturate(1.0 - Tex1.y);
-	float4 Color = GetBlur(SampleTex0_Mirror, Input.TexCoord0, ScreenPos, SpreadFactor);
+	float4 Color = GetBlur(SampleTex0_Mirror, Input.TexCoord0, ScreenPos, LerpBias);
 
-	// Get SDF mask that darkens the left, right, and bottom edges
-	float2 Tex2 = float2((Tex1.x * 2.0) - 1.0, Tex1.y);
-	float2 Edge = max((abs(Tex2) * 2.0) - 1.0, 0.0);
+	// Get SDF mask that darkens the left, right, and top edges
+	float2 Tex = (Input.TexCoord0 * float2(2.0, 1.0)) - 1.0;
+	Tex *= LerpBias; // gradually remove mask overtime
+	float2 Edge = max(abs(Tex) - (1.0 / 8.0), 0.0);
 	float Mask = saturate(dot(Edge, Edge));
 
 	// Composite final product
 	float4 OutputColor = lerp(Color, float4(0.0, 0.0, 0.0, 1.0), Mask);
-	return float4(OutputColor.rgb, saturate(2.0 * _BackBufferLerpBias));
+	return float4(OutputColor.rgb, LerpBias);
 }
 
 technique Tinnitus
