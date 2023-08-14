@@ -114,9 +114,9 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float LerpBias)
 	sincos(Noise, Rotation.y, Rotation.x);
 	float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
 
-	[unroll] for(int i = 1; i < 4; ++i)
+	for(int i = 1; i < 4; ++i)
 	{
-		[unroll] for(int j = 0; j < 4 * i; ++j)
+		for(int j = 0; j < 4 * i; ++j)
 		{
 			const float Shift = (Pi2 / (4.0 * float(i))) * float(j);
 			float2 AngleShift = 0.0;
