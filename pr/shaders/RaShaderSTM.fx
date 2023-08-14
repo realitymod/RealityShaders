@@ -27,11 +27,9 @@
 
 #if (_NBASE_ || _NDETAIL_ || _NCRACK_ || _PARALLAXDETAIL_)
 	#define _PERPIXEL_
-#endif
-
-// Only use crackmap if we have a per-pixel normalmap
-#if !defined(_PERPIXEL_)
-	#undef _CRACK_
+#else
+	// Only use crackmap if we have a per-pixel normalmap
+	#define _CRACK_ 0
 #endif
 
 #undef _DEBUG_
