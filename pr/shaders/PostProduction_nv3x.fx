@@ -11,6 +11,7 @@
 */
 
 #define BLUR_RADIUS 1.0
+#define THERMAL_SIZE 720
 
 /*
 	[Attributes from app]
@@ -53,7 +54,6 @@ uniform float _DeltaV : DELTAV;
 		AddressV = ADDRESS; \
 	}; \
 
-
 /*
 	Unused?
 	uniform texture Texture4 : TEXLAYER4;
@@ -88,11 +88,30 @@ struct VS2PS_Quad
 	float2 TexCoord0 : TEXCOORD0;
 };
 
-VS2PS_Quad VS_Basic(APP2VS_Quad Input)
+/*
+	Transform fullscreen quad into a fullscreen triangle with its texcoords
+	NOTE: We transform the texture in PS
+*/
+
+struct FSTriangle
+{
+	float2 Tex;
+	float2 Pos;
+};
+
+void GetFSTriangle(in float2 Tex, out FSTriangle Output)
+{
+	Output.Tex = trunc(Tex * 2.0);
+	Output.Pos = (Output.Tex * float2(2.0, -2.0)) + float2(-1.0, 1.0);
+}
+
+VS2PS_Quad VS_FSTriangle(APP2VS_Quad Input)
 {
 	VS2PS_Quad Output;
-	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
-	Output.TexCoord0 = Input.TexCoord0;
+	FSTriangle FST;
+	GetFSTriangle(Input.TexCoord0, FST);
+	Output.HPos = float4(FST.Pos, 0.0, 1.0);
+	Output.TexCoord0 = FST.Tex;
 	return Output;
 }
 
@@ -176,7 +195,7 @@ technique Tinnitus
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 VS_Basic();
+		VertexShader = compile vs_3_0 VS_FSTriangle();
 		PixelShader = compile ps_3_0 PS_Tinnitus();
 	}
 }
@@ -208,7 +227,7 @@ technique Glow
 		SrcBlend = SRCCOLOR;
 		DestBlend = ONE;
 
-		VertexShader = compile vs_3_0 VS_Basic();
+		VertexShader = compile vs_3_0 VS_FSTriangle();
 		PixelShader = compile ps_3_0 PS_Glow();
 	}
 }
@@ -231,13 +250,12 @@ technique GlowMaterial
 		SrcBlend = SRCCOLOR;
 		DestBlend = ONE;
 
-		VertexShader = compile vs_3_0 VS_Basic();
+		VertexShader = compile vs_3_0 VS_FSTriangle();
 		PixelShader = compile ps_3_0 PS_Glow_Material();
 	}
 }
 
 // TVEffect specific attributes
-
 uniform float _FracTime : FRACTIME;
 uniform float _FracTime256 : FRACTIME256;
 uniform float _SinFracTime : FRACSINE;
@@ -253,43 +271,53 @@ uniform float3 _TVColor : TVCOLOR;
 struct VS2PS_ThermalVision
 {
 	float4 HPos : POSITION;
-	float2 TexCoord0 : TEXCOORD0;
-	float2 TexCoord1 : TEXCOORD1;
-	float2 TexCoord2 : TEXCOORD2;
+	float4 Tex0 : TEXCOORD0;
 };
+
+struct TV
+{
+	float2 Random;
+	float2 Noise;
+};
+
+TV GetTV(float2 Tex)
+{
+	TV Output;
+	Output.Random = (Tex * _Granularity) + _Displacement;
+	Output.Noise = (Tex * 0.25) - (0.35 * _SinFracTime);
+	return Output;
+}
 
 VS2PS_ThermalVision VS_ThermalVision(APP2VS_Quad Input)
 {
 	VS2PS_ThermalVision Output;
-	Input.Pos.xy = sign(Input.Pos.xy);
-	Output.HPos = float4(Input.Pos.xy, 0, 1);
-	Output.TexCoord0 = Input.Pos.xy * _Granularity + _Displacement; // Outputs random jitter movement at [-x, x] range
-	Output.TexCoord1 = Input.Pos.xy * 0.25 - 0.35 * _SinFracTime;
-	Output.TexCoord2 = Input.TexCoord0;
+	FSTriangle FST;
+	GetFSTriangle(Input.TexCoord0, FST);
+	Output.HPos = float4(FST.Pos, 0.0, 1.0);
+	Output.Tex0 = float4(FST.Tex, (Input.TexCoord0 * 2.0) - 1.0);
 	return Output;
+}
+
+float2 GetPixelation(float2 Tex)
+{
+	return round(Tex * THERMAL_SIZE) / THERMAL_SIZE;
 }
 
 float4 PS_ThermalVision(VS2PS_ThermalVision Input) : COLOR
 {
 	float4 OutputColor = 0.0;
-	float2 ImgCoord = Input.TexCoord2;
-	float4 Image = tex2D(SampleTex0, ImgCoord);
+
+	// Get texture data
+	float2 ImageTex = Input.Tex0.xy;
+	TV Tex = GetTV(Input.Tex0.zw);
+
+	// Fetch number textures
+	float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
+	float Noise = tex2D(SampleTex1_Wrap, Tex.Random) - 0.5;
 
 	if (_Interference < 0) // Thermals
 	{
-		float2 Pos = Input.TexCoord0;
-		float Random = tex2D(SampleTex2_Wrap, Pos) - 0.2;
-		float HOffset = 0.001;
-		float VOffset = 0.0015;
-		Image *= 0.25;
-		Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, VOffset)) * 0.0625;
-		Image += tex2D(SampleTex0, ImgCoord - float2( HOffset, VOffset)) * 0.0625;
-		Image += tex2D(SampleTex0, ImgCoord + float2(-HOffset, VOffset)) * 0.0625;
-		Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, -VOffset)) * 0.0625;
-		Image += tex2D(SampleTex0, ImgCoord + float2( HOffset, 0.0)) * 0.125;
-		Image += tex2D(SampleTex0, ImgCoord - float2( HOffset, 0.0)) * 0.125;
-		Image += tex2D(SampleTex0, ImgCoord + float2( 0.0, VOffset)) * 0.125;
-		Image += tex2D(SampleTex0, ImgCoord - float2( 0.0, VOffset)) * 0.125;
+		float4 Image = tex2Dlod(SampleTex0, float4(GetPixelation(ImageTex), 0.0, 0.0));
 		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
 		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
 		OutputColor.r -= _Interference * Random; // Add -_Interference
@@ -297,19 +325,21 @@ float4 PS_ThermalVision(VS2PS_ThermalVision Input) : COLOR
 	}
 	else if (_Interference > 0 && _Interference <= 1) // BF2 TV
 	{
-		float2 Pos = Input.TexCoord0;
-		float Random = tex2D(SampleTex2_Wrap, Pos) - 0.2;
-		float Noise = tex2D(SampleTex1_Wrap, Input.TexCoord1) - 0.5;
-		float Distort = frac(Pos.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
+		// Distort texture coordinates
+		float Distort = frac(Tex.Random.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
 		Distort *= (1.0 - Distort);
-		Distort /= 1.0 + _DistortionScale * abs(Pos.y);
-		ImgCoord.x += _DistortionScale * Noise * Distort;
-		Image = dot(float3(0.3, 0.59, 0.11), Image.rgb);
+		Distort /= 1.0 + _DistortionScale * abs(Tex.Random.y);
+		ImageTex.x += _DistortionScale * Noise * Distort;
+
+		// Fetch image
+		float4 Image = tex2Dlod(SampleTex0, float4(ImageTex, 0.0, 0.0));
+		Image = dot(Image.rgb, float3(0.3, 0.59, 0.11));
+
 		OutputColor = float4(_TVColor, 1.0) * (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
 	}
 	else // Passthrough
 	{
-		OutputColor = Image;
+		OutputColor = tex2D(SampleTex0, ImageTex);
 	}
 
 	return OutputColor;
@@ -323,24 +353,33 @@ float4 PS_ThermalVision_Gradient(VS2PS_ThermalVision Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 
+	// Get texture data
+	float2 ImageTex = Input.Tex0.xy;
+	TV Tex = GetTV(Input.Tex0.zw);
+
+	// Fetch number textures
+	float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
+	float Noise = tex2D(SampleTex1_Wrap, Tex.Noise) - 0.5;
+
 	if (_Interference > 0 && _Interference <= 1)
 	{
-		float2 Pos = Input.TexCoord0;
-		float2 ImgCoord = Input.TexCoord2;
-		float Random = tex2D(SampleTex2_Wrap, Pos) - 0.2;
-		float Noise = tex2D(SampleTex1_Wrap, Input.TexCoord1) - 0.5;
-		float Distort = frac(Pos.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
+		// Distort texture coordinates
+		float Distort = frac(Tex.Random.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
 		Distort *= (1.0 - Distort);
-		Distort /= 1.0 + _DistortionScale * abs(Pos.y);
-		ImgCoord.x += _DistortionScale * Noise * Distort;
-		float4 Image = dot(float3(0.3, 0.59, 0.11), tex2D(SampleTex0, ImgCoord).rgb);
+		Distort /= 1.0 + _DistortionScale * abs(Tex.Random.y);
+		ImageTex.x += _DistortionScale * Noise * Distort;
+
+		// Fetch image
+		float4 Image = tex2Dlod(SampleTex0, float4(ImageTex, 0.0, 0.0));
+		Image = dot(Image.rgb, float3(0.3, 0.59, 0.11));
+
 		float4 Intensity = (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
 		float4 GradientColor = tex2D(SampleTex3, float2(Intensity.r, 0.0));
 		OutputColor = float4( GradientColor.rgb, Intensity.a );
 	}
 	else
 	{
-		OutputColor = tex2D(SampleTex0, Input.TexCoord2);
+		OutputColor = tex2D(SampleTex0, ImageTex);
 	}
 
 	return OutputColor;
@@ -453,7 +492,7 @@ technique Flashbang
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 VS_Basic();
+		VertexShader = compile vs_3_0 VS_FSTriangle();
 		PixelShader = compile ps_3_0 PS_Flashbang();
 	}
 }
