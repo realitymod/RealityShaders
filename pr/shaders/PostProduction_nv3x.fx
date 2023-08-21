@@ -11,7 +11,7 @@
 */
 
 #define BLUR_RADIUS 1.0
-#define THERMAL_SIZE 720
+#define THERMAL_SIZE 500
 
 /*
 	[Attributes from app]
@@ -158,17 +158,13 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float LerpBias)
 /*
 	Tinnitus using Ronja Böhringer's signed distance fields
 	---
-	Changes:
-		- Scaled the edge math to output [-1, 1] range instead of [-0.5, 0.5]
-		- Used squared Euclidean distance
-	---
 	https://github.com/ronja-tutorials/ShaderTutorials
 */
 
 float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
 {
 	// Get texture data
-	float LerpBias = saturate(2.0 * _BackBufferLerpBias);
+	float LerpBias = smoothstep(0.0, 0.5, _BackBufferLerpBias);
 
 	// Spread the blur as you go lower on the screen
 	float4 Color = GetBlur(SampleTex0_Mirror, Input.TexCoord0, ScreenPos, LerpBias);
@@ -176,8 +172,8 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
 	// Get SDF mask that darkens the left, right, and top edges
 	float2 Tex = (Input.TexCoord0 * float2(2.0, 1.0)) - 1.0;
 	Tex *= LerpBias; // gradually remove mask overtime
-	float2 Edge = max(abs(Tex) - (1.0 / 8.0), 0.0);
-	float Mask = saturate(dot(Edge, Edge));
+	float2 Edge = max(abs(Tex) - (1.0 / 5.0), 0.0);
+	float Mask = saturate(length(Edge));
 
 	// Composite final product
 	float4 OutputColor = lerp(Color, float4(0.0, 0.0, 0.0, 1.0), Mask);

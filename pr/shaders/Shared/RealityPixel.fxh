@@ -29,7 +29,7 @@
 
 	float GetAspectRatio(float2 ScreenSize)
 	{
-		return ScreenSize.y * (1.0 / ScreenSize.x);
+		return float(ScreenSize.y) / float(ScreenSize.x);
 	}
 
 	float2 GetHemiTex(float3 WorldPos, float3 WorldNormal, float3 HemiInfo, bool InvertY)
