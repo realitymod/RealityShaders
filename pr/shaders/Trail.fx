@@ -154,11 +154,11 @@ PS2FB PS_Trail_Low(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	// Vertex blend factors
-	VFactors V = GetVFactors(Input);
+	VFactors VF = GetVFactors(Input);
 
 	// Lighting
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	float4 LightColor = float4(Input.Color.rgb, V.AlphaBlend);
+	float4 LightColor = float4(Input.Color.rgb, VF.AlphaBlend);
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
@@ -176,16 +176,16 @@ PS2FB PS_Trail_Medium(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	// Vertex blend factors
-	VFactors V = GetVFactors(Input);
+	VFactors VF = GetVFactors(Input);
 
 	// Texture data
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
-	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, V.AnimationBlend);
+	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.AnimationBlend);
 
 	// Lighting
-	float3 Lighting = GetParticleLighting(1.0, V.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
-	float4 LightColor = float4(Input.Color.rgb * Lighting, V.AlphaBlend);
+	float3 Lighting = GetParticleLighting(1.0, VF.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
+	float4 LightColor = float4(Input.Color.rgb * Lighting, VF.AlphaBlend);
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
@@ -203,20 +203,20 @@ PS2FB PS_Trail_High(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	// Vertex blend factors
-	VFactors V = GetVFactors(Input);
+	VFactors VF = GetVFactors(Input);
 
 	// Get diffuse map
 	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
-	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, V.AnimationBlend);
+	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.AnimationBlend);
 
 	// Get hemi map
 	float2 HemiTex = GetHemiTex(Input.WorldPos.xyz, 0.0, _HemiMapInfo, true);
 	float4 HemiMap = tex2D(SampleLUT, HemiTex);
 
 	// Apply lighting
-	float3 Lighting = GetParticleLighting(HemiMap.a, V.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
-	float4 LightColor = float4(Input.Color.rgb * Lighting, V.AlphaBlend);
+	float3 Lighting = GetParticleLighting(HemiMap.a, VF.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
+	float4 LightColor = float4(Input.Color.rgb * Lighting, VF.AlphaBlend);
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
