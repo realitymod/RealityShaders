@@ -63,6 +63,7 @@ uniform float _DeltaV : DELTAV;
 
 uniform texture Tex0 : TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP)
+CREATE_SAMPLER(SampleTex0_Point, Tex0, POINT, CLAMP)
 CREATE_SAMPLER(SampleTex0_Mirror, Tex0, LINEAR, MIRROR)
 
 uniform texture Tex1 : TEXLAYER1;
@@ -123,19 +124,17 @@ VS2PS_Quad VS_FSTriangle(APP2VS_Quad Input)
 
 struct ScreenSpace
 {
+	float2 ISize;
 	float2 Pos;
 	float2 Tex;
-	float2 Size;
-	float AspectRatio;
 };
 
 ScreenSpace GetScreenSpace(VS2PS_PP Input)
 {
 	ScreenSpace Output;
-	float2 ScreenSize = GetScreenSize(Input.Tex0);
+	Output.ISize = GetPixelSize(Input.Tex0);
 	Output.Pos = Input.Pos.xy;
-	Output.Tex = (Input.Pos.xy + 0.5) / ScreenSize;
-	Output.Size = ScreenSize;
+	Output.Tex = (Input.Pos.xy + 0.5) * Output.ISize;
 	return Output;
 }
 
@@ -150,7 +149,7 @@ float4 GetBlur(ScreenSpace Input, sampler Source, float LerpBias)
 
 	// Get texcoord data
 	float Noise = Pi2 * GetGradientNoise(Input.Pos);
-	float AspectRatio = GetAspectRatio(Input.Tex);
+	float AspectRatio = GetAspectRatio(Input.ISize.yx);
 	float SpreadFactor = saturate(1.0 - (Input.Tex.y * Input.Tex.y));
 
 	float2 Rotation = 0.0;
@@ -184,7 +183,6 @@ float4 GetBlur(ScreenSpace Input, sampler Source, float LerpBias)
 	---
 	https://github.com/ronja-tutorials/ShaderTutorials
 */
-
 float4 PS_Tinnitus(VS2PS_PP Input) : COLOR
 {
 	ScreenSpace SS = GetScreenSpace(Input);
@@ -327,7 +325,6 @@ float4 PS_ThermalVision(VS2PS_PP Input) : COLOR
 	float4 OutputColor = 0.0;
 
 	// Get texture data
-	float2 ImageTex = SS.Tex;
 	TV Tex = GetTV(SS.Tex);
 
 	// Fetch number textures
@@ -336,7 +333,7 @@ float4 PS_ThermalVision(VS2PS_PP Input) : COLOR
 
 	if (_Interference < 0) // Thermals
 	{
-		float4 Image = tex2Dlod(SampleTex0, float4(GetPixelation(ImageTex), 0.0, 0.0));
+		float4 Image = tex2Dlod(SampleTex0_Point, float4(GetPixelation(Input.Tex0), 0.0, 0.0));
 		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
 		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
 		OutputColor.r -= _Interference * Random; // Add -_Interference
@@ -348,17 +345,17 @@ float4 PS_ThermalVision(VS2PS_PP Input) : COLOR
 		float Distort = frac(Tex.Random.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
 		Distort *= (1.0 - Distort);
 		Distort /= 1.0 + _DistortionScale * abs(Tex.Random.y);
-		ImageTex.x += _DistortionScale * Noise * Distort;
+		SS.Tex.x += _DistortionScale * Noise * Distort;
 
 		// Fetch image
-		float4 Image = tex2Dlod(SampleTex0, float4(ImageTex, 0.0, 0.0));
+		float4 Image = tex2Dlod(SampleTex0_Point, float4(SS.Tex, 0.0, 0.0));
 		Image = dot(Image.rgb, float3(0.3, 0.59, 0.11));
 
 		OutputColor = float4(_TVColor, 1.0) * (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
 	}
 	else // Passthrough
 	{
-		OutputColor = tex2D(SampleTex0, ImageTex);
+		OutputColor = tex2D(SampleTex0_Point, SS.Tex);
 	}
 
 	return OutputColor;
@@ -375,7 +372,6 @@ float4 PS_ThermalVision_Gradient(VS2PS_PP Input) : COLOR
 	float4 OutputColor = 0.0;
 
 	// Get texture data
-	float2 ImageTex = SS.Tex;
 	TV Tex = GetTV(SS.Tex);
 
 	// Fetch number textures
@@ -388,19 +384,19 @@ float4 PS_ThermalVision_Gradient(VS2PS_PP Input) : COLOR
 		float Distort = frac(Tex.Random.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
 		Distort *= (1.0 - Distort);
 		Distort /= 1.0 + _DistortionScale * abs(Tex.Random.y);
-		ImageTex.x += _DistortionScale * Noise * Distort;
+		SS.Tex.x += _DistortionScale * Noise * Distort;
 
 		// Fetch image
-		float4 Image = tex2Dlod(SampleTex0, float4(ImageTex, 0.0, 0.0));
+		float4 Image = tex2Dlod(SampleTex0_Point, float4(SS.Tex, 0.0, 0.0));
 		Image = dot(Image.rgb, float3(0.3, 0.59, 0.11));
 
 		float4 Intensity = (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
 		float4 GradientColor = tex2D(SampleTex3, float2(Intensity.r, 0.0));
-		OutputColor = float4( GradientColor.rgb, Intensity.a );
+		OutputColor = float4(GradientColor.rgb, Intensity.a);
 	}
 	else
 	{
-		OutputColor = tex2D(SampleTex0, ImageTex);
+		OutputColor = tex2D(SampleTex0_Point, SS.Tex);
 	}
 
 	return OutputColor;

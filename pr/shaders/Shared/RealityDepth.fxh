@@ -12,7 +12,7 @@
 	/*
 		Gets slope-scaled shadow bias from depth
 		---
-		Source: https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
+		Source: https://download.nvidia.com/developer/presentations/2004/GPU_Jackpot/Shadow_Mapping.pdf
 	*/
 	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = 0.001, uniform float Bias = -0.003)
 	{
