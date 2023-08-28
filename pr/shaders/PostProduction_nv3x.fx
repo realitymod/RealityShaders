@@ -43,13 +43,13 @@ uniform float _DeltaV : DELTAV;
 	[Textures and samplers]
 */
 
-#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
-		MinFilter = LINEAR; \
-		MagFilter = LINEAR; \
-		MipFilter = LINEAR; \
+		MinFilter = FILTER; \
+		MagFilter = FILTER; \
+		MipFilter = FILTER; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
 	}; \
@@ -62,30 +62,36 @@ uniform float _DeltaV : DELTAV;
 */
 
 uniform texture Tex0 : TEXLAYER0;
-CREATE_SAMPLER(SampleTex0, Tex0, CLAMP)
-CREATE_SAMPLER(SampleTex0_Mirror, Tex0, MIRROR)
+CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP)
+CREATE_SAMPLER(SampleTex0_Mirror, Tex0, LINEAR, MIRROR)
 
 uniform texture Tex1 : TEXLAYER1;
-CREATE_SAMPLER(SampleTex1, Tex1, CLAMP)
-CREATE_SAMPLER(SampleTex1_Wrap, Tex1, WRAP)
+CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
+CREATE_SAMPLER(SampleTex1_Wrap, Tex1, LINEAR, WRAP)
 
 uniform texture Tex2 : TEXLAYER2;
-CREATE_SAMPLER(SampleTex2, Tex2, CLAMP)
-CREATE_SAMPLER(SampleTex2_Wrap, Tex2, WRAP)
+CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, CLAMP)
+CREATE_SAMPLER(SampleTex2_Wrap, Tex2, LINEAR, WRAP)
 
 uniform texture Tex3 : TEXLAYER3;
-CREATE_SAMPLER(SampleTex3, Tex3, CLAMP)
+CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, CLAMP)
 
 struct APP2VS_Quad
 {
 	float2 Pos : POSITION0;
-	float2 TexCoord0 : TEXCOORD0;
+	float2 Tex0 : TEXCOORD0;
 };
 
 struct VS2PS_Quad
 {
 	float4 HPos : POSITION;
-	float2 TexCoord0 : TEXCOORD0;
+	float2 Tex0 : TEXCOORD0;
+};
+
+struct VS2PS_PP
+{
+	float4 Pos : VPOS;
+	float2 Tex0 : TEXCOORD0;
 };
 
 /*
@@ -109,13 +115,31 @@ VS2PS_Quad VS_FSTriangle(APP2VS_Quad Input)
 {
 	VS2PS_Quad Output;
 	FSTriangle FST;
-	GetFSTriangle(Input.TexCoord0, FST);
+	GetFSTriangle(Input.Tex0, FST);
 	Output.HPos = float4(FST.Pos, 0.0, 1.0);
-	Output.TexCoord0 = FST.Tex;
+	Output.Tex0 = FST.Tex;
 	return Output;
 }
 
-float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float LerpBias)
+struct ScreenSpace
+{
+	float2 Pos;
+	float2 Tex;
+	float2 Size;
+	float AspectRatio;
+};
+
+ScreenSpace GetScreenSpace(VS2PS_PP Input)
+{
+	ScreenSpace Output;
+	float2 ScreenSize = GetScreenSize(Input.Tex0);
+	Output.Pos = Input.Pos.xy;
+	Output.Tex = (Input.Pos.xy + 0.5) / ScreenSize;
+	Output.Size = ScreenSize;
+	return Output;
+}
+
+float4 GetBlur(ScreenSpace Input, sampler Source, float LerpBias)
 {
 	// Initialize values
 	float4 OutputColor = 0.0;
@@ -125,9 +149,9 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float LerpBias)
 	const float Pi2 = acos(-1.0) * 2.0;
 
 	// Get texcoord data
-	float Noise = Pi2 * GetGradientNoise(Pos);
-	float AspectRatio = GetAspectRatio(GetScreenSize(Tex));
-	float SpreadFactor = saturate(1.0 - (Tex.y * Tex.y));
+	float Noise = Pi2 * GetGradientNoise(Input.Pos);
+	float AspectRatio = GetAspectRatio(Input.Tex);
+	float SpreadFactor = saturate(1.0 - (Input.Tex.y * Input.Tex.y));
 
 	float2 Rotation = 0.0;
 	sincos(Noise, Rotation.y, Rotation.x);
@@ -147,7 +171,7 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float LerpBias)
 			Offset *= BLUR_RADIUS;
 			Offset *= SpreadFactor;
 			Offset *= LerpBias;
-			OutputColor += tex2D(Source, Tex + (Offset * 0.01));
+			OutputColor += tex2D(Source, Input.Tex + (Offset * 0.01));
 			Weight++;
 		}
 	}
@@ -161,16 +185,18 @@ float4 GetBlur(sampler Source, float2 Tex, float2 Pos, float LerpBias)
 	https://github.com/ronja-tutorials/ShaderTutorials
 */
 
-float4 PS_Tinnitus(VS2PS_Quad Input, float2 ScreenPos : VPOS) : COLOR
+float4 PS_Tinnitus(VS2PS_PP Input) : COLOR
 {
+	ScreenSpace SS = GetScreenSpace(Input);
+
 	// Get texture data
 	float LerpBias = smoothstep(0.0, 0.5, _BackBufferLerpBias);
 
 	// Spread the blur as you go lower on the screen
-	float4 Color = GetBlur(SampleTex0_Mirror, Input.TexCoord0, ScreenPos, LerpBias);
+	float4 Color = GetBlur(SS, SampleTex0_Mirror, LerpBias);
 
 	// Get SDF mask that darkens the left, right, and top edges
-	float2 Tex = (Input.TexCoord0 * float2(2.0, 1.0)) - 1.0;
+	float2 Tex = (SS.Tex * float2(2.0, 1.0)) - 1.0;
 	Tex *= LerpBias; // gradually remove mask overtime
 	float2 Edge = max(abs(Tex) - (1.0 / 5.0), 0.0);
 	float Mask = saturate(length(Edge));
@@ -200,14 +226,18 @@ technique Tinnitus
 	Glow shaders
 */
 
-float4 PS_Glow(VS2PS_Quad Input) : COLOR
+float4 PS_Glow(VS2PS_PP Input) : COLOR
 {
-	return tex2D(SampleTex0, Input.TexCoord0);
+	ScreenSpace SS = GetScreenSpace(Input);
+
+	return tex2D(SampleTex0, SS.Tex);
 }
 
-float4 PS_Glow_Material(VS2PS_Quad Input) : COLOR
+float4 PS_Glow_Material(VS2PS_PP Input) : COLOR
 {
-	float4 Diffuse = tex2D(SampleTex0, Input.TexCoord0);
+	ScreenSpace SS = GetScreenSpace(Input);
+
+	float4 Diffuse = tex2D(SampleTex0, SS.Tex);
 	// return (1.0 - Diffuse.a);
 	// temporary test, should be removed
 	return _GlowStrength * /* Diffuse + */ float4(Diffuse.rgb * (1.0 - Diffuse.a), 1.0);
@@ -267,7 +297,7 @@ uniform float3 _TVColor : TVCOLOR;
 struct VS2PS_ThermalVision
 {
 	float4 HPos : POSITION;
-	float4 Tex0 : TEXCOORD0;
+	float2 Tex0 : TEXCOORD0;
 };
 
 struct TV
@@ -279,18 +309,9 @@ struct TV
 TV GetTV(float2 Tex)
 {
 	TV Output;
+	Tex = (Tex * 2.0) - 1.0;
 	Output.Random = (Tex * _Granularity) + _Displacement;
 	Output.Noise = (Tex * 0.25) - (0.35 * _SinFracTime);
-	return Output;
-}
-
-VS2PS_ThermalVision VS_ThermalVision(APP2VS_Quad Input)
-{
-	VS2PS_ThermalVision Output;
-	FSTriangle FST;
-	GetFSTriangle(Input.TexCoord0, FST);
-	Output.HPos = float4(FST.Pos, 0.0, 1.0);
-	Output.Tex0 = float4(FST.Tex, (Input.TexCoord0 * 2.0) - 1.0);
 	return Output;
 }
 
@@ -299,13 +320,15 @@ float2 GetPixelation(float2 Tex)
 	return round(Tex * THERMAL_SIZE) / THERMAL_SIZE;
 }
 
-float4 PS_ThermalVision(VS2PS_ThermalVision Input) : COLOR
+float4 PS_ThermalVision(VS2PS_PP Input) : COLOR
 {
+	ScreenSpace SS = GetScreenSpace(Input);
+
 	float4 OutputColor = 0.0;
 
 	// Get texture data
-	float2 ImageTex = Input.Tex0.xy;
-	TV Tex = GetTV(Input.Tex0.zw);
+	float2 ImageTex = SS.Tex;
+	TV Tex = GetTV(SS.Tex);
 
 	// Fetch number textures
 	float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
@@ -345,13 +368,15 @@ float4 PS_ThermalVision(VS2PS_ThermalVision Input) : COLOR
 	TV Effect with usage of gradient texture
 */
 
-float4 PS_ThermalVision_Gradient(VS2PS_ThermalVision Input) : COLOR
+float4 PS_ThermalVision_Gradient(VS2PS_PP Input) : COLOR
 {
+	ScreenSpace SS = GetScreenSpace(Input);
+
 	float4 OutputColor = 0.0;
 
 	// Get texture data
-	float2 ImageTex = Input.Tex0.xy;
-	TV Tex = GetTV(Input.Tex0.zw);
+	float2 ImageTex = SS.Tex;
+	TV Tex = GetTV(SS.Tex);
 
 	// Fetch number textures
 	float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
@@ -389,7 +414,7 @@ technique TVEffect
 		StencilEnable = FALSE;
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 VS_ThermalVision();
+		VertexShader = compile vs_3_0 VS_FSTriangle();
 		PixelShader = compile ps_3_0 PS_ThermalVision();
 	}
 }
@@ -402,7 +427,7 @@ technique TVEffect_Gradient_Tex
 		StencilEnable = FALSE;
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 VS_ThermalVision();
+		VertexShader = compile vs_3_0 VS_FSTriangle();
 		PixelShader = compile ps_3_0 PS_ThermalVision_Gradient();
 	}
 }
@@ -414,16 +439,16 @@ technique TVEffect_Gradient_Tex
 struct VS2PS_Distortion
 {
 	float4 HPos : POSITION;
-	float2 TexCoord0 : TEXCOORD0;
-	float2 TexCoord1 : TEXCOORD1;
+	float2 Tex0 : TEXCOORD0;
+	float2 Tex1 : TEXCOORD1;
 };
 
 VS2PS_Distortion VS_WaveDistortion(APP2VS_Quad Input)
 {
 	VS2PS_Distortion Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
-	Output.TexCoord0 = Input.TexCoord0;
-	Output.TexCoord1 = Input.Pos.xy;
+	Output.Tex0 = Input.Tex0;
+	Output.Tex1 = Input.Pos.xy;
 	return Output;
 }
 
@@ -462,12 +487,14 @@ technique WaveDistortion
 	Theory is that the texture getting temporally blended or sampled has been rewritten before the blendop
 */
 
-float4 PS_Flashbang(VS2PS_Quad Input) : COLOR
+float4 PS_Flashbang(VS2PS_PP Input) : COLOR
 {
-	float4 Sample0 = tex2D(SampleTex0, Input.TexCoord0);
-	float4 Sample1 = tex2D(SampleTex1, Input.TexCoord0);
-	float4 Sample2 = tex2D(SampleTex2, Input.TexCoord0);
-	float4 Sample3 = tex2D(SampleTex3, Input.TexCoord0);
+	ScreenSpace SS = GetScreenSpace(Input);
+
+	float4 Sample0 = tex2D(SampleTex0, SS.Tex);
+	float4 Sample1 = tex2D(SampleTex1, SS.Tex);
+	float4 Sample2 = tex2D(SampleTex2, SS.Tex);
+	float4 Sample3 = tex2D(SampleTex3, SS.Tex);
 
 	float4 OutputColor = Sample0 * 0.5;
 	OutputColor += Sample1 * 0.25;
