@@ -1,3 +1,4 @@
+#include "shaders/RealityGraphics.fxh"
 
 /*
 	Data for RaShaderBM
@@ -43,7 +44,7 @@ uniform float2 NormalUnpack;
 		MinFilter = FILTER_BM_DIFF_MIN; \
 		MagFilter = FILTER_BM_DIFF_MAG; \
 		MipFilter = LINEAR; \
-		MaxAnisotropy = 16; \
+		MaxAnisotropy = PR_MAX_ANISOTROPY; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
 		AddressW = ADDRESS; \

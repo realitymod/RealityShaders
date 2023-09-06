@@ -1,3 +1,4 @@
+#include "shaders/RealityGraphics.fxh"
 
 /*
 	Data for RaShaderSTM
@@ -33,7 +34,7 @@ uniform float4 ParallaxScaleBias;
 		MinFilter = FILTER_STM_DIFF_MIN; \
 		MagFilter = FILTER_STM_DIFF_MAG; \
 		MipFilter = LINEAR; \
-		MaxAnisotropy = 16; \
+		MaxAnisotropy = PR_MAX_ANISOTROPY; \
 		AddressU = WRAP; \
 		AddressV = WRAP; \
 	}; \

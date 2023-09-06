@@ -24,7 +24,7 @@ uniform float TexUnpack;
 		MinFilter = FILTER_STM_DIFF_MIN; \
 		MagFilter = FILTER_STM_DIFF_MAG; \
 		MipFilter = LINEAR; \
-		MaxAnisotropy = 16; \
+		MaxAnisotropy = PR_MAX_ANISOTROPY; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
 	}; \

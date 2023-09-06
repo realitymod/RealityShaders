@@ -62,7 +62,7 @@ sampler SAMPLER_NAME = sampler_state \
 	MinFilter = FILTER; \
 	MagFilter = FILTER; \
 	MipFilter = LINEAR; \
-	MaxAnisotropy = 16; \
+	MaxAnisotropy = PR_MAX_ANISOTROPY; \
 	AddressU = ADDRESS; \
 	AddressV = ADDRESS; \
 }; \

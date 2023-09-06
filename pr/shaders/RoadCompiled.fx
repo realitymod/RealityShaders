@@ -24,7 +24,7 @@ uniform float4 _TexProjScale : TEXPROJSCALE;
 		MinFilter = FILTER_ROAD_DIFF_MIN; \
 		MagFilter = FILTER_ROAD_DIFF_MAG; \
 		MipFilter = LINEAR; \
-		MaxAnisotropy = 16; \
+		MaxAnisotropy = PR_MAX_ANISOTROPY; \
 		AddressU = ADDRESS_U; \
 		AddressV = ADDRESS_V; \
 	}; \

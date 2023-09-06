@@ -91,7 +91,7 @@ uniform float3 _MorphDeltaAdder[3] : MORPHDELTAADDER;
 		MinFilter = FILTER_TRN_DIFF_MIN; \
 		MagFilter = FILTER_TRN_DIFF_MAG; \
 		MipFilter = LINEAR; \
-		MaxAnisotropy = 16; \
+		MaxAnisotropy = PR_MAX_ANISOTROPY; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
 	}; \
