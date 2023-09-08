@@ -16,6 +16,7 @@ Shader Model 3.0 allows modders to add more grapical updates into the game, such
 - 3D water and terrain
 - High precision shading
 - Linear lighting
+- Procedural effects
 - Soft shadows
 - Sharper texture filtering
 - Steep parallax mapping
@@ -32,13 +33,17 @@ Logarithmic depth buffering eliminates flickering within distant objects.
 
 This feature allows for sharper lighting and smoother fogging.
 
+### Modernized Post-Processing
+
+This shader package includes updated thermal and suppression effects.
+
 ## Coding Convention
 
 Practice | Elements
 -------- | --------
-**ALLCAPS** | System semantics • State parameters
-**ALL_CAPS** | Preprocessor (macros & arguments)
-**_SnakeCase** | Variables (uniform)
-**SnakeCase** | Variables (local & global) • Method arguments
-**Snake_Case** | Data subcatagory
+**ALLCAPS** | system semantics • state parameters
+**ALL_CAPS** | preprocessor (macros & arguments)
+**_SnakeCase** | variables (uniform)
+**SnakeCase** | variables (local & global) • method arguments
+**Snake_Case** | data subcatagory
 **PREFIX_Data** | `struct` • `PixelShader` • `VertexShader`
