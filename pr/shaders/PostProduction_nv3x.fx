@@ -144,46 +144,6 @@ ScreenSpace GetScreenSpace(VS2PS_PP Input)
 	Main shaders
 */
 
-float4 GetBlur(ScreenSpace Input, sampler Source, float LerpBias)
-{
-	// Initialize values
-	float4 OutputColor = 0.0;
-	float4 Weight = 0.0;
-
-	// Get constants
-	const float Pi2 = acos(-1.0) * 2.0;
-
-	// Get texcoord data
-	float Noise = Pi2 * GetGradientNoise(Input.Pos);
-	float AspectRatio = GetAspectRatio(Input.Size);
-	float SpreadFactor = saturate(1.0 - (Input.Tex.y * Input.Tex.y));
-
-	float2 Rotation = 0.0;
-	sincos(Noise, Rotation.y, Rotation.x);
-	float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
-
-	for(int i = 1; i < 4; ++i)
-	{
-		for(int j = 0; j < 4 * i; ++j)
-		{
-			const float Shift = (Pi2 / (4.0 * float(i))) * float(j);
-			float2 AngleShift = 0.0;
-			sincos(Shift, AngleShift.x, AngleShift.y);
-			AngleShift *= float(i);
-
-			float2 Offset = mul(AngleShift, RotationMatrix);
-			Offset.x *= AspectRatio;
-			Offset *= BLUR_RADIUS;
-			Offset *= SpreadFactor;
-			Offset *= LerpBias;
-			OutputColor += tex2D(Source, Input.Tex + (Offset * 0.01));
-			Weight++;
-		}
-	}
-
-	return OutputColor / Weight;
-}
-
 /*
 	Tinnitus using Ronja Böhringer's signed distance fields
 	---
@@ -197,7 +157,10 @@ float4 PS_Tinnitus(VS2PS_PP Input) : COLOR
 	float LerpBias = smoothstep(0.0, 0.5, _BackBufferLerpBias);
 
 	// Spread the blur as you go lower on the screen
-	float4 Color = GetBlur(SS, SampleTex0_Mirror, LerpBias);
+	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
+	SpreadFactor *= BLUR_RADIUS;
+	SpreadFactor *= LerpBias;
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, SS.Pos, SS.Tex, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
 	float2 Tex = (SS.Tex * float2(2.0, 1.0)) - 1.0;

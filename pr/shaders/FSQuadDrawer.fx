@@ -122,52 +122,14 @@ VS2PS_Blit VS_Blit_Custom(APP2VS_Blit Input)
 	return Output;
 }
 
-static const float2 Offsets[5] =
+float4 PS_TR_OpticsSpiralBlurA(VS2PS_Blit Input, float2 ScreenPos : VPOS) : COLOR
 {
-	float2(0.0, 0.0),
-	float2(0.0, 1.4584295167832),
-	float2(0.0, 3.4039848066734835),
-	float2(0.0, 5.351805780136256),
-	float2(0.0, 7.302940716034593)
-};
-
-static const float Weights[5] =
-{
-	0.1329807601338109,
-	0.2322770777384485,
-	0.13532693306504567,
-	0.05115603510197893,
-	0.012539291705835646
-};
-
-float4 GetLinearGaussianBlur(sampler2D Source, float2 Tex, bool IsHorizontal)
-{
-	float4 OutputColor = 0.0;
-	float4 TotalWeights = 0.0;
-	float2 PixelSize = GetPixelSize(Tex);
-
-	OutputColor += tex2D(Source, Tex + (Offsets[0].xy * PixelSize)) * Weights[0];
-	TotalWeights += Weights[0];
-
-	for(int i = 1; i < 5; i++)
-	{
-		float2 Offset = (IsHorizontal) ? Offsets[i].yx : Offsets[i].xy;
-		OutputColor += tex2D(Source, Tex + (Offset * PixelSize)) * Weights[i];
-		OutputColor += tex2D(Source, Tex - (Offset * PixelSize)) * Weights[i];
-		TotalWeights += (Weights[i] * 2.0);
-	}
-
-	return OutputColor / TotalWeights;
+	return GetSpiralBlur(SampleTex0_Mirror, ScreenPos, Input.TexCoord0, 1.0);
 }
 
-float4 PS_TR_OpticsBlurH(VS2PS_Blit Input) : COLOR
+float4 PS_TR_OpticsSpiralBlurB(VS2PS_Blit Input, float2 ScreenPos : VPOS) : COLOR
 {
-	return GetLinearGaussianBlur(SampleTex0_Mirror, Input.TexCoord0, true);
-}
-
-float4 PS_TR_OpticsBlurV(VS2PS_Blit Input) : COLOR
-{
-	return GetLinearGaussianBlur(SampleTex0_Mirror, Input.TexCoord0, false);
+	return GetSpiralBlur(SampleTex0_Mirror, ScreenPos, Input.TexCoord0, 1.0);
 }
 
 float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR
@@ -623,10 +585,10 @@ technique Blit
 	CREATE_NULL_PASS
 
 	// Pass 25: GlowHorizontalFilter
-	CREATE_PASS(VS_Blit(), PS_TR_OpticsBlurH(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlurA(), FALSE)
 
 	// Pass 26: GlowVerticalFilter
-	CREATE_PASS(VS_Blit(), PS_TR_OpticsBlurV(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlurB(), FALSE)
 
 	// Pass 27: GlowVerticalFilterAdditive
 	CREATE_NULL_PASS

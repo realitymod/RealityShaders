@@ -31,6 +31,85 @@
 		return float(ScreenSize.y) / float(ScreenSize.x);
 	}
 
+	/*
+		Convolutions
+	*/
+
+	static const float2 Offsets[5] =
+	{
+		float2(0.0, 0.0),
+		float2(0.0, 1.4584295167832),
+		float2(0.0, 3.4039848066734835),
+		float2(0.0, 5.351805780136256),
+		float2(0.0, 7.302940716034593)
+	};
+
+	static const float Weights[5] =
+	{
+		0.1329807601338109,
+		0.2322770777384485,
+		0.13532693306504567,
+		0.05115603510197893,
+		0.012539291705835646
+	};
+
+	float4 GetLinearGaussianBlur(sampler2D Source, float2 Tex, bool IsHorizontal)
+	{
+		float4 OutputColor = 0.0;
+		float4 TotalWeights = 0.0;
+		float2 PixelSize = GetPixelSize(Tex);
+
+		OutputColor += tex2D(Source, Tex + (Offsets[0].xy * PixelSize)) * Weights[0];
+		TotalWeights += Weights[0];
+
+		for(int i = 1; i < 5; i++)
+		{
+			float2 Offset = (IsHorizontal) ? Offsets[i].yx : Offsets[i].xy;
+			OutputColor += tex2D(Source, Tex + (Offset * PixelSize)) * Weights[i];
+			OutputColor += tex2D(Source, Tex - (Offset * PixelSize)) * Weights[i];
+			TotalWeights += (Weights[i] * 2.0);
+		}
+
+		return OutputColor / TotalWeights;
+	}
+
+	float4 GetSpiralBlur(sampler Source, float2 Pos, float2 Tex, float Bias)
+	{
+		// Initialize values
+		float4 OutputColor = 0.0;
+		float4 Weight = 0.0;
+
+		// Get constants
+		const float Pi2 = acos(-1.0) * 2.0;
+
+		// Get texcoord data
+		float Noise = Pi2 * GetGradientNoise(Pos);
+		float AspectRatio = GetAspectRatio(GetScreenSize(Tex));
+
+		float2 Rotation = 0.0;
+		sincos(Noise, Rotation.y, Rotation.x);
+		float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
+
+		for(int i = 1; i < 4; ++i)
+		{
+			for(int j = 0; j < 4 * i; ++j)
+			{
+				const float Shift = (Pi2 / (4.0 * float(i))) * float(j);
+				float2 AngleShift = 0.0;
+				sincos(Shift, AngleShift.x, AngleShift.y);
+				AngleShift *= float(i);
+
+				float2 Offset = mul(AngleShift, RotationMatrix);
+				Offset.x *= AspectRatio;
+				Offset *= Bias;
+				OutputColor += tex2D(Source, Tex + (Offset * 0.01));
+				Weight++;
+			}
+		}
+
+		return OutputColor / Weight;
+	}
+
 	float2 GetHemiTex(float3 WorldPos, float3 WorldNormal, float3 HemiInfo, bool InvertY)
 	{
 		// HemiInfo: Offset x/y heightmapsize z / hemilerpbias w
