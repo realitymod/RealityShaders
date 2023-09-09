@@ -154,7 +154,7 @@ float4 PS_Tinnitus(VS2PS_PP Input) : COLOR
 	ScreenSpace SS = GetScreenSpace(Input);
 
 	// Get texture data
-	float LerpBias = smoothstep(0.0, 0.5, _BackBufferLerpBias);
+	float LerpBias = saturate(smoothstep(0.0, 0.5, _BackBufferLerpBias));
 
 	// Spread the blur as you go lower on the screen
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
