@@ -17,7 +17,7 @@ uniform float4 WorldSpaceCamPos;
 uniform float4 PosUnpack;
 uniform float TexUnpack;
 
-#define CREATE_DYNAMIC_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
 		Texture = (TEXTURE); \
@@ -30,15 +30,15 @@ uniform float TexUnpack;
 	}; \
 
 uniform texture DiffuseMap;
-CREATE_DYNAMIC_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP)
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP)
 
 #if defined(USE_DETAIL)
 	uniform texture DetailMap;
-	CREATE_DYNAMIC_SAMPLER(SampleDetailMap, DetailMap, WRAP)
+	CREATE_SAMPLER(SampleDetailMap, DetailMap, WRAP)
 #endif
 
 uniform texture LightMap;
-CREATE_DYNAMIC_SAMPLER(SampleLightMap, LightMap, WRAP)
+CREATE_SAMPLER(SampleLightMap, LightMap, WRAP)
 
 string GlobalParameters[] =
 {

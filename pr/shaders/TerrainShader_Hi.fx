@@ -40,7 +40,7 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 	return Output;
 }
 
-struct HD
+struct FullDetail
 {
 	float2 NearYPlane;
 	float2 NearXPlane;
@@ -52,9 +52,9 @@ struct HD
 	float2 Detail;
 };
 
-HD GetHD(float3 WorldPos, float2 Tex)
+FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
 {
-	HD Output = (HD)0;
+	FullDetail Output = (FullDetail)0;
 
 	// Calculate triplanar texcoords
 	float3 WorldTex = 0.0;
@@ -85,27 +85,27 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.Normal);
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
-	HD Tex = GetHD(WorldPos, Input.Tex0.xy);
+	FullDetail FD = GetFullDetail(WorldPos, Input.Tex0.xy);
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
-	float4 Component = tex2D(SampleTex2_Clamp, Tex.Detail);
+	float4 Component = tex2D(SampleTex2_Clamp, FD.Detail);
 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 	float3 TerrainLights = (_SunColor.rgb * (AccumLights.a * 2.0)) + AccumLights.rgb;
-	float ChartContrib = dot(Component.xyz, _ComponentSelector.xyz);
+	float ChartContribution = dot(Component.xyz, _ComponentSelector.xyz);
 
 	#if defined(LIGHTONLY)
 		float3 OutputColor = TerrainLights;
 	#else
-		float3 ColorMap = tex2D(SampleTex0_Clamp, Tex.ColorLight);
-		float4 LowComponent = tex2D(SampleTex5_Clamp, Tex.Detail);
-		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Tex.NearXPlane);
-		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Tex.NearYPlane);
-		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, Tex.NearZPlane);
-		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.FarXPlane);
-		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.FarYPlane);
-		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.FarZPlane);
+		float3 ColorMap = tex2D(SampleTex0_Clamp, FD.ColorLight);
+		float4 LowComponent = tex2D(SampleTex5_Clamp, FD.Detail);
+		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, FD.NearXPlane);
+		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, FD.NearYPlane);
+		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, FD.NearZPlane);
+		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, FD.FarXPlane);
+		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, FD.FarYPlane);
+		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, FD.FarZPlane);
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color
@@ -148,9 +148,9 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		}
 	#endif
 
-	Output.Color = float4(OutputColor, 1.0);
+	Output.Color = float4(OutputColor, ChartContribution);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
-	Output.Color.rgb *= ChartContrib;
+	Output.Color.rgb *= ChartContribution;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
