@@ -137,7 +137,7 @@ float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR
 	float Edge1 = _BlurStrength / 1000.0; // default: 0.2
 	float Edge2 = frac(_BlurStrength); // default: 0.25
 
-	float BlurAmount = saturate(smoothstep(Edge1 - EdgeAA, Edge2 + EdgeAA, Distance));
+	float BlurAmount = saturate(smoothstep(Edge1 - EdgeAA, Edge2, Distance));
 	float4 OutputColor = tex2D(SampleTex0_Aniso, Input.TexCoord0);
 	return float4(OutputColor.rgb, BlurAmount); // Alpha (.a) is the mask to be composited in the pixel shader's blend operation
 }
