@@ -1,16 +1,11 @@
 #include "shaders/RealityGraphics.fxh"
 
 /*
-	Description:
+	Description: This shader handles screen-space post-processing and texture conversions in the game
 
-	This shader handles screen-space post-processing and texture conversions in the game.
 	The shader includes the following effects:
-		1. Blurs (glow, blur, downsample, upsample, etc.)
-		2. Texture conversions to 8-bit
-
-	Changes:
-	1. Removed Shader Model 1.4 shaders (these were done because arbitrary texture coordinate swizzling wasn't a thing in Shader Model 1.x)
-	2. Many shaders now use bilinear filtering instead of point filtering (linear filtering was more expensive for certain cards back then)
+		- Blurs (glow, blur, downsample, upsample, etc.)
+		- Texture conversions to 8-bit
 */
 
 /*
@@ -138,10 +133,11 @@ float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR
 	float AspectRatio = GetAspectRatio(GetScreenSize(Input.TexCoord0).yx);
 	float Distance = length((Input.TexCoord0 - 0.5) * float2(AspectRatio, 1.0));
 
-	float Radius1 = (_BlurStrength / 1000.0); // default: 0.2
-	float Radius2 = frac(_BlurStrength); // default: 0.25
+	float EdgeAA = fwidth(Distance);
+	float Edge1 = _BlurStrength / 1000.0; // default: 0.2
+	float Edge2 = frac(_BlurStrength); // default: 0.25
 
-	float BlurAmount = saturate(smoothstep(Radius1, Radius2 + fwidth(Distance), Distance));
+	float BlurAmount = saturate(smoothstep(Edge1 - EdgeAA, Edge2 + EdgeAA, Distance));
 	float4 OutputColor = tex2D(SampleTex0_Aniso, Input.TexCoord0);
 	return float4(OutputColor.rgb, BlurAmount); // Alpha (.a) is the mask to be composited in the pixel shader's blend operation
 }
@@ -287,7 +283,7 @@ float4 PS_CheapGaussianBlur5x5(in VS2PS_Blit Input) : COLOR
 	return OutputColor;
 }
 
-float4 PS__Gaussian_Blur_5x5_Cheap_Filter_Blend(VS2PS_Blit Input) : COLOR
+float4 PS_Gaussian_Blur_5x5_Cheap_Filter_Blend(VS2PS_Blit Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 	for(int i = 0; i < 13; i++)
