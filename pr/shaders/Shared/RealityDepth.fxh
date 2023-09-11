@@ -14,7 +14,7 @@
 		---
 		Source: https://download.nvidia.com/developer/presentations/2004/GPU_Jackpot/Shadow_Mapping.pdf
 	*/
-	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = 0.001, uniform float Bias = -0.003)
+	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = -0.001, uniform float Bias = -0.003)
 	{
 		float M = max(abs(ddx(Depth)), abs(ddy(Depth)));
 		return Depth + (M * SlopeScale) + Bias;
