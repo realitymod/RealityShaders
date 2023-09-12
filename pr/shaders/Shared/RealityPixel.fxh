@@ -35,26 +35,26 @@
 		Convolutions
 	*/
 
-	static const float2 Offsets[5] =
-	{
-		float2(0.0, 0.0),
-		float2(0.0, 1.4584295167832),
-		float2(0.0, 3.4039848066734835),
-		float2(0.0, 5.351805780136256),
-		float2(0.0, 7.302940716034593)
-	};
-
-	static const float Weights[5] =
-	{
-		0.1329807601338109,
-		0.2322770777384485,
-		0.13532693306504567,
-		0.05115603510197893,
-		0.012539291705835646
-	};
-
 	float4 GetLinearGaussianBlur(sampler2D Source, float2 Tex, bool IsHorizontal)
 	{
+		const float2 Offsets[5] =
+		{
+			float2(0.0, 0.0),
+			float2(0.0, 1.4584295167832),
+			float2(0.0, 3.4039848066734835),
+			float2(0.0, 5.351805780136256),
+			float2(0.0, 7.302940716034593)
+		};
+
+		const float Weights[5] =
+		{
+			0.1329807601338109,
+			0.2322770777384485,
+			0.13532693306504567,
+			0.05115603510197893,
+			0.012539291705835646
+		};
+
 		float4 OutputColor = 0.0;
 		float4 TotalWeights = 0.0;
 		float2 PixelSize = GetPixelSize(Tex);
