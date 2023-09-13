@@ -1,7 +1,7 @@
 #include "shaders/RealityGraphics.fxh"
 
 /*
-	Description: This shader handles screen-space post-processing and texture conversions in the game
+	Description: This shader handles screen-space post-processing and texture conversions
 
 	The shader includes the following effects:
 		- Blurs (glow, blur, downsample, upsample, etc.)
@@ -117,7 +117,12 @@ VS2PS_Blit VS_Blit_Custom(APP2VS_Blit Input)
 	return Output;
 }
 
-float GetOpticsMask(VS2PS_Blit Input)
+float4 PS_TR_OpticsSpiralBlur(VS2PS_Blit Input, float2 ScreenPos : VPOS) : COLOR
+{
+	return GetSpiralBlur(SampleTex0_Mirror, ScreenPos, Input.TexCoord0, 1.0);
+}
+
+float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR
 {
 	// Get distance from the Center of the screen
 	float AspectRatio = GetAspectRatio(GetScreenSize(Input.TexCoord0).yx);
@@ -127,18 +132,7 @@ float GetOpticsMask(VS2PS_Blit Input)
 	float Edge1 = _BlurStrength / 1000.0; // default: 0.2
 	float Edge2 = frac(_BlurStrength); // default: 0.25
 
-	return saturate(smoothstep(Edge1 - EdgeAA, Edge2, Distance));
-}
-
-float4 PS_TR_OpticsSpiralBlur(VS2PS_Blit Input, float2 ScreenPos : VPOS) : COLOR
-{
-	float SpreadFactor = lerp(0.1, 1.0, GetOpticsMask(Input));
-	return GetSpiralBlur(SampleTex0_Mirror, ScreenPos, Input.TexCoord0, SpreadFactor);
-}
-
-float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR
-{
-	float OpticsMask = GetOpticsMask(Input);
+	float OpticsMask = saturate(smoothstep(Edge1 - EdgeAA, Edge2, Distance));
 	float4 OutputColor = tex2D(SampleTex0_Aniso, Input.TexCoord0);
 	return float4(OutputColor.rgb, OpticsMask); // Alpha (.a) is the mask to be composited in the pixel shader's blend operation
 }
