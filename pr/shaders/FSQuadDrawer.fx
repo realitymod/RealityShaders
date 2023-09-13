@@ -132,7 +132,7 @@ float GetOpticsMask(VS2PS_Blit Input)
 
 float4 PS_TR_OpticsSpiralBlur(VS2PS_Blit Input, float2 ScreenPos : VPOS) : COLOR
 {
-	float SpreadFactor = lerp(0.01, 1.0, GetOpticsMask(Input));
+	float SpreadFactor = lerp(0.1, 1.0, GetOpticsMask(Input));
 	return GetSpiralBlur(SampleTex0_Mirror, ScreenPos, Input.TexCoord0, SpreadFactor);
 }
 
