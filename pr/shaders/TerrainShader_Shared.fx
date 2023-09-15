@@ -156,7 +156,7 @@ float GetDotNL(float3 WorldPos, float3 WorldNormal)
 	float3 WorldLightVec = _PointLight.pos - WorldPos;
 	float3 WorldLightDir = normalize(WorldLightVec);
 
-	// Calculate lighting in the vertex shader (precision reasons)
+	// Calculate lighting
 	float Attenuation = GetLightAttenuation(WorldLightVec, _PointLight.attSqrInv);
 	float3 DotNL = dot(WorldNormal, WorldLightDir) * Attenuation;
 	return DotNL;
