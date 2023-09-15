@@ -150,16 +150,28 @@ PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
 	Pointlight
 */
 
-struct VS2PS_Shared_PointLight
+float GetDotNL(float3 WorldPos, float3 WorldNormal)
+{
+	WorldNormal = normalize(WorldNormal);
+	float3 WorldLightVec = _PointLight.pos - WorldPos;
+	float3 WorldLightDir = normalize(WorldLightVec);
+
+	// Calculate lighting in the vertex shader (precision reasons)
+	float Attenuation = GetLightAttenuation(WorldLightVec, _PointLight.attSqrInv);
+	float3 DotNL = dot(WorldNormal, WorldLightDir) * Attenuation;
+	return DotNL;
+}
+
+struct VS2PS_Shared_PointLight_PerPixel
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0; // .rgb = Lighting; .w = Depth;
 	float3 Normal : TEXCOORD1;
 };
 
-VS2PS_Shared_PointLight VS_Shared_PointLight(APP2VS_Shared Input)
+VS2PS_Shared_PointLight_PerPixel VS_Shared_PointLight_PerPixel(APP2VS_Shared Input)
 {
-	VS2PS_Shared_PointLight Output = (VS2PS_Shared_PointLight)0;
+	VS2PS_Shared_PointLight_PerPixel Output = (VS2PS_Shared_PointLight_PerPixel)0;
 	WorldSpace WS = GetWorldSpaceData(Input);
 
 	Output.HPos = mul(WS.Pos, _ViewProj);
@@ -173,23 +185,54 @@ VS2PS_Shared_PointLight VS_Shared_PointLight(APP2VS_Shared Input)
 	return Output;
 }
 
-PS2FB PS_Shared_PointLight(VS2PS_Shared_PointLight Input)
+PS2FB PS_Shared_PointLight_PerPixel(VS2PS_Shared_PointLight_PerPixel Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float3 WorldPos = Input.Pos.xyz;
-	float3 WorldNormal = normalize(Input.Normal);
-	float3 WorldLightVec = _PointLight.pos - WorldPos;
-	float3 WorldLightDir = normalize(WorldLightVec);
-
-	// Calculate lighting in the vertex shader (precision reasons)
-	float Attenuation = GetLightAttenuation(WorldLightVec, _PointLight.attSqrInv);
-	float3 DotNL = dot(WorldNormal, WorldLightDir) * Attenuation;
-
+	float DotNL = GetDotNL(Input.Pos.xyz, Input.Normal);
 	Output.Color = float4(_PointLight.col * DotNL, 0.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
+
+struct VS2PS_Shared_PointLight_PerVertex
+{
+	float4 HPos : POSITION;
+	float2 Tex0 : TEXCOORD0; // .x = DotNL; .y = Depth;
+};
+
+VS2PS_Shared_PointLight_PerVertex VS_Shared_PointLight_PerVertex(APP2VS_Shared Input)
+{
+	VS2PS_Shared_PointLight_PerVertex Output = (VS2PS_Shared_PointLight_PerVertex)0;
+	WorldSpace WS = GetWorldSpaceData(Input);
+
+	// Uncompress normal
+	float3 WorldPos = WS.Pos.xyz;
+	float3 WorldNormal = (Input.Normal * 2.0) - 1.0;
+	float DotNL = GetDotNL(WorldPos, WorldNormal);
+
+	Output.HPos = mul(WS.Pos, _ViewProj);
+	Output.Tex0.x = DotNL;
+	#if defined(LOG_DEPTH)
+		Output.Tex0.y = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	return Output;
+}
+
+PS2FB PS_Shared_PointLight_PerVertex(VS2PS_Shared_PointLight_PerVertex Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float DotNL = Input.Tex0.x;
+	Output.Color = float4(_PointLight.col * DotNL, 0.0);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.y);
 	#endif
 
 	return Output;
@@ -226,7 +269,7 @@ VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 	return Output;
 }
 
-struct LD
+struct LowDetail
 {
 	float2 YPlane;
 	float2 XPlane;
@@ -235,9 +278,9 @@ struct LD
 	float2 Detail;
 };
 
-LD GetLD(float3 WorldPos, float2 Tex)
+LowDetail GetLowDetail(float3 WorldPos, float2 Tex)
 {
-	LD Output = (LD)0;
+	LowDetail Output = (LowDetail)0;
 
 	float3 WorldTex = 0.0;
 	WorldTex.x = Tex.x * _TexScale.x;
@@ -265,13 +308,13 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	LD Tex = GetLD(WorldPos, Input.Tex0);
+	LowDetail LD = GetLowDetail(WorldPos, Input.Tex0);
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
-	float4 ColorMap = tex2D(SampleTex0_Clamp, Tex.ColorLight);
-	float4 LowComponent = tex2D(SampleTex5_Clamp, Tex.Detail);
-	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.XPlane);
-	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.YPlane);
-	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.ZPlane);
+	float4 ColorMap = tex2D(SampleTex0_Clamp, LD.ColorLight);
+	float4 LowComponent = tex2D(SampleTex5_Clamp, LD.Detail);
+	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, LD.XPlane);
+	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, LD.YPlane);
+	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, LD.ZPlane);
 
 	float4 TerrainLights = (_SunColor * (AccumLights.a * 2.0)) + AccumLights;
 

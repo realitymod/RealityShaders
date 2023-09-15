@@ -216,8 +216,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 VS_Shared_PointLight();
-		PixelShader = compile ps_3_0 PS_Shared_PointLight();
+		VertexShader = compile vs_3_0 VS_Shared_PointLight_PerVertex();
+		PixelShader = compile ps_3_0 PS_Shared_PointLight_PerVertex();
 	}
 
 	// Pass 2 (removed)
@@ -372,8 +372,8 @@ technique Hi_Terrain
 			GET_RENDERSTATES_NV4X
 		#endif
 
-		VertexShader = compile vs_3_0 VS_Shared_PointLight();
-		PixelShader = compile ps_3_0 PS_Shared_PointLight();
+		VertexShader = compile vs_3_0 VS_Shared_PointLight_PerPixel();
+		PixelShader = compile ps_3_0 PS_Shared_PointLight_PerPixel();
 	}
 
 	// Pass 14
