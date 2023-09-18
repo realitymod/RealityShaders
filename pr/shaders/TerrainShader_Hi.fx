@@ -100,12 +100,12 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#else
 		float3 ColorMap = tex2D(SampleTex0_Clamp, FD.ColorLight);
 		float4 LowComponent = tex2D(SampleTex5_Clamp, FD.Detail);
-		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, FD.NearXPlane);
-		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, FD.NearYPlane);
-		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, FD.NearZPlane);
-		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, FD.FarXPlane);
-		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, FD.FarYPlane);
-		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, FD.FarZPlane);
+		float4 XPlaneDetailmap = GetProceduralTiles(SampleTex6_Wrap, FD.NearXPlane);
+		float4 YPlaneDetailmap = GetProceduralTiles(SampleTex3_Wrap, FD.NearYPlane);
+		float4 ZPlaneDetailmap = GetProceduralTiles(SampleTex6_Wrap, FD.NearZPlane);
+		float3 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, FD.FarXPlane);
+		float3 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, FD.FarYPlane);
+		float3 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, FD.FarZPlane);
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color

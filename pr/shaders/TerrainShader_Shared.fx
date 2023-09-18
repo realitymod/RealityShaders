@@ -312,9 +312,9 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 ColorMap = tex2D(SampleTex0_Clamp, LD.ColorLight);
 	float4 LowComponent = tex2D(SampleTex5_Clamp, LD.Detail);
-	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, LD.XPlane);
-	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, LD.YPlane);
-	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, LD.ZPlane);
+	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.XPlane);
+	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.YPlane);
+	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.ZPlane);
 
 	float4 TerrainLights = (_SunColor * (AccumLights.a * 2.0)) + AccumLights;
 
@@ -532,7 +532,7 @@ VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
 	return Output;
 }
 
-struct ST
+struct SurroundingTerrain
 {
 	float2 YPlane;
 	float2 XPlane;
@@ -541,9 +541,9 @@ struct ST
 	float2 LowDetail;
 };
 
-ST GetST(float3 WorldPos, float3 Tex)
+SurroundingTerrain GetSurroundingTerrain(float3 WorldPos, float3 Tex)
 {
-	ST Output = (ST)0;
+	SurroundingTerrain Output = (SurroundingTerrain)0;
 
 	float3 WorldTex = 0.0;
 	WorldTex.x = WorldPos.x * _STTexScale.x;
@@ -571,12 +571,12 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	ST Tex = GetST(WorldPos, Input.Tex0);
-	float4 ColorMap = tex2D(SampleTex0_Clamp, Tex.ColorLight);
-	float4 LowComponent = tex2D(SampleTex5_Clamp, Tex.LowDetail);
-	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.YPlane) * 2.0;
-	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.XPlane) * 2.0;
-	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Tex.ZPlane) * 2.0;
+	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos, Input.Tex0);
+	float4 ColorMap = tex2D(SampleTex0_Clamp, ST.ColorLight);
+	float4 LowComponent = tex2D(SampleTex5_Clamp, ST.LowDetail);
+	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, ST.YPlane) * 2.0;
+	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, ST.XPlane) * 2.0;
+	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, ST.ZPlane) * 2.0;
 
 	// If thermals assume gray color
 	if (IsTisActive())
