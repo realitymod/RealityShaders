@@ -190,8 +190,10 @@
 		float B = GetRandom(I + float2(1.0, 0.0));
 		float C = GetRandom(I + float2(0.0, 1.0));
 		float D = GetRandom(I + float2(1.0, 1.0));
-		float2 UV = saturate(GetCubic(F));
-		return lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
+		float2 UV = GetCubic(F);
+		return lerp(A, B, UV.x) +
+				(C - A) * UV.y * (1.0 - UV.x) +
+				(D - B) * UV.x * UV.y;
 	}
 
 	float4 GetProceduralTiles(sampler2D Source, float2 Tex)
