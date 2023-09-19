@@ -154,7 +154,7 @@
 	*/
 
 	float4 GetHash4(float2 P)
-	{ 
+	{
 		float4 DP;
 		DP[0] = 1.0 + dot(P, float2(37.0, 17.0));
 		DP[1] = 2.0 + dot(P, float2(11.0, 47.0));
@@ -182,7 +182,7 @@
 		Offset[1].zw = sign(Offset[1].zw - 0.5);
 		Offset[2].zw = sign(Offset[2].zw - 0.5);
 		Offset[3].zw = sign(Offset[3].zw - 0.5);
-		
+
 		// uv's, and derivatives (for correct mipmapping)
 		float4 OutColor[4];
 		for(int i = 0; i < 4; i++)
@@ -192,10 +192,10 @@
 			float2 GradY = TexIy * Offset[i].zw;
 			OutColor[i] = tex2Dgrad(Source, FetchTex, GradX, GradY);
 		}
-			
+
 		// Fetch and blend
 		float2 Blend = smoothstep(0.25, 0.75, FracTex);
-		return lerp(lerp(OutColor[0], OutColor[1], Blend.x), 
+		return lerp(lerp(OutColor[0], OutColor[1], Blend.x),
 					lerp(OutColor[2], OutColor[3], Blend.x), Blend.y);
 	}
 #endif

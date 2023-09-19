@@ -23,7 +23,7 @@ Shader Model 3.0 allows modders to add more grapical updates into the game, such
 
 ### Distance-Based Fog
 
-This fogging method eliminates in-game "corner-peeking".
+This fogging method eliminates "corner-peeking".
 
 ### Logarithmic Depth Buffer
 
@@ -31,11 +31,15 @@ Logarithmic depth buffering eliminates flickering within distant objects.
 
 ### Per-Pixel Lighting
 
-This feature allows for sharper lighting and smoother fogging.
+Per-pixel lighting allows sharper lighting and smoother fogging.
 
 ### Modernized Post-Processing
 
 This shader package includes updated thermal and suppression effects.
+
+### Procedural Terrain Detailmapping
+
+No more visible texture repetition.
 
 ## Coding Convention
 
