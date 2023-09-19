@@ -148,54 +148,73 @@
 	}
 
 	/*
-		Get procedural terrain
-		---
-		Source: https://iquilezles.org/articles/texturerepetition/
+		https://iquilezles.org/articles/texturerepetition
+
+		The MIT License (MIT)
+
+		Copyright (c) 2017 Inigo Quilez
+
+		Permission is hereby granted, free of charge, to any person obtaining a copy of this
+		software and associated documentation files (the "Software"), to deal in the Software
+		without restriction, including without limitation the rights to use, copy, modify,
+		merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+		permit persons to whom the Software is furnished to do so, subject to the following
+		conditions:
+
+		The above copyright notice and this permission notice shall be included in all copies
+		or substantial portions of the Software.
+
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+		INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+		PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+		HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+		CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+		OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	*/
 
-	float4 GetHash4(float2 P)
+	float GetRandom(float2 Tex)
 	{
-		float4 DP;
-		DP[0] = 1.0 + dot(P, float2(37.0, 17.0));
-		DP[1] = 2.0 + dot(P, float2(11.0, 47.0));
-		DP[2] = 3.0 + dot(P, float2(41.0, 29.0));
-		DP[3] = 4.0 + dot(P, float2(23.0, 31.0));
-		return frac(sin(DP) * 103.0);
+		return frac(sin(dot(Tex.xy, float2(12.9898, 78.233))) * 43758.5453);
+	}
+
+	float2 GetCubic(float2 X)
+	{
+		return X * X * (3.0 - 2.0 * X);
+	}
+
+	float GradientNoise(float2 Tex)
+	{
+		float2 I = floor(Tex);
+		float2 F = frac(Tex);
+		float A = GetRandom(I + float2(0.0, 0.0));
+		float B = GetRandom(I + float2(1.0, 0.0));
+		float C = GetRandom(I + float2(0.0, 1.0));
+		float D = GetRandom(I + float2(1.0, 1.0));
+		float2 UV = saturate(GetCubic(F));
+		return lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
 	}
 
 	float4 GetProceduralTiles(sampler2D Source, float2 Tex)
 	{
-		// Get uv data
-		int2 IntTex = int2(floor(Tex));
-		float2 FracTex = frac(Tex);
-		float2 TexIx = ddx(Tex);
-		float2 TexIy = ddy(Tex);
+		// Sample variation pattern
+		float Variation = GradientNoise(Tex);
 
-		float4 Offset[4];
-		// Generate per-tile transform
-		Offset[0] = GetHash4(IntTex + int2(0, 0));
-		Offset[1] = GetHash4(IntTex + int2(1, 0));
-		Offset[2] = GetHash4(IntTex + int2(0, 1));
-		Offset[3] = GetHash4(IntTex + int2(1, 1));
-		// Transform per-tile uvs
-		Offset[0].zw = sign(Offset[0].zw - 0.5);
-		Offset[1].zw = sign(Offset[1].zw - 0.5);
-		Offset[2].zw = sign(Offset[2].zw - 0.5);
-		Offset[3].zw = sign(Offset[3].zw - 0.5);
+		// Compute index
+		float Index = Variation * 8.0;
+		float I = floor(Index);
+		float F = frac(Index);
 
-		// uv's, and derivatives (for correct mipmapping)
-		float4 OutColor[4];
-		for(int i = 0; i < 4; i++)
-		{
-			float2 FetchTex = Tex * Offset[i].zw + Offset[i].xy;
-			float2 GradX = TexIx * Offset[i].zw;
-			float2 GradY = TexIy * Offset[i].zw;
-			OutColor[i] = tex2Dgrad(Source, FetchTex, GradX, GradY);
-		}
+		// Offsets for the different virtual patterns
+		float2 Offset1 = sin(float2(3.0, 7.0) * (I + 0.0));
+		float2 Offset2 = sin(float2(3.0, 7.0) * (I + 1.0));
 
-		// Fetch and blend
-		float2 Blend = smoothstep(0.25, 0.75, FracTex);
-		return lerp(lerp(OutColor[0], OutColor[1], Blend.x),
-					lerp(OutColor[2], OutColor[3], Blend.x), Blend.y);
+		// Compute derivatives for mip-mapping
+		float2 Ix = ddx(Tex);
+		float2 Iy = ddy(Tex);
+
+		float4 Color1 = tex2Dgrad(Source, Tex + Offset1, Ix, Iy);
+		float4 Color2 = tex2Dgrad(Source, Tex + Offset2, Ix, Iy);
+		float Blend = dot(Color1.rgb - Color2.rgb, 1.0);
+		return lerp(Color1, Color2, smoothstep(0.2, 0.8, F - (0.1 * Blend)));
 	}
 #endif
