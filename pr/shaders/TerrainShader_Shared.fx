@@ -24,30 +24,7 @@ struct PS2FB
 	Basic morphed technique
 */
 
-float GetAdjustedNear()
-{
-	float NoLOD = _NearFarMorphLimits.x * 62500.0; // No-Lod: 250x normal -> 62500x
-	#if HIGHTERRAIN
-		float LOD = _NearFarMorphLimits.x * 16.0; // High-Lod: 4x normal -> 16x
-	#else
-		float LOD = _NearFarMorphLimits.x * 9.0; // Med-Lod: 3x normal -> 9x
-	#endif
-
-	// Only the near distance changes due to increased LOD distance. This needs to be multiplied by
-	// the square of the factor by which we increased. Assuming 200m base lod this turns out to
-	// If no-lods is enabled, then near limit is really low
-	float AdjustedNear = (_NearFarMorphLimits.x < 0.00000001) ? NoLOD : LOD;
-	return AdjustedNear;
-}
-
-void MorphPosition
-(
-	inout float4 WorldPos,
-	in float4 MorphDelta,
-	in float MorphDeltaAdderSelector,
-	out float YDelta,
-	out float LerpValue
-)
+float GetCameraDistance(float4 WorldPos)
 {
 	// tl: This is now based on squared values (besides camPos)
 	// tl: This assumes that input WorldPos.w == 1 to work correctly! (it always is)
@@ -55,15 +32,17 @@ void MorphPosition
 	//     CameraVec becomes (cx, cheight+1, cz) - (vx, 1, vz)
 	// tl: YScale is now pre-multiplied into morphselector
 	float3 CameraVec = _CameraPos.xwz - WorldPos.xwz;
-	float CameraDist = dot(CameraVec, CameraVec);
+	return dot(CameraVec, CameraVec);
+}
 
-	LerpValue = saturate(CameraDist * _NearFarMorphLimits.x - _NearFarMorphLimits.y);
-	YDelta = dot(_MorphDeltaSelector, MorphDelta) * LerpValue;
+float4 MorphPosition(float4 WorldPos, float4 MorphDelta, float MorphDeltaAdderSelector)
+{
+	float CameraDistance = GetCameraDistance(WorldPos);
+	float LerpValue = saturate(CameraDistance * _NearFarMorphLimits.x - _NearFarMorphLimits.y);
+	float YDelta = dot(_MorphDeltaSelector, MorphDelta) * LerpValue;
 	YDelta += dot(_MorphDeltaAdder[MorphDeltaAdderSelector * 256], MorphDelta);
-
-	float AdjustedNear = GetAdjustedNear();
-	LerpValue = saturate(CameraDist * AdjustedNear - _NearFarMorphLimits.y);
 	WorldPos.y = WorldPos.y - YDelta;
+	return WorldPos;
 }
 
 float4 ProjToLighting(float4 HPos)
@@ -84,19 +63,10 @@ float4 GetWorldPos(float4 Pos0, float4 Pos1)
 	return WorldPos;
 }
 
-struct WorldSpace
+float4 GetMorphedWorldPos(APP2VS_Shared Input)
 {
-	float4 Pos;
-	float YDelta;
-	float LerpValue;
-};
-
-WorldSpace GetWorldSpaceData(APP2VS_Shared Input)
-{
-	WorldSpace Output = (WorldSpace)0;
-	Output.Pos = GetWorldPos(Input.Pos0, Input.Pos1);
-	MorphPosition(Output.Pos, Input.MorphDelta, Input.Pos0.z, Output.YDelta, Output.LerpValue);
-	return Output;
+	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
+	return MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z);
 }
 
 /*
@@ -112,9 +82,9 @@ struct VS2PS_Shared_ZFillLightMap
 VS2PS_Shared_ZFillLightMap VS_Shared_ZFillLightMap(APP2VS_Shared Input)
 {
 	VS2PS_Shared_ZFillLightMap Output = (VS2PS_Shared_ZFillLightMap)0;
-	WorldSpace WS = GetWorldSpaceData(Input);
+	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
-	Output.HPos = mul(WS.Pos, _ViewProj);
+	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
 	#if defined(LOG_DEPTH)
 		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
@@ -162,43 +132,6 @@ float GetDotNL(float3 WorldPos, float3 WorldNormal)
 	return DotNL;
 }
 
-struct VS2PS_Shared_PointLight_PerPixel
-{
-	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0; // .rgb = Lighting; .w = Depth;
-	float3 Normal : TEXCOORD1;
-};
-
-VS2PS_Shared_PointLight_PerPixel VS_Shared_PointLight_PerPixel(APP2VS_Shared Input)
-{
-	VS2PS_Shared_PointLight_PerPixel Output = (VS2PS_Shared_PointLight_PerPixel)0;
-	WorldSpace WS = GetWorldSpaceData(Input);
-
-	Output.HPos = mul(WS.Pos, _ViewProj);
-	Output.Pos.xyz = WS.Pos.xyz;
-	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
-	#endif
-
-	Output.Normal = (Input.Normal * 2.0) - 1.0;
-
-	return Output;
-}
-
-PS2FB PS_Shared_PointLight_PerPixel(VS2PS_Shared_PointLight_PerPixel Input)
-{
-	PS2FB Output = (PS2FB)0;
-
-	float DotNL = GetDotNL(Input.Pos.xyz, Input.Normal);
-	Output.Color = float4(_PointLight.col * DotNL, 0.0);
-
-	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
-	#endif
-
-	return Output;
-}
-
 struct VS2PS_Shared_PointLight_PerVertex
 {
 	float4 HPos : POSITION;
@@ -208,14 +141,13 @@ struct VS2PS_Shared_PointLight_PerVertex
 VS2PS_Shared_PointLight_PerVertex VS_Shared_PointLight_PerVertex(APP2VS_Shared Input)
 {
 	VS2PS_Shared_PointLight_PerVertex Output = (VS2PS_Shared_PointLight_PerVertex)0;
-	WorldSpace WS = GetWorldSpaceData(Input);
+	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
 	// Uncompress normal
-	float3 WorldPos = WS.Pos.xyz;
 	float3 WorldNormal = (Input.Normal * 2.0) - 1.0;
-	float DotNL = GetDotNL(WorldPos, WorldNormal);
+	float DotNL = GetDotNL(MorphedWorldPos.xyz, WorldNormal);
 
-	Output.HPos = mul(WS.Pos, _ViewProj);
+	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Tex0.x = DotNL;
 	#if defined(LOG_DEPTH)
 		Output.Tex0.y = Output.HPos.w + 1.0; // Output depth
@@ -238,6 +170,44 @@ PS2FB PS_Shared_PointLight_PerVertex(VS2PS_Shared_PointLight_PerVertex Input)
 	return Output;
 }
 
+struct VS2PS_Shared_PointLight_PerPixel
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0; // .rgb = Lighting; .w = Depth;
+	float3 Normal : TEXCOORD1;
+};
+
+VS2PS_Shared_PointLight_PerPixel VS_Shared_PointLight_PerPixel(APP2VS_Shared Input)
+{
+	VS2PS_Shared_PointLight_PerPixel Output = (VS2PS_Shared_PointLight_PerPixel)0;
+	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
+
+	Output.HPos = mul(MorphedWorldPos, _ViewProj);
+	Output.Pos = MorphedWorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.Normal = (Input.Normal * 2.0) - 1.0;
+
+	return Output;
+}
+
+PS2FB PS_Shared_PointLight_PerPixel(VS2PS_Shared_PointLight_PerPixel Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float3 WorldPos = Input.Pos.xyz;
+	float DotNL = GetDotNL(WorldPos, Input.Normal);
+	Output.Color = float4(_PointLight.col * DotNL, 0.0);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
+
 /*
 	Low detail
 */
@@ -254,10 +224,10 @@ struct VS2PS_Shared_LowDetail
 VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 {
 	VS2PS_Shared_LowDetail Output = (VS2PS_Shared_LowDetail)0;
-	WorldSpace WS = GetWorldSpaceData(Input);
+	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
-	Output.HPos = mul(WS.Pos, _ViewProj);
-	Output.Pos = WS.Pos;
+	Output.HPos = mul(MorphedWorldPos, _ViewProj);
+	Output.Pos = MorphedWorldPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
@@ -407,16 +377,16 @@ struct VS2PS_Shared_DirectionalLightShadows
 VS2PS_Shared_DirectionalLightShadows VS_Shared_DirectionalLightShadows(APP2VS_Shared Input)
 {
 	VS2PS_Shared_DirectionalLightShadows Output = (VS2PS_Shared_DirectionalLightShadows)0;
-	WorldSpace WS = GetWorldSpaceData(Input);
+	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
-	Output.HPos = mul(WS.Pos, _ViewProj);
+	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Pos = Output.HPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	Output.ShadowTex = mul(WS.Pos, _LightViewProj);
-	float LightZ = mul(WS.Pos, _LightViewProjOrtho).z;
+	Output.ShadowTex = mul(MorphedWorldPos, _LightViewProj);
+	float LightZ = mul(MorphedWorldPos, _LightViewProjOrtho).z;
 	#if NVIDIA
 		Output.ShadowTex.z = LightZ * Output.ShadowTex.w;
 	#else
@@ -463,10 +433,10 @@ struct VS2PS_Shared_UnderWater
 VS2PS_Shared_UnderWater VS_Shared_UnderWater(APP2VS_Shared Input)
 {
 	VS2PS_Shared_UnderWater Output = (VS2PS_Shared_UnderWater)0;
-	WorldSpace WS = GetWorldSpaceData(Input);
+	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
-	Output.HPos = mul(WS.Pos, _ViewProj);
-	Output.Pos = WS.Pos;
+	Output.HPos = mul(MorphedWorldPos, _ViewProj);
+	Output.Pos = MorphedWorldPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif

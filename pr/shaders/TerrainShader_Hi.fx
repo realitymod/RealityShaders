@@ -11,31 +11,55 @@
 	Terrainmapping shader
 */
 
+float GetAdjustedNear()
+{
+	float NoLOD = _NearFarMorphLimits.x * 62500.0; // No-Lod: 250x normal -> 62500x
+	#if HIGHTERRAIN
+		float LOD = _NearFarMorphLimits.x * 16.0; // High-Lod: 4x normal -> 16x
+	#else
+		float LOD = _NearFarMorphLimits.x * 9.0; // Med-Lod: 3x normal -> 9x
+	#endif
+
+	// Only the near distance changes due to increased LOD distance. This needs to be multiplied by
+	// the square of the factor by which we increased. Assuming 200m base lod this turns out to
+	// If no-lods is enabled, then near limit is really low
+	float AdjustedNear = (_NearFarMorphLimits.x < 0.00000001) ? NoLOD : LOD;
+	return AdjustedNear;
+}
+
+float GetLerpValue(float4 WorldPos)
+{
+	float CameraDistance = GetCameraDistance(WorldPos);
+	float AdjustedNear = GetAdjustedNear();
+	return saturate(CameraDistance * AdjustedNear - _NearFarMorphLimits.y);
+}
+
 struct VS2PS_FullDetail_Hi
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
-	float3 Tex0 : TEXCOORD2; // .xy = Input.Pos0.xy; .z = InterpVal;
+	float3 Tex0 : TEXCOORD2; // .xy = Input.Pos0.xy; .z = Depth;
 	float4 LightTex : TEXCOORD3;
 };
 
 VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 {
 	VS2PS_FullDetail_Hi Output = (VS2PS_FullDetail_Hi)0;
-	WorldSpace WS = GetWorldSpaceData(Input);
+	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
 	// tl: output HPos as early as possible.
-	Output.HPos = mul(WS.Pos, _ViewProj);
-	Output.Pos.xyz = WS.Pos.xyz;
-	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
-	#endif
+	Output.HPos = mul(MorphedWorldPos, _ViewProj);
+	Output.Pos = MorphedWorldPos;
 
 	// tl: uncompress normal
 	Output.Normal.xyz = (Input.Normal * 2.0) - 1.0;
-	Output.Tex0 = float3(Input.Pos0.xy, saturate(WS.LerpValue));
+	Output.Tex0.xy = Input.Pos0.xy;
 	Output.LightTex = ProjToLighting(Output.HPos);
+
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
 
 	return Output;
 }
@@ -81,11 +105,11 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 {
 	PS2FB Output = (PS2FB)0;
 
-	float LerpValue = Input.Tex0.z;
-	float3 WorldPos = Input.Pos.xyz;
+	float4 WorldPos = Input.Pos;
 	float3 WorldNormal = normalize(Input.Normal);
+	float LerpValue = GetLerpValue(WorldPos);
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
-	FullDetail FD = GetFullDetail(WorldPos, Input.Tex0.xy);
+	FullDetail FD = GetFullDetail(WorldPos.xyz, Input.Tex0.xy);
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Component = tex2D(SampleTex2_Clamp, FD.Detail);
@@ -149,11 +173,11 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#endif
 
 	Output.Color = float4(OutputColor, ChartContribution);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos));
 	Output.Color.rgb *= ChartContribution;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;
