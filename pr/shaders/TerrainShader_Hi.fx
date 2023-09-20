@@ -27,9 +27,9 @@ float GetAdjustedNear()
 	return AdjustedNear;
 }
 
-float GetLerpValue(float4 WorldPos)
+float GetLerpValue(float3 WorldPos, float3 CameraPos)
 {
-	float CameraDistance = GetCameraDistance(WorldPos);
+	float CameraDistance = GetCameraDistance(WorldPos, CameraPos);
 	float AdjustedNear = GetAdjustedNear();
 	return saturate(CameraDistance * AdjustedNear - _NearFarMorphLimits.y);
 }
@@ -107,7 +107,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 
 	float4 WorldPos = Input.Pos;
 	float3 WorldNormal = normalize(Input.Normal);
-	float LerpValue = GetLerpValue(WorldPos);
+	float LerpValue = GetLerpValue(WorldPos.xwz, _CameraPos.xwz);
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 	FullDetail FD = GetFullDetail(WorldPos.xyz, Input.Tex0.xy);
 
@@ -124,11 +124,11 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#else
 		float3 ColorMap = tex2D(SampleTex0_Clamp, FD.ColorLight);
 		float4 LowComponent = tex2D(SampleTex5_Clamp, FD.Detail);
+		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, FD.NearYPlane);
 		float4 XPlaneDetailmap = GetProceduralTiles(SampleTex6_Wrap, FD.NearXPlane);
-		float4 YPlaneDetailmap = GetProceduralTiles(SampleTex3_Wrap, FD.NearYPlane);
 		float4 ZPlaneDetailmap = GetProceduralTiles(SampleTex6_Wrap, FD.NearZPlane);
-		float3 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, FD.FarXPlane);
 		float3 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, FD.FarYPlane);
+		float3 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, FD.FarXPlane);
 		float3 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, FD.FarZPlane);
 		float EnvMapScale = YPlaneDetailmap.a;
 

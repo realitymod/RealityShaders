@@ -23,21 +23,20 @@ struct PS2FB
 /*
 	Basic morphed technique
 */
-
-float GetCameraDistance(float4 WorldPos)
+float GetCameraDistance(float3 WorldPos, float3 CameraPos)
 {
 	// tl: This is now based on squared values (besides camPos)
 	// tl: This assumes that input WorldPos.w == 1 to work correctly! (it always is)
 	// tl: This all works out because camera height is set to height+1 so
 	//     CameraVec becomes (cx, cheight+1, cz) - (vx, 1, vz)
 	// tl: YScale is now pre-multiplied into morphselector
-	float3 CameraVec = _CameraPos.xwz - WorldPos.xwz;
+	float3 CameraVec = CameraPos - WorldPos;
 	return dot(CameraVec, CameraVec);
 }
 
 float4 MorphPosition(float4 WorldPos, float4 MorphDelta, float MorphDeltaAdderSelector)
 {
-	float CameraDistance = GetCameraDistance(WorldPos);
+	float CameraDistance = GetCameraDistance(WorldPos.xwz, _CameraPos.xwz);
 	float LerpValue = saturate(CameraDistance * _NearFarMorphLimits.x - _NearFarMorphLimits.y);
 	float YDelta = dot(_MorphDeltaSelector, MorphDelta) * LerpValue;
 	YDelta += dot(_MorphDeltaAdder[MorphDeltaAdderSelector * 256], MorphDelta);
@@ -282,8 +281,8 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 ColorMap = tex2D(SampleTex0_Clamp, LD.ColorLight);
 	float4 LowComponent = tex2D(SampleTex5_Clamp, LD.Detail);
-	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.XPlane);
 	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.YPlane);
+	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.XPlane);
 	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.ZPlane);
 
 	float4 TerrainLights = (_SunColor * (AccumLights.a * 2.0)) + AccumLights;
