@@ -1,4 +1,8 @@
 #include "shaders/RealityGraphics.fxh"
+
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+
 #include "shaders/RaCommon.fxh"
 
 /*
@@ -142,7 +146,7 @@ PS2FB PS_Decals(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	Output.Color = GetPixelDecals(Input, false);
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos.xyz, 0.0));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

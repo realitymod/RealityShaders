@@ -5,11 +5,6 @@
 	Author: [R-DEV]papadanku @ 2023
 */
 
-#include "shaders/Shared/RealityDepth.fxh"
-#include "shaders/Shared/RealityDirectXTK.fxh"
-#include "shaders/Shared/RealityPixel.fxh"
-#include "shaders/Shared/RealityVertex.fxh"
-
 #if !defined(REALITY_DEFINES)
 	#define REALITY_DEFINES
 

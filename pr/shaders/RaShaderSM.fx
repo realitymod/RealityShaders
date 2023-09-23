@@ -1,4 +1,10 @@
 #include "shaders/RealityGraphics.fxh"
+
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/shared/RealityVertex.fxh"
+#include "shaders/shared/RealityPixel.fxh"
+
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaShaderSMCommon.fxh"
 

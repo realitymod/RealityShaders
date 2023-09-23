@@ -1,4 +1,3 @@
-#include "shaders/RaCommon.fxh"
 
 /*
 	Description: Shaders for main menu

@@ -1,5 +1,3 @@
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 
 /*
 	Description: Renders game font

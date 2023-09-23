@@ -1,5 +1,7 @@
 #include "shaders/RealityGraphics.fxh"
 
+#include "shaders/shared/RealityDepth.fxh"
+
 /*
 	Description: Renders circle for debug shaders
 */

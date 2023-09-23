@@ -1,5 +1,7 @@
 #include "shaders/RealityGraphics.fxh"
 
+#include "shaders/shared/RealityDepth.fxh"
+
 /*
 	Description: Basic shader that outputs a color
 */

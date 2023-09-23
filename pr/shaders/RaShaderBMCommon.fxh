@@ -1,4 +1,3 @@
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	Data for RaShaderBM

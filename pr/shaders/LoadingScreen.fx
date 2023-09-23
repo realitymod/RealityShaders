@@ -1,4 +1,3 @@
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	Description: Renders loading screen at startup

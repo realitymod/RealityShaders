@@ -1,5 +1,7 @@
 #include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
+
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityPixel.fxh"
 
 /*
 	Description: Renders lighting for ground terrain
@@ -127,6 +129,7 @@ CREATE_SAMPLER(samplerCUBE, SamplerTex6_Cube, Tex6, WRAP)
 	StencilFail = KEEP; \
 
 #include "shaders/CommonPixelLight.fxh"
+#include "shaders/RaCommon.fxh"
 
 #include "shaders/TerrainShader_Shared.fx"
 #if HIGHTERRAIN || MIDTERRAIN

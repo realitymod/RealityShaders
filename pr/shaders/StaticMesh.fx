@@ -1,5 +1,4 @@
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/CommonPixelLight.fxh"
+#include "shaders/shared/RealityDepth.fxh"
 
 /*
 	Description:

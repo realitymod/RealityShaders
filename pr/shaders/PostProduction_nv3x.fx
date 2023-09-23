@@ -1,5 +1,7 @@
 #include "shaders/RealityGraphics.fxh"
 
+#include "shaders/shared/RealityPixel.fxh"
+
 /*
 	Description: Controls the following post-production shaders
 		1. Tinnitus

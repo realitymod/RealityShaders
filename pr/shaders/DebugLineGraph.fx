@@ -1,4 +1,3 @@
-#include "shaders/RealityGraphics.fxh"
 
 /*
 	Description: Renders debug linegraph
@@ -17,14 +16,6 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Color : TEXCOORD0;
-};
-
-struct PS2FB
-{
-	float4 Color : COLOR;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
 };
 
 VS2PS VS_Debug_Linegraph(APP2VS Input)

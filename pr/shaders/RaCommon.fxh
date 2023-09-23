@@ -1,4 +1,5 @@
 #include "shaders/RaDefines.fx"
+
 #include "shaders/RealityGraphics.fxh"
 
 /*
@@ -96,18 +97,18 @@
 
 	void ApplyFog(inout float3 Color, in float FogValue)
 	{
-		float3 fogColor = FogColor.rgb;
+		float3 Fog = FogColor.rgb;
 		// Adjust fog for thermals same way as the sky in SkyDome
 		if (IsTisActive())
 		{
-            // TIS uses Green + Red channel to determine heat
-            fogColor.r = 0;
-            // Green = 1 means cold, Green = 0 hot. Invert channel so clouds (high green) become hot
-            // Add constant to make everything colder
-            fogColor.g = (1 - FogColor.g) + 0.5;
+			// TIS uses Green + Red channel to determine heat
+			Fog.r = 0.0;
+			// Green = 1 means cold, Green = 0 hot. Invert channel so clouds (high green) become hot
+			// Add constant to make everything colder
+			Fog.g = (1.0 - FogColor.g) + 0.5;
 		}
-	
-		Color = lerp(fogColor, Color, FogValue);
+
+		Color = lerp(Fog, Color, FogValue);
 	}
 
 	float GetRoadZFade(float3 ObjectPos, float3 CameraPos, float2 FadeValues)

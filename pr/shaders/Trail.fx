@@ -1,4 +1,9 @@
 #include "shaders/RealityGraphics.fxh"
+
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityPixel.fxh"
+
+#include "shaders/RaCommon.fxh"
 #include "shaders/FXCommon.fxh"
 
 /*

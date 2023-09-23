@@ -1,4 +1,4 @@
-#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityPixel.fxh"
 
 /*
 	Description: Renders sky and skybox

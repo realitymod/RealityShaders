@@ -1,5 +1,9 @@
 #include "shaders/RealityGraphics.fxh"
 
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/shared/RealityVertex.fxh"
+
 /*
 	Description:
 	- Builds shadow and environment maps for bundledmesh (dynamic, nonhuman objects)

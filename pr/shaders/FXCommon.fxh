@@ -1,4 +1,3 @@
-#include "shaders/RaCommon.fxh"
 
 /*
 	Description: Shared code in particle shaders
