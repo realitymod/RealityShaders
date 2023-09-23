@@ -98,7 +98,7 @@ struct VS2PS
 	float4 Pos : TEXCOORD0;
 
 	float3 WorldNormal : TEXCOORD1;
-	float4 TexA : TEXCOORD2; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
+	float4 Tex0 : TEXCOORD2; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
 	#if _HASSHADOW_
 		float4 TexShadow : TEXCOORD3;
 	#endif
@@ -131,9 +131,9 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 	Output.WorldNormal.xyz = GetWorldNormal(ObjectNormal);
 
 	// Get surface-space data
-	Output.TexA.xy = Input.Tex0 * TexUnpack;
+	Output.Tex0.xy = Input.Tex0 * TexUnpack;
 	#if !defined(BASEDIFFUSEONLY)
-		Output.TexA.zw = Input.Tex1 * TexUnpack;
+		Output.Tex0.zw = Input.Tex1 * TexUnpack;
 	#endif
 
 	#if _HASSHADOW_
@@ -153,9 +153,9 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
 
 	// Texture data
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.TexA.xy);
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	#if !defined(BASEDIFFUSEONLY)
-		DiffuseMap *= tex2D(SampleDetailMap, Input.TexA.zw);
+		DiffuseMap *= tex2D(SampleDetailMap, Input.Tex0.zw);
 	#endif
 
 	// Get diffuse lighting

@@ -65,7 +65,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float4 TexA : TEXCOORD1; // .xy = Tex0; .zw = Tex1;
+	float4 Tex0 : TEXCOORD1; // .xy = Tex0; .zw = Tex1;
 	float4 ShadowTex : TEXCOORD2;
 	float Scale : TEXCOORD3;
 };
@@ -107,8 +107,8 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	Output.TexA.xy = Input.Tex0 / 32767.0;
-	Output.TexA.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
+	Output.Tex0.xy = Input.Tex0 / 32767.0;
+	Output.Tex0.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
 	Output.Scale = Input.Packed.w * 0.5;
@@ -123,9 +123,9 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float3 LocalPos = Input.Pos.xyz;
 	float3 TerrainSunColor = _SunColor * 2.0;
 
-	float4 Base = tex2D(SampleColorMap, Input.TexA.xy);
-	float3 TerrainColor = tex2D(SampleTerrainColorMap, Input.TexA.zw);
-	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.TexA.zw);
+	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
+	float3 TerrainColor = tex2D(SampleTerrainColorMap, Input.Tex0.zw);
+	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color

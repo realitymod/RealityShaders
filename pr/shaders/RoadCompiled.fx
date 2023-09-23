@@ -55,7 +55,7 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0; // .xyz = VertexPos; .w = Alpha;
 
-	float4 TexA : TEXCOORD1; // .xy = Tex0; .zw = Tex1
+	float4 Tex0 : TEXCOORD1; // .xy = Tex0; .zw = Tex1
 	float4 LightTex : TEXCOORD2;
 	float Alpha : TEXCOORD3;
 };
@@ -91,7 +91,7 @@ VS2PS VS_RoadCompiled(APP2VS Input)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	Output.TexA = float4(Input.Tex0, Input.Tex1);
+	Output.Tex0 = float4(Input.Tex0, Input.Tex1);
 	Output.LightTex = ProjToLighting(Output.HPos);
 
 	Output.Alpha = Input.Alpha;
@@ -110,8 +110,8 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	float3 TerrainSunColor = _SunColor.rgb * 2.0;
 	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
-	float4 Detail0 = tex2D(SampleDetailMap0, Input.TexA.xy);
-	float4 Detail1 = tex2D(SampleDetailMap1, Input.TexA.zw * 0.1);
+	float4 Detail0 = tex2D(SampleDetailMap0, Input.Tex0.xy);
+	float4 Detail1 = tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1);
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);

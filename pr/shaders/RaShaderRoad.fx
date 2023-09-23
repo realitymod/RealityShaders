@@ -96,7 +96,7 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 
-	float4 TexA : TEXCOORD1; // .xy = Tex0; .zw = Tex1;
+	float4 Tex0 : TEXCOORD1; // .xy = Tex0; .zw = Tex1;
 	float4 LightTex : TEXCOORD2;
 };
 
@@ -122,9 +122,9 @@ VS2PS VS_Road(APP2VS Input)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
 
-	Output.TexA.xy = Input.Tex0 * TexUnpack;
+	Output.Tex0.xy = Input.Tex0 * TexUnpack;
 	#if defined(USE_DETAIL)
-		Output.TexA.zw = Input.Tex1 * TexUnpack;
+		Output.Tex0.zw = Input.Tex1 * TexUnpack;
 	#endif
 
 	Output.LightTex.xy = Output.HPos.xy / Output.HPos.w;
@@ -146,9 +146,9 @@ PS2FB PS_Road(VS2PS Input)
 	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
 	float3 Light = ((TerrainSunColor * (AccumLights.a * 2.0)) + AccumLights.rgb) * 2.0;
 
-	float4 Diffuse = tex2D(SampleDiffuseMap, Input.TexA.xy);
+	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	#if defined(USE_DETAIL)
-		float4 Detail = tex2D(SampleDetailMap, Input.TexA.zw);
+		float4 Detail = tex2D(SampleDetailMap, Input.Tex0.zw);
 		Diffuse *= Detail;
 	#endif
 

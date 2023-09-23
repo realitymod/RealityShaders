@@ -9,13 +9,15 @@
 	/*
 		Hash function, optimized for instructions
 		---
-		Source: http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
+		Sources:
+			> http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
+			> https://developer.download.nvidia.com/assets/gameworks/downloads/regular/GDC17/RealTimeRenderingAdvances_HashedAlphaTesting_GDC2017_FINAL.pdf
 	*/
-	float GetHash(float2 Tex)
+	float GetHash(float2 Input)
 	{
 		float2 H = 0.0;
-		H.x = dot(Tex, float2(17.0, 0.1));
-		H.y = dot(Tex, float2(1.0, 13.0));
+		H.x = dot(Input, float2(17.0, 0.1));
+		H.y = dot(Input, float2(1.0, 13.0));
 		H = sin(H);
 		return frac(1.0e4 * H.x * (0.1 + abs(H.y)));
 	}
