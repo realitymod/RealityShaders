@@ -37,9 +37,9 @@ Per-pixel lighting allows sharper lighting and smoother fogging.
 
 This shader package includes updated thermal and suppression effects.
 
-### Procedural Terrain Detailmapping
+### Procedural Sampling
 
-No more visible texture repetition.
+No more visible texture repetition in clouds and far-away terrain.
 
 ## Coding Convention
 
