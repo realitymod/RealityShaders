@@ -7,6 +7,65 @@
 	#define REALITY_PIXEL
 
 	/*
+		Hash function, optimized for instructions
+		---
+		Source: http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
+	*/
+	float GetHash(float2 Tex)
+	{
+		float2 H = 0.0;
+		H.x = dot(Tex, float2(17.0, 0.1));
+		H.y = dot(Tex, float2(1.0, 13.0));
+		H = sin(H);
+		return frac(1.0e4 * H.x * (0.1 + abs(H.y)));
+	}
+
+	/*
+		GetProceduralTiles(): https://iquilezles.org/articles/texturerepetition
+		GetSmootherStep(): https://iquilezles.org/articles/texture/
+
+		The MIT License (MIT)
+
+		Copyright (c) 2017 Inigo Quilez
+
+		Permission is hereby granted, free of charge, to any person obtaining a copy of this
+		software and associated documentation files (the "Software"), to deal in the Software
+		without restriction, including without limitation the rights to use, copy, modify,
+		merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+		permit persons to whom the Software is furnished to do so, subject to the following
+		conditions:
+
+		The above copyright notice and this permission notice shall be included in all copies
+		or substantial portions of the Software.
+
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+		INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+		PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+		HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+		CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+		OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+	*/
+
+	float2 GetSmootherStep(float2 X)
+	{
+		return X * X * X * (X * (X * 6.0 - 15.0) + 10.0);
+	}
+
+	float GradientNoise(float2 Tex)
+	{
+		float2 I = floor(Tex);
+		float2 F = frac(Tex);
+		float A = GetHash(I + float2(0.0, 0.0));
+		float B = GetHash(I + float2(1.0, 0.0));
+		float C = GetHash(I + float2(0.0, 1.0));
+		float D = GetHash(I + float2(1.0, 1.0));
+		float2 UV = GetSmootherStep(F);
+		return lerp(A, B, UV.x) +
+				(C - A) * UV.y * (1.0 - UV.x) +
+				(D - B) * UV.x * UV.y;
+	}
+
+	/*
 		Interleaved Gradient Noise Dithering
 		---
 		http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
@@ -145,55 +204,6 @@
 		N.x = H[1] - H[2];
 		N.y = 2.0;
 		return normalize(N);
-	}
-
-	/*
-		https://iquilezles.org/articles/texturerepetition
-
-		The MIT License (MIT)
-
-		Copyright (c) 2017 Inigo Quilez
-
-		Permission is hereby granted, free of charge, to any person obtaining a copy of this
-		software and associated documentation files (the "Software"), to deal in the Software
-		without restriction, including without limitation the rights to use, copy, modify,
-		merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
-		permit persons to whom the Software is furnished to do so, subject to the following
-		conditions:
-
-		The above copyright notice and this permission notice shall be included in all copies
-		or substantial portions of the Software.
-
-		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-		INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-		PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-		HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-		CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
-		OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-	*/
-
-	float GetRandom(float2 Tex)
-	{
-		return frac(sin(dot(Tex.xy, float2(12.9898, 78.233))) * 43758.5453);
-	}
-
-	float2 GetCubic(float2 X)
-	{
-		return X * X * (3.0 - 2.0 * X);
-	}
-
-	float GradientNoise(float2 Tex)
-	{
-		float2 I = floor(Tex);
-		float2 F = frac(Tex);
-		float A = GetRandom(I + float2(0.0, 0.0));
-		float B = GetRandom(I + float2(1.0, 0.0));
-		float C = GetRandom(I + float2(0.0, 1.0));
-		float D = GetRandom(I + float2(1.0, 1.0));
-		float2 UV = GetCubic(F);
-		return lerp(A, B, UV.x) +
-				(C - A) * UV.y * (1.0 - UV.x) +
-				(D - B) * UV.x * UV.y;
 	}
 
 	float4 GetProceduralTiles(sampler2D Source, float2 Tex)

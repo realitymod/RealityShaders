@@ -124,8 +124,9 @@ PS2FB PS_SkyDome(VS2PS_SkyDome Input)
 {
 	PS2FB Output = (PS2FB)0;
 
+	float FadeOut = GetFadeOut(Input.Pos.xyz);
 	float4 SkyDome = tex2D(SampleTex0, Input.TexA.xy);
-	float4 Cloud1 = tex2D(SampleTex1, Input.TexA.zw) * GetFadeOut(Input.Pos.xyz);
+	float4 Cloud1 = GetProceduralTiles(SampleTex1, Input.TexA.zw) * FadeOut;
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 	
@@ -142,8 +143,9 @@ PS2FB PS_SkyDome_Lit(VS2PS_SkyDome Input)
 {
 	PS2FB Output = (PS2FB)0;
 
+	float FadeOut = GetFadeOut(Input.Pos.xyz);
 	float4 SkyDome = tex2D(SampleTex0, Input.TexA.xy);
-	float4 Cloud1 = tex2D(SampleTex1, Input.TexA.zw) * GetFadeOut(Input.Pos.xyz);
+	float4 Cloud1 = GetProceduralTiles(SampleTex1, Input.TexA.zw) * FadeOut;
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
@@ -187,10 +189,11 @@ PS2FB PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
 {
 	PS2FB Output = (PS2FB)0;
 
+	float FadeOut = GetFadeOut(Input.Pos.xyz);
 	float4 SkyDome = tex2D(SampleTex0, Input.SkyTex);
-	float4 Cloud1 = tex2D(SampleTex1, Input.CloudTex.xy) * _CloudLerpFactors.x;
-	float4 Cloud2 = tex2D(SampleTex2, Input.CloudTex.zw) * _CloudLerpFactors.y;
-	float4 Temp = (Cloud1 + Cloud2) * GetFadeOut(Input.Pos.xyz);
+	float4 Cloud1 = GetProceduralTiles(SampleTex1, Input.CloudTex.xy) * _CloudLerpFactors.x;
+	float4 Cloud2 = GetProceduralTiles(SampleTex2, Input.CloudTex.zw) * _CloudLerpFactors.y;
+	float4 Temp = (Cloud1 + Cloud2) * FadeOut;
 
 	Output.Color = lerp(SkyDome, Temp, Temp.a);
 	
