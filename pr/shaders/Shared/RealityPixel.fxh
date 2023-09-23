@@ -65,6 +65,30 @@
 				(D - B) * UV.x * UV.y;
 	}
 
+	float4 GetProceduralTiles(sampler2D Source, float2 Tex)
+	{
+		// Sample variation pattern
+		float Variation = GradientNoise(Tex);
+
+		// Compute index
+		float Index = Variation * 8.0;
+		float I = floor(Index);
+		float F = frac(Index);
+
+		// Offsets for the different virtual patterns
+		float2 Offset1 = sin(float2(3.0, 7.0) * (I + 0.0));
+		float2 Offset2 = sin(float2(3.0, 7.0) * (I + 1.0));
+
+		// Compute derivatives for mip-mapping
+		float2 Ix = ddx(Tex);
+		float2 Iy = ddy(Tex);
+
+		float4 Color1 = tex2Dgrad(Source, Tex + Offset1, Ix, Iy);
+		float4 Color2 = tex2Dgrad(Source, Tex + Offset2, Ix, Iy);
+		float Blend = dot(Color1.rgb - Color2.rgb, 1.0);
+		return lerp(Color1, Color2, smoothstep(0.2, 0.8, F - (0.1 * Blend)));
+	}
+
 	/*
 		Interleaved Gradient Noise Dithering
 		---
@@ -204,29 +228,5 @@
 		N.x = H[1] - H[2];
 		N.y = 2.0;
 		return normalize(N);
-	}
-
-	float4 GetProceduralTiles(sampler2D Source, float2 Tex)
-	{
-		// Sample variation pattern
-		float Variation = GradientNoise(Tex);
-
-		// Compute index
-		float Index = Variation * 8.0;
-		float I = floor(Index);
-		float F = frac(Index);
-
-		// Offsets for the different virtual patterns
-		float2 Offset1 = sin(float2(3.0, 7.0) * (I + 0.0));
-		float2 Offset2 = sin(float2(3.0, 7.0) * (I + 1.0));
-
-		// Compute derivatives for mip-mapping
-		float2 Ix = ddx(Tex);
-		float2 Iy = ddy(Tex);
-
-		float4 Color1 = tex2Dgrad(Source, Tex + Offset1, Ix, Iy);
-		float4 Color2 = tex2Dgrad(Source, Tex + Offset2, Ix, Iy);
-		float Blend = dot(Color1.rgb - Color2.rgb, 1.0);
-		return lerp(Color1, Color2, smoothstep(0.2, 0.8, F - (0.1 * Blend)));
 	}
 #endif
