@@ -60,11 +60,11 @@
 		const float TwoPi = acos(-1.0) * 2.0;
 
 		// Calculate random hash rotation
-		float2 Hash = GetHash(I + O) * TwoPi;
-		sincos(Hash, Hash.x, Hash.y);
+		float Hash = GetHash(I + O) * TwoPi;
+		float2 HashSinCos = float2(sin(Hash), cos(Hash));
 
 		// Calculate final dot-product
-		return dot(Hash, F - O);
+		return dot(HashSinCos, F - O);
 	}
 
 	float GradientNoise(float2 Tex)
