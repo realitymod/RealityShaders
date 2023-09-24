@@ -23,9 +23,8 @@
 	}
 
 	/*
-		GetSmootherStep(): https://iquilezles.org/articles/texture/
-		GradientNoise(): https://iquilezles.org/articles/gradientnoise/
 		GetProceduralTiles(): https://iquilezles.org/articles/texturerepetition
+		GetQuintic(): https://iquilezles.org/articles/texture/
 
 		The MIT License (MIT)
 
@@ -49,41 +48,27 @@
 		OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	*/
 
-	float2 GetSmootherStep(float2 X)
+	float2 GetQuintic(float2 X)
 	{
 		return X * X * X * (X * (X * 6.0 - 15.0) + 10.0);
 	}
 
-	float GetGradient(float2 I, float2 F, float2 O)
-	{
-		// Get constants
-		const float TwoPi = acos(-1.0) * 2.0;
-
-		// Calculate random hash rotation
-		float Hash = GetHash(I + O) * TwoPi;
-		float2 HashSinCos = float2(sin(Hash), cos(Hash));
-
-		// Calculate final dot-product
-		return dot(HashSinCos, F - O);
-	}
-
-	float GradientNoise(float2 Tex)
+	float GetValueNoise(float2 Tex)
 	{
 		float2 I = floor(Tex);
 		float2 F = frac(Tex);
-		float A = GetGradient(I, F, float2(0.0, 0.0));
-		float B = GetGradient(I, F, float2(1.0, 0.0));
-		float C = GetGradient(I, F, float2(0.0, 1.0));
-		float D = GetGradient(I, F, float2(1.0, 1.0));
-		float2 UV = GetSmootherStep(F);
-		float Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-		return (Noise * 0.5) + 0.5;
+		float A = GetHash(I + float2(0.0, 0.0));
+		float B = GetHash(I + float2(1.0, 0.0));
+		float C = GetHash(I + float2(0.0, 1.0));
+		float D = GetHash(I + float2(1.0, 1.0));
+		float2 UV = GetQuintic(F);
+		return lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
 	}
 
 	float4 GetProceduralTiles(sampler2D Source, float2 Tex)
 	{
 		// Sample variation pattern
-		float Variation = GradientNoise(Tex);
+		float Variation = GetValueNoise(Tex);
 
 		// Compute index
 		float Index = Variation * 8.0;
