@@ -252,8 +252,6 @@ PS2FB PS_Leaf(VS2PS Input)
 		ApplyFog(Output.Color.rgb, FogValue);
 	#endif
 
-	ApplyHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
-
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
@@ -269,8 +267,9 @@ technique defaultTechnique
 			FillMode = WireFrame;
 		#endif
 
-		AlphaTestEnable = FALSE;
 		CullMode = NONE;
+		AlphaTestEnable = TRUE;
+		AlphaRef = PR_ALPHA_REF;
 
 		#if _POINTLIGHT_
 			AlphaBlendEnable = TRUE;
