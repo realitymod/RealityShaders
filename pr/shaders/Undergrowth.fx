@@ -155,6 +155,8 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 
+	ApplyHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
@@ -175,9 +177,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 
 #define GET_RENDERSTATES_UNDERGROWTH \
 	CullMode = CW; \
-	AlphaTestEnable = TRUE; \
-	AlphaRef = PR_ALPHA_REF; \
-	AlphaFunc = GREATER; \
+	AlphaTestEnable = FALSE; \
 	ZFunc = LESS; \
 
 technique t0_l0
@@ -393,6 +393,8 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 
+	ApplyHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
@@ -576,6 +578,8 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 
 	Output.Color = OutputColor;
 
+	ApplyHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
@@ -596,9 +600,7 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 
 #define GET_RENDERSTATES_UNDERGROWTH_ZONLY \
 	CullMode = CW; \
-	AlphaTestEnable = TRUE; \
-	AlphaRef = PR_ALPHA_REF; \
-	AlphaFunc = GREATER; \
+	AlphaTestEnable = FALSE; \
 	ColorWriteEnable = 0; \
 	ZFunc = LESS; \
 
