@@ -178,7 +178,7 @@
 		float CameraDistance = GetCameraDistance(WorldPos.xwz, _CameraPos.xwz);
 		float LerpValue = saturate(CameraDistance * _NearFarMorphLimits.x - _NearFarMorphLimits.y);
 		float YDelta = dot(_MorphDeltaSelector, MorphDelta) * LerpValue;
-		YDelta += dot(_MorphDeltaAdder[MorphDeltaAdderSelector * 256], MorphDelta.x);
+		YDelta += dot(_MorphDeltaAdder[MorphDeltaAdderSelector * 256], MorphDelta.xyz);
 		WorldPos.y = WorldPos.y - YDelta;
 		return WorldPos;
 	}
