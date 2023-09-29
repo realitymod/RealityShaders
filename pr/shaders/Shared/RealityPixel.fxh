@@ -5,6 +5,8 @@
 
 #if !defined(REALITY_PIXEL)
 	#define REALITY_PIXEL
+	#undef INCLUDED_HEADERS
+	#define INCLUDED_HEADERS
 
 	/*
 		Hash function, optimized for instructions

@@ -1,8 +1,18 @@
-#include "shaders/RealityGraphics.fxh"
 
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityVertex.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+	#include "shared/RealityVertex.fxh"
+#endif
 
 /*
 	Description:

@@ -5,6 +5,8 @@
 
 #if !defined(REALITY_VERTEX)
 	#define REALITY_VERTEX
+	#undef INCLUDED_HEADERS
+	#define INCLUDED_HEADERS
 
 	float3x3 GetTangentBasis(float3 Tangent, float3 Normal, float Flip)
 	{

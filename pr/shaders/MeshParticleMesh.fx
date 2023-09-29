@@ -1,10 +1,20 @@
-#include "shaders/RealityGraphics.fxh"
 
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityPixel.fxh"
-
 #include "shaders/RaCommon.fxh"
 #include "shaders/FXCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityPixel.fxh"
+	#include "RaCommon.fxh"
+	#include "FXCommon.fxh"
+#endif
 
 /*
 	Description:
@@ -94,7 +104,7 @@ PS2FB PS_Diffuse(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	// Textures
-	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo, false);
+	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo.xyz, false);
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
 	float4 HemiMap = tex2D(SampleLUT, HemiTex);
 

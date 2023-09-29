@@ -1,8 +1,16 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/shared/RealityDepth.fxh"
-
 #include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "RaCommon.fxh"
+#endif
 
 /*
 	Description: Renders lighting for road
@@ -130,7 +138,7 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	}
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos));
+	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

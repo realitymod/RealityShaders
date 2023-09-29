@@ -1,9 +1,18 @@
-#include "shaders/RealityGraphics.fxh"
 
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityPixel.fxh"
-
 #include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityPixel.fxh"
+	#include "RaCommon.fxh"
+#endif
 
 /*
 	Description: Renders lighting for undergrowth such as grass

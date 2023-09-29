@@ -1,10 +1,20 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/shared/RealityDepth.fxh"
-
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaDefines.fx"
 #include "shaders/RaShaderBMCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "RaCommon.fxh"
+	#include "RaDefines.fx"
+	#include "RaShaderBMCommon.fxh"
+#endif
 
 /*
 	Description: ZOnly shader for bundledmesh (dynamic, nonhuman objects)

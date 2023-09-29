@@ -1,9 +1,18 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/shared/RealityDepth.fxh"
-
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaShaderBMCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "RaCommon.fxh"
+	#include "RaShaderBMCommon.fxh"
+#endif
 
 /*
 	Description: Renders additive lighting for bundledmesh (dynamic, nonhuman objects)
@@ -87,7 +96,7 @@ PS2FB PS_BM_Additive(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0);
+	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 	OutputColor.rgb *= Transparency;
 
 	Output.Color = OutputColor;

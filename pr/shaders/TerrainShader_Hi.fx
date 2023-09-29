@@ -1,3 +1,7 @@
+#include "shaders/TerrainShader_Common.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "TerrainShader_Common.fxh"
+#endif
 
 /*
 	Description:
@@ -172,7 +176,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#endif
 
 	Output.Color = float4(OutputColor, ChartContribution);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos.xyz));
 	Output.Color.rgb *= ChartContribution;
 
 	#if defined(LOG_DEPTH)

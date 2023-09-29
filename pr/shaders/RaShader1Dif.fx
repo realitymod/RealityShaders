@@ -1,8 +1,16 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/shared/RealityDepth.fxh"
-
 #include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "RaCommon.fxh"
+#endif
 
 /*
 	Description: Renders object's diffuse map
@@ -93,7 +101,7 @@ PS2FB PS_Diffuse(VS2PS Input)
 	float3 WorldPos = Input.Pos.xyz;
 
 	Output.Color = tex2D(SampleDiffuseMap, Input.Tex0);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

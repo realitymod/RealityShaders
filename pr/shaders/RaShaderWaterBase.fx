@@ -1,8 +1,16 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/shared/RealityDepth.fxh"
-
 #include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "RaCommon.fxh"
+#endif
 
 /*
 	Description: Renders water

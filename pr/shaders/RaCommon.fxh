@@ -1,6 +1,14 @@
-#include "shaders/RaDefines.fx"
 
+/*
+	Include header files
+*/
+
+#include "shaders/RaDefines.fx"
 #include "shaders/RealityGraphics.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RaDefines.fx"
+	#include "RealityGraphics.fxh"
+#endif
 
 /*
 	Description: Shared functions for BF2's main 3D shaders
@@ -8,6 +16,8 @@
 
 #if !defined(RACOMMON_FXH)
 	#define RACOMMON_FXH
+	#undef INCLUDED_HEADERS
+	#define INCLUDED_HEADERS
 
 	/*
 		Cached shader variables

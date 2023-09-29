@@ -1,5 +1,14 @@
 
 /*
+	Include header files
+*/
+
+#include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RaCommon.fxh"
+#endif
+
+/*
 	Data for RaShaderBM
 */
 

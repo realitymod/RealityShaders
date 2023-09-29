@@ -1,8 +1,16 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/shared/RealityDepth.fxh"
-
 #include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "RaCommon.fxh"
+#endif
 
 /*
 	Description: Renders road for game
@@ -141,7 +149,7 @@ PS2FB PS_Road(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	float3 WorldPos = Input.Pos.xyz;
-	float ZFade = GetRoadZFade(WorldPos, WorldSpaceCamPos, RoadFadeOut);
+	float ZFade = GetRoadZFade(WorldPos, WorldSpaceCamPos.xyz, RoadFadeOut);
 
 	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
 	float3 Light = ((TerrainSunColor * (AccumLights.a * 2.0)) + AccumLights.rgb) * 2.0;
@@ -171,7 +179,7 @@ PS2FB PS_Road(VS2PS Input)
 	#endif
 
 	Output.Color = Diffuse;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

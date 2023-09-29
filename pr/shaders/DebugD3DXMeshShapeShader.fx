@@ -1,6 +1,14 @@
-#include "shaders/RealityGraphics.fxh"
 
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+#endif
 
 /*
 	Description: Renders shapes to debug collision mesh, culling, etc.

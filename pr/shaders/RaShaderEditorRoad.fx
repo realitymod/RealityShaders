@@ -1,8 +1,16 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/RealityGraphics.fxh"
-
 #include "shaders/shared/RealityDepth.fxh"
-
 #include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "RaCommon.fxh"
+#endif
 
 /*
 	Description: Renders road for editor
@@ -145,10 +153,10 @@ PS2FB PS_Editor_Road(VS2PS Input)
 	#else
 		float4 OutputColor = Diffuse;
 	#endif
-	OutputColor.a *= GetRoadZFade(Input.Pos, WorldSpaceCamPos, RoadFadeOut);
+	OutputColor.a *= GetRoadZFade(Input.Pos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, WorldSpaceCamPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos.xyz, WorldSpaceCamPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

@@ -1,6 +1,16 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityPixel.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+	#include "shared/RealityPixel.fxh"
+#endif
 
 /*
 	Description:
@@ -226,7 +236,7 @@ float4 PS_PreSkin(VS2PS_PreSkin Input) : COLOR
 	WorldSpace WS = GetWorldSpaceData(Input.WorldPos.xyz, TangentNormal.xyz);
 
 	// Get hemi data
-	float2 HemiTex = GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo, true);
+	float2 HemiTex = GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo.xyz, true);
 	float4 HemiMap = tex2D(SampleTex1, HemiTex);
 
 	// Get diffuse
@@ -342,7 +352,7 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR
 
 	// Hemi-mapping
 	float HemiLerp = GetHemiLerp(WS);
-	float2 HemiTex = GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo, true);
+	float2 HemiTex = GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo.xyz, true);
 	float4 HemiMap = tex2D(SampleTex0, HemiTex);
 	float4 HemiColor = lerp(HemiMap, _SkyColor, HemiLerp);
 

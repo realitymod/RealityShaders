@@ -1,6 +1,14 @@
-#include "shaders/RealityGraphics.fxh"
 
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityPixel.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityPixel.fxh"
+#endif
 
 /*
 	Description: This shader handles screen-space post-processing and texture conversions

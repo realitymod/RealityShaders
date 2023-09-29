@@ -3,69 +3,10 @@
 	Description: Shared functions for terrain shader
 */
 
-struct APP2VS_Shared
-{
-	float4 Pos0 : POSITION0;
-	float4 Pos1 : POSITION1;
-	float4 MorphDelta : POSITION2;
-	float3 Normal : NORMAL;
-};
-
-struct PS2FB
-{
-	float4 Color : COLOR;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
-/*
-	Basic morphed technique
-*/
-float GetCameraDistance(float3 WorldPos, float3 CameraPos)
-{
-	// tl: This is now based on squared values (besides camPos)
-	// tl: This assumes that input WorldPos.w == 1 to work correctly! (it always is)
-	// tl: This all works out because camera height is set to height+1 so
-	//     CameraVec becomes (cx, cheight+1, cz) - (vx, 1, vz)
-	// tl: YScale is now pre-multiplied into morphselector
-	float3 CameraVec = CameraPos - WorldPos;
-	return dot(CameraVec, CameraVec);
-}
-
-float4 MorphPosition(float4 WorldPos, float4 MorphDelta, float MorphDeltaAdderSelector)
-{
-	float CameraDistance = GetCameraDistance(WorldPos.xwz, _CameraPos.xwz);
-	float LerpValue = saturate(CameraDistance * _NearFarMorphLimits.x - _NearFarMorphLimits.y);
-	float YDelta = dot(_MorphDeltaSelector, MorphDelta) * LerpValue;
-	YDelta += dot(_MorphDeltaAdder[MorphDeltaAdderSelector * 256], MorphDelta);
-	WorldPos.y = WorldPos.y - YDelta;
-	return WorldPos;
-}
-
-float4 ProjToLighting(float4 HPos)
-{
-	// tl: This has been rearranged optimally (I believe) into 1 MUL and 1 MAD,
-	//     don't change this without thinking twice.
-	//     ProjOffset now includes screen->texture bias as well as half-texel offset
-	//     ProjScale is screen->texture scale/invert operation
-	// Tex = (HPos.x * 0.5 + 0.5 + HTexel, HPos.y * -0.5 + 0.5 + HTexel, HPos.z, HPos.w)
-	return HPos * _TexProjScale + (_TexProjOffset * HPos.w);
-}
-
-float4 GetWorldPos(float4 Pos0, float4 Pos1)
-{
-	float4 WorldPos = 0.0;
-	WorldPos.xz = (Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
-	WorldPos.yw = (Pos1.xw * _ScaleTransY.xy);
-	return WorldPos;
-}
-
-float4 GetMorphedWorldPos(APP2VS_Shared Input)
-{
-	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
-	return MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z);
-}
+#include "shaders/TerrainShader_Common.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "TerrainShader_Common.fxh"
+#endif
 
 /*
 	Fill lightmapping
@@ -315,7 +256,7 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	#endif
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -451,7 +392,7 @@ PS2FB PS_Shared_UnderWater(VS2PS_Shared_UnderWater Input)
 	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 
 	Output.Color = float4(OutputColor, WaterLerp);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -567,7 +508,7 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	}
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

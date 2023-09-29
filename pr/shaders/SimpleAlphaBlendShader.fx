@@ -1,4 +1,12 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/RealityGraphics.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+#endif
 
 /*
 	Description: Renders simple blendop shader

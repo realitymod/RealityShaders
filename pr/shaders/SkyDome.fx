@@ -1,4 +1,12 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/shared/RealityPixel.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "shared/RealityPixel.fxh"
+#endif
 
 /*
 	Description: Renders sky and skybox

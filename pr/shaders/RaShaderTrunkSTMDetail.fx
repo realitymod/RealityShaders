@@ -1,8 +1,18 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
-
 #include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+	#include "RaCommon.fxh"
+#endif
 
 /*
 	Description: Renders lighting for objects with characteristics of tree-trunks (poles)

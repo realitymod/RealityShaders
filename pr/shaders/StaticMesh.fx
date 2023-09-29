@@ -1,4 +1,12 @@
+
+/*
+	Include header files
+*/
+
 #include "shaders/shared/RealityDepth.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "shared/RealityDepth.fxh"
+#endif
 
 /*
 	Description:
