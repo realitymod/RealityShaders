@@ -159,6 +159,17 @@ ScreenSpace GetScreenSpace(VS2PS_PP Input)
 	---
 	https://github.com/ronja-tutorials/ShaderTutorials
 */
+
+VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
+{
+	VS2PS_Quad Output;
+	FSTriangle FST;
+	GetFSTriangle(Input.Tex0, FST);
+	Output.HPos = float4(FST.Pos, 0.0, 1.0);
+	Output.Tex0 = FST.Tex;
+	return Output;
+}
+
 float4 PS_Tinnitus(VS2PS_PP Input) : COLOR
 {
 	ScreenSpace SS = GetScreenSpace(Input);
@@ -194,7 +205,7 @@ technique Tinnitus
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 VS_Quad();
+		VertexShader = compile vs_3_0 VS_Tinnitus();
 		PixelShader = compile ps_3_0 PS_Tinnitus();
 	}
 }
