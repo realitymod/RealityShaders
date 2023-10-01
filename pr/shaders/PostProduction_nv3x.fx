@@ -181,7 +181,7 @@ float4 PS_Tinnitus(VS2PS_PP Input) : COLOR
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= BLUR_RADIUS;
 	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, SS.Pos, SS.Tex, SpreadFactor);
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, SS.Tex, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
 	float2 Tex = (SS.Tex * float2(2.0, 1.0)) - 1.0;

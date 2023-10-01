@@ -158,7 +158,7 @@
 		return OutputColor / TotalWeights;
 	}
 
-	float4 GetSpiralBlur(sampler Source, float2 Pos, float2 Tex, float Bias)
+	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias)
 	{
 		// Initialize values
 		float4 OutputColor = 0.0;
@@ -168,7 +168,7 @@
 		const float Pi2 = acos(-1.0) * 2.0;
 
 		// Get texcoord data
-		float Noise = Pi2 * GetGradientNoise(Pos);
+		float Noise = Pi2 * GetGradientNoise(Tex * 256.0);
 		float AspectRatio = GetAspectRatio(GetScreenSize(Tex));
 
 		float2 Rotation = 0.0;
