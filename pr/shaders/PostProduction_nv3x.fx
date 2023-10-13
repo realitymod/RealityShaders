@@ -110,7 +110,7 @@ struct FSTriangle
 
 void GetFSTriangle(in float2 Tex, out FSTriangle Output)
 {
-	Output.Tex = trunc(Tex * 2.0);
+	Output.Tex = float2(int2(Tex * 2.0));
 	Output.Pos = (Output.Tex * float2(2.0, -2.0)) + float2(-1.0, 1.0);
 }
 
@@ -170,7 +170,7 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 PS_Tinnitus(VS2PS_PP Input) : COLOR
+float4 PS_Tinnitus(VS2PS_PP Input, float2 ScreenPos : VPOS) : COLOR
 {
 	ScreenSpace SS = GetScreenSpace(Input);
 
@@ -181,7 +181,7 @@ float4 PS_Tinnitus(VS2PS_PP Input) : COLOR
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= BLUR_RADIUS;
 	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, SS.Tex, SpreadFactor);
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, ScreenPos, SS.Tex, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
 	float2 Tex = (SS.Tex * float2(2.0, 1.0)) - 1.0;

@@ -76,10 +76,10 @@
 		return dot(HashSinCos, F - O);
 	}
 
-	float GetGradientNoise(float2 Tex)
+	float GetGradientNoise(float2 Input)
 	{
-		float2 I = floor(Tex);
-		float2 F = frac(Tex);
+		float2 I = floor(Input);
+		float2 F = frac(Input);
 		float A = GetGradient(I, F, float2(0.0, 0.0));
 		float B = GetGradient(I, F, float2(1.0, 0.0));
 		float C = GetGradient(I, F, float2(0.0, 1.0));
@@ -170,7 +170,7 @@
 		return OutputColor / TotalWeights;
 	}
 
-	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias)
+	float4 GetSpiralBlur(sampler Source, float2 Pos, float2 Tex, float Bias)
 	{
 		// Initialize values
 		float4 OutputColor = 0.0;
@@ -180,18 +180,19 @@
 		const float Pi2 = acos(-1.0) * 2.0;
 
 		// Get texcoord data
-		float Noise = Pi2 * GetGradientNoise(Tex * 256.0);
+		float Noise = Pi2 * GetGradientNoise(Pos * 0.25);
 		float AspectRatio = GetAspectRatio(GetScreenSize(Tex));
 
 		float2 Rotation = 0.0;
 		sincos(Noise, Rotation.y, Rotation.x);
 		float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
 
+		float Shift = 0.0;
 		for(int i = 1; i < 4; ++i)
 		{
 			for(int j = 0; j < 4 * i; ++j)
 			{
-				const float Shift = (Pi2 / (4.0 * float(i))) * float(j);
+				Shift = (Pi2 / (4.0 * float(i))) * float(j);
 				float2 AngleShift = 0.0;
 				sincos(Shift, AngleShift.x, AngleShift.y);
 				AngleShift *= float(i);
