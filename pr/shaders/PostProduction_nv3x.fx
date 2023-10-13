@@ -137,14 +137,14 @@ struct ScreenSpace
 
 struct VS2PS_PP
 {
-	float4 Pos : VPOS;
+	float2 Pos : VPOS;
 	float2 Tex0 : TEXCOORD0;
 };
 
 ScreenSpace GetScreenSpace(VS2PS_PP Input)
 {
 	ScreenSpace Output;
-	Output.Pos = Input.Pos.xy;
+	Output.Pos = Input.Pos;
 	Output.Tex = Input.Tex0;
 	Output.Size = GetScreenSize(Input.Tex0);
 	return Output;
@@ -170,7 +170,7 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 PS_Tinnitus(VS2PS_PP Input, float2 ScreenPos : VPOS) : COLOR
+float4 PS_Tinnitus(VS2PS_PP Input) : COLOR
 {
 	ScreenSpace SS = GetScreenSpace(Input);
 
@@ -181,7 +181,7 @@ float4 PS_Tinnitus(VS2PS_PP Input, float2 ScreenPos : VPOS) : COLOR
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= BLUR_RADIUS;
 	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, ScreenPos, SS.Tex, SpreadFactor);
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, SS.Pos, SS.Tex, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
 	float2 Tex = (SS.Tex * float2(2.0, 1.0)) - 1.0;

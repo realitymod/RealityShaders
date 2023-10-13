@@ -180,7 +180,8 @@
 		const float Pi2 = acos(-1.0) * 2.0;
 
 		// Get texcoord data
-		float Noise = Pi2 * GetGradientNoise(Pos * 0.25);
+		float2 FragmentPos = Pos;
+		float Noise = Pi2 * GetGradientNoise(FragmentPos * 0.25);
 		float AspectRatio = GetAspectRatio(GetScreenSize(Tex));
 
 		float2 Rotation = 0.0;
