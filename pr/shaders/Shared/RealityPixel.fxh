@@ -9,14 +9,17 @@
 	#define INCLUDED_HEADERS
 
 	/*
-		Interleaved Gradient Noise Dithering
+		Hash function, optimized for instructions
 		---
-		http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
+		C. Wyman and M. McGuire, “Hashed Alpha Testing,” 2017, [Online]. Available: http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
 	*/
-
 	float GetHash(float2 Input)
 	{
-		return frac(52.9829189 * frac(dot(Input, float2(0.06711056, 0.00583715))));
+		float2 H = 0.0;
+		H.x = dot(Input, float2(17.0, 0.1));
+		H.y = dot(Input, float2(1.0, 13.0));
+		H = sin(H);
+		return frac(1.0e4 * H.x * (0.1 + abs(H.y)));
 	}
 
 	/*
