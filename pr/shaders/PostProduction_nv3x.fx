@@ -73,6 +73,7 @@ uniform float _DeltaV : DELTAV;
 
 uniform texture Tex0 : TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP)
+CREATE_SAMPLER(SampleTex0_Point, Tex0, POINT, CLAMP)
 CREATE_SAMPLER(SampleTex0_Mirror, Tex0, LINEAR, MIRROR)
 
 uniform texture Tex1 : TEXLAYER1;
@@ -335,7 +336,7 @@ float4 PS_ThermalVision(VS2PS_PP Input) : COLOR
 
 	if (_Interference < 0) // Thermals
 	{
-		float4 Image = tex2Dlod(SampleTex0, float4(GetPixelation(Input.Tex0), 0.0, 0.0));
+		float4 Image = tex2Dlod(SampleTex0_Point, float4(GetPixelation(Input.Tex0), 0.0, 0.0));
 		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
 		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
 		OutputColor.r -= _Interference * Random; // Add -_Interference
@@ -356,7 +357,7 @@ float4 PS_ThermalVision(VS2PS_PP Input) : COLOR
 	}
 	else // Passthrough
 	{
-		OutputColor = tex2D(SampleTex0, ImageTex);
+		OutputColor = tex2D(SampleTex0_Point, ImageTex);
 	}
 
 	return OutputColor;
@@ -409,7 +410,7 @@ float4 PS_GradientThermalVision(VS2PS_PP Input) : COLOR
 	}
 	else // Passthrough
 	{
-		OutputColor = tex2D(SampleTex0, ImageTex);
+		OutputColor = tex2D(SampleTex0_Point, ImageTex);
 	}
 
 	return OutputColor;
