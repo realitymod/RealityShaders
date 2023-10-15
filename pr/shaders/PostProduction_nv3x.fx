@@ -137,14 +137,14 @@ struct ScreenSpace
 
 struct VS2PS_PP
 {
-	float2 Pos : VPOS;
+	float4 Pos : VPOS;
 	float2 Tex0 : TEXCOORD0;
 };
 
 ScreenSpace GetScreenSpace(VS2PS_PP Input)
 {
 	ScreenSpace Output;
-	Output.Pos = Input.Pos;
+	Output.Pos = Input.Pos.xy;
 	Output.Tex = Input.Tex0;
 	Output.Size = GetScreenSize(Input.Tex0);
 	return Output;
