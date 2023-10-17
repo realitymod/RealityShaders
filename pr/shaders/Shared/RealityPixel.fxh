@@ -123,7 +123,7 @@
 
 	int2 GetScreenSize(float2 Tex)
 	{
-		return int2(1.0 / GetPixelSize(Tex));
+		return 1.0 / GetPixelSize(Tex);
 	}
 
 	float GetAspectRatio(float2 ScreenSize)
@@ -183,8 +183,7 @@
 		const float Pi2 = acos(-1.0) * 2.0;
 
 		// Get texcoord data
-		float2 FragmentPos = Pos;
-		float Noise = Pi2 * GetGradientNoise(FragmentPos * 0.25);
+		float Noise = Pi2 * GetGradientNoise(Pos);
 		float AspectRatio = GetAspectRatio(GetScreenSize(Tex));
 
 		float2 Rotation = 0.0;

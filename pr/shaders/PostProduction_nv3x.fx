@@ -128,28 +128,6 @@ VS2PS_Quad VS_Quad(APP2VS_Quad Input)
 	return Output;
 }
 
-struct ScreenSpace
-{
-	float2 Pos;
-	float2 Tex;
-	float2 Size;
-};
-
-struct VS2PS_PP
-{
-	float4 Pos : VPOS;
-	float2 Tex0 : TEXCOORD0;
-};
-
-ScreenSpace GetScreenSpace(VS2PS_PP Input)
-{
-	ScreenSpace Output;
-	Output.Pos = Input.Pos.xy;
-	Output.Tex = Input.Tex0;
-	Output.Size = GetScreenSize(Input.Tex0);
-	return Output;
-}
-
 /*
 	Main shaders
 */
@@ -170,21 +148,20 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 PS_Tinnitus(VS2PS_PP Input) : COLOR
+float4 PS_Tinnitus(VS2PS_Quad Input, float2 FragPos : VPOS) : COLOR
 {
-	ScreenSpace SS = GetScreenSpace(Input);
-
 	// Get texture data
 	float LerpBias = saturate(smoothstep(0.0, 0.5, _BackBufferLerpBias));
+	float2 ScaledFragPos = floor(FragPos) * 0.25;
 
 	// Spread the blur as you go lower on the screen
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= BLUR_RADIUS;
 	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, SS.Pos, SS.Tex, SpreadFactor);
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, ScaledFragPos, Input.Tex0, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
-	float2 Tex = (SS.Tex * float2(2.0, 1.0)) - 1.0;
+	float2 Tex = (Input.Tex0 * float2(2.0, 1.0)) - 1.0;
 	Tex *= LerpBias; // gradually remove mask overtime
 	float2 Edge = max(abs(Tex) - (1.0 / 5.0), 0.0);
 	float Mask = saturate(length(Edge));
@@ -214,18 +191,14 @@ technique Tinnitus
 	Glow shaders
 */
 
-float4 PS_Glow(VS2PS_PP Input) : COLOR
+float4 PS_Glow(VS2PS_Quad Input) : COLOR
 {
-	ScreenSpace SS = GetScreenSpace(Input);
-
-	return tex2D(SampleTex0, SS.Tex);
+	return tex2D(SampleTex0, Input.Tex0);
 }
 
-float4 PS_Glow_Material(VS2PS_PP Input) : COLOR
+float4 PS_Glow_Material(VS2PS_Quad Input) : COLOR
 {
-	ScreenSpace SS = GetScreenSpace(Input);
-
-	float4 Diffuse = tex2D(SampleTex0, SS.Tex);
+	float4 Diffuse = tex2D(SampleTex0, Input.Tex0);
 	// return (1.0 - Diffuse.a);
 	// temporary test, should be removed
 	return _GlowStrength * /* Diffuse + */ float4(Diffuse.rgb * (1.0 - Diffuse.a), 1.0);
@@ -320,10 +293,8 @@ float2 GetPixelation(float2 Tex)
 	return floor(Tex * THERMAL_SIZE) / THERMAL_SIZE;
 }
 
-float4 PS_ThermalVision(VS2PS_PP Input) : COLOR
+float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR
 {
-	ScreenSpace SS = GetScreenSpace(Input);
-
 	float4 OutputColor = 0.0;
 
 	// Get texture data
@@ -380,7 +351,7 @@ technique TVEffect
 	TV Effect with usage of gradient texture
 */
 
-float4 PS_GradientThermalVision(VS2PS_PP Input) : COLOR
+float4 PS_GradientThermalVision(VS2PS_Quad Input) : COLOR
 {
 	float4 OutputColor = 0.0;
 
@@ -484,7 +455,7 @@ technique WaveDistortion
 	Theory is that the texture getting temporally blended or sampled has been rewritten before the blendop
 */
 
-float4 PS_Flashbang(VS2PS_PP Input) : COLOR
+float4 PS_Flashbang(VS2PS_Quad Input) : COLOR
 {
 	float4 Sample0 = tex2D(SampleTex0, Input.Tex0);
 	float4 Sample1 = tex2D(SampleTex1, Input.Tex0);
