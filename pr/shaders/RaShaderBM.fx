@@ -142,6 +142,15 @@ float4 GetUVRotation(APP2VS Input)
 	return float4(UV.xy + (Input.TexDiffuse * TexUnpack), 0.0, 1.0);
 }
 
+float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
+{
+	// LocalHeight scale, 1 for top and 0 for bottom
+	float LocalHeight = (WorldPos.y - GeomBones[0][3][1]) * InvHemiHeightScale;
+	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
+	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
+	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
+}
+
 VS2PS VS_BundledMesh(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
@@ -210,15 +219,6 @@ float3 GetWorldLightVec(VS2PS Input, float3 WorldPos)
 	#endif
 }
 
-float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
-{
-	// LocalHeight scale, 1 for top and 0 for bottom
-	float LocalHeight = (WorldPos.y - GeomBones[0][3][1]) * InvHemiHeightScale;
-	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
-	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
-	return saturate(((WorldNormal.y + Offset) * 0.5) + 0.5);
-}
-
 PS2FB PS_BundledMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
@@ -285,15 +285,17 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
 	#endif
 
+	float HemiLight = 1.0;
 	#if _POINTLIGHT_
 		float3 Ambient = 0.0;
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 HemiTex = GetHemiTex(WorldPos, WorldNormal, HemiMapConstants.rgb, true);
+			float2 HemiTex = GetHemiTex(WorldPos, 0.0, HemiMapConstants.rgb, true);
 			float4 HemiMap = tex2D(SampleHemiMap, HemiTex);
 			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
+			// HemiLight = lerp(HemiMap.a, 1.0, saturate(HeightOverTerrain - 1.0));
 		#else
 			float3 Ambient = Lights[0].color.a;
 		#endif
@@ -316,7 +318,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		const float Attenuation = 1.0;
 	#endif
 
-	float3 LightFactors = Attenuation * (Shadow * ShadowOcc);
+	float3 LightFactors = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * LightFactors;
 	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color.rgb) * LightFactors;

@@ -140,6 +140,15 @@ float3 GetTangentDir(Bone B, float3x3 ObjectTBN, float3 SObjectDir)
 	return Dir;
 }
 
+float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
+{
+	// LocalHeight scale, 1 for top and 0 for bottom
+	float LocalHeight = (WorldPos.y - (World[3][1] - 0.5)) * 0.5;
+	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
+	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
+	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
+}
+
 VS2PS VS_SkinnedMesh(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
@@ -204,15 +213,6 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	return Output;
 }
 
-float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
-{
-	// LocalHeight scale, 1 for top and 0 for bottom
-	float LocalHeight = (WorldPos.y - (World[3][1] - 0.5)) * 0.5;
-	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
-	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
-	return saturate(((WorldNormal.y + Offset) * 0.5) + 0.5);
-}
-
 PS2FB PS_SkinnedMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
@@ -252,15 +252,17 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 		float ShadowOcc = 1.0;
 	#endif
 
+	float HemiLight = 1.0;
 	#if _POINTLIGHT_
 		float Ambient = 0.0;
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 HemiTex = GetHemiTex(WorldPos, WorldNormal, HemiMapConstants, true);
+			float2 HemiTex = GetHemiTex(WorldPos, 0.0, HemiMapConstants, true);
 			float4 HemiMap = tex2D(SampleHemiMap, HemiTex);
 			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
+			// HemiLight = HemiMap.a;
 		#else
 			float Ambient = Lights[0].color.a;
 		#endif
@@ -284,7 +286,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	#endif
 
 	float4 OutputColor = 1.0;
-	float LightFactors = Attenuation * (Shadow * ShadowOcc);
+	float LightFactors = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * LightFactors;
 	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color.rgb) * LightFactors;
 	OutputColor.rgb = (ColorMap.rgb * (Ambient + DiffuseRGB)) + SpecularRGB;

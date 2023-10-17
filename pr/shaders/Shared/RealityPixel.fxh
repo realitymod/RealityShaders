@@ -217,7 +217,7 @@
 		// HemiInfo: Offset x/y heightmapsize z / hemilerpbias w
 		float2 HemiTex = 0.0;
 		HemiTex.xy = ((WorldPos + (HemiInfo.z * 0.5) + WorldNormal).xz - HemiInfo.xy) / HemiInfo.z;
-		HemiTex.y = (InvertY) ? 1.0 - HemiTex.y : HemiTex.y;
+		HemiTex.y = (InvertY == true) ? 1.0 - HemiTex.y : HemiTex.y;
 		return HemiTex;
 	}
 
