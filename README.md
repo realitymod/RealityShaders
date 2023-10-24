@@ -3,7 +3,7 @@
 
 ## About
 
-*RealityShaders* is an HLSL shader overhaul for [Project Reality: BF2](https://www.realitymod.com/). *RealityShaders* introduces many graphical updates that did not make it into the Refactor 2 Engine.
+*RealityShaders* is an HLSL shader overhaul for [Project Reality: Battlefield 2](https://www.realitymod.com/). *RealityShaders* introduces many graphical updates that did not make it into the Refactor 2 Engine.
 
 *RealityShaders* also includes `.fxh` files that contain algorithms used in the collection.
 
@@ -51,3 +51,9 @@ Practice | Elements
 **SnakeCase** | variables (local & global) • method arguments
 **Snake_Case** | data subcatagory
 **PREFIX_Data** | `struct` • `PixelShader` • `VertexShader`
+
+## Acknowledgment
+
+- [The Forgotten Hope Team](http://forgottenhope.warumdarum.de/)
+
+    Major knowledge-base and inspiration.
