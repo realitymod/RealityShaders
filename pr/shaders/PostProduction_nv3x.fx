@@ -323,7 +323,7 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 		ImageTex.x += _DistortionScale * Noise * Distort;
 
 		// Fetch image
-		float TVFactor = lerp(Gray, 1.0, _TVAmbient) * (_Interference * Random);
+		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
 		OutputColor = float4(_TVColor, 1.0) * TVFactor;
 	}
 	else // Passthrough
