@@ -150,7 +150,7 @@
 		Convolutions
 	*/
 
-	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias)
+	float4 GetSpiralBlur(sampler Source, float2 Pos, float2 Tex, float Bias)
 	{
 		// Initialize values
 		float4 OutputColor = 0.0;
@@ -161,7 +161,7 @@
 
 		// Get texcoord data
 		float2 ScreenSize = GetScreenSize(Tex);
-		float Noise = Pi2 * GetGradientNoise((Tex * ScreenSize) * 0.25);
+		float Noise = Pi2 * GetGradientNoise(Pos);
 		float AspectRatio = GetAspectRatio(ScreenSize);
 
 		float2 Rotation = 0.0;

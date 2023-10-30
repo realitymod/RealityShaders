@@ -144,7 +144,7 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
+float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 {
 	// Get texture data
 	float LerpBias = saturate(smoothstep(0.0, 0.5, _BackBufferLerpBias));
@@ -153,7 +153,7 @@ float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= BLUR_RADIUS;
 	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor);
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, Pos / 4.0, Input.Tex0, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
 	float2 Tex = (Input.Tex0 * float2(2.0, 1.0)) - 1.0;
