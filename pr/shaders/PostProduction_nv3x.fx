@@ -87,16 +87,6 @@ CREATE_SAMPLER(SampleTex2_Wrap, Tex2, LINEAR, WRAP)
 uniform texture Tex3 : TEXLAYER3;
 CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, CLAMP)
 
-struct APP2VS_Quad
-{
-	float2 Pos : POSITION0;
-	float2 Tex0 : TEXCOORD0;
-};
-
-/*
-	Custom datatypes and their respective constructors
-*/
-
 /*
 	Transform fullscreen quad into a fullscreen triangle with its texcoords
 	NOTE: We transform the texture in PS
@@ -114,6 +104,12 @@ void GetFSTriangle(in float2 Tex, out FSTriangle Output)
 	Output.Pos = (Output.Tex * float2(2.0, -2.0)) + float2(-1.0, 1.0);
 }
 
+struct APP2VS_Quad
+{
+	float2 Pos : POSITION0;
+	float2 Tex0 : TEXCOORD0;
+};
+
 struct VS2PS_Quad
 {
 	float4 HPos : POSITION;
@@ -123,15 +119,15 @@ struct VS2PS_Quad
 VS2PS_Quad VS_Quad(APP2VS_Quad Input)
 {
 	VS2PS_Quad Output;
-	Output.HPos = float4(Input.Pos, 0.0, 1.0);
+	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.Tex0 = Input.Tex0;
 	return Output;
 }
 
-/*
-	Main shaders
-*/
-
+float4 GetTex(float2 Tex, float4 Offset)
+{
+	return (Tex.xyyy * float4(1.0, 1.0, 0.0, 0.0)) + Offset;
+}
 /*
 	Tinnitus using Ronja Böhringer's signed distance fields
 	---
@@ -254,24 +250,6 @@ uniform float _Granularity : TVGRANULARITY; // = 3.5;
 uniform float _TVAmbient : TVAMBIENT; // = 0.15
 uniform float3 _TVColor : TVCOLOR;
 
-VS2PS_Quad VS_ThermalVision(APP2VS_Quad Input)
-{
-	VS2PS_Quad Output;
-	if (_Interference < 0) // Use fullscreen triangle for thermals
-	{
-		FSTriangle FST;
-		GetFSTriangle(Input.Tex0, FST);
-		Output.HPos = float4(FST.Pos, 0.0, 1.0);
-		Output.Tex0 = FST.Tex;
-	}
-	else // Use default fullscreen quad for passthrough
-	{
-		Output.HPos = float4(Input.Pos, 0.0, 1.0);
-		Output.Tex0 = Input.Tex0;
-	}
-	return Output;
-}
-
 struct TV
 {
 	float2 Random;
@@ -284,6 +262,24 @@ TV GetTV(float2 Tex)
 	Tex = (Tex * 2.0) - 1.0;
 	Output.Random = (Tex * _Granularity) + _Displacement;
 	Output.Noise = (Tex * 0.25) - (0.35 * _SinFracTime);
+	return Output;
+}
+
+VS2PS_Quad VS_ThermalVision(APP2VS_Quad Input)
+{
+	VS2PS_Quad Output;
+	if (_Interference < 0) // Use fullscreen triangle for thermals
+	{
+		FSTriangle FST;
+		GetFSTriangle(Input.Tex0.xy, FST);
+		Output.HPos = float4(FST.Pos, 0.0, 1.0);
+		Output.Tex0 = FST.Tex;
+	}
+	else // Use default fullscreen quad for passthrough
+	{
+		Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
+		Output.Tex0 = Input.Tex0.xy;
+	}
 	return Output;
 }
 
@@ -342,7 +338,7 @@ technique TVEffect
 		StencilEnable = FALSE;
 		AlphaBlendEnable = FALSE;
 
-		VertexShader = compile vs_3_0 VS_ThermalVision();
+		VertexShader = compile vs_3_0 VS_Quad();
 		PixelShader = compile ps_3_0 PS_ThermalVision();
 	}
 }
@@ -351,20 +347,21 @@ technique TVEffect
 	TV Effect with usage of gradient texture
 */
 
-float4 PS_GradientThermalVision(VS2PS_Quad Input) : COLOR0
+float4 PS_ThermalVision_Gradient(VS2PS_Quad Input) : COLOR0
 {
-	// Get texture data
-	float2 ImageTex = Input.Tex0;
-	TV Tex = GetTV(ImageTex);
-
-	// Fetch textures
-	float4 Color = tex2D(SampleTex0, ImageTex);
-	float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
-	float Noise = tex2D(SampleTex1_Wrap, Tex.Noise) - 0.5;
-
 	float4 OutputColor = 0.0;
-	if (_Interference > 0 && _Interference <= 1)
+
+	if (_Interference >= 0 && _Interference <= 1)
 	{
+		// Get texture data
+		float2 ImageTex = Input.Tex0;
+		TV Tex = GetTV(ImageTex);
+
+		// Fetch textures
+		float4 Color = tex2D(SampleTex0, ImageTex);
+		float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
+		float Noise = tex2D(SampleTex1_Wrap, Tex.Noise) - 0.5;
+
 		// Distort texture coordinates
 		float Distort = frac(Tex.Random.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
 		Distort *= (1.0 - Distort);
@@ -377,9 +374,9 @@ float4 PS_GradientThermalVision(VS2PS_Quad Input) : COLOR0
 		float4 GradientColor = tex2D(SampleTex3, float2(TVFactor, 0.0));
 		OutputColor = float4(GradientColor.rgb, TVFactor);
 	}
-	else // Passthrough
+	else
 	{
-		OutputColor = Color;
+		OutputColor = tex2D(SampleTex0, Input.Tex0);
 	}
 
 	return OutputColor;
@@ -394,7 +391,7 @@ technique TVEffect_Gradient_Tex
 		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_Quad();
-		PixelShader = compile ps_3_0 PS_GradientThermalVision();
+		PixelShader = compile ps_3_0 PS_ThermalVision_Gradient();
 	}
 }
 
@@ -406,15 +403,13 @@ struct VS2PS_Distortion
 {
 	float4 HPos : POSITION;
 	float2 Tex0 : TEXCOORD0;
-	float2 Tex1 : TEXCOORD1;
 };
 
 VS2PS_Distortion VS_WaveDistortion(APP2VS_Quad Input)
 {
 	VS2PS_Distortion Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
-	Output.Tex0 = Input.Tex0;
-	Output.Tex1 = Input.Pos.xy;
+	Output.Tex0 = Input.Tex0.xy;
 	return Output;
 }
 

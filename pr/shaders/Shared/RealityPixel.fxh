@@ -150,44 +150,6 @@
 		Convolutions
 	*/
 
-	float4 GetLinearGaussianBlur(sampler2D Source, float2 Tex, bool IsHorizontal)
-	{
-		const float2 Offsets[5] =
-		{
-			float2(0.0, 0.0),
-			float2(0.0, 1.4584295167832),
-			float2(0.0, 3.4039848066734835),
-			float2(0.0, 5.351805780136256),
-			float2(0.0, 7.302940716034593)
-		};
-
-		const float Weights[5] =
-		{
-			0.1329807601338109,
-			0.2322770777384485,
-			0.13532693306504567,
-			0.05115603510197893,
-			0.012539291705835646
-		};
-
-		float4 OutputColor = 0.0;
-		float4 TotalWeights = 0.0;
-		float2 PixelSize = GetPixelSize(Tex);
-
-		OutputColor += tex2D(Source, Tex + (Offsets[0].xy * PixelSize)) * Weights[0];
-		TotalWeights += Weights[0];
-
-		for(int i = 1; i < 5; i++)
-		{
-			float2 Offset = (IsHorizontal) ? Offsets[i].yx : Offsets[i].xy;
-			OutputColor += tex2D(Source, Tex + (Offset * PixelSize)) * Weights[i];
-			OutputColor += tex2D(Source, Tex - (Offset * PixelSize)) * Weights[i];
-			TotalWeights += (Weights[i] * 2.0);
-		}
-
-		return OutputColor / TotalWeights;
-	}
-
 	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias)
 	{
 		// Initialize values
@@ -242,25 +204,4 @@
 		return saturate(1.0 - dot(LightVec, LightVec) * Attenuation);
 	}
 
-	/*
-		Sorry DICE, we're yoinking your code - Project Reality
-		Function to generate world-space normals from terrain heightmap
-		---
-		https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/chapter5-andersson-terrain-rendering-in-frostbite.pdf
-	*/
-	float3 GetNormalsFromHeight(sampler SampleHeight, float2 TexCoord)
-	{
-		float2 TexelSize = float2(ddx(TexCoord.x), ddy(TexCoord.y));
-		float4 H;
-		H[0] = tex2D(SampleHeight, TexCoord + (TexelSize * float2( 0.0,-1.0))).a;
-		H[1] = tex2D(SampleHeight, TexCoord + (TexelSize * float2(-1.0, 0.0))).a;
-		H[2] = tex2D(SampleHeight, TexCoord + (TexelSize * float2( 1.0, 0.0))).a;
-		H[3] = tex2D(SampleHeight, TexCoord + (TexelSize * float2( 0.0, 1.0))).a;
-
-		float3 N;
-		N.z = H[0] - H[3];
-		N.x = H[1] - H[2];
-		N.y = 2.0;
-		return normalize(N);
-	}
 #endif
