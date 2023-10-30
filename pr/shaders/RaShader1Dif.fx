@@ -71,7 +71,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -112,7 +112,7 @@ PS2FB PS_Diffuse(VS2PS Input)
 
 technique defaultTechnique
 {
-	pass Pass0
+	pass p0
 	{
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;

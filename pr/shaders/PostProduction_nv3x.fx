@@ -148,17 +148,16 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 PS_Tinnitus(VS2PS_Quad Input, float2 FragPos : VPOS) : COLOR
+float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 {
 	// Get texture data
 	float LerpBias = saturate(smoothstep(0.0, 0.5, _BackBufferLerpBias));
-	float2 ScaledFragPos = floor(FragPos) * 0.25;
 
 	// Spread the blur as you go lower on the screen
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= BLUR_RADIUS;
 	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, ScaledFragPos, Input.Tex0, SpreadFactor);
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
 	float2 Tex = (Input.Tex0 * float2(2.0, 1.0)) - 1.0;
@@ -173,7 +172,7 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 FragPos : VPOS) : COLOR
 
 technique Tinnitus
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = FALSE;
 		StencilEnable = FALSE;
@@ -191,12 +190,12 @@ technique Tinnitus
 	Glow shaders
 */
 
-float4 PS_Glow(VS2PS_Quad Input) : COLOR
+float4 PS_Glow(VS2PS_Quad Input) : COLOR0
 {
 	return tex2D(SampleTex0, Input.Tex0);
 }
 
-float4 PS_Glow_Material(VS2PS_Quad Input) : COLOR
+float4 PS_Glow_Material(VS2PS_Quad Input) : COLOR0
 {
 	float4 Diffuse = tex2D(SampleTex0, Input.Tex0);
 	// return (1.0 - Diffuse.a);
@@ -206,7 +205,7 @@ float4 PS_Glow_Material(VS2PS_Quad Input) : COLOR
 
 technique Glow
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = FALSE;
 
@@ -221,7 +220,7 @@ technique Glow
 
 technique GlowMaterial
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = FALSE;
 
@@ -293,7 +292,7 @@ float2 GetPixelation(float2 Tex)
 	return floor(Tex * THERMAL_SIZE) / THERMAL_SIZE;
 }
 
-float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR
+float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
 
@@ -301,9 +300,11 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR
 	float2 ImageTex = Input.Tex0;
 	TV Tex = GetTV(Input.Tex0);
 
-	// Fetch number textures
+	// Fetch textures
+	float4 Color = tex2D(SampleTex0, ImageTex);
 	float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
 	float Noise = tex2D(SampleTex1_Wrap, Tex.Random) - 0.5;
+	float Gray = Desaturate(Color.rgb);
 
 	if (_Interference < 0) // Thermals
 	{
@@ -322,13 +323,12 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR
 		ImageTex.x += _DistortionScale * Noise * Distort;
 
 		// Fetch image
-		float4 Image = tex2D(SampleTex0, ImageTex);
-		Image = dot(Image.rgb, float3(0.3, 0.59, 0.11));
-		OutputColor = float4(_TVColor, 1.0) * (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
+		float TVFactor = lerp(Gray, 1.0, _TVAmbient) * (_Interference * Random);
+		OutputColor = float4(_TVColor, 1.0) * TVFactor;
 	}
 	else // Passthrough
 	{
-		OutputColor = tex2D(SampleTex0_Point, ImageTex);
+		OutputColor = Color;
 	}
 
 	return OutputColor;
@@ -336,7 +336,7 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR
 
 technique TVEffect
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = FALSE;
 		StencilEnable = FALSE;
@@ -351,18 +351,18 @@ technique TVEffect
 	TV Effect with usage of gradient texture
 */
 
-float4 PS_GradientThermalVision(VS2PS_Quad Input) : COLOR
+float4 PS_GradientThermalVision(VS2PS_Quad Input) : COLOR0
 {
-	float4 OutputColor = 0.0;
-
 	// Get texture data
 	float2 ImageTex = Input.Tex0;
 	TV Tex = GetTV(ImageTex);
 
-	// Fetch number textures
+	// Fetch textures
+	float4 Color = tex2D(SampleTex0, ImageTex);
 	float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
 	float Noise = tex2D(SampleTex1_Wrap, Tex.Noise) - 0.5;
 
+	float4 OutputColor = 0.0;
 	if (_Interference > 0 && _Interference <= 1)
 	{
 		// Distort texture coordinates
@@ -372,16 +372,14 @@ float4 PS_GradientThermalVision(VS2PS_Quad Input) : COLOR
 		ImageTex.x += _DistortionScale * Noise * Distort;
 
 		// Fetch image
-		float4 Image = tex2D(SampleTex0, ImageTex);
-		Image = dot(Image.rgb, float3(0.3, 0.59, 0.11));
-
-		float4 Intensity = (_Interference * Random + Image * (1.0 - _TVAmbient) + _TVAmbient);
-		float4 GradientColor = tex2D(SampleTex3, float2(Intensity.r, 0.0));
-		OutputColor = float4(GradientColor.rgb, Intensity.a);
+		float Gray = Desaturate(Color.rgb);
+		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
+		float4 GradientColor = tex2D(SampleTex3, float2(TVFactor, 0.0));
+		OutputColor = float4(GradientColor.rgb, TVFactor);
 	}
 	else // Passthrough
 	{
-		OutputColor = tex2D(SampleTex0_Point, ImageTex);
+		OutputColor = Color;
 	}
 
 	return OutputColor;
@@ -389,7 +387,7 @@ float4 PS_GradientThermalVision(VS2PS_Quad Input) : COLOR
 
 technique TVEffect_Gradient_Tex
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = FALSE;
 		StencilEnable = FALSE;
@@ -420,14 +418,14 @@ VS2PS_Distortion VS_WaveDistortion(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 PS_WaveDistortion(VS2PS_Distortion Input) : COLOR
+float4 PS_WaveDistortion(VS2PS_Distortion Input) : COLOR0
 {
 	return 0.0;
 }
 
 technique WaveDistortion
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = FALSE;
 		AlphaTestEnable = FALSE;
@@ -455,7 +453,7 @@ technique WaveDistortion
 	Theory is that the texture getting temporally blended or sampled has been rewritten before the blendop
 */
 
-float4 PS_Flashbang(VS2PS_Quad Input) : COLOR
+float4 PS_Flashbang(VS2PS_Quad Input) : COLOR0
 {
 	float4 Sample0 = tex2D(SampleTex0, Input.Tex0);
 	float4 Sample1 = tex2D(SampleTex1, Input.Tex0);
@@ -471,7 +469,7 @@ float4 PS_Flashbang(VS2PS_Quad Input) : COLOR
 
 technique Flashbang
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = FALSE;
 		StencilEnable = FALSE;

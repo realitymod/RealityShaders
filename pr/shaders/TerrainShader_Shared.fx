@@ -287,7 +287,7 @@ VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
 	return Output;
 }
 
-float4 PS_Shared_DynamicShadowmap(VS2PS_Shared_DynamicShadowmap Input) : COLOR
+float4 PS_Shared_DynamicShadowmap(VS2PS_Shared_DynamicShadowmap Input) : COLOR0
 {
 	#if NVIDIA
 		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex);
@@ -520,7 +520,7 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 technique Shared_SurroundingTerrain
 {
 	// Normal
-	pass Pass0
+	pass p0
 	{
 		CullMode = CW;
 
@@ -573,7 +573,7 @@ HI_VS2PS_OccluderShadow VS_Hi_OccluderShadow(HI_APP2VS_OccluderShadow Input)
 	return Output;
 }
 
-float4 PS_Hi_OccluderShadow(HI_VS2PS_OccluderShadow Input) : COLOR
+float4 PS_Hi_OccluderShadow(HI_VS2PS_OccluderShadow Input) : COLOR0
 {
 	#if NVIDIA
 		return 0.5;

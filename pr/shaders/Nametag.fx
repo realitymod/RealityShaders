@@ -127,7 +127,7 @@ technique nametag
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		ZEnable = FALSE;
@@ -185,7 +185,7 @@ technique nametag_arrow
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		ZEnable = FALSE;
@@ -245,7 +245,7 @@ technique nametag_healthbar
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		ZEnable = FALSE;
@@ -326,7 +326,7 @@ technique nametag_vehicleIcons
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		ZEnable = FALSE;

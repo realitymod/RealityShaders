@@ -54,7 +54,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -141,7 +141,7 @@ technique t0
 
 >
 {
-	pass Pass0
+	pass p0
 	{
 		VertexShader = compile vs_3_0 VS_Debug_Basic();
 		PixelShader = compile ps_3_0 PS_Debug_Basic();
@@ -162,7 +162,7 @@ technique marked
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		AlphaBlendEnable = FALSE;
@@ -221,7 +221,7 @@ technique lightsource
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		ColorWriteEnable = 0;
@@ -234,7 +234,7 @@ technique lightsource
 		PixelShader = compile ps_3_0 PS_Debug_LightSource();
 	}
 
-	pass Pass1
+	pass p1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
 
@@ -261,7 +261,7 @@ technique editor
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		ColorWriteEnable = 0;
@@ -274,7 +274,7 @@ technique editor
 		PixelShader = compile ps_3_0 PS_Debug_LightSource();
 	}
 
-	pass Pass1
+	pass p1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
 
@@ -292,7 +292,7 @@ technique editor
 
 technique EditorDebug
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 

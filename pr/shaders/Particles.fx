@@ -60,7 +60,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 };
 
 /*
@@ -291,7 +291,7 @@ PS2FB PS_Particle_High_Additive(VS2PS Input)
 
 technique ParticleShowFill
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_PARTICLES(ONE, ONE)
 		VertexShader = compile vs_3_0 VS_Particle();
@@ -301,7 +301,7 @@ technique ParticleShowFill
 
 technique ParticleLow
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_PARTICLES(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Particle();
@@ -311,7 +311,7 @@ technique ParticleLow
 
 technique ParticleMedium
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_PARTICLES(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Particle();
@@ -321,7 +321,7 @@ technique ParticleMedium
 
 technique ParticleHigh
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_PARTICLES(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Particle();
@@ -331,7 +331,7 @@ technique ParticleHigh
 
 technique AdditiveLow
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_PARTICLES(ONE, ONE)
 		VertexShader = compile vs_3_0 VS_Particle();
@@ -341,7 +341,7 @@ technique AdditiveLow
 
 technique AdditiveHigh
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_PARTICLES(ONE, ONE)
 		VertexShader = compile vs_3_0 VS_Particle();

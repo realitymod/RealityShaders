@@ -227,7 +227,7 @@ VS2PS_PreSkin VS_PreSkin(APP2VS Input)
 	return Output;
 }
 
-float4 PS_PreSkin(VS2PS_PreSkin Input) : COLOR
+float4 PS_PreSkin(VS2PS_PreSkin Input) : COLOR0
 {
 	// Tangent-space data
 	float4 TangentNormal = tex2D(SampleTex0, Input.Tex0.xy);
@@ -276,7 +276,7 @@ VS2PS_ShadowedPreSkin VS_ShadowedPreSkin(APP2VS Input)
 	return Output;
 }
 
-float4 PS_ShadowedPreSkin(VS2PS_ShadowedPreSkin Input) : COLOR
+float4 PS_ShadowedPreSkin(VS2PS_ShadowedPreSkin Input) : COLOR0
 {
 	// Tangent-space data
 	float4 TangentNormal = tex2D(SampleTex0, Input.Tex0.xy);
@@ -340,7 +340,7 @@ VS2PS_ApplySkin VS_ApplySkin(APP2VS Input)
 	return Output;
 }
 
-float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR
+float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR0
 {
 	// Tangent-space data
 	float4 TangentNormal = tex2D(SampleTex1, Input.Tex0);
@@ -434,7 +434,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	return Output;
 }
 
-float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
+float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
 	#if NVIDIA
 		return 0.0;
@@ -443,7 +443,7 @@ float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
 	#endif
 }
 
-float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR
+float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
 {
 	float Alpha = tex2D(SampleTex0, Input.Tex0).a - _ShadowAlphaThreshold;
 	#if NVIDIA

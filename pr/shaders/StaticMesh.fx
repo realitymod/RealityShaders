@@ -111,7 +111,7 @@ VS2PS_Simple VS_StaticMesh_Simple(APP2VS Input)
 	return Output;
 }
 
-float4 PS_StaticMesh_Simple(VS2PS_Simple Input) : COLOR
+float4 PS_StaticMesh_Simple(VS2PS_Simple Input) : COLOR0
 {
 	float4 Ambient = float4(1.0, 1.0, 1.0, 0.8);
 	float4 NormalMap = tex2D(SampleTex0_Wrap, Input.TexCoord);
@@ -120,7 +120,7 @@ float4 PS_StaticMesh_Simple(VS2PS_Simple Input) : COLOR
 
 technique alpha_one
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
@@ -171,7 +171,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS_ShadowMap Input)
 	return Output;
 }
 
-float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
+float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
 	#if NVIDIA
 		return 0;
@@ -180,7 +180,7 @@ float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
 	#endif
 }
 
-float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR
+float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
 {
 	const float AlphaRef = 96.0 / 255.0;
 	float4 Alpha = tex2D(SampleShadowAlpha, Input.Tex0);

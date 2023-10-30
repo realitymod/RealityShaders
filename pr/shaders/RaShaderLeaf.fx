@@ -140,7 +140,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -242,11 +242,13 @@ PS2FB PS_Leaf(VS2PS Input)
 		float4 Shadow = 1.0;
 	#endif
 
-	float3 Ambient = OverGrowthAmbient * LodScale;
+	float3 Ambient = OverGrowthAmbient.rgb * LodScale;
 	float3 Diffuse = (DotNL * LodScale) * (Lights[0].color * LodScale);
 	float3 VertexColor = Ambient + (Diffuse * Shadow.rgb);
-	float4 OutputColor = DiffuseMap * float4(VertexColor, Transparency.r * 2.0);
 
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = DiffuseMap.rgb * VertexColor;
+	OutputColor.a = (DiffuseMap.a * 2.0) * Transparency;
 	#if defined(OVERGROWTH) && HASALPHA2MASK
 		OutputColor.a *= (DiffuseMap.a * 2.0);
 	#endif
@@ -270,7 +272,7 @@ PS2FB PS_Leaf(VS2PS Input)
 
 technique defaultTechnique
 {
-	pass Pass0
+	pass p0
 	{
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;

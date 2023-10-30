@@ -60,7 +60,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -275,7 +275,7 @@ technique NSAParticleShowFill
 <
 >
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_NSAP(ONE, ONE)
 		VertexShader = compile vs_3_0 VS_Particle();
@@ -287,7 +287,7 @@ technique NSAParticleLow
 <
 >
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_NSAP(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Particle();
@@ -299,7 +299,7 @@ technique NSAParticleMedium
 <
 >
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_NSAP(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Particle();
@@ -311,7 +311,7 @@ technique NSAParticleHigh
 <
 >
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_NSAP(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Particle();

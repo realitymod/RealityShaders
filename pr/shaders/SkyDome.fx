@@ -63,7 +63,7 @@ struct APP2VS_NoClouds
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 };
 
 float GetFadeOut(float3 Pos)

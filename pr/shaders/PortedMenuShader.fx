@@ -81,17 +81,17 @@ technique Menu_States <bool Restore = true;>
 	pass EndStates { }
 }
 
-float4 PS_Quad_WTex_NoTex(VS2PS Input) : COLOR
+float4 PS_Quad_WTex_NoTex(VS2PS Input) : COLOR0
 {
 	return Input.Color;
 }
 
-float4 PS_Quad_WTex_Tex(VS2PS Input) : COLOR
+float4 PS_Quad_WTex_Tex(VS2PS Input) : COLOR0
 {
 	return tex2D(SampleTex0, Input.TexCoord0) * Input.Color;
 }
 
-float4 PS_Quad_WTex_Tex_Masked(VS2PS Input) : COLOR
+float4 PS_Quad_WTex_Tex_Masked(VS2PS Input) : COLOR0
 {
 	float4 Color = tex2D(SampleTex0, Input.TexCoord0) * Input.Color;
 	// Color *= tex2D(SampleTex1, Input.TexCoord1);
@@ -149,7 +149,7 @@ technique QuadWithTexture
 	}
 }
 
-float4 PS_Quad_Cache(VS2PS Input) : COLOR
+float4 PS_Quad_Cache(VS2PS Input) : COLOR0
 {
 	float4 InputTexture = tex2D(SampleTex0, Input.TexCoord0);
 	return (InputTexture + 1.0) * Input.Color;
@@ -168,7 +168,7 @@ technique QuadCache
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZFunc = LESS;

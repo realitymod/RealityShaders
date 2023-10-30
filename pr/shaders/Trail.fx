@@ -61,7 +61,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -277,7 +277,7 @@ technique TrailShowFill
 <
 >
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_TRAIL(ONE, ONE)
 		VertexShader = compile vs_3_0 VS_Trail();
@@ -289,7 +289,7 @@ technique TrailLow
 <
 >
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Trail();
@@ -301,7 +301,7 @@ technique TrailMedium
 <
 >
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Trail();
@@ -313,7 +313,7 @@ technique TrailHigh
 <
 >
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Trail();

@@ -45,7 +45,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -97,7 +97,7 @@ technique t0_States <bool Restore = true;>
 
 technique t0
 {
-	pass Pass0
+	pass p0
 	{
 		VertexShader = compile vs_3_0 VS_Shader();
 		PixelShader = compile ps_3_0 PS_Shader();

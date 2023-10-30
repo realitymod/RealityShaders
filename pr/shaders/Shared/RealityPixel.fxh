@@ -8,6 +8,21 @@
 	#undef INCLUDED_HEADERS
 	#define INCLUDED_HEADERS
 
+	float GetMax3(float3 Input)
+	{
+		return max(Input.x, max(Input.y, Input.z));
+	}
+
+	float GetMin3(float3 Input)
+	{
+		return max(Input.x, max(Input.y, Input.z));
+	}
+
+	float Desaturate(float3 Input)
+	{
+		return lerp(GetMin3(Input), GetMax3(Input), 1.0 / 2.0);
+	}
+
 	/*
 		Hash function, optimized for instructions
 		---
@@ -173,7 +188,7 @@
 		return OutputColor / TotalWeights;
 	}
 
-	float4 GetSpiralBlur(sampler Source, float2 Pos, float2 Tex, float Bias)
+	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias)
 	{
 		// Initialize values
 		float4 OutputColor = 0.0;
@@ -183,8 +198,9 @@
 		const float Pi2 = acos(-1.0) * 2.0;
 
 		// Get texcoord data
-		float Noise = Pi2 * GetGradientNoise(Pos);
-		float AspectRatio = GetAspectRatio(GetScreenSize(Tex));
+		float2 ScreenSize = GetScreenSize(Tex);
+		float Noise = Pi2 * GetGradientNoise((Tex * ScreenSize) * 0.25);
+		float AspectRatio = GetAspectRatio(ScreenSize);
 
 		float2 Rotation = 0.0;
 		sincos(Noise, Rotation.y, Rotation.x);

@@ -32,7 +32,7 @@ VS2PS VS_Debug_Linegraph(APP2VS Input)
 	return Output;
 }
 
-float4 PS_Debug_Linegraph(VS2PS Input) : COLOR
+float4 PS_Debug_Linegraph(VS2PS Input) : COLOR0
 {
 	return Input.Color;
 }
@@ -47,7 +47,7 @@ technique Graph <
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = FALSE;
 

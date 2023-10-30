@@ -83,7 +83,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -188,14 +188,14 @@ technique Decal
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_DECAL
 		VertexShader = compile vs_3_0 VS_Decals();
 		PixelShader = compile ps_3_0 PS_Decals();
 	}
 
-	pass Pass1
+	pass p1
 	{
 		GET_RENDERSTATES_DECAL
 		VertexShader = compile vs_3_0 VS_Decals();

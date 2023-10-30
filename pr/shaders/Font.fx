@@ -53,12 +53,12 @@ VS2PS_REGULAR VS_Regular(APP2VS Input)
 	return Output;
 }
 
-float4 PS_Regular(VS2PS_REGULAR Input) : COLOR
+float4 PS_Regular(VS2PS_REGULAR Input) : COLOR0
 {
 	return tex2D(SampleTexMap, Input.TexCoord) * Input.Diffuse;
 }
 
-float4 PS_Regular_Scaled(VS2PS_REGULAR Input) : COLOR
+float4 PS_Regular_Scaled(VS2PS_REGULAR Input) : COLOR0
 {
 	return tex2D(SampleTexMap_Linear, Input.TexCoord) * Input.Diffuse;
 }
@@ -68,14 +68,14 @@ float4 VS_SelectionQuad(float3 Pos : POSITION) : POSITION
 	return mul(float4(Pos.xy, 0.0, 1.0), _WorldView);
 }
 
-float4 PS_SelectionQuad() : COLOR
+float4 PS_SelectionQuad() : COLOR0
 {
 	return saturate(_DiffuseColor);
 }
 
 technique Regular
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaTestEnable = FALSE;
 
@@ -90,7 +90,7 @@ technique Regular
 
 technique RegularScaled
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaTestEnable = FALSE;
 
@@ -105,7 +105,7 @@ technique RegularScaled
 
 technique SelectionQuad
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaTestEnable = FALSE;
 

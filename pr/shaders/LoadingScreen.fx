@@ -48,7 +48,7 @@ VS2PS VS_Screen(APP2VS Input)
 	return Output;
 }
 
-float4 PS_Screen(VS2PS Input) : COLOR
+float4 PS_Screen(VS2PS Input) : COLOR0
 {
 	float4 InputTexture0 = tex2D(SampleTexMap, Input.Tex);
 	float4 OutputColor;
@@ -59,7 +59,7 @@ float4 PS_Screen(VS2PS Input) : COLOR
 
 technique Screen
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		StencilEnable = FALSE;

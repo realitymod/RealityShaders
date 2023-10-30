@@ -52,7 +52,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -92,7 +92,7 @@ PS2FB PS_Lightning(VS2PS Input)
 
 technique Lightning
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 

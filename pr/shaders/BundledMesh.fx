@@ -170,7 +170,7 @@ VS2PS_Specular VS_Lighting(APP2VS Input)
 	return Output;
 }
 
-float4 PS_Lighting(VS2PS_Specular Input) : COLOR
+float4 PS_Lighting(VS2PS_Specular Input) : COLOR0
 {
 	const float4 Ambient = float4(0.4, 0.4, 0.4, 1.0);
 
@@ -210,7 +210,7 @@ float4 PS_Lighting(VS2PS_Specular Input) : COLOR
 
 technique Full
 {
-	pass Pass0
+	pass p0
 	{
 		VertexShader = compile vs_3_0 VS_Lighting();
 		PixelShader = compile ps_3_0 PS_Lighting();
@@ -250,7 +250,7 @@ VS2PS_Diffuse VS_Diffuse(APP2VS Input)
 	return Output;
 }
 
-float4 PS_Diffuse(VS2PS_Diffuse Input) : COLOR
+float4 PS_Diffuse(VS2PS_Diffuse Input) : COLOR0
 {
 	// Constants
 	const float4 Ambient = 0.8;
@@ -270,7 +270,7 @@ float4 PS_Diffuse(VS2PS_Diffuse Input) : COLOR
 
 technique t1
 {
-	pass Pass0
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
@@ -319,7 +319,7 @@ VS2PS_Alpha VS_Alpha(APP2VS Input)
 	return Output;
 }
 
-float4 PS_Alpha(VS2PS_Alpha Input) : COLOR
+float4 PS_Alpha(VS2PS_Alpha Input) : COLOR0
 {
 	// Texture data
 	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex0);
@@ -380,7 +380,7 @@ VS2PS_EnvMap_Alpha VS_EnvMap_Alpha(APP2VS Input)
 	return Output;
 }
 
-float4 PS_EnvMap_Alpha(VS2PS_EnvMap_Alpha Input) : COLOR
+float4 PS_EnvMap_Alpha(VS2PS_EnvMap_Alpha Input) : COLOR0
 {
 	// Tangent-space data
 	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex);
@@ -422,14 +422,14 @@ float4 PS_EnvMap_Alpha(VS2PS_EnvMap_Alpha Input) : COLOR
 
 technique Alpha
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_ALPHA
 		VertexShader = compile vs_3_0 VS_Alpha();
 		PixelShader = compile ps_3_0 PS_Alpha();
 	}
 
-	pass Pass1_EnvMap
+	pass p1_EnvMap
 	{
 		GET_RENDERSTATES_ALPHA
 		VertexShader = compile vs_3_0 VS_EnvMap_Alpha();
@@ -465,7 +465,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	return Output;
 }
 
-float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
+float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
 	#if NVIDIA
 		return 0.0;
@@ -504,7 +504,7 @@ VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
 	return Output;
 }
 
-float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap_Alpha Input) : COLOR
+float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap_Alpha Input) : COLOR0
 {
 	float Alpha = tex2D(SampleTex0, Input.Tex0).a - _ShadowAlphaThreshold;
 	#if NVIDIA

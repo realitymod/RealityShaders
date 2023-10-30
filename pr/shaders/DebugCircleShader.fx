@@ -34,7 +34,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -81,7 +81,7 @@ technique t0
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		DepthBias = -0.00001;
@@ -114,7 +114,7 @@ technique t0_usezbuffer
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		AlphaBlendEnable = FALSE;

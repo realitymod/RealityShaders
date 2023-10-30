@@ -36,7 +36,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -78,7 +78,7 @@ technique Pointlight
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 
@@ -148,7 +148,7 @@ technique Spotlight
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 

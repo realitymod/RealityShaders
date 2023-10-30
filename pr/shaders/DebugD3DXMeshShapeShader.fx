@@ -55,7 +55,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -165,7 +165,7 @@ technique t0
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -220,7 +220,7 @@ technique occluder
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -258,7 +258,7 @@ technique EditorDebug
 	int Compatibility = CMPR300+CMPNV2X;
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		ShadeMode = FLAT;
@@ -276,7 +276,7 @@ technique EditorDebug
 		PixelShader = compile ps_3_0 PS_Debug_Editor();
 	}
 
-	pass Pass1
+	pass p1
 	{
 		CullMode = CW;
 
@@ -338,7 +338,7 @@ technique collisionMesh
 	int Compatibility = CMPR300+CMPNV2X;
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 		ShadeMode = FLAT;
@@ -356,7 +356,7 @@ technique collisionMesh
 		PixelShader = compile ps_3_0 PS_Debug_CollisionMesh();
 	}
 
-	pass Pass1
+	pass p1
 	{
 		DepthBias = -0.000018;
 		FillMode = WIREFRAME;
@@ -372,7 +372,7 @@ technique collisionMesh
 		PixelShader = compile ps_3_0 PS_Debug_CollisionMesh(0.5);
 	}
 
-	pass Pass2
+	pass p2
 	{
 		FillMode = SOLID;
 	}
@@ -391,7 +391,7 @@ technique marked
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -415,7 +415,7 @@ technique gamePlayObject
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -441,7 +441,7 @@ technique bounding
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = FALSE;
 		SrcBlend = SRCALPHA;
@@ -520,7 +520,7 @@ technique grid
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -565,7 +565,7 @@ technique spotlight
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		CullMode = NONE;
 
@@ -580,7 +580,7 @@ technique spotlight
 		PixelShader = compile ps_3_0 PS_Debug_Object();
 	}
 
-	pass Pass1
+	pass p1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
 
@@ -625,7 +625,7 @@ technique pivotBox
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -638,7 +638,7 @@ technique pivotBox
 		PixelShader = compile ps_3_0 PS_Debug_Object();
 	}
 
-	pass Pass1
+	pass p1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
 
@@ -665,7 +665,7 @@ technique pivot
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -678,7 +678,7 @@ technique pivot
 		PixelShader = compile ps_3_0 PS_Debug_Object();
 	}
 
-	pass Pass1
+	pass p1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
 
@@ -741,7 +741,7 @@ PS2FB PS_Debug_Frustum(VS2PS_Frustum Input, uniform float AlphaValue)
 
 technique wirefrustum
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -758,7 +758,7 @@ technique wirefrustum
 		PixelShader = compile ps_3_0 PS_Debug_Frustum(0.025);
 	}
 
-	pass Pass1
+	pass p1
 	{
 		AlphaBlendEnable = FALSE;
 
@@ -776,7 +776,7 @@ technique wirefrustum
 
 technique solidfrustum
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -793,7 +793,7 @@ technique solidfrustum
 		PixelShader = compile ps_3_0 PS_Debug_Frustum(0.25);
 	}
 
-	pass Pass1
+	pass p1
 	{
 		AlphaBlendEnable = FALSE;
 
@@ -811,7 +811,7 @@ technique solidfrustum
 
 technique projectorfrustum
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;

@@ -63,7 +63,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 };
 
 VS2PS VS_Diffuse(APP2VS Input)
@@ -152,7 +152,7 @@ PS2FB PS_Additive(VS2PS Input)
 
 technique Diffuse
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_MESH_PARTICLES(FALSE, SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Diffuse();
@@ -162,7 +162,7 @@ technique Diffuse
 
 technique Additive
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_MESH_PARTICLES(FALSE, ONE, ONE)
 		VertexShader = compile vs_3_0 VS_Diffuse();
@@ -172,7 +172,7 @@ technique Additive
 
 technique DiffuseWithZWrite
 {
-	pass Pass0
+	pass p0
 	{
 		GET_RENDERSTATES_MESH_PARTICLES(TRUE, SRCALPHA, INVSRCALPHA)
 		VertexShader = compile vs_3_0 VS_Diffuse();

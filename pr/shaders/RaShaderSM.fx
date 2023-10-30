@@ -76,7 +76,7 @@ struct VS2PS
 
 struct PS2FB
 {
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 	#if defined(LOG_DEPTH)
 		float Depth : DEPTH;
 	#endif
@@ -316,7 +316,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 technique VariableTechnique
 {
-	pass Pass0
+	pass p0
 	{
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (AlphaTestRef);

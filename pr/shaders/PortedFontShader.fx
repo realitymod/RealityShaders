@@ -51,7 +51,7 @@ VS2PS VS_HPos(APP2VS Input)
 	return Output;
 }
 
-float4 PS_HPos(VS2PS Input) : COLOR
+float4 PS_HPos(VS2PS Input) : COLOR0
 {
 	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord);
 	float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
@@ -84,7 +84,7 @@ technique Text <
 	};
 >
 {
-	pass Pass0
+	pass p0
 	{
 		VertexShader = compile vs_3_0 VS_HPos();
 		PixelShader = compile ps_3_0 PS_HPos();
@@ -105,7 +105,7 @@ technique Overlay_States <bool Restore = true;>
 	pass EndStates { }
 }
 
-float4 PS_Overlay_HPos(VS2PS Input) : COLOR
+float4 PS_Overlay_HPos(VS2PS Input) : COLOR0
 {
 	float4 InputTexture0 = tex2D(SampleTex0_Wrap, Input.TexCoord);
 	return InputTexture0 * float4(1.0, 1.0, 1.0, _Alpha.a);
@@ -123,7 +123,7 @@ technique Overlay <
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
-	pass Pass0
+	pass p0
 	{
 		VertexShader = compile vs_3_0 VS_HPos();
 		PixelShader = compile ps_3_0 PS_Overlay_HPos();
