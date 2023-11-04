@@ -20,8 +20,9 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define TINNITUS_BLUR_RADIUS 4.0
+#define TINNITUS_BLUR_RADIUS 1.0
 #define TINNITUS_WARP_RADIUS 64.0
+#define TINNITUS_WARP_INTENSITY 0.5
 #define THERMAL_SIZE 500
 
 /*
@@ -153,10 +154,10 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 	float LerpBias = saturate(smoothstep(0.0, 0.5, SatLerpBias));
 
 	// Spread the blur as you go lower on the screen
-	float Random = GetGradientNoise1(FragPos / TINNITUS_WARP_RADIUS, SatLerpBias, true);
+	float RandomWarp = GetGradientNoise1(FragPos / TINNITUS_WARP_RADIUS, SatLerpBias, false);
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
+	SpreadFactor = saturate(SpreadFactor + (RandomWarp * TINNITUS_WARP_INTENSITY));
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
-	SpreadFactor *= Random;
 	SpreadFactor *= SatLerpBias;
 	float4 Color = GetSpiralBlur(SampleTex0_Mirror, FragPos / 4.0, Input.Tex0, SpreadFactor);
 
