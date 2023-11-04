@@ -22,8 +22,8 @@
 
 #define TINNITUS_BLUR_RADIUS 1.0
 #define TINNITUS_WARP_RADIUS 64.0
-#define TINNITUS_WARP_INTENSITY 0.5
-#define THERMAL_SIZE 500
+#define TINNITUS_WARP_INTENSITY 0.25
+#define THERMAL_SIZE 500.0
 
 /*
 	[Attributes from app]
@@ -156,9 +156,9 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 	// Spread the blur as you go lower on the screen
 	float RandomWarp = GetGradientNoise1(FragPos / TINNITUS_WARP_RADIUS, SatLerpBias, false);
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
-	SpreadFactor = saturate(SpreadFactor + (RandomWarp * TINNITUS_WARP_INTENSITY));
+	SpreadFactor += (RandomWarp * TINNITUS_WARP_INTENSITY);
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
-	SpreadFactor *= SatLerpBias;
+	SpreadFactor *= LerpBias;
 	float4 Color = GetSpiralBlur(SampleTex0_Mirror, FragPos / 4.0, Input.Tex0, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
