@@ -20,7 +20,8 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define BLUR_RADIUS 1.0
+#define TINNITUS_BLUR_RADIUS 2.0
+#define TINNITUS_WARP_RADIUS 64.0
 #define THERMAL_SIZE 500
 
 /*
@@ -147,13 +148,16 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 {
 	// Get texture data
+	float2 FragPos = Pos;
 	float LerpBias = saturate(smoothstep(0.0, 0.5, _BackBufferLerpBias));
 
 	// Spread the blur as you go lower on the screen
+	float Random = GetGradientNoise1(FragPos / TINNITUS_WARP_RADIUS, _BackBufferLerpBias, true);
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
-	SpreadFactor *= BLUR_RADIUS;
+	SpreadFactor *= TINNITUS_BLUR_RADIUS;
+	SpreadFactor *= Random;
 	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, Pos / 4.0, Input.Tex0, SpreadFactor);
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, FragPos / 4.0, Input.Tex0, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
 	float2 Tex = (Input.Tex0 * float2(2.0, 1.0)) - 1.0;
@@ -237,7 +241,7 @@ technique GlowMaterial
 	}
 }
 
-// TVEffect specific attributes
+/* TVEffect specific attributes */
 uniform float _FracTime : FRACTIME;
 uniform float _FracTime256 : FRACTIME256;
 uniform float _SinFracTime : FRACSINE;
@@ -249,6 +253,7 @@ uniform float _DistortionFreq : DISTORTIONFREQ; //= 0.500000;
 uniform float _Granularity : TVGRANULARITY; // = 3.5;
 uniform float _TVAmbient : TVAMBIENT; // = 0.15
 uniform float3 _TVColor : TVCOLOR;
+/* TVEffect specific attributes */
 
 struct TV
 {
