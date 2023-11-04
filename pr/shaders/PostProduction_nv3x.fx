@@ -20,7 +20,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define TINNITUS_BLUR_RADIUS 2.0
+#define TINNITUS_BLUR_RADIUS 4.0
 #define TINNITUS_WARP_RADIUS 64.0
 #define THERMAL_SIZE 500
 
@@ -156,7 +156,7 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
 	SpreadFactor *= Random;
-	SpreadFactor *= LerpBias;
+	SpreadFactor *= _BackBufferLerpBias;
 	float4 Color = GetSpiralBlur(SampleTex0_Mirror, FragPos / 4.0, Input.Tex0, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
