@@ -149,14 +149,15 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 {
 	// Get texture data
 	float2 FragPos = Pos;
-	float LerpBias = saturate(smoothstep(0.0, 0.5, _BackBufferLerpBias));
+	float SatLerpBias = saturate(_BackBufferLerpBias);
+	float LerpBias = saturate(smoothstep(0.0, 0.5, SatLerpBias));
 
 	// Spread the blur as you go lower on the screen
-	float Random = GetGradientNoise1(FragPos / TINNITUS_WARP_RADIUS, _BackBufferLerpBias, true);
+	float Random = GetGradientNoise1(FragPos / TINNITUS_WARP_RADIUS, SatLerpBias, true);
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
 	SpreadFactor *= Random;
-	SpreadFactor *= _BackBufferLerpBias;
+	SpreadFactor *= SatLerpBias;
 	float4 Color = GetSpiralBlur(SampleTex0_Mirror, FragPos / 4.0, Input.Tex0, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
