@@ -20,9 +20,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define TINNITUS_BLUR_RADIUS 1.5
-#define TINNITUS_WARP_RADIUS 64.0
-#define TINNITUS_WARP_INTENSITY 0.25
+#define TINNITUS_BLUR_RADIUS 1.0
 #define THERMAL_SIZE 500.0
 
 /*
@@ -151,26 +149,23 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 	// Get texture data
 	float2 FragPos = Pos;
 	float SatLerpBias = saturate(_BackBufferLerpBias);
-	float LerpBias1 = saturate(smoothstep(0.0, 1.0, SatLerpBias));
-	float LerpBias2 = saturate(smoothstep(0.0, 0.5, SatLerpBias));
+	float LerpBias = saturate(smoothstep(0.0, 1.0, SatLerpBias));
 
 	// Spread the blur as you go lower on the screen
-	float RandomWarp = GetGradientNoise1(FragPos / TINNITUS_WARP_RADIUS, SatLerpBias, false);
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
-	SpreadFactor += (RandomWarp * TINNITUS_WARP_INTENSITY);
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
-	SpreadFactor *= LerpBias1;
+	SpreadFactor *= LerpBias;
 	float4 Color = GetSpiralBlur(SampleTex0_Mirror, FragPos / 4.0, Input.Tex0, SpreadFactor);
 
 	// Get SDF mask that darkens the left, right, and top edges
 	float2 Tex = (Input.Tex0 * float2(2.0, 1.0)) - 1.0;
-	Tex *= LerpBias2; // gradually remove mask overtime
+	Tex *= LerpBias; // gradually remove mask overtime
 	float2 Edge = max(abs(Tex) - (1.0 / 5.0), 0.0);
 	float Mask = saturate(length(Edge));
 
 	// Composite final product
 	float4 OutputColor = lerp(Color, float4(0.0, 0.0, 0.0, 1.0), Mask);
-	return float4(OutputColor.rgb, LerpBias2);
+	return float4(OutputColor.rgb, LerpBias);
 }
 
 technique Tinnitus
