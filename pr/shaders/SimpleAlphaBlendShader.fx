@@ -27,20 +27,20 @@ sampler SampleBaseTex = sampler_state
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
-    AddressU = WRAP;
-    AddressV = WRAP;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
 struct APP2VS
 {
-    float4 Pos : POSITION;
-    float2 Tex0 : TEXCOORD0;
+	float4 Pos : POSITION;
+	float2 Tex0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-    float4 HPos : POSITION;
-    float3 Tex0 : TEXCOORD0;
+	float4 HPos : POSITION;
+	float3 Tex0 : TEXCOORD0;
 };
 
 struct PS2FB

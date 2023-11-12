@@ -307,7 +307,9 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 
 	if (_Interference < 0) // Thermals
 	{
+		// Calculate thermal image
 		float4 Image = tex2Dlod(SampleTex0_Point, float4(GetPixelation(Input.Tex0), 0.0, 0.0));
+
 		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
 		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
 		OutputColor.r -= _Interference * Random; // Add -_Interference
@@ -361,7 +363,6 @@ float4 PS_ThermalVision_Gradient(VS2PS_Quad Input) : COLOR0
 		TV Tex = GetTV(ImageTex);
 
 		// Fetch textures
-		float4 Color = tex2D(SampleTex0, ImageTex);
 		float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
 		float Noise = tex2D(SampleTex1_Wrap, Tex.Noise) - 0.5;
 
@@ -372,7 +373,9 @@ float4 PS_ThermalVision_Gradient(VS2PS_Quad Input) : COLOR0
 		ImageTex.x += _DistortionScale * Noise * Distort;
 
 		// Fetch image
+		float4 Color = tex2D(SampleTex0, ImageTex);
 		float Gray = Desaturate(Color.rgb);
+
 		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
 		float4 GradientColor = tex2D(SampleTex3, float2(TVFactor, 0.0));
 		OutputColor = float4(GradientColor.rgb, TVFactor);

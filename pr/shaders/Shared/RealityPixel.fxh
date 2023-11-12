@@ -43,11 +43,18 @@
 		return frac(((P3.x + P3.y) * P3.z) + Bias);
 	}
 
-	float2 GetHash2(float2 P, float Bias)
+	float2 GetHash2(float2 P, float2 Bias)
 	{
 		float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
 		P3 += dot(P3, P3.yzx + 33.33);
 		return frac(((P3.xx + P3.yz) * P3.zy) + Bias);
+	}
+
+	float3 GetHash3(float2 P, float3 Bias)
+	{
+		float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
+		P3 += dot(P3, P3.yxz + 33.33);
+		return frac(((P3.xxy + P3.yzz) * P3.zyx) + Bias);
 	}
 
 	/*

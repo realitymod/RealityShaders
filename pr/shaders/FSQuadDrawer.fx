@@ -455,14 +455,13 @@ float4 PS_Blur(VS2PS_Blit Input) : COLOR0
 	Techniques
 */
 
-#define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, IS_SRGB) \
+#define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER) \
 	pass \
 	{ \
 		ZEnable = FALSE; \
 		AlphaBlendEnable = FALSE; \
 		StencilEnable = FALSE; \
 		AlphaTestEnable = FALSE; \
-		SRGBWriteEnable = IS_SRGB; \
 		VertexShader = compile vs_3_0 VERTEX_SHADER; \
 		PixelShader = compile ps_3_0 PIXEL_SHADER; \
 	} \
@@ -477,7 +476,7 @@ float4 PS_Blur(VS2PS_Blit Input) : COLOR0
 technique Blit
 {
 	// Pass 0: PassThrough
-	CREATE_PASS(VS_Blit(), PS_Passthrough(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_Passthrough())
 
 	// Pass 1
 	pass Blend
@@ -495,49 +494,49 @@ technique Blit
 	}
 
 	// Pass 2: PosTo8Bit
-	CREATE_PASS(VS_Blit(), PS_PosTo8Bit(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_PosTo8Bit())
 
 	// Pass 3: NormalTo8Bit
-	CREATE_PASS(VS_Blit(), PS_NormalTo8Bit(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_NormalTo8Bit())
 
 	// Pass 4: ShadowMapFrontTo8Bit
-	CREATE_PASS(VS_Blit(), PS_ShadowMapFrontTo8Bit(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ShadowMapFrontTo8Bit())
 
 	// Pass 5: ShadowMapBackTo8Bit
-	CREATE_PASS(VS_Blit(), PS_ShadowMapBackTo8Bit(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ShadowMapBackTo8Bit())
 
 	// Pass 6: ScaleUp4x4
-	CREATE_PASS(VS_Blit(), PS_ScaleUp4x4(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ScaleUp4x4())
 
 	// Pass 7: ScaleDown2x2
-	CREATE_PASS(VS_Blit(), PS_ScaleDown2x2(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ScaleDown2x2())
 
 	// Pass 8: ScaleDown4x4
-	CREATE_PASS(VS_Blit(), PS_ScaleDown4x4(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ScaleDown4x4())
 
 	// Pass 9: ScaleDown4x4Linear (Tinnitus)
-	CREATE_PASS(VS_ScaleDown4x4(), PS_ScaleDown4x4Linear(), FALSE)
+	CREATE_PASS(VS_ScaleDown4x4(), PS_ScaleDown4x4Linear())
 
 	// Pass 10: CheapGaussianBlur5x5
-	CREATE_PASS(VS_Blit(), PS_CheapGaussianBlur5x5(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_CheapGaussianBlur5x5())
 
 	// Pass 11: GaussianBlur15x15H
-	CREATE_PASS(VS_Blit(), PS_GaussianBlur15x15H(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_GaussianBlur15x15H())
 
 	// Pass 12: GaussianBlur15x15V
-	CREATE_PASS(VS_Blit(), PS_GaussianBlur15x15V(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_GaussianBlur15x15V())
 
 	// Pass 13: Poisson13Blur
-	CREATE_PASS(VS_Blit(), PS_Poisson13Blur(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_Poisson13Blur())
 
 	// Pass 14: Poisson13AndDilation
-	CREATE_PASS(VS_Blit(), PS_Poisson13AndDilation(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_Poisson13AndDilation())
 
 	// Pass 15: ScaleUpBloomFilter
-	CREATE_PASS(VS_Blit(), PS_ScaleUpBloomFilter(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_ScaleUpBloomFilter())
 
 	// Pass 16: PassThroughSaturateAlpha
-	CREATE_PASS(VS_Blit(), PS_PassthroughSaturateAlpha(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_PassthroughSaturateAlpha())
 
 	// Pass 17
 	pass CopyRGBToAlpha
@@ -553,7 +552,7 @@ technique Blit
 	*/
 
 	// Pass 18: PassThroughBilinear
-	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear())
 
 	// Pass 19
 	pass PassThroughBilinearAdditive
@@ -586,10 +585,10 @@ technique Blit
 	CREATE_NULL_PASS
 
 	// Pass 25: GlowHorizontalFilter
-	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlur(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlur())
 
 	// Pass 26: GlowVerticalFilter
-	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlur(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlur())
 
 	// Pass 27: GlowVerticalFilterAdditive
 	CREATE_NULL_PASS
@@ -598,7 +597,7 @@ technique Blit
 	CREATE_NULL_PASS
 
 	// Pass 29: HighPassFilterFade
-	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear())
 
 	// Pass 30: ExtractGlowFilter
 	CREATE_NULL_PASS
@@ -634,13 +633,13 @@ technique Blit
 	}
 
 	// Pass 35: BloomHorizFilter
-	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear())
 
 	// Pass 36: BloomHorizFilterAdditive
 	CREATE_NULL_PASS
 
 	// Pass 37: BloomVertFilter
-	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughBilinear())
 
 	// Pass 38: BloomVAdditive
 	CREATE_NULL_PASS
@@ -655,13 +654,13 @@ technique Blit
 	CREATE_NULL_PASS
 
 	// Pass 42: ScaleDown4x4H
-	CREATE_PASS(VS_Blit(), PS_TR_PassthroughAnisotropy(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughAnisotropy())
 
 	// Pass 43: ScaleDown4x4V
-	CREATE_PASS(VS_Blit(), PS_TR_PassthroughAnisotropy(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_TR_PassthroughAnisotropy())
 
 	// Pass 44: Clear
-	CREATE_PASS(VS_Blit(), PS_Clear(), FALSE)
+	CREATE_PASS(VS_Blit(), PS_Clear())
 
 	// Pass 45
 	pass BlendCustom
