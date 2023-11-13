@@ -1,4 +1,3 @@
-#include "shaders/dataTypes.fx"
 #include "shaders/RaCommon.fx"
  
 Light Lights[1];

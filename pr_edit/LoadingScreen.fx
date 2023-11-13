@@ -1,53 +1,71 @@
 
-float4x4 WorldViewProj : TRANSFORM;
-texture TexMap : TEXTURE;
+/*
+	Description: Renders loading screen at startup
+*/
 
-sampler TexMapSampler = sampler_state
+/*
+	[Attributes from app]
+*/
+
+uniform float4x4 _WorldViewProj : TRANSFORM;
+
+/*
+	[Textures and samplers]
+*/
+
+uniform texture TexMap : TEXTURE;
+
+sampler SampleTexMap = sampler_state
 {
-    Texture = <TexMap>;
-    AddressU = Wrap;
-    AddressV = Wrap;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
+	Texture = (TexMap);
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
-
-struct VS_OUT
+struct APP2VS
 {
-	float4 Position : POSITION;
-	float4 Diffuse : COLOR0;
-	float2 TexCoord : TEXCOORD0;
+	float3 Pos : POSITION;
+	float2 Tex : TEXCOORD0;
+	float4 Color : COLOR0;
 };
 
-VS_OUT VSScreen(float3 Position : POSITION,float4 Diffuse : COLOR0,float2 TexCoord : TEXCOORD0)
+struct VS2PS
 {
-	VS_OUT Out = (VS_OUT)0;
-	Out.Position = float4(Position.x, Position.y, 0, 1);
-	Out.Diffuse = Diffuse;
-	Out.TexCoord = TexCoord;
-	return Out;
+	float4 HPos : POSITION;
+	float2 Tex : TEXCOORD0;
+	float4 Color : TEXCOORD1;
+};
+
+VS2PS VS_Screen(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
+	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
+	Output.Tex = Input.Tex;
+	Output.Color = saturate(Input.Color);
+	return Output;
+}
+
+float4 PS_Screen(VS2PS Input) : COLOR0
+{
+	float4 InputTexture0 = tex2D(SampleTexMap, Input.Tex);
+	float4 OutputColor;
+	OutputColor.rgb = InputTexture0.rgb * Input.Color.rgb;
+	OutputColor.a = Input.Color.a;
+	return OutputColor;
 }
 
 technique Screen
 {
-	pass P0
+	pass p0
 	{
-		VertexShader = compile vs_1_1 VSScreen();
-		PixelShader = NULL;
-		ColorOp[0]   = Modulate;
-		ColorArg1[0] = Texture;
-		ColorArg2[0] = Diffuse;
-		AlphaOp[0]   = SelectArg1;
-		AlphaArg1[0] = Diffuse;
-		ColorOp[1] = Disable;
-		AlphaOp[1] = Disable;
-		AlphaBlendEnable = false;
-		StencilEnable = false;
-		AlphaTestEnable = false;
-		CullMode = None;
-		TexCoordIndex[0] =0;
-		TextureTransformFlags[0] = Disable;
-		Sampler[0] = <TexMapSampler>;
+		CullMode = NONE;
+		StencilEnable = FALSE;
+		AlphaTestEnable = FALSE;
+		AlphaBlendEnable = FALSE;
+		VertexShader = compile vs_3_0 VS_Screen();
+		PixelShader = compile ps_3_0 PS_Screen();
 	}
 }

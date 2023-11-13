@@ -436,6 +436,8 @@ float4 ps(BMVariableVSOutput input) : COLOR
 	outColor.a *= attenuation;
 #endif
 
+	outColor.rgb = float3(0.0, 1.0, 0.0);
+
 	outColor.a *= Transparency.a;
 	return outColor;
 }

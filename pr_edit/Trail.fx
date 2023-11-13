@@ -1,37 +1,33 @@
-#line 2 "Trail.fx"
-#include "shaders/FXCommon.fx"
 
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityPixel.fxh"
+#include "shaders/RaCommon.fxh"
+#include "shaders/FXCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityPixel.fxh"
+	#include "RaCommon.fxh"
+	#include "FXCommon.fxh"
+#endif
+
+/*
+	Description: Renders lighting for particles emit smoke trails
+*/
 
 // UNIFORM INPUTS
 
-uniform float3 eyePos : EyePos;
-uniform float fadeOffset : FresnelOffset = 0;
-
-
-sampler trailDiffuseSampler = sampler_state
-{
-	Texture = <texture0>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = FILTER_PARTICLE_MIP;
-	AddressU = Wrap;
-	AddressV = Clamp;
-};
-
-sampler trailDiffuseSampler2 = sampler_state 
-{
-	Texture = <texture0>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = FILTER_PARTICLE_MIP;
-	AddressU = Wrap;
-	AddressV = Clamp;
-};
-
-
+uniform float3 _EyePos : EyePos;
+uniform float _FresnelOffset : FresnelOffset = 0;
 
 // constant array
-struct TemplateParameters {
+struct TemplateParameters
+{
 	float4 m_uvRangeLMapIntensiyAndParticleMaxSize;
 	float4 m_fadeInOutTileFactorAndUVOffsetVelocity;
 	float4 m_color1AndLightFactor;
@@ -41,296 +37,286 @@ struct TemplateParameters {
 	float4 m_sizeGraph;
 };
 
+TemplateParameters Template : TemplateParameters;
 
-TemplateParameters tParameters : TemplateParameters;
-
-struct appdata
+struct APP2VS
 {
-    float3 pos : POSITION;    
-    float3 localCoords : NORMAL0;
-    float3 tangent : NORMAL1;
-    float4 intensityAgeAnimBlendFactorAndAlpha : TEXCOORD0;
-    float4 uvOffsets : TEXCOORD1;
-    float2 texCoords : TEXCOORD2;
+	float3 Pos : POSITION;
+	float3 LocalCoords : NORMAL0;
+	float3 Tangent : NORMAL1;
+	float4 IntensityAgeAnimBlendFactorAndAlpha : TEXCOORD0;
+	float4 UVOffsets : TEXCOORD1;
+	float2 TexCoords : TEXCOORD2;
 };
 
-
-struct VS_TRAIL_OUTPUT {
+struct VS2PS
+{
 	float4 HPos : POSITION;
-	float4 color : TEXCOORD3;
-	float3 animBFactorAndLMapIntOffset : COLOR0;
-	float4 lightFactorAndAlpha : COLOR1;
-	float2 texCoords0 : TEXCOORD0;
-	float2 texCoords1 : TEXCOORD1;
-	float2 texCoords2 : TEXCOORD2;
-	// float3 animBFactorAndLMapIntOffset : TEXCOORD3;
-	
-	float Fog : FOG;
-	
+	float4 WorldPos : TEXCOORD0;
+	float3 Color : TEXCOORD1;
+
+	float4 Tex0 : TEXCOORD2; // .xy = Diffuse1; .zw = Diffuse2
+	float3 Maps : TEXCOORD3; // [AlphaBlend, AnimBlend, LMOffset]
 };
 
-VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 myWP)
+struct PS2FB
 {
-	
-	VS_TRAIL_OUTPUT Out = (VS_TRAIL_OUTPUT)0;
-	
-	// Compute Cubic polynomial factors.
-	float age = input.intensityAgeAnimBlendFactorAndAlpha[1];
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
 
-	// FADE values
-	float fadeIn = saturate(age/tParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.x);
-	float fadeOut = saturate((1.f - age)/tParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.y);
-		 
-	float3 eyeVec = eyePos - input.pos;
-	
-	// project eyevec to tangent vector to get position on axis
-	float tanPos = dot(eyeVec, input.tangent);
-	  
-	// closest point to camera
-	float3 axisVec = eyeVec - (input.tangent * tanPos);
-	axisVec = normalize(axisVec);
-		
-	// find rotation around axis
-	float3 norm = cross(input.tangent, input.localCoords*-1);
-	
-	float fadeFactor = dot(axisVec, norm);
-	fadeFactor *= fadeFactor;
-	fadeFactor += fadeOffset;
-	fadeFactor *= fadeIn * fadeOut;
-		
-	// age factor polynomials
-	float4 pc = {age*age*age, age*age, age, 1.f};
+/*
+	[Vertex Shaders]
+*/
 
-	// comput size of particle using the constants of the templ[input.ageFactorAndGraphIndex.y]ate (mSizeGraph)
-	float size = min(dot(tParameters.m_sizeGraph, pc), 1) * tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.w;
-	// size += input.randomSizeAlphaAndIntensityBlendFactor.x;
+VS2PS VS_Trail(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
 
-	// displace vertex
-	float4 pos = mul(float4(input.pos.xyz + size*(input.localCoords.xyz*input.texCoords.y), 1), myWV);
-	Out.HPos = mul(pos, myWP);
-	
-	float colorBlendFactor = min(dot(tParameters.m_colorBlendGraph, pc), 1);
-	float3 color = colorBlendFactor * tParameters.m_color2.rgb;
-	color += (1 - colorBlendFactor) * tParameters.m_color1AndLightFactor.rgb;
-	
-	// lighting??
-	
-	// color.rgb *=   + ((1.0f + input.localCoords.y*input.texCoords.y)/2);
-	// float3 lightVec = float3(.46f,0.57f,0.68f);
-	// float3 lightVec = float3(0.7,0.7,0);
-	// color.rgb *= 2*saturate(dot(input.localCoords*input.texCoords.y, lightVec));
-	// float3 norm2 = cross(input.tangent, input.localCoords*input.texCoords.y)*input.texCoords.y;
-	
-	// if (dot(norm2, eyeVec) >= 0)
-	 // color.rgb = SUNCOLOR;
-	// else
-	// color.rgb = GROUNDCOLOR;
-	// color.rgb *= 2*saturate(dot(norm2, lightVec));
-	// color.rgb = norm2;
-	
-	// color.rgb *= lerp(GROUNDCOLOR, SUNCOLOR, (1.0f + input.localCoords.y*input.texCoords.y)*0.5f);
-	// input.localCoords.y*input.texCoords.y
-	// color.rgb += lerp(0, SUNCOLOR, clamp(input.localCoords.y*input.texCoords.y, 0, 1));
-	// color.rgb += lerp(0, GROUNDCOLOR, clamp(-input.localCoords.y*input.texCoords.y, 0, 1));
-	
+	// Unpack vertex attributes
+	float Intensity = Input.IntensityAgeAnimBlendFactorAndAlpha[0];
+	float Age = Input.IntensityAgeAnimBlendFactorAndAlpha[1];
+	float AnimBlendFactor = Input.IntensityAgeAnimBlendFactorAndAlpha[2];
+	float Alpha = Input.IntensityAgeAnimBlendFactorAndAlpha[3];
 
-	float alphaBlendFactor = min(dot(tParameters.m_transparencyGraph, pc), 1) * input.intensityAgeAnimBlendFactorAndAlpha[3];
-	alphaBlendFactor *= fadeFactor;
-	
-	Out.color.rgb = color/2;
-	Out.lightFactorAndAlpha.b = alphaBlendFactor;
-				
-	// Out.color.a = alphaBlendFactor * input.randomSizeAlphaAndIntensityBlendFactor[1];
-	// Out.color.rgb = (color * input.intensityAndRandomIntensity[0]) + input.intensityAndRandomIntensity[1];
+	// Compute and age cubic polynomial factors
+	float4 CubicPolynomial = float4(pow(Age, float3(3.0, 2.0, 1.0)), 1.0);
+	float Size = min(dot(Template.m_sizeGraph, CubicPolynomial), 1.0) * Template.m_uvRangeLMapIntensiyAndParticleMaxSize.w;
+	float ColorBlendFactor = min(dot(Template.m_colorBlendGraph, CubicPolynomial), 1.0);
+	float AlphaBlendFactor = min(dot(Template.m_transparencyGraph, CubicPolynomial), 1.0) * Alpha;
 
-	Out.animBFactorAndLMapIntOffset.x = input.intensityAgeAnimBlendFactorAndAlpha[2];
-	
-	float lightMapIntensity = saturate(clamp((input.pos.y - hemiShadowAltitude) / 10.f, 0.f, 1.0f) + tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.z);
-	// Out.animBFactorAndLMapIntOffset.y = tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.z;
-	Out.animBFactorAndLMapIntOffset.yz = lightMapIntensity;
-			
-	// compute texcoords for trail
-	float2 rotatedTexCoords = input.texCoords;
-	
-	rotatedTexCoords.x -= age * tParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.w;
-	rotatedTexCoords *= tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.xy;
-	rotatedTexCoords.x *= tParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.z / tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.w;
-	
-	// Bias texcoords.
-	rotatedTexCoords.x += tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.x;
-	rotatedTexCoords.y = tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.y - rotatedTexCoords.y;
-	rotatedTexCoords.y *= 0.5f;
+	// Displace vertex
+	float4 Pos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
+	Output.HPos = mul(Pos, _ProjMat);
+	Output.WorldPos = float4(Input.Pos, 0.0);
+	#if defined(LOG_DEPTH)
+		Output.WorldPos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
-	
+	// Project eyevec to Tangent vector to get position on axis
+	float3 ViewVec = _EyePos.xyz - Input.Pos.xyz;
+	float TanPos = dot(ViewVec, Input.Tangent);
+	// Closest point to camera
+	float3 AxisVec = ViewVec - (Input.Tangent * TanPos);
+	AxisVec = normalize(AxisVec);
+	// Find rotation around axis
+	float3 Normal = cross(Input.Tangent, -Input.LocalCoords);
+	// Fade values
+	float FadeIn = saturate(Age / Template.m_fadeInOutTileFactorAndUVOffsetVelocity.x);
+	float FadeOut = saturate((1.0 - Age) / Template.m_fadeInOutTileFactorAndUVOffsetVelocity.y);
+	float FadeFactor = dot(AxisVec, Normal);
+	FadeFactor *= FadeFactor;
+	FadeFactor += _FresnelOffset;
+	FadeFactor *= FadeIn * FadeOut;
+
+	Output.Color = lerp(Template.m_color1AndLightFactor.rgb, Template.m_color2.rgb, ColorBlendFactor);
+	Output.Maps[0] = AlphaBlendFactor * FadeFactor;
+	Output.Maps[1] = AnimBlendFactor;
+	Output.Maps[2] = Template.m_uvRangeLMapIntensiyAndParticleMaxSize.z;
+
+	// Compute texcoords for trail
+	float2 RotatedTexCoords = Input.TexCoords;
+	RotatedTexCoords.x -= Age * Template.m_fadeInOutTileFactorAndUVOffsetVelocity.w;
+	RotatedTexCoords.xy *= Template.m_uvRangeLMapIntensiyAndParticleMaxSize.xy;
+	RotatedTexCoords.x *= Template.m_fadeInOutTileFactorAndUVOffsetVelocity.z / Template.m_uvRangeLMapIntensiyAndParticleMaxSize.w;
+
+	// Bias texcoords
+	RotatedTexCoords.y = -RotatedTexCoords.y;
+	RotatedTexCoords.xy += Template.m_uvRangeLMapIntensiyAndParticleMaxSize.xy;
+	RotatedTexCoords.y *= 0.5;
+
 	// Offset texcoords
-	float4 uvOffsets = input.uvOffsets * OneOverShort;
+	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
+	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
-	Out.texCoords0 = rotatedTexCoords.xy + uvOffsets.xy;
-	Out.texCoords1 = rotatedTexCoords.xy + uvOffsets.zw;
-			
-	// hemi lookup coords
- 	Out.texCoords2.xy = ((input.pos + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy) / hemiMapInfo.z;	
- 	Out.texCoords2.y = 1 - Out.texCoords2.y;
- 	
- 	Out.lightFactorAndAlpha.a = tParameters.m_color1AndLightFactor.a;
- 	 	 		
-	Out.Fog = calcFog(Out.HPos.w); 	 	 						
-	
-	return Out;
+	return Output;
 }
 
-float4 psTrailHigh(VS_TRAIL_OUTPUT input) : COLOR
+/*
+	[Pixel Shaders]
+*/
+
+struct VFactors
 {
-	float4 tDiffuse = tex2D(trailDiffuseSampler, input.texCoords0);    
-	float4 tDiffuse2 = tex2D(trailDiffuseSampler2, input.texCoords1);
-	float4 tLut = tex2D(lutSampler, input.texCoords2.xy);
-  		
-	float4 color = lerp(tDiffuse, tDiffuse2, input.animBFactorAndLMapIntOffset.x);
-	color.rgb *= 2*input.color.rgb;
-	color.rgb *= calcParticleLighting(tLut.a, input.animBFactorAndLMapIntOffset.z, input.lightFactorAndAlpha.a);
-	color.a *= input.lightFactorAndAlpha.b;
-	
-	return color;
-}
-float4 psTrailMedium(VS_TRAIL_OUTPUT input) : COLOR
+	float AlphaBlend;
+	float AnimationBlend;
+	float LightMapOffset;
+};
+
+VFactors GetVFactors(VS2PS Input)
 {
-	float4 tDiffuse = tex2D(trailDiffuseSampler, input.texCoords0);    
-	float4 tDiffuse2 = tex2D(trailDiffuseSampler2, input.texCoords1);
-  		
-	float4 color = lerp(tDiffuse, tDiffuse2, input.animBFactorAndLMapIntOffset.x);
-	color.rgb *= 2*input.color.rgb;
-	color.rgb *= calcParticleLighting(1, input.animBFactorAndLMapIntOffset.z, input.lightFactorAndAlpha.a);
-	color.a *= input.lightFactorAndAlpha.b;
-	
-	return color;
+	VFactors Output = (VFactors)0;
+	Output.AlphaBlend = Input.Maps[0];
+	Output.AnimationBlend = Input.Maps[1];
+	Output.LightMapOffset = GetAltitude(Input.WorldPos.xyz, Input.Maps[2]);
+	return Output;
 }
-float4 psTrailLow(VS_TRAIL_OUTPUT input) : COLOR
+
+PS2FB PS_Trail_ShowFill(VS2PS Input)
 {
-	float4 color = tex2D(trailDiffuseSampler, input.texCoords0);    
-	color.rgb *= 2*input.color.rgb;
-	color.a *= input.lightFactorAndAlpha.b;
-	
-	return color;
+	PS2FB Output = (PS2FB)0;
+	Output.Color = _EffectSunColor.rrrr;
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
+	#endif
+	return Output;
 }
-float4 psTrailShowFill(VS_TRAIL_OUTPUT input) : COLOR
+
+PS2FB PS_Trail_Low(VS2PS Input)
 {
-	return effectSunColor.rrrr;
+	PS2FB Output = (PS2FB)0;
+
+	// Vertex blend factors
+	VFactors VF = GetVFactors(Input);
+
+	// Lighting
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 LightColor = float4(Input.Color.rgb, VF.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
+
+	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
+	#endif
+
+	return Output;
 }
 
+PS2FB PS_Trail_Medium(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
 
+	// Vertex blend factors
+	VFactors VF = GetVFactors(Input);
 
+	// Texture data
+	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
+	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.AnimationBlend);
 
-//
+	// Lighting
+	float3 Lighting = GetParticleLighting(1.0, VF.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
+	float4 LightColor = float4(Input.Color.rgb * Lighting, VF.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
+
+	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
+	#endif
+
+	return Output;
+}
+
+PS2FB PS_Trail_High(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	// Vertex blend factors
+	VFactors VF = GetVFactors(Input);
+
+	// Get diffuse map
+	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
+	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.AnimationBlend);
+
+	// Get hemi map
+	float2 HemiTex = GetHemiTex(Input.WorldPos.xyz, 0.0, _HemiMapInfo.xyz, true);
+	float4 HemiMap = tex2D(SampleLUT, HemiTex);
+
+	// Apply lighting
+	float3 Lighting = GetParticleLighting(HemiMap.a, VF.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
+	float4 LightColor = float4(Input.Color.rgb * Lighting, VF.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
+
+	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
+	#endif
+
+	return Output;
+}
+
 // Ordinary technique
-//
-/*	int Declaration[] = 
+
+#define GET_RENDERSTATES_TRAIL(SRCBLEND, DESTBLEND) \
+	CullMode = NONE; \
+	ZEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
+	ZWriteEnable = FALSE; \
+	StencilEnable = FALSE; \
+	StencilFunc = ALWAYS; \
+	StencilPass = ZERO; \
+	AlphaTestEnable = TRUE; \
+	AlphaRef = (_AlphaPixelTestRef); \
+	AlphaBlendEnable = TRUE; \
+	SrcBlend = SRCBLEND; \
+	DestBlend = DESTBLEND; \
+
+/*	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_NORMAL, 0 },
-		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_NORMAL, 1 },		
-		{ 0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_TEXCOORD, 0 },		
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 1 },				
-		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 2 },		
-		DECLARATION_END // End macro
+		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_NORMAL, 1 },
+		{ 0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 1 },
+		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 2 },
+		DECLARATION_END	// End macro
 	};
 */
-technique TrailLow
-<
->
-{
-	pass p0
-	{
-		CullMode = NONE;
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-		AlphaTestEnable = TRUE;
-		AlphaRef = <alphaPixelTestRef>;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;				
-		FogEnable = TRUE;
-				
- 		VertexShader = compile vs_1_1 vsTrail(viewMat, projMat);
-		PixelShader = compile ps_1_4 psTrailLow();		
-	}
-}
-technique TrailMedium
-<
->
-{
-	pass p0
-	{
-		CullMode = NONE;
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-		AlphaTestEnable = TRUE;
-		AlphaRef = <alphaPixelTestRef>;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;				
-		FogEnable = TRUE;
-				
- 		VertexShader = compile vs_1_1 vsTrail(viewMat, projMat);
-		PixelShader = compile ps_1_4 psTrailMedium();		
-	}
-}
-technique TrailHigh
-<
->
-{
-	pass p0
-	{
-		CullMode = NONE;
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-		AlphaTestEnable = TRUE;
-		AlphaRef = <alphaPixelTestRef>;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;				
-		FogEnable = TRUE;
-				
- 		VertexShader = compile vs_1_1 vsTrail(viewMat, projMat);
-		PixelShader = compile ps_1_4 psTrailHigh();		
-	}
-}
+
 technique TrailShowFill
 <
 >
 {
 	pass p0
 	{
-		CullMode = NONE;
-		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		ZWriteEnable = FALSE;
-		StencilEnable = FALSE;
-		StencilFunc = ALWAYS;
-		StencilPass = ZERO;
-		AlphaTestEnable = TRUE;
-		AlphaRef = <alphaPixelTestRef>;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;				
-		FogEnable = TRUE;
-				
- 		VertexShader = compile vs_1_1 vsTrail(viewMat, projMat);
-		PixelShader = compile ps_1_4 psTrailShowFill();		
+		GET_RENDERSTATES_TRAIL(ONE, ONE)
+		VertexShader = compile vs_3_0 VS_Trail();
+		PixelShader = compile ps_3_0 PS_Trail_ShowFill();
 	}
 }
 
+technique TrailLow
+<
+>
+{
+	pass p0
+	{
+		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
+		VertexShader = compile vs_3_0 VS_Trail();
+		PixelShader = compile ps_3_0 PS_Trail_Low();
+	}
+}
 
+technique TrailMedium
+<
+>
+{
+	pass p0
+	{
+		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
+		VertexShader = compile vs_3_0 VS_Trail();
+		PixelShader = compile ps_3_0 PS_Trail_Medium();
+	}
+}
 
+technique TrailHigh
+<
+>
+{
+	pass p0
+	{
+		GET_RENDERSTATES_TRAIL(SRCALPHA, INVSRCALPHA)
+		VertexShader = compile vs_3_0 VS_Trail();
+		PixelShader = compile ps_3_0 PS_Trail_High();
+	}
+}

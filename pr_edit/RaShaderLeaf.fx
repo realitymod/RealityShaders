@@ -8,7 +8,6 @@
 #define _HASSHADOW_ 0
 #endif
 
-#include "shaders/dataTypes.fx"
 #include "shaders/RaCommon.fx"
  
 // float3 TreeSkyColor;

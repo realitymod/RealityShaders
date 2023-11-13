@@ -1,6 +1,4 @@
-//
 // -- New, better, "cleaner" skinning code.
-//
 
 #include "shaders/RaCommon.fx"
 #include "shaders/RaShaderSMCommon.fx"
@@ -380,6 +378,8 @@ float4 ps(SMVariableVSOutput input) : COLOR
 	outColor.rgb *= diffuseTex;
 	outColor.rgb += (input.Specular * 2) * dirShadow;
 #endif
+
+	outColor.rgb = float3(0.0, 1.0, 0.0);
 
 	outColor.a = diffuseTex.a*Transparency.a;
 

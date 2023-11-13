@@ -1,4 +1,3 @@
-#include "shaders/datatypes.fx"
 
 float4x4 mVP : VIEWPROJ;
 float4x4 mWVP : WORLDVIEWPROJ;
@@ -1365,11 +1364,11 @@ technique SunLight
 		AlphaBlendEnable = FALSE;
 
 		StencilEnable = TRUE;
-// StencilFunc = EQUAL;
-// StencilRef = 3;
-StencilFunc = NEVER;
-// StencilRef = 223;
-// StencilMask = 0xFF;
+		// StencilFunc = EQUAL;
+		// StencilRef = 3;
+		StencilFunc = NEVER;
+		// StencilRef = 223;
+		// StencilMask = 0xFF;
 		StencilFail = KEEP;
 		StencilZFail = KEEP;
 		StencilPass = KEEP;
@@ -1457,12 +1456,12 @@ technique SunLightShadowNV <
 		ZFunc = GREATER;
 		CullMode = NONE;
 		
-// ZEnable = FALSE;
+		// ZEnable = FALSE;
 		AlphaBlendEnable = FALSE;
 
 		StencilEnable = TRUE;
-StencilFunc = EQUAL;
-StencilRef = 240;
+		StencilFunc = EQUAL;
+		StencilRef = 240;
 		// StencilFunc = NOTEQUAL;
 		// StencilRef = 1;
 		StencilFail = KEEP;
@@ -1689,28 +1688,6 @@ technique PointLightNV40 <
 			mov r0, c0
 		};
 	}
-
-	/*pass p1
-	{
-		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
-		ZFunc = GREATER;
-		CullMode = NONE;
-// ZFunc = LESSEQUAL;
-// CullMode = NONE;
-// ZFunc = GREATER;
-// CullMode = CW;
-		
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-		BlendOp = MAX;
-
-		StencilFunc = (dwStencilFunc);// EQUAL;
-		
-		VertexShader = compile vs_1_1 vsDx9_PointLight();
-		PixelShader = compile PS2_EXT psDx9_PointLight2();
-	}*/
 }
 
 technique PointLightShadowNV <

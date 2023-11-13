@@ -1,13 +1,9 @@
-//
 /// BundledMesh MetaFx
-//
 
-//
 // This array specifies what the shaderPermutator should build
 // in the case below it will first look for reqVertexElement + "Base"
 // and get the common members of that array. And will then complement
 // that array for each permutation based on the requirements of each individual LITERAL
-//
 string GenerateStructs[] =
 {
 	"reqVertexElement",
@@ -17,9 +13,7 @@ string GenerateStructs[] =
 };
 
 
-//
 // this is the common vertexElement members
-//
 string reqVertexElementBase[] = 
 {
  	"PositionPacked",
@@ -28,9 +22,7 @@ string reqVertexElementBase[] =
 	"TBasePacked2D",
 };
 
-//
 // this is the common global parameters
-//
 string GlobalParametersBase[] = 
 {
 	"ViewProjection",
@@ -44,9 +36,7 @@ string GlobalParametersBase[] =
 	"WorldSpaceCamPos" // should be as an "inverted specialized" instead
 };
 
-//
 // this is the common template parameters
-//
 string TemplateParametersBase[] = 
 {
 	"DiffuseMap",
@@ -55,9 +45,7 @@ string TemplateParametersBase[] =
 	"NormalUnpack"
 };
 
-//
 // this is the common instance parameters
-//
 string InstanceParametersBase[] = 
 {
 	"World",
@@ -73,9 +61,7 @@ string InstanceParametersBase[] =
 };
 
 
-//
 // Literals, and their requirements
-//
 
 const dword _nothing_ : LITERAL;
 
@@ -180,11 +166,9 @@ const dword _pointlight_ : LITERAL;
 // const dword _userenormalizedtextures_ : LITERAL;
 
 
-//
 // This is the array of the shader permutations to generate.
 // the resulting shadername is the name of this file + the permutationname - "_"
 // ie. RaShaderSTMBaseDetail etc
-//
 string GenerateShaderPermutations[] =
 {
 	"_nothing_",
@@ -221,9 +205,7 @@ string GenerateShaderPermutations[] =
 	"_hasuvanimation_|_hasnormalmap_|_hasgimap_|_hasenvmap_|_usehemimap_",
 };
 
-//
 // for each shader in the permutation array, the following variants will be generated
-//
 string GenerateShaderModifiers[] =
 {
 	"_hasshadow_",

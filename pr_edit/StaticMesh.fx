@@ -1,5 +1,4 @@
 #line 2 "StaticMesh.fx"
-#include "shaders/datatypes.fx"
 #include "Shaders/commonVertexLight.fx"
 
 // UNIFORM INPUTS
@@ -535,9 +534,6 @@ technique DrawShadowMap
 	}
 }
 
-#include "Shaders/StaticMesh_nv3x.fx"
-#include "Shaders/StaticMesh_nv3xpp.fx"
 #include "Shaders/StaticMesh_r3x0.fx"
-#include "Shaders/StaticMesh_editor.fx"
 #include "Shaders/StaticMesh_debug.fx"
 #include "Shaders/StaticMesh_lightmapgen.fx"

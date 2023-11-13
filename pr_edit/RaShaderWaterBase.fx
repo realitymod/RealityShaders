@@ -1,4 +1,3 @@
-#include "shaders/datatypes.fx"
 #include "shaders/raCommon.fx"
 
 //#undef VS_NORMALIZE

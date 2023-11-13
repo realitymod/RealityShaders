@@ -1,9 +1,6 @@
-//
 // Description: 1,2 bone skinning 
-//
 // Author: Mats Dal
 
-#include "shaders/datatypes.fx"
 
 // Note: obj space light vectors
 float4 sunLightDir : SunLightDirection;
@@ -1117,9 +1114,7 @@ float4 PShader_PointLightPV(VS2PS_PointLight_PV indata) : COLOR
 	return float4(indata.Diffuse,0);
 }
 
-//
 // Max 2 bones skinning supported!
-//
 VertexShader vsArray_PointLightPV[2] = { compile vs_1_1 VShader_PointLightPV(1), 
                             compile vs_1_1 VShader_PointLightPV(2) };
 
@@ -1189,9 +1184,7 @@ float4 PShader_PointLightPP(VS2PS_PointLight_PP indata) : COLOR
 	return realintensity;
 }
 
-//
 // Max 2 bones skinning supported!
-//
 VertexShader vsArray_PointLightPP[2] = { compile vs_1_1 VShader_PointLightPP(1), 
                             compile vs_1_1 VShader_PointLightPP(2) };
 
@@ -1236,9 +1229,7 @@ VS2PS_PointLight_PP VShader_PointLightPPtangent(APP2VStangent indata, uniform in
 	return outdata;
 }
 
-//
 // Max 2 bones skinning supported!
-//
 VertexShader vsArray_PointLightPPtangent[2] = { compile vs_1_1 VShader_PointLightPPtangent(1), 
                             compile vs_1_1 VShader_PointLightPPtangent(2) };
 
@@ -1297,9 +1288,7 @@ float4 PShader_SpotLightPV(VS2PS_SpotLight_PV indata) : COLOR
 	return float4(indata.Diffuse,0);
 }
 
-//
 // Max 2 bones skinning supported!
-//
 VertexShader vsArray_SpotLightPV[2] = { compile vs_1_1 VShader_SpotLightPV(1), 
                             compile vs_1_1 VShader_SpotLightPV(2)
                            };
@@ -1374,9 +1363,7 @@ float4 PShader_SpotLightPP(VS2PS_SpotLight_PP indata) : COLOR
 	return realintensity * indata.SkinnedLVec.w;//* conicalAtt * radialAtt;
 }
 
-//
 // Max 2 bones skinning supported!
-//
 VertexShader vsArray_SpotLightPP[2] = { compile vs_1_1 VShader_SpotLightPP(1), 
                             compile vs_1_1 VShader_SpotLightPP(2)
                            };
@@ -1429,9 +1416,7 @@ VS2PS_SpotLight_PP VShader_SpotLightPPtangent(APP2VStangent indata, uniform int 
 	return outdata;
 }
 
-//
 // Max 2 bones skinning supported!
-//
 VertexShader vsArray_SpotLightPPtangent[2] = { compile vs_1_1 VShader_SpotLightPPtangent(1), 
                             compile vs_1_1 VShader_SpotLightPPtangent(2)
                            };
@@ -1480,9 +1465,7 @@ float4 PShader_MulDiffuse(VS2PS_MulDiffuse indata) : COLOR
 	return tex2D(sampler0, indata.Tex0);
 }
 
-//
 // Max 2 bones skinning supported!
-//
 VertexShader vsArray_MulDiffuse[2] = { compile vs_1_1 VShader_MulDiffuse(1), 
                             compile vs_1_1 VShader_MulDiffuse(2)
                            };
@@ -2051,4 +2034,3 @@ technique DrawShadowMap
 	}
 }
 
-#include "Shaders/SkinnedMesh_r3x0.fx"

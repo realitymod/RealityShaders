@@ -1,6 +1,5 @@
 #include "shaders/RaDefines.fx"
 
-#include "shaders/dataTypes.fx"
 
 #ifdef DISABLE_DIFFUSEMAP
 	#ifdef DISABLE_BUMPMAP

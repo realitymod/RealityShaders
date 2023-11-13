@@ -1,246 +1,443 @@
-#line 2 "SkyDome.fx"
-#include "shaders/datatypes.fx"
 
-// UNIFORM INPUTS
-float4x4 viewProjMatrix : WorldViewProjection;
-float4 texOffset : TEXOFFSET;
-float4 texOffset2 : TEXOFFSET2;
+/*
+	Include header files
+*/
 
-float4 flareParams : FLAREPARAMS;
+#include "shaders/shared/RealityPixel.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "shared/RealityPixel.fxh"
+#endif
 
-float2 fadeOutDist : CLOUDSFADEOUTDIST;
-float2 cloudLerpFactors : CLOUDLERPFACTORS;
+/*
+	Description: Renders sky and skybox
+	NOTE: We use normal depth calculation for this one because the geometry's far away from the scene
+*/
 
-texture texture0: TEXLAYER0;
-texture texture1: TEXLAYER1;
-texture texture2: TEXLAYER2;
+uniform float4x4 _ViewProjMatrix : WorldViewProjection;
+uniform float4 _TexOffset : TEXOFFSET;
+uniform float4 _TexOffset2 : TEXOFFSET2;
 
-sampler samplerClamp = sampler_state
+uniform float4 _FlareParams : FLAREPARAMS;
+uniform float4 _UnderwaterFog : FogColor;
+
+uniform float2 _FadeOutDist : CLOUDSFADEOUTDIST;
+uniform float2 _CloudLerpFactors : CLOUDLERPFACTORS;
+
+uniform float _LightingBlend : LIGHTINGBLEND;
+uniform float3 _LightingColor : LIGHTINGCOLOR;
+
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+	}; \
+
+uniform texture Tex0 : TEXLAYER0;
+CREATE_SAMPLER(SampleTex0, Tex0, CLAMP)
+
+uniform texture Tex1 : TEXLAYER1;
+CREATE_SAMPLER(SampleTex1, Tex1, WRAP)
+
+uniform texture Tex2 : TEXLAYER2;
+CREATE_SAMPLER(SampleTex2, Tex2, WRAP)
+
+struct APP2VS
 {
-	Texture = <texture0>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
-
-sampler samplerWrap1 = sampler_state
-{
-	Texture = <texture1>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
-
-sampler samplerWrap2 = sampler_state
-{
-	Texture = <texture2>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
-
-struct appdata {
-    float4 Pos : POSITION;    
-    float4 BlendIndices : BLENDINDICES;    
-    float2 TexCoord : TEXCOORD0;
-    float2 TexCoord1 : TEXCOORD1;
-};
-
-struct appdataNoClouds {
-    float4 Pos : POSITION;    
-    float4 BlendIndices : BLENDINDICES;    
-    float2 TexCoord : TEXCOORD0;
-};
-
-struct VS_OUTPUT {
-	float4 HPos : POSITION;
+	float4 Pos : POSITION;
+	float4 BlendIndices : BLENDINDICES;
 	float2 Tex0 : TEXCOORD0;
 	float2 Tex1 : TEXCOORD1;
-	float4 FadeOut: COLOR0;
 };
 
-struct VS_OUTPUTNoClouds {
-	float4 HPos : POSITION;
+struct APP2VS_NoClouds
+{
+	float4 Pos : POSITION;
+	float4 BlendIndices : BLENDINDICES;
 	float2 Tex0 : TEXCOORD0;
 };
 
-struct VS_OUTPUTDualClouds {
-	float4 HPos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float2 Tex1 : TEXCOORD1;
-	float2 Tex2 : TEXCOORD2;
-	float4 FadeOut: COLOR0;
+struct PS2FB
+{
+	float4 Color : COLOR0;
 };
 
-VS_OUTPUT vsSkyDome(appdata input)
+float GetFadeOut(float3 Pos)
 {
-	VS_OUTPUT Out;
- 	Out.HPos = mul(float4(input.Pos.xyz, 1.0), viewProjMatrix);
- 	Out.Tex0 = input.TexCoord;
-	Out.Tex1 = (input.TexCoord1.xy + texOffset.xy);
-	float dist = length(input.Pos.xyz);
-	Out.FadeOut = 1-saturate((dist - fadeOutDist.x) / fadeOutDist.y);	// tl: TODO - optimize out division
-	Out.FadeOut *= input.Pos.y > 0;
-	return Out;
+	float Dist = length(Pos);
+	float FadeOut = 1.0 - saturate((Dist - _FadeOutDist.x) / _FadeOutDist.y);
+	return saturate(FadeOut * (Pos.y > 0.0));
 }
 
-VS_OUTPUTNoClouds vsSkyDomeNoClouds(appdataNoClouds input)
+bool IsTisActive()
 {
-	VS_OUTPUTNoClouds Out;
- 	Out.HPos = mul(float4(input.Pos.xyz, 1.0), viewProjMatrix);
- 	Out.Tex0 = input.TexCoord;
-	return Out;
+	return _UnderwaterFog.r == 0;
 }
 
-VS_OUTPUTDualClouds vsSkyDomeDualClouds(appdata input)
+float4 ApplyTis(in out float4 color)
 {
-	VS_OUTPUTDualClouds Out;
- 	Out.HPos = mul(float4(input.Pos.xyz, 1.0), viewProjMatrix);
- 	Out.Tex0 = input.TexCoord;
-	Out.Tex1 = (input.TexCoord1.xy + texOffset.xy);
-	Out.Tex2 = (input.TexCoord1.xy + texOffset2.xy);
-	float dist = length(input.Pos.xyz);
-	Out.FadeOut = 1-saturate((dist - fadeOutDist.x) / fadeOutDist.y);	// tl: TODO - optimize out division
-	Out.FadeOut *= input.Pos.y > 0;
-	return Out;
+	// TIS uses Green + Red channel to determine heat
+	color.r = 0;
+	// Green = 1 means cold, Green = 0 hot. Invert channel so clouds (high green) become hot
+	// Add constant to make everything colder
+	color.g = (1 - color.g) + 0.5;
+	return color;
 }
 
-float4 psSkyDome(VS_OUTPUT indata) : COLOR
+/*
+	General SkyDome shaders
+*/
+
+struct VS2PS_SkyDome
 {
-	float4 sky = tex2D(samplerClamp, indata.Tex0);
-	float4 cloud = tex2D(samplerWrap1, indata.Tex1) * indata.FadeOut;
-	return float4(lerp(sky,cloud,cloud.a).rgb, 1);
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float4 Tex0 : TEXCOORD1; // .xy = SkyTex; .zw = CloudTex
+};
+
+VS2PS_SkyDome VS_SkyDome(APP2VS Input)
+{
+	VS2PS_SkyDome Output;
+
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+	Output.Pos = Input.Pos;
+
+	Output.Tex0.xy = Input.Tex0; // Sky coords
+	Output.Tex0.zw = Input.Tex1.xy + _TexOffset.xy; // Cloud1 coords
+
+	return Output;
 }
 
-float4 psSkyDomeNoClouds(VS_OUTPUT indata) : COLOR
+PS2FB PS_SkyDome_UnderWater(VS2PS_SkyDome Input)
 {
-	return tex2D(samplerClamp, indata.Tex0);
+	PS2FB Output = (PS2FB)0;
+
+	if (IsTisActive())
+	{
+		Output.Color = 0;
+	}
+	else
+	{
+		Output.Color = _UnderwaterFog;
+	}
+
+	return Output;
 }
 
-float4 psSkyDomeDualClouds(VS_OUTPUTDualClouds indata) : COLOR
+PS2FB PS_SkyDome(VS2PS_SkyDome Input)
 {
-	float4 sky = tex2D(samplerClamp, indata.Tex0);
-	float4 cloud = tex2D(samplerWrap1, indata.Tex1);
-	float4 cloud2 = tex2D(samplerWrap2, indata.Tex2);
-	float4 tmp = cloud * cloudLerpFactors.x + cloud2 * cloudLerpFactors.y;
-	tmp *=  indata.FadeOut;
-	return lerp(sky, tmp, tmp.a);
+	PS2FB Output = (PS2FB)0;
+
+	float FadeOut = GetFadeOut(Input.Pos.xyz);
+	float4 SkyDome = tex2D(SampleTex0, Input.Tex0.xy);
+	float4 Cloud1 = GetProceduralTiles(SampleTex1, Input.Tex0.zw) * FadeOut;
+
+	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
+
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
+
+	return Output;
 }
 
-
-VS_OUTPUTNoClouds vsSkyDomeSunFlare(appdataNoClouds input)
+PS2FB PS_SkyDome_Lit(VS2PS_SkyDome Input)
 {
-	VS_OUTPUTNoClouds Out;
- 	// Out.HPos = input.Pos * 10000;
- 	Out.HPos = mul(float4(input.Pos.xyz, 1.0), viewProjMatrix);
- 	Out.Tex0 = input.TexCoord;
-	return Out;
+	PS2FB Output = (PS2FB)0;
+
+	float FadeOut = GetFadeOut(Input.Pos.xyz);
+	float4 SkyDome = tex2D(SampleTex0, Input.Tex0.xy);
+	float4 Cloud1 = GetProceduralTiles(SampleTex1, Input.Tex0.zw) * FadeOut;
+	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
+
+	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
+
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
+
+	return Output;
 }
 
-float4 psSkyDomeSunFlare(VS_OUTPUT indata) : COLOR
+/*
+	SkyDome with two clouds shaders
+*/
+
+struct VS2PS_DualClouds
 {
-	// return 1;
-	// return float4(flareParams[0],0,0,1);
-	float3 rgb = tex2D(samplerClamp, indata.Tex0).rgb * flareParams[0];
-	return float4(rgb, 1);
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float2 SkyTex : TEXCOORD1;
+	float4 CloudTex : TEXCOORD2; // .xy = CloudTex0; .zw = CloudTex1
+};
+
+VS2PS_DualClouds VS_SkyDome_DualClouds(APP2VS Input)
+{
+	VS2PS_DualClouds Output;
+
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+	Output.Pos = Input.Pos;
+
+	Output.SkyTex = Input.Tex0;
+	Output.CloudTex.xy = (Input.Tex1.xy + _TexOffset.xy);
+	Output.CloudTex.zw = (Input.Tex1.xy + _TexOffset2.xy);
+
+	return Output;
 }
 
-float4 psSkyDomeFlareOcclude(VS_OUTPUT indata) : COLOR
+PS2FB PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
 {
-	float4 p = tex2D(samplerClamp, indata.Tex0);
-	return float4(0, 1, 0, p.a);
+	PS2FB Output = (PS2FB)0;
+
+	float FadeOut = GetFadeOut(Input.Pos.xyz);
+	float4 SkyDome = tex2D(SampleTex0, Input.SkyTex);
+	float4 Cloud1 = GetProceduralTiles(SampleTex1, Input.CloudTex.xy) * _CloudLerpFactors.x;
+	float4 Cloud2 = GetProceduralTiles(SampleTex2, Input.CloudTex.zw) * _CloudLerpFactors.y;
+	float4 Temp = (Cloud1 + Cloud2) * FadeOut;
+
+	Output.Color = lerp(SkyDome, Temp, Temp.a);
+
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
+
+	return Output;
+}
+
+/*
+	SkyDome with no cloud shaders
+*/
+
+struct VS2PS_NoClouds
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float2 Tex0 : TEXCOORD1;
+};
+
+VS2PS_NoClouds VS_SkyDome_NoClouds(APP2VS_NoClouds Input)
+{
+	VS2PS_NoClouds Output;
+
+	float4 ScaledPos = float4(Input.Pos.xyz, 10.0); // plo: fix for artifacts on BFO.
+	Output.HPos = mul(ScaledPos, _ViewProjMatrix);
+	Output.Pos = Input.Pos;
+
+	Output.Tex0 = Input.Tex0;
+
+	return Output;
+}
+
+PS2FB PS_SkyDome_NoClouds(VS2PS_NoClouds Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	Output.Color = tex2D(SampleTex0, Input.Tex0);
+
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
+
+	return Output;
+}
+
+PS2FB PS_SkyDome_NoClouds_Lit(VS2PS_NoClouds Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float4 SkyDome = tex2D(SampleTex0, Input.Tex0);
+	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
+
+	Output.Color = SkyDome;
+
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
+
+	return Output;
+}
+
+/*
+	SkyDome with Sun flare shaders
+*/
+
+VS2PS_NoClouds VS_SkyDome_SunFlare(APP2VS_NoClouds Input)
+{
+	VS2PS_NoClouds Output = (VS2PS_NoClouds)0;
+
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+	Output.Pos = Input.Pos;
+
+	Output.Tex0 = Input.Tex0;
+
+	return Output;
+}
+
+PS2FB PS_SkyDome_SunFlare(VS2PS_NoClouds Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float4 SkyDome = tex2D(SampleTex0, Input.Tex0);
+	Output.Color = float4(SkyDome.rgb * _FlareParams[0], 1.0);
+
+	return Output;
+}
+
+PS2FB PS_SkyDome_Flare_Occlude(VS2PS_NoClouds Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float4 Value = tex2D(SampleTex0, Input.Tex0);
+
+	Output.Color = float4(0.0, 1.0, 0.0, Value.a);
+
+	return Output;
+}
+
+#define GET_RENDERSTATES_SKY \
+	ZEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
+	ZWriteEnable = TRUE; \
+	AlphaBlendEnable = FALSE; \
+
+technique SkyDomeUnderWater
+{
+	pass Sky
+	{
+		GET_RENDERSTATES_SKY
+		VertexShader = compile vs_3_0 VS_SkyDome();
+		PixelShader = compile ps_3_0 PS_SkyDome_UnderWater();
+	}
 }
 
 technique SkyDomeNV3x
 {
-	pass sky
+	pass Sky
 	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-
- 		VertexShader = compile vs_1_1 vsSkyDome();
-		PixelShader = compile ps_1_1 psSkyDome();
+		GET_RENDERSTATES_SKY
+		VertexShader = compile vs_3_0 VS_SkyDome();
+		PixelShader = compile ps_3_0 PS_SkyDome();
 	}
 }
 
-technique SkyDomeNV3xNoClouds
+technique SkyDomeNV3xLit
 {
-	pass sky
+	pass Sky
 	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		
- 		VertexShader = compile vs_1_1 vsSkyDomeNoClouds();
-		PixelShader = compile ps_1_1 psSkyDomeNoClouds();
+		GET_RENDERSTATES_SKY
+		VertexShader = compile vs_3_0 VS_SkyDome();
+		PixelShader = compile ps_3_0 PS_SkyDome_Lit();
 	}
 }
 
 technique SkyDomeNV3xDualClouds
 {
-	pass sky
+	pass Sky
 	{
-		AlphaBlendEnable = FALSE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-			
- 		VertexShader = compile vs_1_1 vsSkyDomeDualClouds();
-		PixelShader = compile ps_1_1 psSkyDomeDualClouds();
+		GET_RENDERSTATES_SKY
+		VertexShader = compile vs_3_0 VS_SkyDome_DualClouds();
+		PixelShader = compile ps_3_0 PS_SkyDome_DualClouds();
+	}
+}
+
+technique SkyDomeNV3xNoClouds
+{
+	pass Sky
+	{
+		GET_RENDERSTATES_SKY
+		VertexShader = compile vs_3_0 VS_SkyDome_NoClouds();
+		PixelShader = compile ps_3_0 PS_SkyDome_NoClouds();
+	}
+}
+
+technique SkyDomeNV3xNoCloudsLit
+{
+	pass Sky
+	{
+		GET_RENDERSTATES_SKY
+		VertexShader = compile vs_3_0 VS_SkyDome_NoClouds();
+		PixelShader = compile ps_3_0 PS_SkyDome_NoClouds_Lit();
 	}
 }
 
 technique SkyDomeSunFlare
 {
-	pass sky
+	pass Sky
 	{
-		Zenable = FALSE;
-		ZWriteEnable = FALSE;
-		ZFunc = ALWAYS;
 		CullMode = NONE;
+		// ColorWriteEnable = 0;
+
+		ZEnable = FALSE;
+		ZFunc = ALWAYS;
+		ZWriteEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
-		FogEnable = FALSE;
-		// ColorWriteEnable = 0;
-			
- 		VertexShader = compile vs_1_1 vsSkyDomeSunFlare();
-		PixelShader = compile ps_1_1 psSkyDomeSunFlare();
+
+		VertexShader = compile vs_3_0 VS_SkyDome_SunFlare();
+		PixelShader = compile ps_3_0 PS_SkyDome_SunFlare();
+	}
+}
+
+technique SkyDomeFlareOccludeCheck
+{
+	pass Sky
+	{
+		ZEnable = TRUE;
+		ZFunc = ALWAYS;
+		ZWriteEnable = FALSE;
+
+		CullMode = NONE;
+		ColorWriteEnable = 0;
+
+		AlphaBlendEnable = TRUE;
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
+
+		AlphaTestEnable = TRUE;
+		AlphaRef = 50; // 255
+		AlphaFunc = GREATER; // LESS
+
+		VertexShader = compile vs_3_0 VS_SkyDome_SunFlare();
+		PixelShader = compile ps_3_0 PS_SkyDome_Flare_Occlude();
 	}
 }
 
 technique SkyDomeFlareOcclude
 {
-	pass sky
+	pass Sky
 	{
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESS;
+		ZWriteEnable = FALSE;
+
 		CullMode = NONE;
 		ColorWriteEnable = 0;
 
 		AlphaBlendEnable = TRUE;
-
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		AlphaTestEnable = TRUE;
-		AlphaRef = 50;
-		AlphaFunc = GREATER;
 
-		
-		// AlphaRef = 255;
-		// AlphaFunc = LESS;
-	
-		FogEnable = FALSE;
-			
- 		VertexShader = compile vs_1_1 vsSkyDomeSunFlare();
-		PixelShader = compile ps_1_1 psSkyDomeFlareOcclude();
+		AlphaTestEnable = TRUE;
+		AlphaRef = 50; // 255
+		AlphaFunc = GREATER; // LESS
+
+		VertexShader = compile vs_3_0 VS_SkyDome_SunFlare();
+		PixelShader = compile ps_3_0 PS_SkyDome_Flare_Occlude();
 	}
 }
-

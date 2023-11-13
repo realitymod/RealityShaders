@@ -1,4 +1,3 @@
-#include "shaders/dataTypes.fx"
 
 #define nbase 0x1
 #define ndetail 0x10

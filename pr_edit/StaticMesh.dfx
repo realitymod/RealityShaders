@@ -1,5 +1,4 @@
 #line 2 "StaticMesh.dfx"
-#include "shaders/datatypes.fx"
 //#include "Shaders/commonVertexLight.fx"
 #include "shaders/commonSamplers.dfx"
 #include "shaders/common.dfx"

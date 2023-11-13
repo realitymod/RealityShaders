@@ -1,6 +1,5 @@
 #define LEAF_MOVEMENT 0.04
 
-#include "shaders/dataTypes.fx"
 #include "shaders/RaCommon.fx"
  
 // lightDir * LIGHT_MUL + LIGHT_ADD

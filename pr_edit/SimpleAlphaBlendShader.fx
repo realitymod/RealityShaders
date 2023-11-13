@@ -1,91 +1,105 @@
-float4x4 mWorldViewProj : WorldViewProjection;
 
-texture basetex: TEXLAYER0
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+#endif
+
+/*
+	Description: Renders simple blendop shader
+*/
+
+uniform float4x4 _WorldViewProj : WorldViewProjection;
+
+uniform texture BaseTex: TEXLAYER0
 <
-	 string File = "aniso2.dds";
-	 string TextureType = "2D";
+	string File = "aniso2.dds";
+	string TextureType = "2D";
 >;
+
+sampler SampleBaseTex = sampler_state
+{
+	Texture = (BaseTex);
+	// Target = Texture2D;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
 
 struct APP2VS
 {
-    float4 Pos : POSITION;    
-    float2 Tex0 : TEXCOORD0;
+	float4 Pos : POSITION;
+	float2 Tex0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-    float4 HPos : POSITION;
-    float2 Tex0 : TEXCOORD0;
+	float4 HPos : POSITION;
+	float3 Tex0 : TEXCOORD0;
 };
 
-sampler diffuseSampler = sampler_state
+struct PS2FB
 {
-	Texture = <basetex>;
-	// Target = Texture2D;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-    AddressU = Wrap;
-    AddressV = Wrap;
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
-VS2PS VShader(APP2VS indata, 
-	uniform float4x4 wvp)
+VS2PS VS_Shader(APP2VS Input)
 {
-	VS2PS outdata;
- 
-	outdata.HPos = mul(float4(indata.Pos.xyz, 1.0f), wvp);
-	outdata.Tex0 = indata.Tex0;
+	VS2PS Output = (VS2PS)0;
 
-	return outdata;
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
+
+	Output.Tex0.xy = Input.Tex0;
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	return Output;
 }
 
-technique t0_States <bool Restore = true;> {
-	pass BeginStates {
-		ZEnable = true;
-		// MatsD 030903: Due to transparent isn't sorted yet. Write Z values
-		ZWriteEnable = true;
-		
-		CullMode = None;
-		AlphaBlendEnable = true;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-		// SrcBlend = SRCALPHA;
-		// DestBlend = INVSRCALPHA;
+PS2FB PS_Shader(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	Output.Color = tex2D(SampleBaseTex, Input.Tex0.xy);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
+
+	return Output;
+}
+
+technique t0_States <bool Restore = true;>
+{
+	pass BeginStates
+	{
+		ZEnable = TRUE;
+		ZWriteEnable = TRUE; // MatsD 030903: Due to transparent isn't sorted yet. Write Z values
+
+		CullMode = NONE;
+
+		AlphaBlendEnable = TRUE;
+		SrcBlend = ONE; // SRCALPHA;
+		DestBlend = ONE; // INVSRCALPHA;
 	}
-	
-	pass EndStates {
-	}
+
+	pass EndStates { }
 }
 
 technique t0
 {
-	pass p0 
-	{
-		VertexShader = compile vs_1_1 VShader(mWorldViewProj);
-
-		Sampler[0] = <diffuseSampler>;	
-
-		ColorOp[0] = SelectArg1;
-		ColorArg1[0] = Texture;
-		ColorArg2[0] = Current;
-		AlphaOp[0] = SelectArg1;
-		AlphaArg1[0] = Texture;
-
-		ColorOp[1] = Disable;
-		AlphaOp[1] = Disable;
-	}
-}
-
-/*technique marked
-{
 	pass p0
 	{
-		CullMode = NONE;
-		AlphaBlendEnable = FALSE;
-	    Lighting = TRUE;
-	
-		VertexShader = compile vs_1_1 VShader(mWorldViewProj,MaterialAmbient,MaterialDiffuse,LhtDir);
-		PixelShader = compile ps_1_1 PShaderMarked(samplebase);
+		VertexShader = compile vs_3_0 VS_Shader();
+		PixelShader = compile ps_3_0 PS_Shader();
 	}
-}*/
+}

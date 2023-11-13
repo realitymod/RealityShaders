@@ -1,125 +1,131 @@
 
-float4 alpha : BLENDALPHA;
-texture texture0: TEXLAYER0;
+/*
+	Description: Renders command-line font
+*/
+
+/*
+	[Attributes from app]
+*/
+
+uniform float4 _Alpha : BLENDALPHA;
+
+/*
+	[Textures and samplers]
+*/
+
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+	}; \
+
+uniform texture Tex0: TEXLAYER0;
+CREATE_SAMPLER(SampleTex0_Clamp, Tex0, CLAMP)
+CREATE_SAMPLER(SampleTex0_Wrap, Tex0, WRAP)
 
 struct APP2VS
 {
-    float4 HPos : POSITION;
-    float3 Col : COLOR;
-    float2 TexCoord0 : TEXCOORD0;
+	float4 HPos : POSITION;
+	float3 Color : COLOR;
+	float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-    float4 HPos : POSITION;
-    float3 Col : COLOR;
-    float2 Tex0 : TEXCOORD0;
+	float4 HPos : POSITION;
+	float3 Color : TEXCOORD0;
+	float2 TexCoord : TEXCOORD1;
 };
 
-VS2PS HPosVS(APP2VS indata)
+VS2PS VS_HPos(APP2VS Input)
 {
-	VS2PS outdata;
-	
-	outdata.HPos = indata.HPos;
-	outdata.Col = indata.Col;
- 	outdata.Tex0 = indata.TexCoord0;
- 	
-	return outdata;
+	VS2PS Output;
+	Output.HPos = Input.HPos;
+	Output.Color = saturate(Input.Color);
+	Output.TexCoord = Input.TexCoord0;
+	return Output;
 }
 
-technique Text_States <bool Restore = true;> {
-	pass BeginStates {
+float4 PS_HPos(VS2PS Input) : COLOR0
+{
+	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord);
+	float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
+	OutputColor = dot(OutputColor, NoAlpha);
+	OutputColor.rgb = OutputColor.rgb * Input.Color;
+	return OutputColor;
+}
+
+technique Text_States <bool Restore = true;>
+{
+	pass BeginStates
+	{
 		ZEnable = FALSE;
-		
 		AlphaBlendEnable = TRUE;
-// SrcBlend = INVSRCCOLOR;
-// DestBlend = SRCCOLOR;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
+		SrcBlend = SRCALPHA; // INVSRCCOLOR;
+		DestBlend = INVSRCALPHA; // SRCCOLOR;
 	}
-	
-	pass EndStates {
-	}
+
+	pass EndStates { }
 }
 
 technique Text <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_POSITION, 0,
 		0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0,
 		0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0,
-		DECLARATION_END // End macro
+		DECLARATION_END	// End macro
 	};
 >
 {
 	pass p0
-	{		
-		Texture[0] = (texture0);
-		AddressU[0] = CLAMP;
-		AddressV[0] = CLAMP;
-		MipFilter[0] = LINEAR;
-		MinFilter[0] = LINEAR;
-		MagFilter[0] = LINEAR;
-
-		VertexShader = compile vs_1_1 HPosVS();
-		PixelShader = asm 
-		{
-			ps.1.1
-			def c0, 1, 1, 1, 0
-			
-			tex t0
-			dp3 r0, t0, c0
-			mul r0.rgb, t0, v0
-		};
+	{
+		VertexShader = compile vs_3_0 VS_HPos();
+		PixelShader = compile ps_3_0 PS_HPos();
 	}
 }
 
-technique Overlay_States <bool Restore = true;> {
-	pass BeginStates {
+technique Overlay_States <bool Restore = true;>
+{
+	pass BeginStates
+	{
 		CullMode = NONE;
 		ZEnable = FALSE;
-		
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 	}
-	
-	pass EndStates {
-	}
+
+	pass EndStates { }
+}
+
+float4 PS_Overlay_HPos(VS2PS Input) : COLOR0
+{
+	float4 InputTexture0 = tex2D(SampleTex0_Wrap, Input.TexCoord);
+	return InputTexture0 * float4(1.0, 1.0, 1.0, _Alpha.a);
 }
 
 technique Overlay <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_POSITION, 0,
 		0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0,
 		0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0,
-		DECLARATION_END // End macro
+		DECLARATION_END	// End macro
 	};
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
 	pass p0
 	{
-		TextureFactor = (alpha);
-		Texture[0] = (texture0);
-		AddressU[0] = WRAP;
-		AddressV[0] = WRAP;
-		MipFilter[0] = LINEAR;
-		MinFilter[0] = LINEAR;
-		MagFilter[0] = LINEAR;
-		
-		ColorOp[0] = SELECTARG1;
-		ColorArg1[0] = TEXTURE;
-		AlphaOp[0] = MODULATE;
-		AlphaArg1[0] = TEXTURE;
-		AlphaArg2[0] = TFACTOR;
-		ColorOp[1] = DISABLE;
-		AlphaOp[1] = DISABLE;
-
-		VertexShader = compile vs_1_1 HPosVS();
-		PixelShader = NULL;
+		VertexShader = compile vs_3_0 VS_HPos();
+		PixelShader = compile ps_3_0 PS_Overlay_HPos();
 	}
 }

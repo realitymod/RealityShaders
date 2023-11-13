@@ -1,339 +1,342 @@
-#line 2 "Nametag.fx"
 
-float4x4 mWorldViewProj : WorldViewProjection;
-float fTexBlendFactor : TexBlendFactor;
-float2 vFadeoutValues : FadeOut;
-float4 vLocalEyePos : LocalEye;
+/*
+	Description: Renders icons and in-game nametags above players
+*/
 
-float4 Transformations[64] : TransformationArray;
+/*
+	[Attributes from app]
+*/
+
+uniform float4x4 _WorldViewProj : WorldViewProjection;
+uniform float _TexBlendFactor : TexBlendFactor;
+uniform float2 _FadeoutValues : FadeOut;
+uniform float4 _LocalEyePos : LocalEye;
+uniform float4 _Transformations[64] : TransformationArray;
+
 // dep: this is a suboptimal Camp EA hack; rewrite this
-float Alphas[64] : AlphaArray;
-float4 Colors[9] : ColorArray;
-float4 fAspectMul : AspectMul;
+uniform float _Alphas[64] : AlphaArray;
+uniform float4 _Colors[9] : ColorArray;
+uniform float4 _AspectMul : AspectMul;
 
-float4 fArrowMult = float4(1.05, 1.05, 1, 1);
+uniform float4 _ArrowMult = float4(1.05, 1.05, 1.0, 1.0);
+uniform float4 _ArrowTrans : ArrowTransformation;
+uniform float4 _ArrowRot : ArrowRotation; // this is a 2x2 rotation matrix [X Y] [Z W]
 
-float4 ArrowTrans : ArrowTransformation;
-float4 ArrowRot : ArrowRotation; // this is a 2x2 rotation matrix [X Y] [Z W]
+uniform float4 _IconRot : IconRotation;
+// uniform float4 _FIconRot : FIconRotation;
+uniform float2 _IconTexOffset : IconTexOffset;
+uniform float4 _IconFlashTexScaleOffset : IconFlashTexScaleOffset;
 
-float4 IconRot : IconRotation;
-// float4 FIconRot : FIconRotation;
-float2 iconTexOffset : IconTexOffset;
-float4 iconFlashTexScaleOffset : IconFlashTexScaleOffset;
+uniform int _ColorIndex1 : ColorIndex1;
+uniform int _ColorIndex2 : ColorIndex2;
 
-int colorIndex1 : ColorIndex1;
-int colorIndex2 : ColorIndex2;
+uniform float4 _HealthBarTrans : HealthBarTrans;
+uniform float _HealthValue : HealthValue;
 
-float4 HealthBarTrans : HealthBarTrans;
-float fHealthValue : HealthValue;
+uniform float _CrossFadeValue : CrossFadeValue;
+uniform float _AspectComp = 4.0 / 3.0;
 
-float crossFadeValue : CrossFadeValue;
-float fAspectComp = 4.0/3.0;
+/*
+	[Textures and samplers]
+*/
 
-texture detail0 : TEXLAYER0;
-texture detail1 : TEXLAYER1;
+uniform texture Detail0 : TEXLAYER0;
+uniform texture Detail1 : TEXLAYER1;
 
-sampler sampler0_point = sampler_state
+sampler SampleDetail0 = sampler_state
 {
-	Texture = (detail0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = POINT;
-	MagFilter = POINT;
-	MipFilter = NONE;
-};
-
-sampler sampler1_point = sampler_state
-{
-	Texture = (detail1);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = POINT;
-	MagFilter = POINT;
-	MipFilter = NONE;
-};
-
-sampler sampler0_bilin = sampler_state
-{
-	Texture = (detail0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
+	Texture = (Detail0);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
-	MipFilter = NONE;
-};
-
-sampler sampler1_bilin = sampler_state
-{
-	Texture = (detail1);
+	MipFilter = LINEAR;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
+};
+
+sampler SampleDetail1 = sampler_state
+{
+	Texture = (Detail1);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
-	MipFilter = NONE;
+	MipFilter = LINEAR;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 struct APP2VS
 {
-	float4 Pos : POSITION;    
-	float2 Tex0 : TEXCOORD0;
+	float4 Pos : POSITION;
+	float2 TexCoord0 : TEXCOORD0;
 	int4 Indices : BLENDINDICES0;
 };
 
 struct VS2PS
 {
-	float4 Pos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float2 Tex1 : TEXCOORD1;
-	float4 Col : COLOR;
+	float4 HPos : POSITION;
+	float2 TexCoord0 : TEXCOORD0;
+	float2 TexCoord1 : TEXCOORD1;
+	float4 Color0 : TEXCOORD2;
 };
 
-struct VS2PS2TEXT
+struct VS2PS_2TEX
 {
-	float4 Pos : POSITION;
-	float2 Tex0 : TEXCOORD0;
-	float2 Tex1 : TEXCOORD1;
-	float4 Col0 : COLOR0;
-	float4 Col1 : COLOR1;
+	float4 HPos : POSITION;
+	float2 TexCoord0 : TEXCOORD0;
+	float2 TexCoord1 : TEXCOORD1;
+	float4 Color0 : TEXCOORD2;
+	float4 Color1 : TEXCOORD3;
 };
 
-VS2PS vsNametag(APP2VS input)
-{
-	VS2PS output = (VS2PS)0;
+/*
+	Nametag shader
+*/
 
-	float4 indexedTrans = Transformations[input.Indices.x];
-	
-	output.Pos.xyz = input.Pos + indexedTrans;
-	output.Pos.w = 1;
-	
-	output.Tex0 = input.Tex0;
-	
-	output.Col = lerp(Colors[input.Indices.y], Colors[input.Indices.z], crossFadeValue);
-	output.Col.a = Alphas[input.Indices.x];
-	output.Col.a *= 1 - saturate(indexedTrans.w * vFadeoutValues.x + vFadeoutValues.y);
-	
-	return output;
+VS2PS VS_Nametag(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
+
+	float4 IndexedTrans = _Transformations[Input.Indices.x];
+
+	Output.HPos = float4(Input.Pos.xyz + IndexedTrans.xyz, 1.0);
+
+	Output.TexCoord0 = Input.TexCoord0;
+
+	Output.Color0 = lerp(_Colors[Input.Indices.y], _Colors[Input.Indices.z], _CrossFadeValue);
+	Output.Color0.a = _Alphas[Input.Indices.x];
+	Output.Color0.a *= 1.0 - saturate(IndexedTrans.w * _FadeoutValues.x + _FadeoutValues.y);
+	Output.Color0 = saturate(Output.Color0);
+	return Output;
 }
 
-VS2PS vsNametag_arrow(APP2VS input)
+float4 PS_Nametag(VS2PS Input) : COLOR0
 {
-	VS2PS output = (VS2PS)0;
-
-
-	// does a 2x2 matrix 2d rotation of the local vertex coordinates in screen space
-	output.Pos.x = dot(input.Pos, float3(ArrowRot.x, ArrowRot.y, 0));
-	output.Pos.y = dot(input.Pos, float3(ArrowRot.z, ArrowRot.w, 0));
-	output.Pos.z = 0;
-	output.Pos.xyz *= fAspectMul;
-	output.Pos.xyz += ArrowTrans * fArrowMult;
-	output.Pos.w = 1;
-
-	output.Tex0 = input.Tex0;
-
-	output.Col = Colors[input.Indices.y];
-	output.Col.a = 0.5;
-
-	return output;
-}
-
-VS2PS2TEXT vsNametag_healthbar(APP2VS input)
-{
-	VS2PS2TEXT output = (VS2PS2TEXT)0;
-
-	output.Pos.xyz = input.Pos + HealthBarTrans;
-	output.Pos.w = 1;
-	
-	output.Tex0 = input.Tex0;
-	output.Tex1 = input.Tex0;
-	
-	output.Col0.rgb = input.Tex0.x;
-	output.Col0.a = 1 - saturate(HealthBarTrans.w * vFadeoutValues.x + vFadeoutValues.y);
-
-	float4 Col0 = Colors[colorIndex1];
-	float4 Col1 = Colors[colorIndex2];
-	output.Col1 = lerp(Col0, Col1, crossFadeValue);
-	
-	return output;
-}
-
-VS2PS vsNametag_vehicleIcons(APP2VS input)
-{
-	VS2PS output = (VS2PS)0;
-
-	float3 tempPos = input.Pos;
-	
-	// since indata is aspectcompensated we need to compensate for that
-	tempPos.y /= fAspectComp;
-	
-	float3 rotPos;
-	rotPos.x = dot(tempPos, float3(IconRot.x, IconRot.z, 0));
-	rotPos.y = dot(tempPos, float3(IconRot.y, IconRot.w, 0));
-	rotPos.z = input.Pos.z;
-	
-	// fix aspect again
-	rotPos.y *= fAspectComp;
-
-	output.Pos.xyz = rotPos + HealthBarTrans;
-	output.Pos.w = 1;
-	
-	output.Tex0 = input.Tex0 + iconTexOffset;
-
-	output.Tex1 = input.Tex0 * iconFlashTexScaleOffset.xy + iconFlashTexScaleOffset.zw;
-
-	// counter-rotate tex1 (flash icon)
-// float2 tempUV = input.Tex0;
-// tempUV -= 0.5;
-// float2 rotUV;
-// rotUV.x = dot(tempUV, float2(FIconRot.x, FIconRot.z));
-// rotUV.y = dot(tempUV, float2(FIconRot.y, FIconRot.w));
-// rotUV += 0.5;
-// output.Tex1 = rotUV * iconFlashTexScaleOffset.xy + iconFlashTexScaleOffset.zw;
-
-	float4 Col0 = Colors[colorIndex1];
-	float4 Col1 = Colors[colorIndex2];
-	
-	output.Col = lerp(Col0, Col1, crossFadeValue);
-	output.Col.a *= 1 - saturate(HealthBarTrans.w * vFadeoutValues.x + vFadeoutValues.y);
-		
-	return output;
-}
-
-float4 psNametag_icon(VS2PS indata) : COLOR0
-{
-	float4 tx0 = tex2D(sampler0_bilin, indata.Tex0);
-	float4 tx1 = tex2D(sampler1_bilin, indata.Tex1);
-	return lerp(tx0, tx1, crossFadeValue) * indata.Col;
-}
-
-float4 psNametag(VS2PS indata) : COLOR0
-{
-	float4 tx0 = tex2D(sampler0_point, indata.Tex0);
-	return tx0 * indata.Col;
-}
-
-float4 psNametag_arrow(VS2PS indata) : COLOR0
-{
-	float4 tx0 = tex2D(sampler0_bilin, indata.Tex0);
-	float4 result = tx0 * indata.Col;
-	return result;
-}
-
-float4 psNametag_healthbar(VS2PS2TEXT indata) : COLOR0
-{
-	float4 tx0 = tex2D(sampler0_point, indata.Tex0);
-	float4 tx1 = tex2D(sampler1_point, indata.Tex1);
-	return lerp(tx0, tx1, fHealthValue<indata.Col0.b) * indata.Col0.a * indata.Col1;
+	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
+	return Tex0 * Input.Color0;
 }
 
 technique nametag
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_BLENDINDICES, 0 },
-		DECLARATION_END // End macro
+		DECLARATION_END	// End macro
 	};
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
 	pass p0
 	{
+		CullMode = NONE;
+		ZEnable = FALSE;
+		ZWriteEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		CullMode = NONE;
-		ZEnable = FALSE;
-		ZWriteEnable = FALSE;
-		
-		VertexShader = compile vs_1_1 vsNametag();
-		PixelShader = compile ps_1_1 psNametag();
+		VertexShader = compile vs_3_0 VS_Nametag();
+		PixelShader = compile ps_3_0 PS_Nametag();
 	}
+}
+
+/*
+	Nametag arrow shader
+*/
+
+VS2PS VS_Nametag_Arrow(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
+
+	// Does a 2x2 matrix 2d rotation of the local vertex coordinates in screen space
+	Output.HPos.x = dot(Input.Pos.xy, _ArrowRot.xy);
+	Output.HPos.y = dot(Input.Pos.xy, _ArrowRot.zw);
+	Output.HPos.z = 0.0;
+	Output.HPos.xyz *= _AspectMul;
+	Output.HPos.xyz += _ArrowTrans * _ArrowMult;
+	Output.HPos.w = 1.0;
+
+	Output.TexCoord0 = Input.TexCoord0;
+
+	Output.Color0 = _Colors[Input.Indices.y];
+	Output.Color0.a = 0.5;
+	Output.Color0 = saturate(Output.Color0);
+	return Output;
+}
+
+float4 PS_Nametag_Arrow(VS2PS Input) : COLOR0
+{
+	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
+	return Tex0 * Input.Color0;
 }
 
 technique nametag_arrow
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_BLENDINDICES, 0 },
-		DECLARATION_END // End macro
+		DECLARATION_END	// End macro
 	};
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
 	pass p0
 	{
+		CullMode = NONE;
+		ZEnable = FALSE;
+		ZWriteEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		CullMode = NONE;
-		ZEnable = FALSE;
-		ZWriteEnable = FALSE;
-	
-		VertexShader = compile vs_1_1 vsNametag_arrow();
-		PixelShader = compile ps_1_1 psNametag_arrow();
+		VertexShader = compile vs_3_0 VS_Nametag_Arrow();
+		PixelShader = compile ps_3_0 PS_Nametag_Arrow();
 	}
 }
 
+/*
+	Nametag healthbar shader
+*/
+
+VS2PS_2TEX VS_Nametag_Healthbar(APP2VS Input)
+{
+	VS2PS_2TEX Output = (VS2PS_2TEX)0;
+
+	Output.HPos = float4(Input.Pos.xyz + _HealthBarTrans.xyz, 1.0);
+
+	Output.TexCoord0 = Input.TexCoord0;
+	Output.TexCoord1 = Input.TexCoord0;
+
+	Output.Color0.rgb = Input.TexCoord0.x;
+	Output.Color0.a = 1.0 - saturate(_HealthBarTrans.w * _FadeoutValues.x + _FadeoutValues.y);
+	float4 Color0 = _Colors[_ColorIndex1];
+	float4 Color1 = _Colors[_ColorIndex2];
+	Output.Color1 = lerp(Color0, Color1, _CrossFadeValue);
+
+	Output.Color0 = saturate(Output.Color0);
+	Output.Color1 = saturate(Output.Color1);
+
+	return Output;
+}
+
+float4 PS_Nametag_Healthbar(VS2PS_2TEX Input) : COLOR0
+{
+	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
+	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
+	return lerp(Tex0, Tex1, _HealthValue < Input.Color0.b) * Input.Color0.a * Input.Color1;
+}
 
 technique nametag_healthbar
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_BLENDINDICES, 0 },
-		DECLARATION_END // End macro
+		DECLARATION_END	// End macro
 	};
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
 	pass p0
 	{
+		CullMode = NONE;
+		ZEnable = FALSE;
+		ZWriteEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		CullMode = NONE;
-		ZEnable = FALSE;
-		ZWriteEnable = FALSE;
-		
-		VertexShader = compile vs_1_1 vsNametag_healthbar();
-		PixelShader = compile ps_1_1 psNametag_healthbar();
+		VertexShader = compile vs_3_0 VS_Nametag_Healthbar();
+		PixelShader = compile ps_3_0 PS_Nametag_Healthbar();
 	}
-}	
+}
+
+/*
+	Nametag vehicle icon shader
+*/
+
+VS2PS VS_Nametag_Vehicle_Icons(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
+
+	float3 TempPos = Input.Pos;
+
+	// Since Input is aspect-compensated we need to compensate for that
+	TempPos.y /= _AspectComp;
+
+	// Does a 2x2 matrix 2d rotation
+	float3 RotPos;
+	RotPos.x = dot(TempPos.xy, _IconRot.xz);
+	RotPos.y = dot(TempPos.xy, _IconRot.yw);
+	RotPos.z = Input.Pos.z;
+
+	// Fix aspect again
+	RotPos.y *= _AspectComp;
+
+	Output.HPos = float4(RotPos.xyz + _HealthBarTrans.xyz, 1.0);
+
+	Output.TexCoord0 = Input.TexCoord0 + _IconTexOffset;
+	Output.TexCoord1 = Input.TexCoord0 * _IconFlashTexScaleOffset.xy + _IconFlashTexScaleOffset.zw;
+
+	// Counter-rotate tex1 (flash icon)
+	// float2 TempUV = Input.TexCoord0;
+	// TempUV -= 0.5;
+	// float2 RotUV;
+	// RotUV.x = dot(TempUV, _FIconRot.xz);
+	// RotUV.y = dot(TempUV, _FIconRot.yw);
+	// RotUV += 0.5;
+	// Output.TexCoord1 = RotUV * _IconFlashTexScaleOffset.xy + _IconFlashTexScaleOffset.zw;
+
+	float4 Color0 = _Colors[_ColorIndex1];
+	float4 Color1 = _Colors[_ColorIndex2];
+
+	Output.Color0 = lerp(Color0, Color1, _CrossFadeValue);
+	Output.Color0.a *= 1.0 - saturate(_HealthBarTrans.w * _FadeoutValues.x + _FadeoutValues.y);
+	Output.Color0 = saturate(Output.Color0);
+
+	return Output;
+}
+
+float4 PS_Nametag_Vehicle_Icons(VS2PS Input) : COLOR0
+{
+	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
+	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
+	return lerp(Tex0, Tex1, _CrossFadeValue) * Input.Color0;
+}
 
 technique nametag_vehicleIcons
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_BLENDINDICES, 0 },
-		DECLARATION_END // End macro
+		DECLARATION_END	// End macro
 	};
 	int TechniqueStates = D3DXFX_DONOTSAVESHADERSTATE;
 >
 {
 	pass p0
 	{
+		CullMode = NONE;
+		ZEnable = FALSE;
+		ZWriteEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		CullMode = NONE;
-		ZEnable = FALSE;
-		ZWriteEnable = FALSE;
-		
-		VertexShader = compile vs_1_1 vsNametag_vehicleIcons();
-		PixelShader = compile ps_1_4 psNametag_icon();
+		VertexShader = compile vs_3_0 VS_Nametag_Vehicle_Icons();
+		PixelShader = compile ps_3_0 PS_Nametag_Vehicle_Icons();
 	}
-}	
+}

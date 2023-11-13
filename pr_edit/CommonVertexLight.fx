@@ -1,5 +1,3 @@
-//#include "shaders/datatypes.fx"
-
 struct PointLightData
 {
 	float3 pos;

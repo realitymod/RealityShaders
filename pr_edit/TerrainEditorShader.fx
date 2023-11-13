@@ -1164,9 +1164,7 @@ technique EditorHemimap
 	}
 	
 }
-//
 // -------------------  Lightmap generation techniques 
-//
 float4x4 vSETTransXZ : SETTRANSXZ;
 
 

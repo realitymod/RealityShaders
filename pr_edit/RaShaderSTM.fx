@@ -67,9 +67,7 @@ struct VS_IN
 	float4 TexSets[NUM_TEXSETS] : TEXCOORD0;
 };
 
-//
 // setup interpolators
-//
 #ifdef PERPIXEL
 	#define __LVEC_INTER 0
 	#define __EYEVEC_INTER 1
@@ -142,9 +140,7 @@ float3 getVectorTo(float3 vertexPos, float3 camPos)
 	return camPos - vertexPos;
 }
 
-//
 // common vertex shader methods
-//
 VS_OUT 
 vsStaticMesh(VS_IN indata)
 {
@@ -549,6 +545,8 @@ psStaticMesh(VS_OUT indata) : COLOR
 		#endif // if _USESPECULAR_
 	#endif // if PERPIXEL
 #endif // if _POINTLIGHT_
+
+	FinalColor.rgb = float3(0.0, 1.0, 0.0);
 
 	return FinalColor;
 };

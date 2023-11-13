@@ -1,6 +1,5 @@
 #line 2 "TreeMesh.fx"
 
-#include "shaders/datatypes.fx"
 
 float4x4 mvpMatrix : WorldViewProjection;// : register(vs_1_1, c0);  
 float4x4 worldIMatrix : WorldI;// : register(vs_1_1, c4);

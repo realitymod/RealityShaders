@@ -1,6 +1,4 @@
-//
 // ZOnlyShader
-//
 
 
 string reqVertexElement[] = {

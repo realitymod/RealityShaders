@@ -1,4 +1,3 @@
-#include "shaders/dataTypes.fx"
 
 // common StaticMesh samplers
 
