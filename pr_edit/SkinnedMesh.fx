@@ -1944,7 +1944,7 @@ float4 psShadowMapNV(VS2PS_ShadowMap indata) : COLOR
 
 technique DrawShadowMapNV
 {
-	pass directionalspot
+	pass DirectionalSpot
 	{
 		ColorWriteEnable = 0;
 		
@@ -1959,7 +1959,7 @@ technique DrawShadowMapNV
 		VertexShader = compile vs_1_1 vsShadowMap();
 		PixelShader = compile ps_1_1 psShadowMapNV();
 	}
-	pass directionalspotalpha
+	pass DirectionalSpotAlpha
 	{
 		ColorWriteEnable = 0;
 
@@ -1976,7 +1976,7 @@ technique DrawShadowMapNV
 		VertexShader = compile vs_1_1 vsShadowMapAlpha();
 		PixelShader = compile ps_1_1 psShadowMapAlphaNV();
 	}
-	pass point
+	pass Point_
 	{
 		ColorWriteEnable = 0;
 		
@@ -1994,7 +1994,7 @@ technique DrawShadowMapNV
 
 technique DrawShadowMap
 {
-	pass directionalspot
+	pass DirectionalSpot
 	{
 		AlphaBlendEnable = FALSE;
 		ZEnable = TRUE;
@@ -2007,7 +2007,7 @@ technique DrawShadowMap
 		VertexShader = compile vs_1_1 vsShadowMap();
 		PixelShader = compile PS2_EXT psShadowMap();
 	}
-	pass directionalspotalpha
+	pass DirectionalSpotAlpha
 	{
 		AlphaBlendEnable = FALSE;
 		ZEnable = TRUE;
@@ -2020,7 +2020,7 @@ technique DrawShadowMap
 		VertexShader = compile vs_1_1 vsShadowMapAlpha();
 		PixelShader = compile PS2_EXT psShadowMapAlpha();
 	}
-	pass point
+	pass Point_
 	{
 		AlphaBlendEnable = FALSE;
 		ZEnable = TRUE;
