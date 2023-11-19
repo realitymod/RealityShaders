@@ -138,19 +138,23 @@ float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR0
 	float2 Tex = Input.TexCoord0 - 0.5;
 	float AspectRatio = GetAspectRatio(GetScreenSize(Input.TexCoord0).yx);
 
-	// Get darkening mask
-	float ColorMask = saturate(smoothstep(0.0, 1.0, distance(Tex, 0.0)));
-	float3 Color = tex2D(SampleTex0_Aniso, Input.TexCoord0).rgb;
-	Color = lerp(Color, 0.0, ColorMask);
-
 	// Get blur mask
 	float Distance = length(Tex * float2(AspectRatio, 1.0));
 	float EdgeAA = fwidth(Distance);
 	float Edge1 = _BlurStrength / 1000.0; // default: 0.2
 	float Edge2 = frac(_BlurStrength); // default: 0.25
-	float MainMask = saturate(smoothstep(Edge1 - EdgeAA, Edge2, Distance));
+	float BlendMask = saturate(smoothstep(Edge1 - EdgeAA, Edge2, Distance));
 
-	return float4(Color.rgb, MainMask); // Alpha (.a) is the mask to be composited in the pixel shader's blend operation
+	// Get focus mask
+	float FocusSmooth = saturate(smoothstep(0.0, 1.0, distance(Tex, 0.0)));
+	float FocusMask = lerp(0.0, 1.0, FocusSmooth);
+
+	// Composite
+	float3 Color = tex2D(SampleTex0_Aniso, Input.TexCoord0).rgb;
+	float3 OutputColor = lerp(Color, 0.0, FocusMask);
+
+	// Alpha (.a) is the mask to be composited in the pixel shader's blend operation
+	return float4(OutputColor, BlendMask);
 }
 
 float4 PS_TR_PassthroughBilinear(VS2PS_Blit Input) : COLOR0
