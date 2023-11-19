@@ -161,7 +161,7 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 	float2 Tex = (Input.Tex0 * float2(2.0, 1.0)) - 1.0;
 	Tex *= LerpBias; // gradually remove mask overtime
 	float2 Edge = max(abs(Tex) - (1.0 / 5.0), 0.0);
-	float Mask = saturate(smoothstep(0.0, 1.0, length(Edge)));
+	float Mask = saturate(length(Edge));
 
 	// Composite final product
 	float4 OutputColor = lerp(Color, float4(0.0, 0.0, 0.0, 1.0), Mask);
