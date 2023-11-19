@@ -133,8 +133,8 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float3 TerrainSunColor = _SunColor * 2.0;
 
 	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
-	float3 TerrainColor = tex2D(SampleTerrainColorMap, Input.Tex0.zw);
-	float3 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
+	float4 TerrainColor = tex2D(SampleTerrainColorMap, Input.Tex0.zw);
+	float4 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
@@ -158,7 +158,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	TerrainLight += Lights;
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
+	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight;
 	OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
 
 	Output.Color = OutputColor;
