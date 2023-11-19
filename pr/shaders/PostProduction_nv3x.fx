@@ -144,11 +144,8 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
+float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 {
-	// Get fragment data
-	float2 FragPos = Pos;
-
 	// Modify uniform data
 	float SatLerpBias = saturate(_BackBufferLerpBias);
 	float LerpBias = saturate(smoothstep(0.0, 0.5, SatLerpBias));
@@ -157,7 +154,7 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
 	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, FragPos / 4.0, Input.Tex0, SpreadFactor);
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor);
 
 	// Get mask coordinates
 	float2 MaskTexPeak = (float2(1.0, 1.0) * float2(2.0, 1.0)) - 1.0;
