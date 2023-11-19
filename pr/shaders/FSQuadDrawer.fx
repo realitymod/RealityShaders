@@ -148,8 +148,7 @@ float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR0
 
 	// Get focus mask
 	float Focus = length(max(abs(Tex2) - 0.5, 0.0));
-	float FocusSmooth = saturate(smoothstep(0.0, 1.0, Focus));
-	float FocusMask = lerp(0.0, 1.0, FocusSmooth);
+	float FocusMask = saturate(smoothstep(0.0, 1.0, Focus));
 
 	// Composite
 	float3 Color = tex2D(SampleTex0_Aniso, Input.TexCoord0).rgb;
