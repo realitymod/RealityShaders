@@ -146,8 +146,10 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 
 float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 {
-	// Get texture data
+	// Get fragment data
 	float2 FragPos = Pos;
+
+	// Modify uniform data
 	float SatLerpBias = saturate(_BackBufferLerpBias);
 	float LerpBias = saturate(smoothstep(0.0, 0.5, SatLerpBias));
 
@@ -157,14 +159,19 @@ float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
 	SpreadFactor *= LerpBias;
 	float4 Color = GetSpiralBlur(SampleTex0_Mirror, FragPos / 4.0, Input.Tex0, SpreadFactor);
 
+	// Get mask coordinates
+	float2 MaskTexPeak = (float2(1.0, 1.0) * float2(2.0, 1.0)) - 1.0;
+	float2 MaskTex = ((Input.Tex0) * float2(2.0, 1.0)) - 1.0;
+
 	// Get SDF mask that darkens the left, right, and top edges
-	float2 Tex = (Input.Tex0 * float2(2.0, 1.0)) - 1.0;
-	Tex *= LerpBias; // gradually remove mask overtime
-	float2 Edge = max(abs(Tex) - (1.0 / 5.0), 0.0);
-	float Mask = saturate(length(Edge));
+	float HalfValue = 0.4;
+	float FocusPeak = length(MaskTexPeak - (float2)HalfValue);
+	float FocusMain = length(max(abs(MaskTex) - (float2)HalfValue, 0.0));
+	float FocusMask = saturate(smoothstep(0.0, FocusPeak, FocusMain));
 
 	// Composite final product
-	float4 OutputColor = lerp(Color, float4(0.0, 0.0, 0.0, 1.0), Mask);
+	float3 OutputColor = lerp(Color.rgb, 0.0, FocusMask);
+
 	return float4(OutputColor.rgb, LerpBias);
 }
 
