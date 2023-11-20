@@ -195,12 +195,12 @@
 
 	float2 GetPixelSize(float2 Tex)
 	{
-		return abs(float2(ddx(Tex.x), ddy(Tex.y)));
+		return fwidth(Tex);
 	}
 
 	int2 GetScreenSize(float2 Tex)
 	{
-		return 1.0 / GetPixelSize(Tex);
+		return max(1.0 / fwidth(Tex), 0.0);
 	}
 
 	float GetAspectRatio(float2 ScreenSize)

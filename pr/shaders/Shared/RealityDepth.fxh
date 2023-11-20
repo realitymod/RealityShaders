@@ -18,7 +18,7 @@
 	*/
 	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = -0.001, uniform float Bias = -0.003)
 	{
-		float M = max(abs(ddx(Depth)), abs(ddy(Depth)));
+		float M = fwidth(Depth);
 		return Depth + (M * SlopeScale) + Bias;
 	}
 
