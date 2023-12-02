@@ -279,10 +279,10 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	// Prevents non-detailed bundledmesh from looking shiny
 	#if _HASNORMALMAP_
 		float Gloss = NormalMap.a;
-		ColorPair Light = ComputeLights(NormalMap.xyz, LightDir, ViewDir, false, SpecularPower);
+		ColorPair Light = ComputeLights(NormalMap.xyz, LightDir, ViewDir, SpecularPower);
 	#else
 		float Gloss = 0.0;
-		ColorPair Light = ComputeLights(float3(0.0, 0.0, 1.0), LightDir, ViewDir, false, SpecularPower);
+		ColorPair Light = ComputeLights(float3(0.0, 0.0, 1.0), LightDir, ViewDir, SpecularPower);
 	#endif
 
 	float4 OutputColor = 1.0;

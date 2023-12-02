@@ -223,7 +223,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	#endif
 
 	// Calculate world-space, per-vertex lighting
-	ColorPair Lights = ComputeLights(WS.Normal, WS.LightDir, WS.ViewDir, true, 1.0);
+	ColorPair Lights = ComputeLights(WS.Normal, WS.LightDir, WS.ViewDir, 1.0);
 	Output.Tex1.x = Lights.Diffuse;
 	Output.Tex1.y = Lights.Specular;
 

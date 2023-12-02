@@ -318,7 +318,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		const float Attenuation = 1.0;
 	#endif
 
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, false, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 LightColor = Lights[0].color.rgb * TotalLights;
 	float3 DiffuseRGB = Light.Diffuse * LightColor;
