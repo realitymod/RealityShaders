@@ -169,7 +169,7 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	#endif
 
 	// Get diffuse lighting
-	float3 Diffuse = ComputeLambert(WorldNormal, WorldLightDir) * Lights[0].color;
+	float3 Diffuse = GetDot(WorldNormal, WorldLightDir) * Lights[0].color;
 	#if _HASSHADOW_
 		float Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#else

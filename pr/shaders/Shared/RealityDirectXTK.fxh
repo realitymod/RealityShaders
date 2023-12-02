@@ -53,28 +53,44 @@
 		float Specular;
 	};
 
+	float GetDot
+	(
+		float3 Vector1, float3 Vector2,
+		uniform bool ScaleProduct = false, uniform bool ClampProduct = true
+	)
+	{
+		float Output = dot(Vector1, Vector2);
+
+		if (ScaleProduct == true)
+		{
+			Output = (Output * 0.5) + 0.5;
+		}
+
+		if (ClampProduct == true)
+		{
+			Output = saturate(Output);
+		}
+
+		return Output;
+	}
+
 	ColorPair ComputeLights
 	(
 		float3 Normal, float3 LightDir, float3 ViewDir,
-		uniform float SpecPower = 32.0, uniform bool NormSpec = false
+		uniform bool ScaleDotNL = false, uniform float SpecPower = 32.0
 	)
 	{
 		ColorPair Output = (ColorPair)0;
 
 		float3 HalfVec = normalize(LightDir + ViewDir);
-		float DotNL = saturate(dot(Normal, LightDir));
-		float DotNH = saturate(dot(Normal, HalfVec));
+		float DotNL = GetDot(Normal, LightDir, ScaleDotNL);
+		float DotNH = GetDot(Normal, HalfVec);
 		float ZeroNL = step(0.0, DotNL);
+		float N = (SpecPower + 8.0) / 8.0;
 
 		Output.Diffuse = DotNL * ZeroNL;
-		float Cons = (NormSpec) ? (SpecPower + 8.0) / 8.0 : 1.0;
-		Output.Specular = Cons * pow(abs(DotNH * ZeroNL), SpecPower) * DotNL;
+		Output.Specular = N * pow(abs(DotNH * ZeroNL), SpecPower) * DotNL;
 		return Output;
-	}
-
-	float ComputeLambert(float3 Normal, float3 LightDir)
-	{
-		return saturate(dot(Normal, LightDir));
 	}
 
 	float ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewDir)

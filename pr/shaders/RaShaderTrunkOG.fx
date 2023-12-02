@@ -127,7 +127,7 @@ PS2FB PS_TrunkOG(VS2PS Input)
 
 	// Get diffuse lighting
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy) * 2.0;
-	float DotNL = ComputeLambert(WorldNormal, WorldLightDir);
+	float DotNL = GetDot(WorldNormal, WorldLightDir);
 
 	float3 Color = (DotNL * LodScale) * (Lights[0].color * LodScale);
 	Color += (OverGrowthAmbient.rgb * LodScale);

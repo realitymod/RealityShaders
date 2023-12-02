@@ -318,10 +318,11 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		const float Attenuation = 1.0;
 	#endif
 
-	float3 LightFactors = Attenuation * (HemiLight * Shadow * ShadowOcc);
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
-	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * LightFactors;
-	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color.rgb) * LightFactors;
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, false, SpecularPower);
+	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
+	float3 LightColor = Lights[0].color.rgb * TotalLights;
+	float3 DiffuseRGB = Light.Diffuse * LightColor;
+	float3 SpecularRGB = (Light.Specular * Gloss) * LightColor;
 
 	// There is no Gloss map, so alpha means transparency
 	#if _POINTLIGHT_ && !_HASCOLORMAPGLOSS_
@@ -334,7 +335,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		SpecularRGB = 0.0;
 	#endif
 	float4 OutputColor = 1.0;
-	OutputColor.rgb = ((ColorMap.rgb * (Ambient + DiffuseRGB)) + SpecularRGB) * GI.rgb;
+	OutputColor.rgb = (ColorMap.rgb * (Ambient + DiffuseRGB + SpecularRGB)) * GI.rgb;
 
 	/*
 		Calculate fogging and other occluders

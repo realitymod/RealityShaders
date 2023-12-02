@@ -270,7 +270,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	float3 WorldNormal = GetNormalMap(Input, TanViewDir, WorldTBN);
 
 	// Prepare lighting data
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, false, SpecularPower);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color);
 	float3 SpecularRGB = (Light.Specular * Gloss) * Lights[0].color;
 
@@ -299,7 +299,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		DiffuseRGB += (Lightmap.r * SinglePointColor);
 		SpecularRGB *= Lightmap.g;
 
-		OutputColor.rgb = (ColorMap.rgb * (DiffuseRGB * 2.0)) + SpecularRGB;
+		OutputColor.rgb = ColorMap.rgb * ((DiffuseRGB * 2.0) + SpecularRGB);
 	#endif
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);

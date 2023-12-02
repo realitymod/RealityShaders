@@ -4,11 +4,13 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
@@ -125,6 +127,8 @@ struct WorldSpace
 	float3 Pos;
 	float3 LightVec;
 	float3 LightDir;
+	float3 ViewDir;
+	float3 HalfVec;
 	float3 Normal;
 };
 
@@ -132,9 +136,10 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float4 Tex0 : TEXCOORD1;
+	float3 Tex0 : TEXCOORD1;
+	float2 Tex1 : TEXCOORD2;
 	#if _HASSHADOW_
-		float4 TexShadow : TEXCOORD2;
+		float4 TexShadow : TEXCOORD3;
 	#endif
 };
 
@@ -170,7 +175,8 @@ WorldSpace GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 
 	Output.LightVec = GetWorldLightVec(Output.Pos);
 	Output.LightDir = normalize(Output.LightVec);
-
+	Output.ViewDir = normalize(WorldSpaceCamPos.xyz - Output.Pos);
+	Output.HalfVec = normalize(Output.LightDir + Output.ViewDir);
 	Output.Normal = GetWorldNormal(ObjectNormal);
 
 	return Output;
@@ -200,6 +206,13 @@ VS2PS VS_Leaf(APP2VS Input)
 		Output.Tex0.xy *= TexUnpack;
 	#endif
 
+	// Calculate the LOD scale for far-away leaf objects
+	#if defined(OVERGROWTH)
+		Output.Tex0.z = Input.Pos.w / 32767.0;
+	#else
+		Output.Tex0.z = 1.0;
+	#endif
+
 	// Transform our object-space vertex position and normal into world-space
 	WorldSpace WS = GetWorldSpaceData(Input.Pos.xyz, Input.Normal);
 
@@ -210,15 +223,9 @@ VS2PS VS_Leaf(APP2VS Input)
 	#endif
 
 	// Calculate world-space, per-vertex lighting
-	Output.Tex0.z = dot(WS.Normal, WS.LightDir);
-	Output.Tex0.z = saturate((Output.Tex0.z * 0.5) + 0.5);
-
-	// Calculate the LOD scale for far-away leaf objects
-	#if defined(OVERGROWTH)
-		Output.Tex0.w = Input.Pos.w / 32767.0;
-	#else
-		Output.Tex0.w = 1.0;
-	#endif
+	ColorPair Lights = ComputeLights(WS.Normal, WS.LightDir, WS.ViewDir, true, 1.0);
+	Output.Tex1.x = Lights.Diffuse;
+	Output.Tex1.y = Lights.Specular;
 
 	#if _HASSHADOW_
 		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
@@ -231,8 +238,9 @@ PS2FB PS_Leaf(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float DotNL = Input.Tex0.z;
-	float LodScale = Input.Tex0.w;
+	float DotNL = Input.Tex1.x;
+	float DotNH = Input.Tex1.y;
+	float LodScale = Input.Tex0.z;
 	float3 WorldPos = Input.Pos.xyz;
 
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
@@ -243,11 +251,12 @@ PS2FB PS_Leaf(VS2PS Input)
 	#endif
 
 	float3 Ambient = OverGrowthAmbient.rgb * LodScale;
-	float3 Diffuse = (DotNL * LodScale) * (Lights[0].color * LodScale);
-	float3 VertexColor = Ambient + (Diffuse * Shadow.rgb);
+	float3 LightColor = (Lights[0].color * LodScale) * Shadow;
+	float3 Diffuse = (DotNL * LodScale) * LightColor;
+	float3 Specular = (DotNH * LodScale) * LightColor;
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = DiffuseMap.rgb * VertexColor;
+	OutputColor.rgb = DiffuseMap.rgb * (Ambient + Diffuse + Specular);
 	OutputColor.a = (DiffuseMap.a * 2.0) * Transparency;
 	#if defined(OVERGROWTH) && HASALPHA2MASK
 		OutputColor.a *= (DiffuseMap.a * 2.0);

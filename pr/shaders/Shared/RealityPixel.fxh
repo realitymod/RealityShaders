@@ -38,7 +38,7 @@
 
 	float GetHash1(float2 P, float Bias)
 	{
-		float3 P3  = frac(P.xyx * 0.1031);
+		float3 P3 = frac(P.xyx * 0.1031);
 		P3 += dot(P3, P3.yzx + 33.33);
 		return frac(((P3.x + P3.y) * P3.z) + Bias);
 	}

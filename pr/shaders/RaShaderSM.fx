@@ -279,17 +279,18 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	// Prevents non-detailed bundledmesh from looking shiny
 	#if _HASNORMALMAP_
 		float Gloss = NormalMap.a;
-		ColorPair Light = ComputeLights(NormalMap.xyz, LightDir, ViewDir, SpecularPower);
+		ColorPair Light = ComputeLights(NormalMap.xyz, LightDir, ViewDir, false, SpecularPower);
 	#else
 		float Gloss = 0.0;
-		ColorPair Light = ComputeLights(float3(0.0, 0.0, 1.0), LightDir, ViewDir, SpecularPower);
+		ColorPair Light = ComputeLights(float3(0.0, 0.0, 1.0), LightDir, ViewDir, false, SpecularPower);
 	#endif
 
 	float4 OutputColor = 1.0;
-	float LightFactors = Attenuation * (HemiLight * Shadow * ShadowOcc);
-	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * LightFactors;
-	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].color.rgb) * LightFactors;
-	OutputColor.rgb = (ColorMap.rgb * (Ambient + DiffuseRGB)) + SpecularRGB;
+	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
+	float3 LightColor = Lights[0].color.rgb * TotalLights;
+	float3 DiffuseRGB = Light.Diffuse * LightColor;
+	float3 SpecularRGB = (Light.Specular * Gloss) * LightColor;
+	OutputColor.rgb = ColorMap.rgb * (Ambient + DiffuseRGB + SpecularRGB);
 	OutputColor.a = ColorMap.a * Transparency.a;
 
 	// Thermals
