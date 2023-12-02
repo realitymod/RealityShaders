@@ -76,8 +76,8 @@
 
 	ColorPair ComputeLights
 	(
-		float3 Normal, float3 LightDir, float3 ViewDir,
-		uniform bool UseHalfLambert = true, uniform float SpecPower = 32.0, uniform bool Normalized = false
+		float3 Normal, float3 LightDir, float3 ViewDir, uniform float SpecPower = 32.0,
+		uniform bool UseHalfLambert = true, uniform bool Normalized = false
 	)
 	{
 		ColorPair Output = (ColorPair)0;
