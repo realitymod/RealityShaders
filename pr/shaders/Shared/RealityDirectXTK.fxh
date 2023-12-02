@@ -74,22 +74,29 @@
 		return Output;
 	}
 
+	/*
+		Blinn-Phong light generator using the Half-Lambert technique
+		---
+		https://developer.valvesoftware.com/wiki/Half_Lambert
+	*/
+
 	ColorPair ComputeLights
 	(
-		float3 Normal, float3 LightDir, float3 ViewDir, uniform float SpecPower = 32.0,
-		uniform bool UseHalfLambert = true, uniform bool Normalized = false
+		float3 Normal, float3 LightDir, float3 ViewDir,
+		uniform float SpecPower = 32.0, uniform bool Normalized = false
 	)
 	{
 		ColorPair Output = (ColorPair)0;
 
 		float3 HalfVec = normalize(LightDir + ViewDir);
-		float DotNL = GetDot(Normal, LightDir, UseHalfLambert, true);
 		float DotNH = GetDot(Normal, HalfVec, false, true);
-		float ZeroNL = step(0.0, DotNL);
+		float DotNL = GetDot(Normal, LightDir, true, true);
+		float HalfDotNL = saturate(DotNL * DotNL);
+		float ZeroNL = step(0.0, HalfDotNL);
 		float N = (Normalized) ? (SpecPower + 8.0) / 8.0 : 1.0;
 
-		Output.Diffuse = DotNL * ZeroNL;
-		Output.Specular = N * pow(abs(DotNH * ZeroNL), SpecPower) * DotNL;
+		Output.Diffuse = HalfDotNL * ZeroNL;
+		Output.Specular = N * pow(abs(DotNH * ZeroNL), SpecPower) * HalfDotNL;
 		return Output;
 	}
 
