@@ -77,7 +77,7 @@
 	ColorPair ComputeLights
 	(
 		float3 Normal, float3 LightDir, float3 ViewDir,
-		uniform bool ScaleDotNL = false, uniform float SpecPower = 32.0
+		uniform bool ScaleDotNL = false, uniform float SpecPower = 32.0, uniform bool Normalized = false
 	)
 	{
 		ColorPair Output = (ColorPair)0;
@@ -86,7 +86,7 @@
 		float DotNL = GetDot(Normal, LightDir, ScaleDotNL);
 		float DotNH = GetDot(Normal, HalfVec);
 		float ZeroNL = step(0.0, DotNL);
-		float N = (SpecPower + 8.0) / 8.0;
+		float N = (Normalized) ? (SpecPower + 8.0) / 8.0 : 1.0;
 
 		Output.Diffuse = DotNL * ZeroNL;
 		Output.Specular = N * pow(abs(DotNH * ZeroNL), SpecPower) * DotNL;
