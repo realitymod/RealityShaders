@@ -111,9 +111,10 @@ PS2FB PS_Debug_Basic_1(VS2PS_Basic Input)
 	PS2FB Output = (PS2FB)0;
 
 	float4 Ambient = _MaterialAmbient;
-	float3 Diffuse = GetDot(Input.Normal, _LightDir.xyz) * _MaterialDiffuse.rgb;
+	float HalfDotNL = GetDot(Input.Normal, _LightDir.xyz, true, true);
+	float3 OutputColor = Ambient.rgb + (HalfDotNL * _MaterialDiffuse.rgb);
 
-	Output.Color = float4(Ambient.rgb + Diffuse, Ambient.a);
+	Output.Color = float4(OutputColor, Ambient.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -315,9 +316,9 @@ PS2FB PS_Debug_CollisionMesh(VS2PS_CollisionMesh Input, uniform float MaterialFa
 {
 	PS2FB Output = (PS2FB)0;
 
-	float DotNL = GetDot(Input.Normal, float3(-1.0, -1.0, 1.0));
+	float HalfDotNL = GetDot(Input.Normal, float3(-1.0, -1.0, 1.0), true, true);
 	float3 Ambient = (_MaterialAmbient.rgb * MaterialFactor) + 0.1;
-	float3 Diffuse = DotNL * (_MaterialDiffuse.rgb * MaterialFactor);
+	float3 Diffuse = HalfDotNL * (_MaterialDiffuse.rgb * MaterialFactor);
 
 	Output.Color = float4(Ambient + Diffuse, 0.8);
 
@@ -487,8 +488,8 @@ PS2FB PS_Debug_Grid(VS2PS_Grid Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float DotNL = GetDot(Input.Normal, _LightDir.xyz);
-	float3 Lighting = _MaterialAmbient.rgb + (DotNL * _MaterialDiffuse.rgb);
+	float HalfDotNL = GetDot(Input.Normal, _LightDir.xyz, true, true);
+	float3 Lighting = _MaterialAmbient.rgb + (HalfDotNL * _MaterialDiffuse.rgb);
 
 	float4 Tex = tex2D(SampleTex0, Input.Tex0.xy);
 	// float4 OutputColor = float4(Tex.rgb * Lighting, _MaterialDiffuse.a);

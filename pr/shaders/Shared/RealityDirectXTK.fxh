@@ -56,17 +56,17 @@
 	float GetDot
 	(
 		float3 Vector1, float3 Vector2,
-		uniform bool ScaleProduct = true, uniform bool ClampProduct = true
+		uniform bool ScaleOutput = false, uniform bool ClampOutput = true
 	)
 	{
 		float Output = dot(Vector1, Vector2);
 
-		if (ScaleProduct == true)
+		if (ScaleOutput == true)
 		{
 			Output = (Output * 0.5) + 0.5;
 		}
 
-		if (ClampProduct == true)
+		if (ClampOutput == true)
 		{
 			Output = saturate(Output);
 		}
@@ -77,14 +77,14 @@
 	ColorPair ComputeLights
 	(
 		float3 Normal, float3 LightDir, float3 ViewDir,
-		uniform bool ScaleDotNL = true, uniform float SpecPower = 32.0, uniform bool Normalized = false
+		uniform bool UseHalfLambert = true, uniform float SpecPower = 32.0, uniform bool Normalized = false
 	)
 	{
 		ColorPair Output = (ColorPair)0;
 
 		float3 HalfVec = normalize(LightDir + ViewDir);
-		float DotNL = GetDot(Normal, LightDir, ScaleDotNL);
-		float DotNH = GetDot(Normal, HalfVec);
+		float DotNL = GetDot(Normal, LightDir, UseHalfLambert, true);
+		float DotNH = GetDot(Normal, HalfVec, false, true);
 		float ZeroNL = step(0.0, DotNL);
 		float N = (Normalized) ? (SpecPower + 8.0) / 8.0 : 1.0;
 

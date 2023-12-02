@@ -59,7 +59,7 @@ PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
 	Pointlight
 */
 
-float GetDotNL(float3 WorldPos, float3 WorldNormal)
+float GetHalfDotNL(float3 WorldPos, float3 WorldNormal)
 {
 	WorldNormal = normalize(WorldNormal);
 	float3 WorldLightVec = _PointLight.pos - WorldPos;
@@ -67,9 +67,9 @@ float GetDotNL(float3 WorldPos, float3 WorldNormal)
 
 	// Calculate lighting
 	float Attenuation = GetLightAttenuation(WorldLightVec, _PointLight.attSqrInv);
-	float3 DotNL = GetDot(WorldNormal, WorldLightDir, true, false);
+	float3 HalfDotNL = GetDot(WorldNormal, WorldLightDir, true, true);
 
-	return DotNL * Attenuation;
+	return HalfDotNL * Attenuation;
 }
 
 struct VS2PS_Shared_PointLight_PerVertex
@@ -85,10 +85,10 @@ VS2PS_Shared_PointLight_PerVertex VS_Shared_PointLight_PerVertex(APP2VS_Shared I
 
 	// Uncompress normal
 	float3 WorldNormal = (Input.Normal * 2.0) - 1.0;
-	float DotNL = GetDotNL(MorphedWorldPos.xyz, WorldNormal);
+	float HalfDotNL = GetHalfDotNL(MorphedWorldPos.xyz, WorldNormal);
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
-	Output.Tex0.x = DotNL;
+	Output.Tex0.x = HalfDotNL;
 	#if defined(LOG_DEPTH)
 		Output.Tex0.y = Output.HPos.w + 1.0; // Output depth
 	#endif
@@ -138,7 +138,7 @@ PS2FB PS_Shared_PointLight_PerPixel(VS2PS_Shared_PointLight_PerPixel Input)
 	PS2FB Output = (PS2FB)0;
 
 	float3 WorldPos = Input.Pos.xyz;
-	float DotNL = GetDotNL(WorldPos, Input.Normal);
+	float DotNL = GetHalfDotNL(WorldPos, Input.Normal);
 	Output.Color = float4(_PointLight.col * DotNL, 0.0);
 
 	#if defined(LOG_DEPTH)
