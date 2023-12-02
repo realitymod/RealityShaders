@@ -56,7 +56,7 @@
 	float GetDot
 	(
 		float3 Vector1, float3 Vector2,
-		uniform bool ScaleProduct = false, uniform bool ClampProduct = true
+		uniform bool ScaleProduct = true, uniform bool ClampProduct = true
 	)
 	{
 		float Output = dot(Vector1, Vector2);
@@ -77,7 +77,7 @@
 	ColorPair ComputeLights
 	(
 		float3 Normal, float3 LightDir, float3 ViewDir,
-		uniform bool ScaleDotNL = false, uniform float SpecPower = 32.0, uniform bool Normalized = false
+		uniform bool ScaleDotNL = true, uniform float SpecPower = 32.0, uniform bool Normalized = false
 	)
 	{
 		ColorPair Output = (ColorPair)0;

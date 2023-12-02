@@ -4,9 +4,11 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityDepth.fxh"
 #endif
 
@@ -61,12 +63,6 @@ struct PS2FB
 	#endif
 };
 
-// Clamped N.L
-float3 GetDotNL(float3 Normal, uniform float3 LightDir)
-{
-	return saturate(dot(Normal, LightDir.xyz));
-}
-
 /*
 	Basic debug shaders
 */
@@ -115,7 +111,7 @@ PS2FB PS_Debug_Basic_1(VS2PS_Basic Input)
 	PS2FB Output = (PS2FB)0;
 
 	float4 Ambient = _MaterialAmbient;
-	float3 Diffuse = GetDotNL(Input.Normal, _LightDir.xyz) * _MaterialDiffuse.rgb;
+	float3 Diffuse = GetDot(Input.Normal, _LightDir.xyz) * _MaterialDiffuse.rgb;
 
 	Output.Color = float4(Ambient.rgb + Diffuse, Ambient.a);
 
@@ -319,7 +315,7 @@ PS2FB PS_Debug_CollisionMesh(VS2PS_CollisionMesh Input, uniform float MaterialFa
 {
 	PS2FB Output = (PS2FB)0;
 
-	float DotNL = GetDotNL(Input.Normal, float3(-1.0, -1.0, 1.0));
+	float DotNL = GetDot(Input.Normal, float3(-1.0, -1.0, 1.0));
 	float3 Ambient = (_MaterialAmbient.rgb * MaterialFactor) + 0.1;
 	float3 Diffuse = DotNL * (_MaterialDiffuse.rgb * MaterialFactor);
 
@@ -491,7 +487,7 @@ PS2FB PS_Debug_Grid(VS2PS_Grid Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float DotNL = GetDotNL(Input.Normal, _LightDir.xyz);
+	float DotNL = GetDot(Input.Normal, _LightDir.xyz);
 	float3 Lighting = _MaterialAmbient.rgb + (DotNL * _MaterialDiffuse.rgb);
 
 	float4 Tex = tex2D(SampleTex0, Input.Tex0.xy);

@@ -67,8 +67,9 @@ float GetDotNL(float3 WorldPos, float3 WorldNormal)
 
 	// Calculate lighting
 	float Attenuation = GetLightAttenuation(WorldLightVec, _PointLight.attSqrInv);
-	float3 DotNL = dot(WorldNormal, WorldLightDir) * Attenuation;
-	return DotNL;
+	float3 DotNL = GetDot(WorldNormal, WorldLightDir, true, false);
+
+	return DotNL * Attenuation;
 }
 
 struct VS2PS_Shared_PointLight_PerVertex
