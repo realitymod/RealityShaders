@@ -262,8 +262,8 @@ float4 PS_Diffuse(VS2PS_Diffuse Input) : COLOR0
 
 	// Get lighting data
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
-	float3 HalfDotNL = GetDot(WorldNormal, WorldLightDir, true, true);
-	float4 Lighting = DiffuseMap * float4(Ambient.rgb + HalfDotNL, 1.0);
+	float3 HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
+	float4 Lighting = DiffuseMap * float4(Ambient.rgb + HalfNL, 1.0);
 
 	return Lighting;
 }

@@ -53,32 +53,18 @@
 		float Specular;
 	};
 
-	float GetDot
-	(
-		float3 Vector1, float3 Vector2,
-		uniform bool ScaleOutput = false, uniform bool ClampOutput = true
-	)
-	{
-		float Output = dot(Vector1, Vector2);
-
-		if (ScaleOutput == true)
-		{
-			Output = (Output * 0.5) + 0.5;
-		}
-
-		if (ClampOutput == true)
-		{
-			Output = saturate(Output);
-		}
-
-		return Output;
-	}
-
 	/*
 		Blinn-Phong light generator using the Half-Lambert technique
 		---
 		https://developer.valvesoftware.com/wiki/Half_Lambert
 	*/
+
+	float GetHalfNL(float3 Vector1, float3 Vector2)
+	{
+		float DotNL = dot(Vector1, Vector2);
+		DotNL = (DotNL * 0.5) + 0.5;
+		return DotNL * DotNL;
+	}
 
 	ColorPair ComputeLights
 	(
@@ -89,14 +75,13 @@
 		ColorPair Output = (ColorPair)0;
 
 		float3 HalfVec = normalize(LightDir + ViewDir);
-		float DotNH = GetDot(Normal, HalfVec, false, true);
-		float DotNL = GetDot(Normal, LightDir, true, true);
-		float HalfDotNL = saturate(DotNL * DotNL);
-		float ZeroNL = step(0.0, HalfDotNL);
+		float DotNL = GetHalfNL(Normal, LightDir);
+		float DotNH = saturate(dot(Normal, HalfVec));
+		float ZeroNL = step(0.0, DotNL);
 		float N = (Normalized) ? (SpecPower + 8.0) / 8.0 : 1.0;
 
-		Output.Diffuse = HalfDotNL * ZeroNL;
-		Output.Specular = N * pow(abs(DotNH * ZeroNL), SpecPower) * HalfDotNL;
+		Output.Diffuse = DotNL * ZeroNL;
+		Output.Specular = N * pow(abs(DotNH * ZeroNL), SpecPower) * DotNL;
 		return Output;
 	}
 
