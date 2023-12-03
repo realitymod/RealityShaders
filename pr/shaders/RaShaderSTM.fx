@@ -193,7 +193,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanViewDir, out float DiffuseGloss)
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
 
-	DiffuseGloss = GetMean3(Diffuse.rgb);
+	DiffuseGloss = StaticGloss * GetMean3(Diffuse.rgb);
 
 	return Diffuse;
 }
@@ -279,8 +279,8 @@ PS2FB PS_StaticMesh(VS2PS Input)
 
 	// Prepare lighting data
 	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularExponent);
-	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color);
-	float3 SpecularRGB = (Light.Specular * Gloss) * Lights[0].color;
+	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb);
+	float3 SpecularRGB = (Light.Specular * Gloss) * StaticSpecularColor.rgb;
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);

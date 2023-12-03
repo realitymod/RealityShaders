@@ -213,6 +213,15 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	return Output;
 }
 
+float3 GetSpecularColor()
+{
+	#if _POINTLIGHT_
+		return Lights[0].color.rgb;
+	#else
+		return Lights[0].specularColor.rgb;
+	#endif
+}
+
 PS2FB PS_SkinnedMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
@@ -280,15 +289,14 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 		float Gloss = NormalMap.a;
 		ColorPair Light = ComputeLights(NormalMap.xyz, LightDir, ViewDir, SpecularPower);
 	#else
-		float Gloss = GetMean3(ColorMap.rgb);
+		float Gloss = StaticGloss * GetMean3(ColorMap.rgb);
 		ColorPair Light = ComputeLights(float3(0.0, 0.0, 1.0), LightDir, ViewDir, 1.0);
 	#endif
 
 	float4 OutputColor = 1.0;
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
-	float3 LightColor = Lights[0].color.rgb * TotalLights;
-	float3 DiffuseRGB = Light.Diffuse * LightColor;
-	float3 SpecularRGB = (Light.Specular * Gloss) * LightColor;
+	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * TotalLights;
+	float3 SpecularRGB = ((Light.Specular * Gloss) * GetSpecularColor()) * TotalLights;
 	OutputColor.rgb = CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB);
 	OutputColor.a = ColorMap.a * Transparency.a;
 

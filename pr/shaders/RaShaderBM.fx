@@ -278,7 +278,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
 		float Gloss = NormalMap.a;
 	#else
-		float Gloss = GetMean3(ColorTex.rgb);
+		float Gloss = StaticGloss * GetMean3(ColorTex.rgb);
 		SpecularExponent = 1.0;
 	#endif
 
@@ -323,9 +323,12 @@ PS2FB PS_BundledMesh(VS2PS Input)
 
 	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularExponent);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
-	float3 LightColor = Lights[0].color.rgb * TotalLights;
-	float3 DiffuseRGB = Light.Diffuse * LightColor;
-	float3 SpecularRGB = (Light.Specular * Gloss) * LightColor;
+	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb)* TotalLights;
+	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].specularColor.rgb) * TotalLights;
+
+	#if _HASSTATICGLOSS_
+		SpecularRGB = clamp(SpecularRGB, 0.0, StaticGloss);
+	#endif
 
 	// There is no Gloss map, so alpha means transparency
 	#if _POINTLIGHT_ && !_HASCOLORMAPGLOSS_
