@@ -124,20 +124,17 @@ PS2FB PS_TrunkOG(VS2PS Input)
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
 	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
-	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
 	// Get textures
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
 
 	// Get diffuse lighting
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, 1.0);
 	float3 LightColor = Lights[0].color.rgb * LodScale;
 	float3 Ambient = OverGrowthAmbient.rgb * LodScale;
-	float3 Diffuse = Light.Diffuse * LightColor;
-	float3 Specular = Light.Specular * LightColor;
+	float3 Diffuse = GetHalfNL(WorldNormal, WorldLightDir) * LightColor;
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (DiffuseMap.rgb * 2.0) * (Ambient + Diffuse + Specular);
+	OutputColor.rgb = (DiffuseMap.rgb * 2.0) * (Ambient + Diffuse);
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;
