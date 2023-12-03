@@ -18,6 +18,11 @@
 		return max(Input.x, max(Input.y, Input.z));
 	}
 
+	float GetMean3(float3 Input)
+	{
+		return dot(Input, 1.0 / 3.0);
+	}
+
 	float Desaturate(float3 Input)
 	{
 		return lerp(GetMin3(Input), GetMax3(Input), 1.0 / 2.0);

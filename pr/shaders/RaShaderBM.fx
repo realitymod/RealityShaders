@@ -271,12 +271,15 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		Calculate diffuse + specular lighting
 	*/
 
+	// Prevents non-detailed bundledmesh from looking shiny
+	float SpecularExponent = SpecularPower;
 	#if _HASCOLORMAPGLOSS_
 		float Gloss = ColorTex.a;
 	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
 		float Gloss = NormalMap.a;
 	#else
-		float Gloss = StaticGloss;
+		float Gloss = GetMean3(ColorTex.rgb);
+		SpecularExponent = 1.0;
 	#endif
 
 	#if _HASENVMAP_
@@ -318,7 +321,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		const float Attenuation = 1.0;
 	#endif
 
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularExponent);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 LightColor = Lights[0].color.rgb * TotalLights;
 	float3 DiffuseRGB = Light.Diffuse * LightColor;
@@ -329,13 +332,8 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		DiffuseRGB *= ColorTex.a;
 	#endif
 
-	// Only add specular to bundledmesh with a glossmap (.a channel in NormalMap or ColorMap)
-	// Prevents non-detailed bundledmesh from looking shiny
-	#if !_HASCOLORMAPGLOSS_ && !_HASNORMALMAP_
-		SpecularRGB = 0.0;
-	#endif
 	float4 OutputColor = 1.0;
-	OutputColor.rgb = (ColorMap.rgb * (Ambient + DiffuseRGB + SpecularRGB)) * GI.rgb;
+	OutputColor.rgb = CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB) * GI.rgb;
 
 	/*
 		Calculate fogging and other occluders

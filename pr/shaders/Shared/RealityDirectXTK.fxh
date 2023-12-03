@@ -85,14 +85,22 @@
 		return Output;
 	}
 
+	float3 CompositeLights(float3 Color, float3 Ambient, float3 Diffuse, float3 Specular)
+	{
+		return (Color * (Ambient + Diffuse)) + Specular;
+	}
+
 	float ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewDir)
 	{
 		float ViewAngle = dot(WorldNormal, WorldViewDir);
 		return saturate(1.0 - abs(ViewAngle));
 	}
 
-	// Christian Schuler, "Normal Mapping without Precomputed Tangents", ShaderX 5, Chapter 2.6, pp. 131-140
-	// See also follow-up blog post: http://www.thetenthplanet.de/archives/1180
+	/*
+		Christian Schuler, "Normal Mapping without Precomputed Tangents", ShaderX 5, Chapter 2.6, pp. 131-140
+		---
+		See also follow-up blog post: http://www.thetenthplanet.de/archives/1180
+	*/
 	float3x3 CalculateTBN(float3 Pos, float3 Normal, float2 Tex)
 	{
 		float3 DPos1 = ddx(Pos);

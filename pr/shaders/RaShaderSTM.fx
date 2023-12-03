@@ -159,7 +159,7 @@ float2 GetParallax(float2 TexCoords, float3 ViewDir)
 float4 GetDiffuseMap(VS2PS Input, float3 TanViewDir, out float DiffuseGloss)
 {
 	float4 Diffuse = 1.0;
-	DiffuseGloss = StaticGloss;
+	DiffuseGloss = 0.0;
 
 	#if _BASE_
 		Diffuse = tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy);
@@ -192,6 +192,8 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanViewDir, out float DiffuseGloss)
 		float4 Crack = tex2D(SampleCrackMap, Input.DirtAndCrack.zw);
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
+
+	DiffuseGloss = GetMean3(Diffuse.rgb);
 
 	return Diffuse;
 }
@@ -269,8 +271,14 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	float4 ColorMap = GetDiffuseMap(Input, TanViewDir, Gloss);
 	float3 WorldNormal = GetNormalMap(Input, TanViewDir, WorldTBN);
 
+	#if defined(_PERPIXEL_)
+		float SpecularExponent = SpecularPower;
+	#else
+		float SpecularExponent = 1.0;
+	#endif
+
 	// Prepare lighting data
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularExponent);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color);
 	float3 SpecularRGB = (Light.Specular * Gloss) * Lights[0].color;
 
@@ -288,7 +296,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		#endif
 
 		// We divide the normal by 5.0 to prevent complete darkness for surfaces facing away from the sun
-		float DotNL = saturate(dot(WorldNormal / 5.0, WorldLightDir));
+		float DotNL = saturate(dot(WorldNormal, WorldLightDir) / 5.0);
 		float IDotNL = saturate((1.0 - DotNL) * 0.65);
 
 		// We add ambient to get correct ambient for surfaces parallel to the sun
@@ -299,7 +307,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		DiffuseRGB += (Lightmap.r * SinglePointColor);
 		SpecularRGB *= Lightmap.g;
 
-		OutputColor.rgb = ColorMap.rgb * ((DiffuseRGB * 2.0) + SpecularRGB);
+		OutputColor.rgb = CompositeLights(ColorMap.rgb * 2.0, 0.0, DiffuseRGB, SpecularRGB);
 	#endif
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);

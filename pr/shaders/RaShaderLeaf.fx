@@ -248,7 +248,7 @@ PS2FB PS_Leaf(VS2PS Input)
 	float3 Diffuse = (HalfNL * LodScale) * LightColor;
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = DiffuseMap.rgb * (Ambient + Diffuse);
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, Ambient, Diffuse, 0.0);
 	OutputColor.a = (DiffuseMap.a * 2.0) * Transparency;
 	#if defined(OVERGROWTH) && HASALPHA2MASK
 		OutputColor.a *= (DiffuseMap.a * 2.0);

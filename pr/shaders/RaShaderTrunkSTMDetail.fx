@@ -180,7 +180,7 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	float3 Diffuse = GetHalfNL(WorldNormal, WorldLightDir) * LightColor;
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (DiffuseMap.rgb * 2.0) * (Ambient + Diffuse);
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb * 2.0, Ambient, Diffuse, 0.0);
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;
