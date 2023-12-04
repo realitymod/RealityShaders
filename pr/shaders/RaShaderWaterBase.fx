@@ -5,10 +5,12 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -24,14 +26,11 @@
 // Darkness of water shadows - Lower means darker
 #define SHADOW_FACTOR 0.75
 
-// Higher value means less transparent water
-#define BASE_TRANSPARENCY 1.5F
-
 // Like Specular - higher values gives smaller, more distinct area of transparency
-#define POW_TRANSPARENCY 30.0F
+#define POW_TRANSPARENCY 30.0
 
 // How much of the texture color to use (vs envmap color)
-#define COLOR_ENVMAP_RATIO 0.4F
+#define COLOR_ENVMAP_RATIO 0.4
 
 // Modifies heightalpha (for tweaking transparancy depending on depth)
 #define APOW 1.3
@@ -224,17 +223,19 @@ PS2FB PS_Water(in VS2PS Input)
 		TangentNormal.xyz = normalize((TangentNormal.xyz * 2.0) - 1.0);
 	#endif
 
+	// Initialize output factor
+	float4 OutputColor = 0.0;
+
+	// Generate water color
 	float3 Reflection = normalize(reflect(-WorldViewDir, TangentNormal));
 	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
-
-	float LightFactors = SpecularColor.a * Shadow;
-	float3 DotLR = saturate(dot(WorldLightDir, Reflection));
-	float3 Specular = pow(abs(DotLR), SpecularPower) * SpecularColor.rgb;
-
-	float4 OutputColor = 0.0;
 	float LerpMod = -(1.0 - saturate(Shadow + SHADOW_FACTOR));
 	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
-	OutputColor.rgb = WaterLerp + (Specular * LightFactors);
+
+	// Composite light on water color
+	float3 LightColors = SpecularColor.rgb * (SpecularColor.a * Shadow);
+	ColorPair Light = ComputeLights(TangentNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	OutputColor.rgb = WaterLerp + (Light.Specular * LightColors.rgb);
 
 	// Thermals
 	if (IsTisActive())
@@ -242,8 +243,9 @@ PS2FB PS_Water(in VS2PS Input)
 		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
-	float Fresnel = BASE_TRANSPARENCY - pow(dot(TangentNormal, WorldViewDir), POW_TRANSPARENCY);
-	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.w);
+	// Compute Fresnel 
+	float Fresnel = ComputeFresnelFactor(TangentNormal, WorldViewDir, POW_TRANSPARENCY);
+	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.a);
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));

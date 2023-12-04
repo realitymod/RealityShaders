@@ -90,10 +90,10 @@
 		return (Color * (Ambient + Diffuse)) + Specular;
 	}
 
-	float ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewDir)
+	float ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewDir, float Exponent)
 	{
 		float ViewAngle = dot(WorldNormal, WorldViewDir);
-		return saturate(1.0 - abs(ViewAngle));
+		return saturate(1.0 - pow(abs(ViewAngle), Exponent));
 	}
 
 	/*

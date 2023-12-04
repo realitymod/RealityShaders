@@ -376,7 +376,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	*/
 
 	#if _HASENVMAP_
-		float FresnelFactor = ComputeFresnelFactor(WorldNormal, WorldViewDir);
+		float FresnelFactor = ComputeFresnelFactor(WorldNormal, WorldViewDir, 1.0);
 		ColorMap.a = lerp(ColorMap.a, 1.0, FresnelFactor);
 	#endif
 
