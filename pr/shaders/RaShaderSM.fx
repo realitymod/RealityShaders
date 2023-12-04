@@ -289,7 +289,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 		float Gloss = NormalMap.a;
 		ColorPair Light = ComputeLights(NormalMap.xyz, LightDir, ViewDir, SpecularPower);
 	#else
-		float Gloss = StaticGloss * GetMean3(ColorMap.rgb);
+		float Gloss = GetMean3(ColorMap.rgb);
 		ColorPair Light = ComputeLights(float3(0.0, 0.0, 1.0), LightDir, ViewDir, 1.0);
 	#endif
 
