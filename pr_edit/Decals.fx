@@ -142,7 +142,8 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 
 	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex0);
 	float3 Normals = normalize(Input.Normal.xyz);
-	float3 Diffuse = ComputeLambert(Normals, -_SunDirection.xyz) * _SunColor * Shadow;
+	float HalfNL = GetHalfNL(Normals, -_SunDirection.xyz);
+	float3 Diffuse = (HalfNL * _SunColor) * Shadow;
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
 	float4 OutputColor = DiffuseMap * float4(Lighting, Alpha);

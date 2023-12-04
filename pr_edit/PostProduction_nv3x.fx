@@ -64,12 +64,12 @@ uniform float _DeltaV : DELTAV;
 		AddressV = ADDRESS; \
 	}; \
 
-
-// Unused?
-uniform texture Texture4 : TEXLAYER4;
-uniform texture Texture5 : TEXLAYER5;
-uniform texture Texture6 : TEXLAYER6;
-
+/*
+	Unused?
+	uniform texture Texture4 : TEXLAYER4;
+	uniform texture Texture5 : TEXLAYER5;
+	uniform texture Texture6 : TEXLAYER6;
+*/
 
 uniform texture Tex0 : TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP)
@@ -144,27 +144,31 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 	return Output;
 }
 
-float4 PS_Tinnitus(VS2PS_Quad Input, float2 Pos : VPOS) : COLOR0
+float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 {
-	// Get texture data
-	float2 FragPos = Pos;
+	// Modify uniform data
 	float SatLerpBias = saturate(_BackBufferLerpBias);
-	float LerpBias = saturate(smoothstep(0.0, 1.0, SatLerpBias));
+	float LerpBias = saturate(smoothstep(0.0, 0.5, SatLerpBias));
 
 	// Spread the blur as you go lower on the screen
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
 	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, FragPos / 4.0, Input.Tex0, SpreadFactor);
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor);
+
+	// Get mask coordinates
+	float2 MaskTexPeak = (float2(1.0, 1.0) * float2(2.0, 1.0)) - 1.0;
+	float2 MaskTex = ((Input.Tex0) * float2(2.0, 1.0)) - 1.0;
 
 	// Get SDF mask that darkens the left, right, and top edges
-	float2 Tex = (Input.Tex0 * float2(2.0, 1.0)) - 1.0;
-	Tex *= LerpBias; // gradually remove mask overtime
-	float2 Edge = max(abs(Tex) - (1.0 / 5.0), 0.0);
-	float Mask = saturate(length(Edge));
+	float HalfValue = 0.4;
+	float FocusPeak = length(MaskTexPeak - (float2)HalfValue);
+	float FocusMain = length(max(abs(MaskTex) - (float2)HalfValue, 0.0));
+	float FocusMask = saturate(smoothstep(0.0, FocusPeak, FocusMain));
 
 	// Composite final product
-	float4 OutputColor = lerp(Color, float4(0.0, 0.0, 0.0, 1.0), Mask);
+	float3 OutputColor = lerp(Color.rgb, 0.0, FocusMask);
+
 	return float4(OutputColor.rgb, LerpBias);
 }
 
@@ -307,7 +311,9 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 
 	if (_Interference < 0) // Thermals
 	{
+		// Calculate thermal image
 		float4 Image = tex2Dlod(SampleTex0_Point, float4(GetPixelation(Input.Tex0), 0.0, 0.0));
+
 		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
 		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
 		OutputColor.r -= _Interference * Random; // Add -_Interference
@@ -361,7 +367,6 @@ float4 PS_ThermalVision_Gradient(VS2PS_Quad Input) : COLOR0
 		TV Tex = GetTV(ImageTex);
 
 		// Fetch textures
-		float4 Color = tex2D(SampleTex0, ImageTex);
 		float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
 		float Noise = tex2D(SampleTex1_Wrap, Tex.Noise) - 0.5;
 
@@ -372,7 +377,9 @@ float4 PS_ThermalVision_Gradient(VS2PS_Quad Input) : COLOR0
 		ImageTex.x += _DistortionScale * Noise * Distort;
 
 		// Fetch image
+		float4 Color = tex2D(SampleTex0, ImageTex);
 		float Gray = Desaturate(Color.rgb);
+
 		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
 		float4 GradientColor = tex2D(SampleTex3, float2(TVFactor, 0.0));
 		OutputColor = float4(GradientColor.rgb, TVFactor);

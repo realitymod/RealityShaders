@@ -53,28 +53,41 @@
 		float Specular;
 	};
 
+	/*
+		Blinn-Phong light generator using the Half-Lambert technique
+		---
+		https://developer.valvesoftware.com/wiki/Half_Lambert
+	*/
+
+	float GetHalfNL(float3 Vector1, float3 Vector2)
+	{
+		float DotNL = dot(Vector1, Vector2);
+		DotNL = (DotNL * 0.5) + 0.5;
+		return DotNL * DotNL;
+	}
+
 	ColorPair ComputeLights
 	(
 		float3 Normal, float3 LightDir, float3 ViewDir,
-		uniform float SpecPower = 32.0, uniform bool NormSpec = false
+		uniform float SpecPower = 32.0, uniform bool Normalized = false
 	)
 	{
 		ColorPair Output = (ColorPair)0;
 
 		float3 HalfVec = normalize(LightDir + ViewDir);
-		float DotNL = saturate(dot(Normal, LightDir));
+		float DotNL = GetHalfNL(Normal, LightDir);
 		float DotNH = saturate(dot(Normal, HalfVec));
 		float ZeroNL = step(0.0, DotNL);
+		float N = (Normalized) ? (SpecPower + 8.0) / 8.0 : 1.0;
 
 		Output.Diffuse = DotNL * ZeroNL;
-		float Cons = (NormSpec) ? (SpecPower + 8.0) / 8.0 : 1.0;
-		Output.Specular = Cons * pow(abs(DotNH * ZeroNL), SpecPower) * DotNL;
+		Output.Specular = N * pow(abs(DotNH * ZeroNL), SpecPower) * DotNL;
 		return Output;
 	}
 
-	float ComputeLambert(float3 Normal, float3 LightDir)
+	float3 CompositeLights(float3 Color, float3 Ambient, float3 Diffuse, float3 Specular)
 	{
-		return saturate(dot(Normal, LightDir));
+		return (Color * (Ambient + Diffuse)) + Specular;
 	}
 
 	float ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewDir)
@@ -83,8 +96,11 @@
 		return saturate(1.0 - abs(ViewAngle));
 	}
 
-	// Christian Schuler, "Normal Mapping without Precomputed Tangents", ShaderX 5, Chapter 2.6, pp. 131-140
-	// See also follow-up blog post: http://www.thetenthplanet.de/archives/1180
+	/*
+		Christian Schuler, "Normal Mapping without Precomputed Tangents", ShaderX 5, Chapter 2.6, pp. 131-140
+		---
+		See also follow-up blog post: http://www.thetenthplanet.de/archives/1180
+	*/
 	float3x3 CalculateTBN(float3 Pos, float3 Normal, float2 Tex)
 	{
 		float3 DPos1 = ddx(Pos);

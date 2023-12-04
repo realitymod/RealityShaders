@@ -18,6 +18,11 @@
 		return max(Input.x, max(Input.y, Input.z));
 	}
 
+	float GetMean3(float3 Input)
+	{
+		return dot(Input, 1.0 / 3.0);
+	}
+
 	float Desaturate(float3 Input)
 	{
 		return lerp(GetMin3(Input), GetMax3(Input), 1.0 / 2.0);
@@ -38,16 +43,23 @@
 
 	float GetHash1(float2 P, float Bias)
 	{
-		float3 P3  = frac(P.xyx * 0.1031);
+		float3 P3 = frac(P.xyx * 0.1031);
 		P3 += dot(P3, P3.yzx + 33.33);
 		return frac(((P3.x + P3.y) * P3.z) + Bias);
 	}
 
-	float2 GetHash2(float2 P, float Bias)
+	float2 GetHash2(float2 P, float2 Bias)
 	{
 		float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
 		P3 += dot(P3, P3.yzx + 33.33);
 		return frac(((P3.xx + P3.yz) * P3.zy) + Bias);
+	}
+
+	float3 GetHash3(float2 P, float3 Bias)
+	{
+		float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
+		P3 += dot(P3, P3.yxz + 33.33);
+		return frac(((P3.xxy + P3.yzz) * P3.zyx) + Bias);
 	}
 
 	/*
@@ -188,12 +200,12 @@
 
 	float2 GetPixelSize(float2 Tex)
 	{
-		return abs(float2(ddx(Tex.x), ddy(Tex.y)));
+		return fwidth(Tex);
 	}
 
 	int2 GetScreenSize(float2 Tex)
 	{
-		return 1.0 / GetPixelSize(Tex);
+		return max(1.0 / fwidth(Tex), 0.0);
 	}
 
 	float GetAspectRatio(float2 ScreenSize)
@@ -205,7 +217,7 @@
 		Convolutions
 	*/
 
-	float4 GetSpiralBlur(sampler Source, float2 Pos, float2 Tex, float Bias)
+	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias)
 	{
 		// Initialize values
 		float4 OutputColor = 0.0;
@@ -216,7 +228,8 @@
 
 		// Get texcoord data
 		float2 ScreenSize = GetScreenSize(Tex);
-		float Random = Pi2 * GetGradientNoise1(Pos, 0.0, false);
+		float2 Cells = Tex * (ScreenSize * 0.25);
+		float Random = Pi2 * GetGradientNoise1(Cells, 0.0, false);
 		float AspectRatio = GetAspectRatio(ScreenSize);
 
 		float2 Rotation = 0.0;
