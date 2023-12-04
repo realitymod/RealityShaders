@@ -296,7 +296,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		#endif
 
 		// We divide the normal by 5.0 to prevent complete darkness for surfaces facing away from the sun
-		float DotNL = saturate(dot(WorldNormal, WorldLightDir) / 5.0);
+		float DotNL = saturate(dot(WorldNormal / 5.0, WorldLightDir));
 		float IDotNL = saturate((1.0 - DotNL) * 0.65);
 
 		// We add ambient to get correct ambient for surfaces parallel to the sun

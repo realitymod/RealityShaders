@@ -59,9 +59,9 @@
 		https://developer.valvesoftware.com/wiki/Half_Lambert
 	*/
 
-	float GetHalfNL(float3 Vector1, float3 Vector2)
+	float GetHalfNL(float3 Normal, float3 LightDir)
 	{
-		float DotNL = dot(Vector1, Vector2);
+		float DotNL = dot(Normal, LightDir);
 		DotNL = (DotNL * 0.5) + 0.5;
 		return DotNL * DotNL;
 	}
