@@ -379,7 +379,7 @@ float4 ps(SMVariableVSOutput input) : COLOR
 	outColor.rgb += (input.Specular * 2) * dirShadow;
 #endif
 
-	outColor.rgb = float3(0.0, 1.0, 0.0);
+	outColor.rgb = float3(1.0, 1.0, 0.0);
 
 	outColor.a = diffuseTex.a*Transparency.a;
 

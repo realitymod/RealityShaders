@@ -12,7 +12,7 @@ float2 calculateOffsetCoordinatesFromAlpha(float2 inTexCoords, float2 inHeightTe
 //-- ZAndDiffuse
 
 struct appdata_vsZAndDiffuseBase {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
 };
 
@@ -24,10 +24,10 @@ struct VS_OUT_vsZAndDiffuseBase {
 VS_OUT_vsZAndDiffuseBase vsZAndDiffuseBase(appdata_vsZAndDiffuseBase input)
 {
 	VS_OUT_vsZAndDiffuseBase Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.Tex0Diff = input.TexCoordDiff;
-	
+
 	return Out;
 }
 
@@ -37,7 +37,7 @@ float4 psZAndDiffuseBase(VS_OUT_vsZAndDiffuseBase indata) : COLOR
 }
 
 struct appdata_ZAndDiffuseBaseDetail {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
     float2 TexCoordDetail : TEXCOORD1;
 };
@@ -51,7 +51,7 @@ struct VS_OUT_ZAndDiffuseBaseDetail {
 VS_OUT_ZAndDiffuseBaseDetail vsZAndDiffuseBaseDetail(appdata_ZAndDiffuseBaseDetail input)
 {
 	VS_OUT_ZAndDiffuseBaseDetail Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.Tex0Diff = input.TexCoordDiff;
 	Out.Tex1Detail = input.TexCoordDetail;
@@ -67,7 +67,7 @@ float4 psZAndDiffuseBaseDetail(VS_OUT_ZAndDiffuseBaseDetail indata) : COLOR
 }
 
 struct appdata_ZAndDiffuseBaseDetailParallax {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
     float2 TexCoordDetail : TEXCOORD1;
     float3 Tan : TANGENT;
@@ -84,9 +84,9 @@ struct VS_OUT_ZAndDiffuseBaseDetailParallax {
 VS_OUT_ZAndDiffuseBaseDetailParallax vsZAndDiffuseBaseDetailParallax(appdata_ZAndDiffuseBaseDetailParallax input)
 {
 	VS_OUT_ZAndDiffuseBaseDetailParallax Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
- 	
+
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	Out.tanEyeVec = mul(eyePosObjectSpace.xyz-input.Pos.xyz, tanBasis);
@@ -103,12 +103,12 @@ float4 psZAndDiffuseBaseDetailParallax(VS_OUT_ZAndDiffuseBaseDetailParallax inda
 
 	float4 base = tex2D(samplerWrapAniso0, newTex0Diff);
 	float4 detail = tex2D(samplerWrapAniso1, newTex1Detail);
-	
+
 	return base * detail;
 }
 
 struct appdata_ZAndDiffuseBaseDetailDirt {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
     float2 TexCoordDetail : TEXCOORD1;
     float2 TexCoordDirt : TEXCOORD2;
@@ -129,7 +129,7 @@ VS_OUT_ZAndDiffuseBaseDetailDirt vsZAndDiffuseBaseDetailDirt(appdata_ZAndDiffuse
 	Out.Tex0Diff = input.TexCoordDiff;
 	Out.Tex1Detail = input.TexCoordDetail;
 	Out.Tex2Dirt = input.TexCoordDirt;
-	
+
 	return Out;
 }
 
@@ -142,7 +142,7 @@ float4 psZAndDiffuseBaseDetailDirt(VS_OUT_ZAndDiffuseBaseDetailDirt indata) : CO
 }
 
 struct appdata_ZAndDiffuseBaseDetailDirtParallax {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
     float2 TexCoordDetail : TEXCOORD1;
     float2 TexCoordDirt : TEXCOORD2;
@@ -169,7 +169,7 @@ VS_OUT_ZAndDiffuseBaseDetailDirtParallax vsZAndDiffuseBaseDetailDirtParallax(app
 	Out.Tex0Diff = input.TexCoordDiff;
 	Out.Tex1Detail = input.TexCoordDetail;
 	Out.Tex2Dirt = input.TexCoordDirt;
-	
+
 	return Out;
 }
 
@@ -186,7 +186,7 @@ float4 psZAndDiffuseBaseDetailDirtParallax(VS_OUT_ZAndDiffuseBaseDetailDirtParal
 }
 
 struct appdata_ZAndDiffuseBaseDetailCrack {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
     float2 TexCoordDetail : TEXCOORD1;
     float2 TexCoordCrack : TEXCOORD2;
@@ -202,12 +202,12 @@ struct VS_OUT_ZAndDiffuseBaseDetailCrack {
 VS_OUT_ZAndDiffuseBaseDetailCrack vsZAndDiffuseBaseDetailCrack(appdata_ZAndDiffuseBaseDetailCrack input)
 {
 	VS_OUT_ZAndDiffuseBaseDetailCrack Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.Tex0Diff = input.TexCoordDiff;
 	Out.Tex1Detail = input.TexCoordDetail;
 	Out.Tex2Crack = input.TexCoordCrack;
-	
+
 	return Out;
 }
 
@@ -223,7 +223,7 @@ float4 psZAndDiffuseBaseDetailCrack(VS_OUT_ZAndDiffuseBaseDetailCrack indata) : 
 }
 
 struct appdata_ZAndDiffuseBaseDetailCrackParallax {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
     float2 TexCoordDetail : TEXCOORD1;
     float2 TexCoordCrack : TEXCOORD2;
@@ -242,7 +242,7 @@ struct VS_OUT_ZAndDiffuseBaseDetailCrackParallax {
 VS_OUT_ZAndDiffuseBaseDetailCrackParallax vsZAndDiffuseBaseDetailCrackParallax(appdata_ZAndDiffuseBaseDetailCrackParallax input)
 {
 	VS_OUT_ZAndDiffuseBaseDetailCrackParallax Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
@@ -250,7 +250,7 @@ VS_OUT_ZAndDiffuseBaseDetailCrackParallax vsZAndDiffuseBaseDetailCrackParallax(a
 	Out.Tex0Diff = input.TexCoordDiff;
 	Out.Tex1Detail = input.TexCoordDetail;
 	Out.Tex2Crack = input.TexCoordCrack;
-	
+
 	return Out;
 }
 
@@ -269,7 +269,7 @@ float4 psZAndDiffuseBaseDetailCrackParallax(VS_OUT_ZAndDiffuseBaseDetailCrackPar
 }
 
 struct appdata_ZAndDiffuseBaseDetailDirtCrack {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
     float2 TexCoordDetail : TEXCOORD1;
     float2 TexCoordDirt : TEXCOORD2;
@@ -287,13 +287,13 @@ struct VS_OUT_ZAndDiffuseBaseDetailDirtCrack {
 VS_OUT_ZAndDiffuseBaseDetailDirtCrack vsZAndDiffuseBaseDetailDirtCrack(appdata_ZAndDiffuseBaseDetailDirtCrack input)
 {
 	VS_OUT_ZAndDiffuseBaseDetailDirtCrack Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.Tex0Diff = input.TexCoordDiff;
 	Out.Tex1Detail = input.TexCoordDetail;
 	Out.Tex2Dirt = input.TexCoordDirt;
 	Out.Tex3Crack = input.TexCoordCrack;
-	
+
 	return Out;
 }
 
@@ -310,7 +310,7 @@ float4 psZAndDiffuseBaseDetailDirtCrack(VS_OUT_ZAndDiffuseBaseDetailDirtCrack in
 }
 
 struct appdata_ZAndDiffuseBaseDetailDirtCrackParallax {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
     float2 TexCoordDetail : TEXCOORD1;
     float2 TexCoordDirt : TEXCOORD2;
@@ -331,7 +331,7 @@ struct VS_OUT_ZAndDiffuseBaseDetailDirtCrackParallax {
 VS_OUT_ZAndDiffuseBaseDetailDirtCrackParallax vsZAndDiffuseBaseDetailDirtCrackParallax(appdata_ZAndDiffuseBaseDetailDirtCrackParallax input)
 {
 	VS_OUT_ZAndDiffuseBaseDetailDirtCrackParallax Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
@@ -340,7 +340,7 @@ VS_OUT_ZAndDiffuseBaseDetailDirtCrackParallax vsZAndDiffuseBaseDetailDirtCrackPa
 	Out.Tex1Detail = input.TexCoordDetail;
 	Out.Tex2Dirt = input.TexCoordDirt;
 	Out.Tex3Crack = input.TexCoordCrack;
-	
+
 	return Out;
 }
 
@@ -362,7 +362,7 @@ float4 psZAndDiffuseBaseDetailDirtCrackParallax(VS_OUT_ZAndDiffuseBaseDetailDirt
 
 technique DX9ZAndDiffusebase
 {
-	pass p0 
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
@@ -381,12 +381,12 @@ technique DX9ZAndDiffusebase
 
 technique DX9ZAndDiffusebasedetail
 {
-	pass p0 
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
-		
+
 		StencilEnable = TRUE;
 		StencilRef = 0x40;
 		StencilFunc = ALWAYS;
@@ -400,12 +400,12 @@ technique DX9ZAndDiffusebasedetail
 
 technique DX9ZAndDiffusebasedetailparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
-		
+
 		StencilEnable = TRUE;
 		StencilRef = 0x40;
 		StencilFunc = ALWAYS;
@@ -419,7 +419,7 @@ technique DX9ZAndDiffusebasedetailparallax
 
 technique DX9ZAndDiffusebasedetaildirt
 {
-	pass p0 
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
@@ -430,7 +430,7 @@ technique DX9ZAndDiffusebasedetaildirt
 		StencilFunc = ALWAYS;
 		StencilZFail = KEEP;
 		StencilPass = REPLACE;
-		
+
  		VertexShader = compile vs_1_1 vsZAndDiffuseBaseDetailDirt();
 		PixelShader = compile PS2_EXT psZAndDiffuseBaseDetailDirt();
 	}
@@ -438,7 +438,7 @@ technique DX9ZAndDiffusebasedetaildirt
 
 technique DX9ZAndDiffusebasedetaildirtparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
@@ -449,7 +449,7 @@ technique DX9ZAndDiffusebasedetaildirtparallax
 		StencilFunc = ALWAYS;
 		StencilZFail = KEEP;
 		StencilPass = REPLACE;
-		
+
  		VertexShader = compile vs_1_1 vsZAndDiffuseBaseDetailDirtParallax();
 		PixelShader = compile PS2_EXT psZAndDiffuseBaseDetailDirtParallax();
 	}
@@ -457,7 +457,7 @@ technique DX9ZAndDiffusebasedetaildirtparallax
 
 technique DX9ZAndDiffusebasedetailcrack
 {
-	pass p0 
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
@@ -468,7 +468,7 @@ technique DX9ZAndDiffusebasedetailcrack
 		StencilFunc = ALWAYS;
 		StencilZFail = KEEP;
 		StencilPass = REPLACE;
-		
+
  		VertexShader = compile vs_1_1 vsZAndDiffuseBaseDetailCrack();
 		PixelShader = compile PS2_EXT psZAndDiffuseBaseDetailCrack();
 	}
@@ -476,7 +476,7 @@ technique DX9ZAndDiffusebasedetailcrack
 
 technique DX9ZAndDiffusebasedetailcrackparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
@@ -487,7 +487,7 @@ technique DX9ZAndDiffusebasedetailcrackparallax
 		StencilFunc = ALWAYS;
 		StencilZFail = KEEP;
 		StencilPass = REPLACE;
-		
+
  		VertexShader = compile vs_1_1 vsZAndDiffuseBaseDetailCrackParallax();
 		PixelShader = compile PS2_EXT psZAndDiffuseBaseDetailCrackParallax();
 	}
@@ -495,7 +495,7 @@ technique DX9ZAndDiffusebasedetailcrackparallax
 
 technique DX9ZAndDiffusebasedetaildirtcrack
 {
-	pass p0 
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
@@ -506,7 +506,7 @@ technique DX9ZAndDiffusebasedetaildirtcrack
 		StencilFunc = ALWAYS;
 		StencilZFail = KEEP;
 		StencilPass = REPLACE;
-		
+
  		VertexShader = compile vs_1_1 vsZAndDiffuseBaseDetailDirtCrack();
 		PixelShader = compile PS2_EXT psZAndDiffuseBaseDetailDirtCrack();
 	}
@@ -514,7 +514,7 @@ technique DX9ZAndDiffusebasedetaildirtcrack
 
 technique DX9ZAndDiffusebasedetaildirtcrackparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
@@ -525,7 +525,7 @@ technique DX9ZAndDiffusebasedetaildirtcrackparallax
 		StencilFunc = ALWAYS;
 		StencilZFail = KEEP;
 		StencilPass = REPLACE;
-		
+
  		VertexShader = compile vs_1_1 vsZAndDiffuseBaseDetailDirtCrackParallax();
 		PixelShader = compile PS2_EXT psZAndDiffuseBaseDetailDirtCrackParallax();
 	}
@@ -550,7 +550,7 @@ struct PS2FB_fullMRT4
 };
 
 struct appdata_vsGBuffBase {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
     float3 Tan : TANGENT;
     float3 Normal : NORMAL;
@@ -568,13 +568,13 @@ struct VS_OUT_vsGBuffBase {
 VS_OUT_vsGBuffBase vsGBuffBase(appdata_vsGBuffBase input)
 {
 	VS_OUT_vsGBuffBase Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
- 	
+
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
@@ -590,7 +590,7 @@ VS_OUT_vsGBuffBase vsGBuffBase(appdata_vsGBuffBase input)
 PS2FB_fullMRT psGBuffBase(VS_OUT_vsGBuffBase indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	outdata.Col0 = 1;
 	outdata.Col1 = indata.wPos;
 
@@ -600,13 +600,13 @@ PS2FB_fullMRT psGBuffBase(VS_OUT_vsGBuffBase indata)
 	outdata.Col2.y = dot(expandedNormal, indata.Mat2);
 	outdata.Col2.z = dot(expandedNormal, indata.Mat3);
 	outdata.Col2.w = expandedNormal.w;
-	
+
 	return outdata;
 }
 
 
 struct appdata_GBuffBaseLM{
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDiff : TEXCOORD0;
     float2 TexCoordLMap : TEXCOORD1;
     float3 Tan : TANGENT;
@@ -628,13 +628,13 @@ struct VS_OUT_GBuffBaseLM {
 VS_OUT_GBuffBaseLM vsGBuffBaseLM(appdata_GBuffBaseLM input)
 {
 	VS_OUT_GBuffBaseLM Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
@@ -645,14 +645,14 @@ VS_OUT_GBuffBaseLM vsGBuffBaseLM(appdata_GBuffBaseLM input)
 	// Pass-through texcoords
 	Out.Tex0Diff = input.TexCoordDiff;
 	Out.Tex1LMap = (input.TexCoordLMap*lightmapOffset.xy) + lightmapOffset.zw;
-	
+
 	return Out;
 }
 
 PS2FB_fullMRT psGBuffBaseLM(VS_OUT_GBuffBaseLM indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	outdata.Col0 = tex2D(samplerWrap2, indata.Tex1LMap);
 	outdata.Col1 = indata.wPos;
 
@@ -662,7 +662,7 @@ PS2FB_fullMRT psGBuffBaseLM(VS_OUT_GBuffBaseLM indata)
 	outdata.Col2.y = dot(expandedNormal, indata.Mat2);
 	outdata.Col2.z = dot(expandedNormal, indata.Mat3);
 	outdata.Col2.w = expandedNormal.w;
-	
+
 	return outdata;
 }
 
@@ -681,13 +681,13 @@ struct VS_OUT_GBuffBaseLMAT {
 VS_OUT_GBuffBaseLMAT vsGBuffBaseLMAT(appdata_GBuffBaseLM input)
 {
 	VS_OUT_GBuffBaseLMAT Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
@@ -699,7 +699,7 @@ VS_OUT_GBuffBaseLMAT vsGBuffBaseLMAT(appdata_GBuffBaseLM input)
 	// Pass-through texcoords
 	Out.Tex0Diff = input.TexCoordDiff;
 	Out.Tex1LMap = (input.TexCoordLMap*lightmapOffset.xy) + lightmapOffset.zw;
-	
+
 
 // Hacked to only support 800/600
  	Out.TexCoord6.xy = Out.HPos.xy/Out.HPos.w;
@@ -709,24 +709,24 @@ Out.TexCoord6.x += 0.000625;
 Out.TexCoord6.y += 0.000833;
 	Out.TexCoord6.xy = Out.TexCoord6.xy * Out.HPos.w;
 	Out.TexCoord6.zw = Out.HPos.zw;
-	
+
 	return Out;
 }
 
 PS2FB_fullMRT4 psGBuffBaseLMAT0(VS_OUT_GBuffBaseLMAT indata)
 {
 	PS2FB_fullMRT4 outdata;
-	
+
 	float4 diffTex = tex2D(samplerWrapAniso0, indata.Tex0Diff);
 	// float newDepth = indata.wPos.w + (1-diffTex.a);
 	// outdata.Depth = newDepth;
 	// clip(diffTex.a-0.1);
-	
+
 	float4 rtlightmap = tex2Dproj(sampler3clamppoint, indata.TexCoord6);
 	float4 rtposmap = tex2Dproj(sampler4clamppoint, indata.TexCoord6);
 	float4 rtnormalmap = tex2Dproj(sampler5clamppoint, indata.TexCoord6);
 	float4 rtdiffmap = tex2Dproj(sampler6clamppoint, indata.TexCoord6);
-	
+
 	float4 LMap = tex2D(samplerWrap2, indata.Tex1LMap);
 	outdata.Col0 = (diffTex.a >= 50.0/255.0) ? LMap : rtlightmap;
 	outdata.Col1 = (diffTex.a >= 50.0/255.0) ? float4(indata.wPos.rgb, 0): rtposmap;
@@ -739,7 +739,7 @@ PS2FB_fullMRT4 psGBuffBaseLMAT0(VS_OUT_GBuffBaseLMAT indata)
 	rotatedNormal.w = 0;
 	outdata.Col2 = (diffTex.a >= 50.0/255.0) ? rotatedNormal : rtnormalmap;
 	outdata.Col3 = (diffTex.a >= 50.0/255.0) ? diffTex : rtdiffmap;
-	
+
 	return outdata;
 }
 
@@ -753,7 +753,7 @@ VS_OUT_GBuffBaseLMAT1 vsGBuffBaseLMAT1(appdata_GBuffBaseLM indata)
 	VS_OUT_GBuffBaseLMAT1 outdata;
 
   	outdata.Pos = mul(indata.Pos, viewProjMatrix);
-	
+
  	outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
  	outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
  	outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
@@ -773,16 +773,16 @@ float4 psGBuffBaseLMAT1_Diffuse(VS_OUT_GBuffBaseLMAT1 indata) : COLOR
 PS2FB_fullMRT psGBuffBaseLMAT1_MRT(VS_OUT_GBuffBaseLMAT1 indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	outdata.Col0 = tex2Dproj(sampler0clamppoint, indata.TexCoord0);
 	outdata.Col1 = tex2Dproj(sampler1clamppoint, indata.TexCoord0);
 	outdata.Col2 = tex2Dproj(sampler2clamppoint, indata.TexCoord0);
-	
+
 	return outdata;
 }
 
 struct appdata_GBuffBaseDetail {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDetail : TEXCOORD0;
     float3 Tan : TANGENT;
     float3 Normal : NORMAL;
@@ -800,20 +800,20 @@ struct VS_OUT_GBuffBaseDetail {
 VS_OUT_GBuffBaseDetail vsGBuffBaseDetail(appdata_GBuffBaseDetail input)
 {
 	VS_OUT_GBuffBaseDetail Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
 	Out.Mat1 = tanToView[0];
 	Out.Mat2 = tanToView[1];
 	Out.Mat3 = tanToView[2];
-	
+
 	// Pass-through texcoords
 	Out.Tex1Detail = input.TexCoordDetail;
 	return Out;
@@ -822,17 +822,17 @@ VS_OUT_GBuffBaseDetail vsGBuffBaseDetail(appdata_GBuffBaseDetail input)
 PS2FB_fullMRT psGBuffBaseDetail(VS_OUT_GBuffBaseDetail indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	outdata.Col0 = 1;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = tex2D(samplerWrap2, indata.Tex1Detail);
 	expandedNormal.xyz = (expandedNormal.xyz * 2) - 1;
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
 	outdata.Col2.y = dot(expandedNormal, indata.Mat2);
 	outdata.Col2.z = dot(expandedNormal, indata.Mat3);
 	outdata.Col2.w = expandedNormal.w;
-	
+
 	return outdata;
 }
 
@@ -849,13 +849,13 @@ struct VS_OUT_GBuffBaseDetailParallax {
 VS_OUT_GBuffBaseDetailParallax vsGBuffBaseDetailParallax(appdata_GBuffBaseDetail input)
 {
 	VS_OUT_GBuffBaseDetailParallax Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	Out.tanEyeVec = mul(eyePosObjectSpace.xyz-input.Pos.xyz, tanBasis);
@@ -863,7 +863,7 @@ VS_OUT_GBuffBaseDetailParallax vsGBuffBaseDetailParallax(appdata_GBuffBaseDetail
 	Out.Mat1 = tanToView[0];
 	Out.Mat2 = tanToView[1];
 	Out.Mat3 = tanToView[2];
-	
+
 	// Pass-through texcoords
 	Out.Tex1Detail = input.TexCoordDetail;
 	return Out;
@@ -872,24 +872,24 @@ VS_OUT_GBuffBaseDetailParallax vsGBuffBaseDetailParallax(appdata_GBuffBaseDetail
 PS2FB_fullMRT psGBuffBaseDetailParallax(VS_OUT_GBuffBaseDetailParallax indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	outdata.Col0 = 1;
 	outdata.Col1 = indata.wPos;
 
 	float2 newTex1Detail = calculateOffsetCoordinatesFromAlpha(indata.Tex1Detail.xy, indata.Tex1Detail.xy, samplerWrap1, parallaxScaleBias, indata.tanEyeVec);
-	
+
 	float4 expandedNormal = tex2D(samplerWrap2, newTex1Detail);
 	expandedNormal.xyz = (expandedNormal.xyz * 2) - 1;
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
 	outdata.Col2.y = dot(expandedNormal, indata.Mat2);
 	outdata.Col2.z = dot(expandedNormal, indata.Mat3);
 	outdata.Col2.w = expandedNormal.w;
-	
+
 	return outdata;
 }
 
 struct appdata_GBuffBaseDetailLM {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDetail : TEXCOORD0;
     float2 TexCoordLMap : TEXCOORD1;
     float3 Tan : TANGENT;
@@ -909,13 +909,13 @@ struct VS_OUT_GBuffBaseDetailLM {
 VS_OUT_GBuffBaseDetailLM vsGBuffBaseDetailLM(appdata_GBuffBaseDetailLM input)
 {
 	VS_OUT_GBuffBaseDetailLM Out;
-   	   	
+
   	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
@@ -932,10 +932,10 @@ VS_OUT_GBuffBaseDetailLM vsGBuffBaseDetailLM(appdata_GBuffBaseDetailLM input)
 PS2FB_fullMRT psGBuffBaseDetailLM(VS_OUT_GBuffBaseDetailLM indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	outdata.Col0 = tex2D(samplerWrap3, indata.Tex2LMap);
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = tex2D(samplerWrap2, indata.Tex1Detail);
 	expandedNormal.xyz = (expandedNormal.xyz * 2) - 1;
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
@@ -960,13 +960,13 @@ struct VS_OUT_GBuffBaseDetailLMParallax {
 VS_OUT_GBuffBaseDetailLMParallax vsGBuffBaseDetailLMParallax(appdata_GBuffBaseDetailLM input)
 {
 	VS_OUT_GBuffBaseDetailLMParallax Out;
-   	   	
+
   	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	Out.tanEyeVec = mul((eyePosObjectSpace.xyz-input.Pos.xyz), tanBasis);
@@ -986,7 +986,7 @@ PS2FB_fullMRT psGBuffBaseDetailLMParallax(VS_OUT_GBuffBaseDetailLMParallax indat
 	PS2FB_fullMRT outdata;
 
 	float2 newTex1Detail = calculateOffsetCoordinatesFromAlpha(indata.Tex1Detail.xy, indata.Tex1Detail.xy, samplerWrap1, parallaxScaleBias, indata.tanEyeVec);
-	
+
 	float4 expandedNormal = tex2D(samplerWrap2, newTex1Detail);
 	expandedNormal.xyz = (expandedNormal.xyz * 2) - 1;
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
@@ -1001,7 +1001,7 @@ PS2FB_fullMRT psGBuffBaseDetailLMParallax(VS_OUT_GBuffBaseDetailLMParallax indat
 }
 
 struct appdata_GBuffBaseDetailDirt {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDetail : TEXCOORD0;
     float3 Tan : TANGENT;
     float3 Normal : NORMAL;
@@ -1025,7 +1025,7 @@ VS_OUT_GBuffBaseDetailDirt vsGBuffBaseDetailDirt(appdata_GBuffBaseDetailDirt inp
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
@@ -1035,17 +1035,17 @@ VS_OUT_GBuffBaseDetailDirt vsGBuffBaseDetailDirt(appdata_GBuffBaseDetailDirt inp
 
 	// Pass-through texcoords
 	Out.Tex1Detail = input.TexCoordDetail;
-	
+
 	return Out;
 }
 
 PS2FB_fullMRT psGBuffBaseDetailDirt(VS_OUT_GBuffBaseDetailDirt indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	outdata.Col0 = 1;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = tex2D(samplerWrap3, indata.Tex1Detail);
 	expandedNormal.xyz = (expandedNormal.xyz * 2) - 1;
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
@@ -1075,7 +1075,7 @@ VS_OUT_GBuffBaseDetailDirtParallax vsGBuffBaseDetailDirtParallax(appdata_GBuffBa
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	Out.tanEyeVec = mul(eyePosObjectSpace.xyz-input.Pos.xyz, tanBasis);
@@ -1086,17 +1086,17 @@ VS_OUT_GBuffBaseDetailDirtParallax vsGBuffBaseDetailDirtParallax(appdata_GBuffBa
 
 	// Pass-through texcoords
 	Out.Tex1Detail = input.TexCoordDetail;
-	
+
 	return Out;
 }
 
 PS2FB_fullMRT psGBuffBaseDetailDirtParallax(VS_OUT_GBuffBaseDetailDirtParallax indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	outdata.Col0 = 1;
 	outdata.Col1 = indata.wPos;
-	
+
 	float2 newTex1Detail = calculateOffsetCoordinatesFromAlpha(indata.Tex1Detail.xy, indata.Tex1Detail.xy, samplerWrap1, parallaxScaleBias, indata.tanEyeVec);
 
 	float4 expandedNormal = tex2D(samplerWrap3, newTex1Detail);
@@ -1110,7 +1110,7 @@ PS2FB_fullMRT psGBuffBaseDetailDirtParallax(VS_OUT_GBuffBaseDetailDirtParallax i
 }
 
 struct appdata_GBuffBaseDetailDirtLM {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDetail : TEXCOORD0;
 	float2 TexCoordLMap : TEXCOORD1;
     float3 Tan : TANGENT;
@@ -1136,7 +1136,7 @@ VS_OUT_GBuffBaseDetailDirtLM vsGBuffBaseDetailDirtLM(appdata_GBuffBaseDetailDirt
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
@@ -1153,19 +1153,19 @@ VS_OUT_GBuffBaseDetailDirtLM vsGBuffBaseDetailDirtLM(appdata_GBuffBaseDetailDirt
 PS2FB_fullMRT psGBuffBaseDetailDirtLM(VS_OUT_GBuffBaseDetailDirtLM indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	float4 lightmap = tex2D(samplerWrap4, indata.Tex3LMap);
 
 	outdata.Col0 = lightmap;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = tex2D(samplerWrap3, indata.Tex1Detail);
 	expandedNormal.xyz = (expandedNormal.xyz * 2) - 1;
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
 	outdata.Col2.y = dot(expandedNormal, indata.Mat2);
 	outdata.Col2.z = dot(expandedNormal, indata.Mat3);
 	outdata.Col2.w = expandedNormal.w;
-	
+
 	return outdata;
 }
 
@@ -1189,7 +1189,7 @@ VS_OUT_GBuffBaseDetailDirtLMParallax vsGBuffBaseDetailDirtLMParallax(appdata_GBu
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	Out.tanEyeVec = mul(eyePosObjectSpace.xyz-input.Pos.xyz, tanBasis);
@@ -1209,24 +1209,24 @@ PS2FB_fullMRT psGBuffBaseDetailDirtLMParallax(VS_OUT_GBuffBaseDetailDirtLMParall
 	PS2FB_fullMRT outdata;
 
 	float2 newTex1Detail = calculateOffsetCoordinatesFromAlpha(indata.Tex1Detail.xy, indata.Tex1Detail.xy, samplerWrap1, parallaxScaleBias, indata.tanEyeVec);
-	
+
 	float4 lightmap = tex2D(samplerWrap4, indata.Tex3LMap.xy);
 
 	outdata.Col0 = lightmap;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = tex2D(samplerWrap3, newTex1Detail);
 	expandedNormal.xyz = (expandedNormal.xyz * 2) - 1;
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
 	outdata.Col2.y = dot(expandedNormal, indata.Mat2);
 	outdata.Col2.z = dot(expandedNormal, indata.Mat3);
 	outdata.Col2.w = expandedNormal.w;
-	
+
 	return outdata;
 }
 
 struct appdata_GBuffBaseDetailCrack {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDetail : TEXCOORD0;
     float2 TexCoordCrack : TEXCOORD1;
     float3 Tan : TANGENT;
@@ -1246,13 +1246,13 @@ struct VS_OUT_GBuffBaseDetailCrack {
 VS_OUT_GBuffBaseDetailCrack vsGBuffBaseDetailCrack(appdata_GBuffBaseDetailCrack input)
 {
 	VS_OUT_GBuffBaseDetailCrack Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
@@ -1263,21 +1263,21 @@ VS_OUT_GBuffBaseDetailCrack vsGBuffBaseDetailCrack(appdata_GBuffBaseDetailCrack 
 	// Pass-through texcoords
 	Out.Tex1Detail = input.TexCoordDetail;
 	Out.Tex2Crack = input.TexCoordCrack;
-	
+
 	return Out;
 }
 
 PS2FB_fullMRT psGBuffBaseDetailCrack(VS_OUT_GBuffBaseDetailCrack indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	float4 crack = tex2D(samplerWrap2, indata.Tex2Crack);
 	float4 detailNormal = tex2D(samplerWrap3, indata.Tex1Detail) * (1-crack.a);
 	float4 crackNormal = tex2D(samplerWrap4, indata.Tex2Crack) * crack.a;
 
 	outdata.Col0 = 1;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = (detailNormal+crackNormal);
 	expandedNormal.xyz = normalize((expandedNormal.xyz * 2) - 1);
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
@@ -1302,13 +1302,13 @@ struct VS_OUT_GBuffBaseDetailCrackParallax {
 VS_OUT_GBuffBaseDetailCrackParallax vsGBuffBaseDetailCrackParallax(appdata_GBuffBaseDetailCrack input)
 {
 	VS_OUT_GBuffBaseDetailCrackParallax Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	Out.tanEyeVec = mul(eyePosObjectSpace.xyz-input.Pos.xyz, tanBasis);
@@ -1320,7 +1320,7 @@ VS_OUT_GBuffBaseDetailCrackParallax vsGBuffBaseDetailCrackParallax(appdata_GBuff
 	// Pass-through texcoords
 	Out.Tex1Detail = input.TexCoordDetail;
 	Out.Tex2Crack = input.TexCoordCrack;
-	
+
 	return Out;
 }
 
@@ -1329,14 +1329,14 @@ PS2FB_fullMRT psGBuffBaseDetailCrackParallax(VS_OUT_GBuffBaseDetailCrackParallax
 	PS2FB_fullMRT outdata;
 
 	float2 newTex1Detail = calculateOffsetCoordinatesFromAlpha(indata.Tex1Detail.xy, indata.Tex1Detail.xy, samplerWrap1, parallaxScaleBias, indata.tanEyeVec);
-	
+
 	float4 crack = tex2D(samplerWrap2, indata.Tex2Crack);
 	float4 detailNormal = tex2D(samplerWrap3, newTex1Detail) * (1-crack.a);
 	float4 crackNormal = tex2D(samplerWrap4, indata.Tex2Crack) * crack.a;
 
 	outdata.Col0 = 1;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = (detailNormal+crackNormal);
 	expandedNormal.xyz = normalize((expandedNormal.xyz * 2) - 1);
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
@@ -1348,7 +1348,7 @@ PS2FB_fullMRT psGBuffBaseDetailCrackParallax(VS_OUT_GBuffBaseDetailCrackParallax
 }
 
 struct appdata_GBuffBaseDetailCrackLM {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDetail : TEXCOORD0;
     float2 TexCoordCrack : TEXCOORD1;
 	float2 TexCoordLMap : TEXCOORD2;
@@ -1370,13 +1370,13 @@ struct VS_OUT_GBuffBaseDetailCrackLM {
 VS_OUT_GBuffBaseDetailCrackLM vsGBuffBaseDetailCrackLM(appdata_GBuffBaseDetailCrackLM input)
 {
 	VS_OUT_GBuffBaseDetailCrackLM Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
@@ -1402,7 +1402,7 @@ PS2FB_fullMRT psGBuffBaseDetailCrackLM(VS_OUT_GBuffBaseDetailCrackLM indata)
 
 	outdata.Col0 = lightmap;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = detailNormal + crackNormal;
 	expandedNormal.xyz = normalize((expandedNormal.xyz * 2) - 1);
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
@@ -1428,13 +1428,13 @@ struct VS_OUT_GBuffBaseDetailCrackLMParallax {
 VS_OUT_GBuffBaseDetailCrackLMParallax vsGBuffBaseDetailCrackLMParallax(appdata_GBuffBaseDetailCrackLM input)
 {
 	VS_OUT_GBuffBaseDetailCrackLMParallax Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	Out.tanEyeVec = mul(eyePosObjectSpace.xyz-input.Pos.xyz, tanBasis);
@@ -1463,7 +1463,7 @@ PS2FB_fullMRT psGBuffBaseDetailCrackLMParallax(VS_OUT_GBuffBaseDetailCrackLMPara
 
 	outdata.Col0 = lightmap;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = detailNormal + crackNormal;
 	expandedNormal.xyz = normalize((expandedNormal.xyz * 2) - 1);
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
@@ -1475,7 +1475,7 @@ PS2FB_fullMRT psGBuffBaseDetailCrackLMParallax(VS_OUT_GBuffBaseDetailCrackLMPara
 }
 
 struct appdata_GBuffBaseDetailDirtCrack {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDetail : TEXCOORD0;
     float2 TexCoordCrack : TEXCOORD1;
     float3 Tan : TANGENT;
@@ -1495,13 +1495,13 @@ struct VS_OUT_GBuffBaseDetailDirtCrack {
 VS_OUT_GBuffBaseDetailDirtCrack vsGBuffBaseDetailDirtCrack(appdata_GBuffBaseDetailDirtCrack input)
 {
 	VS_OUT_GBuffBaseDetailDirtCrack Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
@@ -1512,7 +1512,7 @@ VS_OUT_GBuffBaseDetailDirtCrack vsGBuffBaseDetailDirtCrack(appdata_GBuffBaseDeta
 	// Pass-through texcoords
 	Out.Tex1Detail = input.TexCoordDetail;
 	Out.Tex3Crack = input.TexCoordCrack;
-	
+
 	return Out;
 }
 
@@ -1526,14 +1526,14 @@ PS2FB_fullMRT psGBuffBaseDetailDirtCrack(VS_OUT_GBuffBaseDetailDirtCrack indata)
 
 	outdata.Col0 = 1;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = detailNormal + crackNormal;
 	expandedNormal.xyz = normalize((expandedNormal.xyz * 2) - 1);
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
 	outdata.Col2.y = dot(expandedNormal, indata.Mat2);
 	outdata.Col2.z = dot(expandedNormal, indata.Mat3);
 	outdata.Col2.w = expandedNormal.w;
-	
+
 	return outdata;
 }
 
@@ -1551,13 +1551,13 @@ struct VS_OUT_GBuffBaseDetailDirtCrackParallax {
 VS_OUT_GBuffBaseDetailDirtCrackParallax vsGBuffBaseDetailDirtCrackParallax(appdata_GBuffBaseDetailDirtCrack input)
 {
 	VS_OUT_GBuffBaseDetailDirtCrackParallax Out;
-   	   	
+
  	Out.HPos = mul(input.Pos, viewProjMatrix);
 	Out.wPos = mul(input.Pos, worldViewMatrix);
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	Out.tanEyeVec = mul(eyePosObjectSpace.xyz-input.Pos.xyz, tanBasis);
@@ -1569,7 +1569,7 @@ VS_OUT_GBuffBaseDetailDirtCrackParallax vsGBuffBaseDetailDirtCrackParallax(appda
 	// Pass-through texcoords
 	Out.Tex1Detail = input.TexCoordDetail;
 	Out.Tex3Crack = input.TexCoordCrack;
-	
+
 	return Out;
 }
 
@@ -1585,19 +1585,19 @@ PS2FB_fullMRT psGBuffBaseDetailDirtCrackParallax(VS_OUT_GBuffBaseDetailDirtCrack
 
 	outdata.Col0 = 1;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = detailNormal + crackNormal;
 	expandedNormal.xyz = normalize((expandedNormal.xyz * 2) - 1);
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
 	outdata.Col2.y = dot(expandedNormal, indata.Mat2);
 	outdata.Col2.z = dot(expandedNormal, indata.Mat3);
 	outdata.Col2.w = expandedNormal.w;
-	
+
 	return outdata;
 }
 
 struct appdata_GBuffBaseDetailDirtCrackLM {
-    float4 Pos : POSITION;    
+    float4 Pos : POSITION;
     float2 TexCoordDetail : TEXCOORD0;
     float2 TexCoordCrack : TEXCOORD1;
 	float2 TexCoordLMap : TEXCOORD2;
@@ -1624,7 +1624,7 @@ VS_OUT_GBuffBaseDetailDirtCrackLM vsGBuffBaseDetailDirtCrackLM(appdata_GBuffBase
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	float3x3 tanToView = transpose(mul(tanBasis, worldViewITMatrix));
@@ -1642,7 +1642,7 @@ VS_OUT_GBuffBaseDetailDirtCrackLM vsGBuffBaseDetailDirtCrackLM(appdata_GBuffBase
 PS2FB_fullMRT psGBuffBaseDetailDirtCrackLM(VS_OUT_GBuffBaseDetailDirtCrackLM indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	float4 crack = tex2D(samplerWrapAniso3, indata.Tex3CrackAndLMap.xy);
 	float4 detailNormal = tex2D(samplerWrap4, indata.Tex1Detail) * (1-crack.a);
 	float4 crackNormal = tex2D(samplerWrap5, indata.Tex3CrackAndLMap.xy) * crack.a;
@@ -1650,14 +1650,14 @@ PS2FB_fullMRT psGBuffBaseDetailDirtCrackLM(VS_OUT_GBuffBaseDetailDirtCrackLM ind
 
 	outdata.Col0 = lightmap;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = detailNormal + crackNormal;
 	expandedNormal.xyz = normalize((expandedNormal.xyz * 2) - 1);
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
 	outdata.Col2.y = dot(expandedNormal, indata.Mat2);
 	outdata.Col2.z = dot(expandedNormal, indata.Mat3);
 	outdata.Col2.w = expandedNormal.w;
-	
+
 	return outdata;
 }
 
@@ -1681,7 +1681,7 @@ VS_OUT_GBuffBaseDetailDirtCrackLMParallax vsGBuffBaseDetailDirtCrackLMParallax(a
 
 	// Cross product to create BiNormal
 	float3 binormal = normalize(cross(input.Tan, input.Normal));
-	
+
 	// Calculate tangent->view space transformation
 	float3x3 tanBasis = float3x3(input.Tan, binormal, input.Normal);
 	Out.tanEyeVec = mul(eyePosObjectSpace.xyz-input.Pos.xyz, tanBasis);
@@ -1700,7 +1700,7 @@ VS_OUT_GBuffBaseDetailDirtCrackLMParallax vsGBuffBaseDetailDirtCrackLMParallax(a
 PS2FB_fullMRT psGBuffBaseDetailDirtCrackLMParallax(VS_OUT_GBuffBaseDetailDirtCrackLMParallax indata)
 {
 	PS2FB_fullMRT outdata;
-	
+
 	float2 newTex1Detail = calculateOffsetCoordinatesFromAlpha(indata.Tex1Detail.xy, indata.Tex1Detail.xy, samplerWrap1, parallaxScaleBias, indata.tanEyeVec);
 
 	float4 crack = tex2D(samplerWrapAniso3, indata.Tex3CrackAndLMap.xy);
@@ -1710,25 +1710,25 @@ PS2FB_fullMRT psGBuffBaseDetailDirtCrackLMParallax(VS_OUT_GBuffBaseDetailDirtCra
 
 	outdata.Col0 = lightmap;
 	outdata.Col1 = indata.wPos;
-	
+
 	float4 expandedNormal = detailNormal + crackNormal;
 	expandedNormal.xyz = normalize((expandedNormal.xyz * 2) - 1);
 	outdata.Col2.x = dot(expandedNormal, indata.Mat1);
 	outdata.Col2.y = dot(expandedNormal, indata.Mat2);
 	outdata.Col2.z = dot(expandedNormal, indata.Mat3);
 	outdata.Col2.w = expandedNormal.w;
-	
+
 	return outdata;
 }
 
 technique DX9GBuffbase
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBase();
@@ -1738,12 +1738,12 @@ technique DX9GBuffbase
 
 technique DX9GBuffbaseLM
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseLM();
@@ -1753,14 +1753,14 @@ technique DX9GBuffbaseLM
 
 technique DX9GBuffbaseLMAT0
 {
-	pass p0 
+	pass p0
 	{
 		// ZWriteEnable = FALSE;
 		// ZFunc = EQUAL;
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
-				
+
 		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 		StencilEnable = FALSE;
 // TL: Need stencil from this?
@@ -1776,7 +1776,7 @@ technique DX9GBuffbaseLMAT0
 }
 
 technique DX9GBuffbaseLMAT1
-{	
+{
 	pass diffuse
 	{
 		// ZWriteEnable = FALSE;
@@ -1784,7 +1784,7 @@ technique DX9GBuffbaseLMAT1
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
-				
+
 		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 		StencilEnable = FALSE;
 
@@ -1794,7 +1794,7 @@ technique DX9GBuffbaseLMAT1
 }
 
 technique DX9GBuffbaseLMAT2
-{	
+{
 	pass mrt
 	{
 		// ZWriteEnable = FALSE;
@@ -1802,7 +1802,7 @@ technique DX9GBuffbaseLMAT2
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
-				
+
 		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 		StencilEnable = FALSE;
 
@@ -1814,12 +1814,12 @@ technique DX9GBuffbaseLMAT2
 
 technique DX9GBuffbasedetail
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetail();
@@ -1829,12 +1829,12 @@ technique DX9GBuffbasedetail
 
 technique DX9GBuffbasedetailparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailParallax();
@@ -1844,12 +1844,12 @@ technique DX9GBuffbasedetailparallax
 
 technique DX9GBuffbasedetailLM
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailLM();
@@ -1859,12 +1859,12 @@ technique DX9GBuffbasedetailLM
 
 technique DX9GBuffbasedetailLMparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailLMParallax();
@@ -1874,12 +1874,12 @@ technique DX9GBuffbasedetailLMparallax
 
 technique DX9GBuffbasedetaildirt
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailDirt();
@@ -1889,12 +1889,12 @@ technique DX9GBuffbasedetaildirt
 
 technique DX9GBuffbasedetaildirtparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailDirtParallax();
@@ -1904,12 +1904,12 @@ technique DX9GBuffbasedetaildirtparallax
 
 technique DX9GBuffbasedetaildirtLM
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailDirtLM();
@@ -1919,12 +1919,12 @@ technique DX9GBuffbasedetaildirtLM
 
 technique DX9GBuffbasedetaildirtLMparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailDirtLMParallax();
@@ -1934,12 +1934,12 @@ technique DX9GBuffbasedetaildirtLMparallax
 
 technique DX9GBuffbasedetailcrack
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailCrack();
@@ -1949,12 +1949,12 @@ technique DX9GBuffbasedetailcrack
 
 technique DX9GBuffbasedetailcrackparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailCrackParallax();
@@ -1964,12 +1964,12 @@ technique DX9GBuffbasedetailcrackparallax
 
 technique DX9GBuffbasedetailcrackLM
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailCrackLM();
@@ -1979,12 +1979,12 @@ technique DX9GBuffbasedetailcrackLM
 
 technique DX9GBuffbasedetailcrackLMparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailCrackLMParallax();
@@ -1994,12 +1994,12 @@ technique DX9GBuffbasedetailcrackLMparallax
 
 technique DX9GBuffbasedetaildirtcrack
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailDirtCrack();
@@ -2009,12 +2009,12 @@ technique DX9GBuffbasedetaildirtcrack
 
 technique DX9GBuffbasedetaildirtcrackparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailDirtCrackParallax();
@@ -2024,12 +2024,12 @@ technique DX9GBuffbasedetaildirtcrackparallax
 
 technique DX9GBuffbasedetaildirtcrackLM
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailDirtCrackLM();
@@ -2039,12 +2039,12 @@ technique DX9GBuffbasedetaildirtcrackLM
 
 technique DX9GBuffbasedetaildirtcrackLMparallax
 {
-	pass p0 
+	pass p0
 	{
 		ZWriteEnable = FALSE;
 		ZFunc = EQUAL;
 		ZEnable = TRUE;
-		
+
 		StencilEnable = FALSE;
 
  		VertexShader = compile vs_1_1 vsGBuffBaseDetailDirtCrackLMParallax();
