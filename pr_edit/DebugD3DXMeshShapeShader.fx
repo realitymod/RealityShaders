@@ -110,10 +110,8 @@ PS2FB PS_Debug_Basic_1(VS2PS_Basic Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float3 Normal = normalize(Input.Normal);
-
 	float4 Ambient = _MaterialAmbient;
-	float HalfNL = GetHalfNL(Normal, _LightDir.xyz);
+	float HalfNL = GetHalfNL(Input.Normal, _LightDir.xyz);
 	float3 OutputColor = Ambient.rgb + (HalfNL * _MaterialDiffuse.rgb);
 
 	Output.Color = float4(OutputColor, Ambient.a);
@@ -318,10 +316,7 @@ PS2FB PS_Debug_CollisionMesh(VS2PS_CollisionMesh Input, uniform float MaterialFa
 {
 	PS2FB Output = (PS2FB)0;
 
-	float3 Normal = normalize(Input.Normal);
-	float3 LightDir = normalize(float3(-1.0, -1.0, 1.0));
-
-	float HalfNL = GetHalfNL(Normal, LightDir);
+	float HalfNL = GetHalfNL(Input.Normal, float3(-1.0, -1.0, 1.0));
 	float3 Ambient = (_MaterialAmbient.rgb * MaterialFactor) + 0.1;
 	float3 Diffuse = HalfNL * (_MaterialDiffuse.rgb * MaterialFactor);
 
@@ -493,9 +488,7 @@ PS2FB PS_Debug_Grid(VS2PS_Grid Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float3 Normal = normalize(Input.Normal);
-
-	float HalfNL = GetHalfNL(Normal, _LightDir.xyz);
+	float HalfNL = GetHalfNL(Input.Normal, _LightDir.xyz);
 	float3 Lighting = _MaterialAmbient.rgb + (HalfNL * _MaterialDiffuse.rgb);
 
 	float4 Tex = tex2D(SampleTex0, Input.Tex0.xy);

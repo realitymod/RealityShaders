@@ -123,8 +123,6 @@ VS2PS VS_Decals(APP2VS Input)
 
 float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 {
-	float3 Normals = normalize(Input.Normal.xyz);
-
 	float Fade = 1.0 - saturate((Input.Pos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
 	float Alpha = saturate(Fade * Input.Color.a);
 	float Shadow = 1.0;
@@ -143,6 +141,7 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 	}
 
 	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex0);
+	float3 Normals = normalize(Input.Normal.xyz);
 	float HalfNL = GetHalfNL(Normals, -_SunDirection.xyz);
 	float3 Diffuse = (HalfNL * _SunColor) * Shadow;
 
