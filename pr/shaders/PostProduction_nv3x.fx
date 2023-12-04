@@ -64,12 +64,10 @@ uniform float _DeltaV : DELTAV;
 		AddressV = ADDRESS; \
 	}; \
 
-/*
-	Unused?
-	uniform texture Texture4 : TEXLAYER4;
-	uniform texture Texture5 : TEXLAYER5;
-	uniform texture Texture6 : TEXLAYER6;
-*/
+// Unused?
+uniform texture Texture4 : TEXLAYER4;
+uniform texture Texture5 : TEXLAYER5;
+uniform texture Texture6 : TEXLAYER6;
 
 uniform texture Tex0 : TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP)
