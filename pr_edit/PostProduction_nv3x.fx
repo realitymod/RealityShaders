@@ -21,7 +21,7 @@
 */
 
 #define TINNITUS_BLUR_RADIUS 1.0
-#define THERMAL_SIZE 500.0
+#define THERMAL_SIZE 720.0
 
 /*
 	[Attributes from app]
@@ -314,8 +314,8 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 
 		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
 		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
-		OutputColor.r -= _Interference * Random; // Add -_Interference
-		OutputColor = float4(_TVColor * OutputColor.rrr, Image.a);
+		OutputColor.r = saturate(OutputColor.r - (_Interference * Random)); // Add -_Interference
+		OutputColor = float4(QuantizeRGB(_TVColor * OutputColor.r, 32.0), Image.a);
 	}
 	else if (_Interference > 0 && _Interference <= 1) // BF2 TV
 	{
@@ -327,7 +327,7 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 
 		// Fetch image
 		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
-		OutputColor = float4(_TVColor, 1.0) * TVFactor;
+		OutputColor = float4(QuantizeRGB(_TVColor, 32.0), 1.0) * TVFactor;
 	}
 	else // Passthrough
 	{
@@ -380,7 +380,7 @@ float4 PS_ThermalVision_Gradient(VS2PS_Quad Input) : COLOR0
 
 		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
 		float4 GradientColor = tex2D(SampleTex3, float2(TVFactor, 0.0));
-		OutputColor = float4(GradientColor.rgb, TVFactor);
+		OutputColor = float4(QuantizeRGB(GradientColor.rgb, 32.0), TVFactor);
 	}
 	else
 	{
