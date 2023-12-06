@@ -28,6 +28,11 @@
 		return lerp(GetMin3(Input), GetMax3(Input), 1.0 / 2.0);
 	}
 
+	float3 QuantizeRGB(float3 Color, float Depth)
+	{
+		return floor(Color * Depth) / Depth;
+	}
+
 	/*
 		https://www.shadertoy.com/view/4djSRW
 
