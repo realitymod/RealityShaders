@@ -315,6 +315,7 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
 		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
 		OutputColor.r = saturate(OutputColor.r - (_Interference * Random)); // Add -_Interference
+		OutputColor = float4(QuantizeRGB(_TVColor * OutputColor.r, 32.0), Image.a);
 	}
 	else if (_Interference > 0 && _Interference <= 1) // BF2 TV
 	{
