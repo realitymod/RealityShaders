@@ -272,14 +272,12 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	*/
 
 	// Prevents non-detailed bundledmesh from looking shiny
-	float SpecularExponent = SpecularPower;
 	#if _HASCOLORMAPGLOSS_
 		float Gloss = ColorTex.a;
 	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
 		float Gloss = NormalMap.a;
 	#else
-		float Gloss = StaticGloss * GetMean3(ColorTex.rgb);
-		SpecularExponent = 1.0;
+		float Gloss = 0.0;
 	#endif
 
 	#if _HASENVMAP_
@@ -321,7 +319,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		const float Attenuation = 1.0;
 	#endif
 
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularExponent);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb)* TotalLights;
 	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].specularColor.rgb) * TotalLights;

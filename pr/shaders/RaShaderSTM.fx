@@ -159,7 +159,7 @@ float2 GetParallax(float2 TexCoords, float3 ViewDir)
 float4 GetDiffuseMap(VS2PS Input, float3 TanViewDir, out float DiffuseGloss)
 {
 	float4 Diffuse = 1.0;
-	DiffuseGloss = 0.0;
+	DiffuseGloss = StaticGloss;
 
 	#if _BASE_
 		Diffuse = tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy);
@@ -192,8 +192,6 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanViewDir, out float DiffuseGloss)
 		float4 Crack = tex2D(SampleCrackMap, Input.DirtAndCrack.zw);
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
-
-	DiffuseGloss = StaticGloss * GetMean3(Diffuse.rgb);
 
 	return Diffuse;
 }
