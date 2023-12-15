@@ -20,7 +20,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define TINNITUS_BLUR_RADIUS 1.0
+#define TINNITUS_BLUR_RADIUS 2.0
 #define THERMAL_SIZE 720.0
 
 /*
@@ -149,25 +149,29 @@ float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 	float LerpBias = saturate(smoothstep(0.0, 0.5, SatLerpBias));
 
 	// Spread the blur as you go lower on the screen
-	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
-	SpreadFactor *= TINNITUS_BLUR_RADIUS;
-	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor);
+	float SpreadFactor = TINNITUS_BLUR_RADIUS * LerpBias;
+	float4 Color = tex2D(SampleTex0_Mirror, Input.Tex0);
+	float4 Blur = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor, false);
+	Color = lerp(Color, Blur, smoothstep(0.0, 0.5, Input.Tex0.y));
 
 	// Get mask coordinates
-	float2 MaskTexPeak = (float2(1.0, 1.0) * float2(2.0, 1.0)) - 1.0;
-	float2 MaskTex = ((Input.Tex0) * float2(2.0, 1.0)) - 1.0;
+	float2 MaskTexPeak = 1.0;
+	float2 MaskTex = float2(Input.Tex0.x, 1.0 - Input.Tex0.y);
+
+	// Adjust mask coordinates
+	MaskTexPeak = (MaskTexPeak * float2(2.0, 1.0)) - 1.0;
+	MaskTex = (MaskTex * float2(2.0, 1.0)) - 1.0;
 
 	// Get SDF mask that darkens the left, right, and top edges
-	float HalfValue = 0.4;
+	float HalfValue = lerp(0.0, 0.4, LerpBias);
 	float FocusPeak = length(MaskTexPeak - (float2)HalfValue);
 	float FocusMain = length(max(abs(MaskTex) - (float2)HalfValue, 0.0));
 	float FocusMask = saturate(smoothstep(0.0, FocusPeak, FocusMain));
 
 	// Composite final product
-	float3 OutputColor = lerp(Color.rgb, 0.0, FocusMask);
+	float4 OutputColor = float4(lerp(Color.rgb, 0.0, FocusMask), LerpBias);
 
-	return float4(OutputColor.rgb, LerpBias);
+	return OutputColor;
 }
 
 technique Tinnitus

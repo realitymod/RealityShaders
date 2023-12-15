@@ -222,7 +222,7 @@
 		Convolutions
 	*/
 
-	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias)
+	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias, bool UseHash)
 	{
 		// Initialize values
 		float4 OutputColor = 0.0;
@@ -251,7 +251,7 @@
 				sincos(Shift, AngleShift.x, AngleShift.y);
 				AngleShift *= float(i);
 
-				float2 Offset = mul(AngleShift, RotationMatrix);
+				float2 Offset = (UseHash) ? mul(AngleShift, RotationMatrix) : AngleShift;
 				Offset.x *= AspectRatio;
 				Offset *= Bias;
 				OutputColor += tex2D(Source, Tex + (Offset * 0.01));
