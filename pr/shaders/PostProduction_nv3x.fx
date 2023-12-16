@@ -20,7 +20,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define TINNITUS_BLUR_RADIUS 2.0
+#define TINNITUS_BLUR_RADIUS 1.0
 #define THERMAL_SIZE 720.0
 
 /*
