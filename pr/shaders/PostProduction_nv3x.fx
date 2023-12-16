@@ -149,14 +149,14 @@ float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 	float LerpBias = saturate(smoothstep(0.0, 0.5, SatLerpBias));
 
 	// Spread the blur as you go lower on the screen
-	float SpreadFactor = TINNITUS_BLUR_RADIUS * LerpBias;
-	float4 Color = tex2D(SampleTex0_Mirror, Input.Tex0);
-	float4 Blur = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor, false);
-	Color = lerp(Color, Blur, smoothstep(0.0, 0.5, Input.Tex0.y));
+	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
+	SpreadFactor *= TINNITUS_BLUR_RADIUS;
+	SpreadFactor *= LerpBias;
+	float4 Color = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor, true);
 
 	// Get mask coordinates
 	float2 MaskTexPeak = 1.0;
-	float2 MaskTex = float2(Input.Tex0.x, 1.0 - Input.Tex0.y);
+	float2 MaskTex = Input.Tex0;
 
 	// Adjust mask coordinates
 	MaskTexPeak = (MaskTexPeak * float2(2.0, 1.0)) - 1.0;
@@ -169,9 +169,9 @@ float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 	float FocusMask = saturate(smoothstep(0.0, FocusPeak, FocusMain));
 
 	// Composite final product
-	float4 OutputColor = float4(lerp(Color.rgb, 0.0, FocusMask), LerpBias);
+	float3 OutputColor = lerp(Color.rgb, 0.0, FocusMask);
 
-	return OutputColor;
+	return float4(OutputColor.rgb, LerpBias);
 }
 
 technique Tinnitus
