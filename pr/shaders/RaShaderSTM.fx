@@ -147,16 +147,7 @@ VS2PS VS_StaticMesh(APP2VS Input)
 	return Output;
 }
 
-float2 GetParallax(float2 TexCoords, float3 ViewDir)
-{
-	float Height = tex2D(SampleNormalMap, TexCoords).a;
-	Height = (Height * 2.0) - 1.0;
-	Height = Height * ParallaxScaleBias.xy + ParallaxScaleBias.wz;
-	ViewDir = ViewDir * float3(1.0, -1.0, 1.0);
-	return TexCoords + ((Height * ViewDir.xy) * PARALLAX_BIAS);
-}
-
-float4 GetDiffuseMap(VS2PS Input, float3 TanViewDir, out float DiffuseGloss)
+float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 {
 	float4 Diffuse = 1.0;
 	DiffuseGloss = StaticGloss;
@@ -167,7 +158,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanViewDir, out float DiffuseGloss)
 
 	// TODO: Fix parallax mapping
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
-		float4 Detail = tex2D(SampleDetailMap, Input.BaseAndDetail.zw);
+		float4 Detail = tex2D(SampleDetailMap, ParallaxTex);
 	#endif
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
@@ -197,7 +188,7 @@ float4 GetDiffuseMap(VS2PS Input, float3 TanViewDir, out float DiffuseGloss)
 }
 
 // This also includes the composite Gloss map
-float3 GetNormalMap(VS2PS Input, float3 TanViewDir, float3x3 WorldTBN)
+float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 {
 	#if defined(_PERPIXEL_)
 		float3 TangentNormal = float3(0.0, 0.0, 1.0);
@@ -205,7 +196,7 @@ float3 GetNormalMap(VS2PS Input, float3 TanViewDir, float3x3 WorldTBN)
 			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
 		#endif
 		#if _PARALLAXDETAIL_
-			TangentNormal = tex2D(SampleNormalMap, GetParallax(Input.BaseAndDetail.zw, TanViewDir)).xyz;
+			TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
 		#elif _NDETAIL_
 			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 		#endif
@@ -263,11 +254,12 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	// Tangent-space data
 	// mul(mat, vec) == mul(vec, transpose(mat))
 	float3 TanViewDir = normalize(mul(WorldTBN, WorldViewDir));
+	float2 ParallaxTex = GetParallaxTex(SampleNormalMap, Input.BaseAndDetail.zw, TanViewDir, ParallaxScaleBias.xy * PARALLAX_BIAS, ParallaxScaleBias.wz);
 
 	// Prepare texture data
 	float Gloss;
-	float4 ColorMap = GetDiffuseMap(Input, TanViewDir, Gloss);
-	float3 WorldNormal = GetNormalMap(Input, TanViewDir, WorldTBN);
+	float4 ColorMap = GetDiffuseMap(Input, ParallaxTex, Gloss);
+	float3 WorldNormal = GetNormalMap(Input, ParallaxTex, WorldTBN);
 
 	#if defined(_PERPIXEL_)
 		float SpecularExponent = SpecularPower;

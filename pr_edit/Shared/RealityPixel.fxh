@@ -277,4 +277,67 @@
 		return saturate(1.0 - dot(LightVec, LightVec) * Attenuation);
 	}
 
+	float2 GetParallaxTex(sampler HeightMap, float2 Tex, float3 ViewDir, float2 Scale, float2 Bias)
+	{
+		float Height = tex2D(HeightMap, Tex).a;
+		Height = (Height * 2.0) - 1.0;
+		Height = (Height * Scale) + Bias;
+		ViewDir = ViewDir * float3(1.0, -1.0, 1.0);
+		return Tex + (Height * ViewDir.xy);
+	}
+
+	/*
+		HLSL implementation LearnOpenGL's Parallax Occlusion Mapping (POM)
+		---
+		Source: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
+		---
+		License: CC BY-NC 4.0
+	*/
+	/*
+		float2 GetParallaxOcclusionTex(sampler HeightMap, float2 Tex, float3 ViewDir, float2 Scale, float2 Bias)
+		{
+			// Caculate number of laters
+			float Layers = 16.0;
+			// Calculate the size of each layer
+			float LayerDepth = 1.0 / Layers;
+			// Depth of current layer
+			float CurrentLayerDepth = 0.0;
+			// The amount to shift the texture coordinates per layer (from vector P)
+			float2 P = (ViewDir.xy * Scale) + Bias; 
+			float2 DeltaTex = P / Layers;
+
+			// Get initial values
+			float2 CurrentTex = Tex;
+			float CurrentDepthValue = saturate(tex2D(HeightMap, CurrentTex).a);
+
+			for(int i = 0; i < (int)Layers; i++)
+			{
+				if(CurrentDepthValue > CurrentLayerDepth)
+				{
+					continue;
+				}
+
+				// Shift texture coordinates along direction of P
+				CurrentTex -= DeltaTex;
+				// Get depthmap value at current texture coordinates
+				CurrentDepthValue = tex2D(HeightMap, CurrentTex).a;  
+				// Get depth of next layer
+				CurrentLayerDepth += LayerDepth;  
+			}
+
+			// Get texture coordinates before collision (reverse operations)
+			float2 PreviousTex = CurrentTex + DeltaTex;
+
+			// Get depth after and before collision for linear interpolation
+			float AfterDepth = CurrentDepthValue - CurrentLayerDepth;
+			float BeforeDepth = tex2D(HeightMap, PreviousTex).a - CurrentLayerDepth + LayerDepth;
+
+			// Interpolation of texture coordinates
+			float Weight = AfterDepth / (AfterDepth - BeforeDepth);
+			float2 FinalTex = lerp(CurrentTex, PreviousTex, Weight);
+
+			return FinalTex;
+		}
+	*/
+
 #endif
