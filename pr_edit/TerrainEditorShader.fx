@@ -1,197 +1,492 @@
-#line 2 "TerrainShader.fx"
-#include "shaders/raCommon.fx"
+
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityPixel.fxh"
+#include "shaders/CommonPixelLight.fxh"
+#include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityPixel.fxh"
+	#include "CommonPixelLight.fxh"
+	#include "RaCommon.fxh"
+#endif
+
 #define POINT_WATER_BIAS 2
 
+float4x4 _ViewProj: matVIEWPROJ;
+float4 _ScaleTransXZ : SCALETRANSXZ;
+float4 _ScaleTransY : SCALETRANSY;
+float4x4 _SETTransXZ : SETTRANSXZ;
 
-float4x4 mViewProj: matVIEWPROJ;
-float4 vScaleTransXZ : SCALETRANSXZ;
-float4 vScaleTransY : SCALETRANSY;
+float4 _SunColor : SUNCOLOR;
+float4 _GIColor : GICOLOR;
+float4 _PointColor: POINTCOLOR;
+float _DetailFadeMod : DETAILFADEMOD;
+float4 _TexOffset : TEXOFFSET;
+float2 _SETBiFixTex : SETBIFIXTEX;
+float2 _SETBiFixTex2 : SETBIFIXTEX2;
+float2 _BiFixTex : BIFIXTEX;
 
-float4 vSunColor : SUNCOLOR;
-float4 vGIColor : GICOLOR;
-float4 vPointColor: POINTCOLOR;
-float detailFadeMod : DETAILFADEMOD;
-float4 vTexOffset : TEXOFFSET;
-float2 vSETBiFixTex : SETBIFIXTEX;
-float2 vSETBiFixTex2 : SETBIFIXTEX2;
-float2 vBiFixTex : BIFIXTEX;
+float3 _BlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
+float _WaterHeight : WaterHeight;
 
-float3 vBlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
-float waterHeight : WaterHeight;
+float4 _TerrainWaterColor : TerrainWaterColor;
 
-float4 terrainWaterColor : TerrainWaterColor;
+// #define WaterLevel 22.5
+// #define _PointColor float4(1.0, 0.5, 0.5, 1.0)
 
-//#define WaterLevel 22.5
+float4 _CameraPos : CAMERAPOS;
+float3 _ComponentSelector : COMPONENTSELECTOR;
+float2 _NearFarMorphLimits : NEARFARMORPHLIMITS;
 
-//#define vPointColor float4(1.0, 0.5, 0.5, 1.0)
+float4 _TexScale : TEXSCALE;
+float4 _NearTexTiling : NEARTEXTILING;
+float4 _FarTexTiling : FARTEXTILING;
 
-texture texture0 : TEXLAYER0;
-texture texture1 : TEXLAYER1;
-texture texture2 : TEXLAYER2;
+float _RefractionIndexRatio = 0.15;
+static float R0 = pow(1.0 - _RefractionIndexRatio, 2.0) / pow(1.0 + _RefractionIndexRatio, 2.0);
 
-sampler sampler0 = sampler_state
+uniform texture Tex0 : TEXLAYER0;
+uniform texture Tex1 : TEXLAYER1;
+uniform texture Tex2 : TEXLAYER2;
+uniform texture Tex3 : TEXLAYER3;
+uniform texture Tex4 : TEXLAYER4;
+uniform texture Tex5 : TEXLAYER5;
+uniform texture Tex6 : TEXLAYER6;
+uniform texture Tex7 : TEXLAYER7;
+
+#define CREATE_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, FILTER, ADDRESS) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = FILTER; \
+		MagFilter = FILTER; \
+		MipFilter = FILTER; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+	};
+
+CREATE_SAMPLER(sampler, SampleTex0, Tex0, LINEAR, CLAMP)
+CREATE_SAMPLER(sampler, SampleTex0Point, Tex0, POINT, CLAMP)
+CREATE_SAMPLER(sampler, SampleTex1, Tex1, LINEAR, CLAMP)
+CREATE_SAMPLER(sampler, SampleTex1Wrap, Tex1, LINEAR, WRAP)
+CREATE_SAMPLER(sampler, SampleTex2, Tex2, LINEAR, CLAMP)
+CREATE_SAMPLER(sampler, SampleTex3Wrap, Tex3, LINEAR, WRAP)
+CREATE_SAMPLER(sampler, SampleTex4, Tex4, LINEAR, CLAMP)
+CREATE_SAMPLER(sampler, SampleTex5, Tex5, LINEAR, CLAMP)
+CREATE_SAMPLER(samplerCUBE, SampleTex7Cube, Tex7, LINEAR, WRAP)
+
+struct APP2VS
 {
-	Texture = (texture0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-// MinFilter = ANISOTROPIC;
-// MaxAnisotropy = 8;
-	MagFilter = LINEAR;
-// MagFilter = POINT;	
+	float2 Pos0 : POSITION0;
+	float4 Pos1 : POSITION1;
+	float2 Tex0 : TEXCOORD0;
 };
 
-sampler sampler0_point = sampler_state
+struct APP2VS_EditorDetailTextured
 {
-	Texture = (texture0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MipFilter = POINT;
-	MinFilter = POINT;
-	MagFilter = POINT;
+	float4 Pos0 : POSITION0;
+	float4 Pos1 : POSITION1;
+	float2 Tex0 : TEXCOORD0;
+	float3 Normal : NORMAL;
 };
 
-sampler sampler1 = sampler_state
+struct APP2VS_VS_EditorZFill
 {
-	Texture = (texture1);
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MipFilter = LINEAR;
-	MinFilter = ANISOTROPIC;
-// MaxAnisotropy = 4;
-	MagFilter = LINEAR;
+	float4 Pos0 : POSITION0;
+	float4 Pos1 : POSITION1;
+	float2 Tex0 : TEXCOORD0;
 };
 
-
-sampler sampler1Clamp = sampler_state
+struct APP2VS_SET
 {
-	Texture = (texture1);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-// MinFilter = ANISOTROPIC;
-// MaxAnisotropy = 8;
-	MagFilter = LINEAR;
-// MagFilter = POINT;	
-};
-
-sampler sampler1_point = sampler_state
-{
-	Texture = (texture1);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MipFilter = POINT;
-	MinFilter = POINT;
-	MagFilter = POINT;
-};
-
-sampler sampler2 = sampler_state
-{
-	Texture = (texture2);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-// MinFilter = ANISOTROPIC;
-// MaxAnisotropy = 8;
-	MagFilter = LINEAR;
-// MagFilter = POINT;	
+	float2 Pos0 : POSITION0;
+	float4 Pos1 : POSITION1;
+	float2 Tex0 : TEXCOORD0;
+	float3 Normal : NORMAL;
 };
 
 struct VS2PS
 {
-    float4 Pos : POSITION;
-    float2 Tex0 : TEXCOORD0;
-    float2 Tex1 : TEXCOORD2;
-    float Fog : TEXCOORD1;
-    float4 Color : COLOR;	
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float4 Tex0 : TEXCOORD1;
+};
+
+struct VS2PS_EditorDetail
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float4 Normal : TEXCOORD1;
+	float4 Tex0 : TEXCOORD2; // .xy = Input.Pos0.xy; .zw = BiTex;
+};
+
+struct VS2PS_EditorGrid
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float4 Tex0 : TEXCOORD1;
+};
+
+struct VS2PS_EditorTopoGrid
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float3 Tex0 : TEXCOORD1; // .xy = Tex0; .z = Color;
+	float4 Color : TEXCOORD2;
+};
+
+struct VS2PS_ZFill
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+};
+
+struct VS2PS_EditorFoliage
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float2 Tex0 : TEXCOORD1;
+};
+
+struct VS2PS_LightmapGeneration
+{
+	float4 HPos : POSITION;
+	float3 Pos : TEXCOORD0;
+	float2 Tex0 : TEXCOORD1;
+};
+
+struct VS2PS_SET
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
+	float3 Tex0 : TEXCOORD2; // .xy = Tex0; .z = Input.Pos1.x;
+	float4 BiTex : TEXCOORD3; // .xy = BiTex1; .zw = BiTex2;
+};
+
+struct VS2PS_SET_ColorLightingOnly
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float4 BiTex : TEXCOORD3; // .xy = BiTex1; .zw = BiTex2;
 };
 
 struct PS2FB
 {
-	float4 Col : COLOR;
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
 };
 
-float4 PShader(VS2PS indata) : COLOR
+float4 GetWorldPos(float2 Pos0, float2 Pos1)
 {
-	float4 cmap = tex2D(sampler0, indata.Tex0);
-	float4 lightmap = tex2D(sampler1Clamp, indata.Tex1);
-	float4 light = (lightmap.y * vSunColor * 4) + (lightmap.z * vGIColor * 2) + (lightmap.x * indata.Color * 2);
-	float4 outColor = cmap * light;
-	outColor.a = 1.0f;
-	
-	return lerp(FogColor, outColor, indata.Fog);
+	float4 WorldPos = 0.0;
+	WorldPos.xz = (Pos0 * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
+	WorldPos.yw = (Pos1 * _ScaleTransY.xy) + _ScaleTransY.zw;
+	return WorldPos;
 }
 
-float4 PShaderLightOnly(VS2PS indata) : COLOR
-{
-	float4 lightmap = tex2D(sampler1Clamp, indata.Tex1);
-	float4 light = (lightmap.y * vSunColor * 4) + (lightmap.z * vGIColor * 2)  + (lightmap.x * vPointColor * 2);
-	light.a = 1.0f;
-	
-	return light*0.5;
-}
+/*
+	[TERRAIN SHADERS]
+*/
 
-float4 PShaderHemimapLightOnly(VS2PS indata) : COLOR
+struct FullDetail
 {
-	float4 lightmap = tex2D(sampler1Clamp, indata.Tex1);
-	
-	float4 light = (lightmap.y * vSunColor * 4) + (lightmap.z * vGIColor * 2)  + (lightmap.x * vPointColor * 2);
-	light.a = 1.0f;
-	return pow(lightmap.y*2,2);
-
-// float light = pow(saturate(lightmap.y + lightmap.z), 4);
-	
-// return float4(light.xxx, 1);
-}
-
-float4 PShaderColorOnly(VS2PS indata) : COLOR
-{
-	float4 color = tex2D(sampler0, indata.Tex0);
-	color.a = 1.0f;
-	return color;
-}
-
-float4 PShaderColorOnlyPointFiler(VS2PS indata) : COLOR
-{
-	float4 color = tex2D(sampler0_point, indata.Tex0);
-	color.a = 1.0f;
-	return color;
-}
-
-struct APP2VS
-{
-    float2 Pos0 : POSITION0;
-    float2 TexCoord0 : TEXCOORD0;
-    float4 Pos1 : POSITION1;
-    
+	float2 NearYPlane;
+	float2 NearXPlane;
+	float2 NearZPlane;
+	float2 FarYPlane;
+	float2 FarXPlane;
+	float2 FarZPlane;
 };
 
-VS2PS vs(APP2VS indata)
+FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
 {
-	VS2PS outdata;
+	FullDetail Output = (FullDetail)0;
 
-	
-	outdata.Pos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-// outdata.Pos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
-	outdata.Pos.y = (indata.Pos1.x * vScaleTransY.x) + vScaleTransY.z;
-	outdata.Pos.w = 1;
+	// Calculate triplanar texcoords
+	float3 WorldTex = 0.0;
+	WorldTex.x = Tex.x * _TexScale.x;
+	WorldTex.y = WorldPos.y * _TexScale.y;
+	WorldTex.z = Tex.y * _TexScale.z;
 
-	outdata.Color = vPointColor * saturate(outdata.Pos.y - waterHeight - POINT_WATER_BIAS);
+	float2 XPlaneTex = WorldTex.zy;
+	float2 YPlaneTex = WorldTex.xz;
+	float2 ZPlaneTex = WorldTex.xy;
+	Output.NearYPlane = (YPlaneTex * _NearTexTiling.z);
+	Output.NearXPlane = (XPlaneTex * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
+	Output.NearZPlane = (ZPlaneTex * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
+	Output.FarYPlane = (YPlaneTex * _FarTexTiling.z);
+	Output.FarXPlane = (XPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	Output.FarZPlane = (ZPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
 
- 	outdata.Pos = mul(outdata.Pos, mViewProj);
- 	outdata.Tex0 = indata.TexCoord0;
- 	outdata.Tex1 = (indata.TexCoord0 * vBiFixTex.x) + vBiFixTex.y;
- 	outdata.Fog = saturate(calcFog(outdata.Pos.w));
-	
-	return outdata;
+	return Output;
 }
 
+VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
+{
+	VS2PS_EditorDetail Output = (VS2PS_EditorDetail)0;
+	float4 MorphedWorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 
+	// tl: output HPos as early as possible.
+	Output.HPos = mul(MorphedWorldPos, _ViewProj);
+	Output.Pos = MorphedWorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
+	// tl: uncompress normal
+	Output.Normal.xyz = (Input.Normal * 2.0) - 1.0;
+	Output.Tex0.xy = Input.Pos0.xy;
+	Output.Tex0.zw = ((Output.Tex0.xy * _TexScale.xz) * _BiFixTex.x) + _BiFixTex.y;
 
+	return Output;
+}
+
+float4 GetTerrainLights(sampler SampleLightMap, float2 Tex, float4 Color)
+{
+	float4 LightMap = tex2D(SampleLightMap, Tex);
+	return (Color * LightMap.r) + (_SunColor * (LightMap.g * 4.0)) + (_GIColor * (LightMap.b * 2.0));
+}
+
+float GetLerpValue(float3 WorldPos)
+{
+	float CameraDist = distance(WorldPos.xz, _CameraPos.xz) + _CameraPos.w;
+	return saturate(CameraDist * _NearFarMorphLimits.x - _NearFarMorphLimits.y);
+}
+
+PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bool UseEnvMap, bool ColorOnly)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float4 WorldPos = Input.Pos;
+	float3 WorldNormal = normalize(Input.Normal);
+	float LerpValue = GetLerpValue(WorldPos.xyz);
+	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
+	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
+
+	FullDetail FD = GetFullDetail(WorldPos.xyz, Input.Tex0.xy);
+
+	float4 Component = tex2D(SampleTex2, Input.Tex0.zw);
+	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
+	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
+	float ChartContribution = dot(Component.xyz, _ComponentSelector.xyz);
+
+	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.zw);
+	float4 LowComponent = tex2D(SampleTex5, Input.Tex0.zw);
+	float4 YPlaneDetailmap = tex2D(SampleTex1Wrap, FD.NearYPlane);
+	float4 XPlaneDetailmap = GetProceduralTiles(SampleTex1Wrap, FD.NearXPlane);
+	float4 ZPlaneDetailmap = GetProceduralTiles(SampleTex1Wrap, FD.NearZPlane);
+	float3 YPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, FD.FarYPlane);
+	float3 XPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, FD.FarXPlane);
+	float3 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, FD.FarZPlane);
+	float EnvMapScale = YPlaneDetailmap.a;
+
+	float Blue = 0.0;
+	Blue += (XPlaneLowDetailmap.g * BlendValue.x);
+	Blue += (YPlaneLowDetailmap.r * BlendValue.y);
+	Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
+
+	float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
+	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
+
+	float4 DetailMap = 0.0;
+	if(UsePlaneMapping)
+	{
+		DetailMap += (XPlaneDetailmap * BlendValue.x);
+		DetailMap += (YPlaneDetailmap * BlendValue.y);
+		DetailMap += (ZPlaneDetailmap * BlendValue.z);
+	}
+	else
+	{
+		DetailMap = YPlaneDetailmap;
+	}
+
+	float4 Lights = 1.0;
+	if (!ColorOnly)
+	{
+		Lights = GetTerrainLights(SampleTex4, Input.Tex0.zw, _PointColor);
+	}
+
+	float4 BothDetailMap = (DetailMap * LowDetailMap) * 2.0;
+	float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
+	float4 OutputColor = ColorMap * OutputDetail * Lights;
+
+	if (UseEnvMap)
+	{
+		float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
+		float4 EnvMapColor = texCUBE(SampleTex7Cube, Reflection);
+		OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue));
+	}
+
+	Output.Color = OutputColor;
+	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos.xyz));
+	Output.Color.a = 1.0;
+	Output.Color *= ChartContribution;
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
+
+#define CREATE_PS(FUNCTION_NAME, PLANE_MAPPING, ENVMAP, COLOR_ONLY) \
+	PS2FB FUNCTION_NAME(VS2PS_EditorDetail Input) \
+	{ \
+		return GetEditorDetailTextured(Input, PLANE_MAPPING, ENVMAP, COLOR_ONLY); \
+	}
+
+CREATE_PS(PS_EditorDetailTextured, false, false, false)
+CREATE_PS(PS_EditorDetailTextured_PlaneMapping, true, false, false)
+CREATE_PS(PS_EditorDetailTextured_WithEnvMap, false, true, false)
+CREATE_PS(PS_EditorDetailTexturedColorOnly, false, false, true)
+CREATE_PS(PS_EditorDetailTextured_PlaneMappingColorOnly, true, false, true)
+CREATE_PS(PS_EditorDetailTextured_WithEnvMapColorOnly, false, true, true)
+
+#undef CREATE_PS
+
+#define CREATE_PASS(PASS_NAME, VERTEX_SHADER, PIXEL_SHADER) \
+	pass PASS_NAME \
+	{ \
+		CullMode = CW; \
+		AlphaBlendEnable = TRUE; \
+		SrcBlend = ONE; \
+		DestBlend = ONE; \
+		ZEnable = TRUE; \
+		ZWriteEnable = TRUE; \
+		ZFunc = LESSEQUAL; \
+		ColorWriteEnable = RED|BLUE|GREEN|ALPHA; \
+		VertexShader = compile vs_3_0 VERTEX_SHADER; \
+		PixelShader = compile ps_3_0 PIXEL_SHADER; \
+	}
+
+technique EditorDetailTextured
+{
+	CREATE_PASS(topDownMapping, VS_EditorDetailTextured(), PS_EditorDetailTextured())
+	CREATE_PASS(planeMapping, VS_EditorDetailTextured(), PS_EditorDetailTextured_PlaneMapping())
+	CREATE_PASS(topDownMappingWithEnvMap, VS_EditorDetailTextured(), PS_EditorDetailTextured_WithEnvMap())
+
+	CREATE_PASS(topDownMappingColorOnly, VS_EditorDetailTextured(), PS_EditorDetailTexturedColorOnly())
+	CREATE_PASS(planeMappingColorOnly, VS_EditorDetailTextured(), PS_EditorDetailTextured_PlaneMappingColorOnly())
+	CREATE_PASS(topDownMappingWithEnvMapColorOnly, VS_EditorDetailTextured(), PS_EditorDetailTextured_WithEnvMapColorOnly())
+}
+
+#undef CREATE_PASS
+
+/*
+	[DISPLAY SHADERS]
+*/
+
+VS2PS VS_Basic(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0;
+
+	float4 WorldPos = float4(GetWorldPos(Input.Pos0.xy, Input.Pos1.xw).xyz, 1.0);
+	Output.HPos = mul(WorldPos, _ViewProj);
+
+	Output.Pos = WorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.Tex0.xy = Input.Tex0;
+	Output.Tex0.zw = (Input.Tex0 * _BiFixTex.x) + _BiFixTex.y;
+
+	return Output;
+}
+
+PS2FB PS_Basic(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float3 WorldPos = Input.Pos.xyz;
+	float4 Color = _PointColor * saturate(WorldPos.y - _WaterHeight - POINT_WATER_BIAS);
+
+	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.xy);
+	float4 Light = GetTerrainLights(SampleTex1, Input.Tex0.zw, Color * 2.0);
+	float4 OutputColor = float4(ColorMap.rgb * Light.rgb, 1.0);
+
+	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos.xyz));
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
+
+PS2FB PS_Basic_LightOnly(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float4 Light = GetTerrainLights(SampleTex1, Input.Tex0.zw, _PointColor * 2.0);
+	Light.a = 1.0;
+
+	Output.Color = Light * 0.5;
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
+
+PS2FB PS_Basic_HemimapLightOnly(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float4 LightMap = tex2D(SampleTex1, Input.Tex0.zw);
+	LightMap.a = 1.0;
+
+	Output.Color = pow(LightMap.g * 2.0, 2.0);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
+
+PS2FB PS_Basic_ColorOnly(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.xy);
+	ColorMap.a = 1.0;
+
+	Output.Color = ColorMap;
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
+
+PS2FB PS_Basic_ColorOnlyPointFilter(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float4 ColorMap = tex2D(SampleTex0Point, Input.Tex0.xy);
+	ColorMap.a = 1.0;
+
+	Output.Color = ColorMap;
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
 
 technique t0 <
 	int DetailLevel = DLUltraHigh+DLVeryHigh;
@@ -203,10 +498,10 @@ technique t0 <
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		FogEnable = FALSE;
-		VertexShader = compile vs_1_1 vs();		
-		PixelShader = compile PS2_EXT PShader();
+		ZFunc = LESSEQUAL;
+
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Basic();
 	}
 
 	pass p1 // LightOnly
@@ -216,10 +511,9 @@ technique t0 <
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		FogEnable = FALSE;		
-	
-		VertexShader = compile vs_1_1 vs();
-		PixelShader = compile PS2_EXT PShaderLightOnly();
+
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Basic_LightOnly();
 	}
 
 	pass p2 // ColorOnly
@@ -227,20 +521,19 @@ technique t0 <
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		FogEnable = FALSE;		
-	
-		VertexShader = compile vs_1_1 vs();
-		PixelShader = compile PS2_EXT PShaderColorOnly();
+
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Basic_ColorOnly();
 	}
-	pass p3 // ColorOnly PointFiler
+
+	pass p3 // ColorOnly PointFilter
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		FogEnable = FALSE;		
-	
-		VertexShader = compile vs_1_1 vs();
-		PixelShader = compile PS2_EXT PShaderColorOnlyPointFiler();
+
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Basic_ColorOnlyPointFilter();
 	}
 
 	pass p4 // Hemimap LightOnly
@@ -250,756 +543,133 @@ technique t0 <
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		FogEnable = FALSE;		
-	
-		VertexShader = compile vs_1_1 vs();
-		PixelShader = compile PS2_EXT PShaderHemimapLightOnly();
-	}
 
-	
-}
-
-
-
-// ------------------- Editor techniques
-
-
-struct VS2PSEditorGrid
-{
-    float4 Pos : POSITION;
-    float2 Tex0 : TEXCOORD0;
-    float2 Tex1 : TEXCOORD1;
-};
-
-VS2PSEditorGrid vsEditorGrid(APP2VS indata)
-{
-	VS2PSEditorGrid outdata;
-
-	outdata.Pos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-	outdata.Pos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
-// outdata.Pos.yw = indata.Pos1.xw;
- 	outdata.Pos = mul(outdata.Pos, mViewProj);
- 	outdata.Tex0 = indata.TexCoord0;
- 	outdata.Tex1 = indata.TexCoord0 * 128;
- 	
-	return outdata;
-}
-
-float4 psEditorGrid(VS2PSEditorGrid indata) : COLOR
-{
-	float4 cmap = tex2D(sampler0, indata.Tex0);
-	float4 grid = tex2D(sampler1, indata.Tex1);
-
-	return cmap * grid;
-}
-
-technique EditorGrid
-{
-	pass p0
-	{
-		CullMode = CW;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		FogEnable = FALSE;
-		
-		MaxAnisotropy[1] = 4;
-		MipMapLodBias[1] = -1.5;
-
-		VertexShader = compile vs_1_1 vsEditorGrid();	
-		PixelShader = compile ps_1_1 psEditorGrid();
+		VertexShader = compile vs_3_0 VS_Basic();
+		PixelShader = compile ps_3_0 PS_Basic_HemimapLightOnly();
 	}
 }
 
+/*
+	[GRID-MODE SHADERS]
+*/
 
-struct VS2PSEditorTopoGrid
+VS2PS_EditorGrid VS_EditorGrid(APP2VS Input)
 {
-    float4 Pos : POSITION;
-    float2 Tex1 : TEXCOORD1;
-    float4 Col : COLOR0;
-};
+	VS2PS_EditorGrid Output = (VS2PS_EditorGrid)0;
 
-VS2PSEditorTopoGrid vsEditorTopoGrid(APP2VS indata)
-{
-	VS2PSEditorTopoGrid outdata;
-	
-	float4 Pos;
-	Pos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-	Pos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
-// Pos.yw = indata.Pos1.xw;
- 	outdata.Pos = mul(Pos, mViewProj);
- 	outdata.Tex1 = indata.TexCoord0 * 128;
- 	outdata.Col = indata.Pos1.x / 65535;
- 	
-	return outdata;
+	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	Output.HPos = mul(WorldPos, _ViewProj);
+	Output.Pos = WorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.Tex0.xy = Input.Tex0;
+	Output.Tex0.zw = Input.Tex0 * 128.0;
+
+	return Output;
 }
 
-float4 psEditorTopoGrid(VS2PSEditorTopoGrid indata) : COLOR
+VS2PS_EditorTopoGrid VS_EditorTopoGrid(APP2VS Input)
 {
-	float4 grid = tex2D(sampler1, indata.Tex1);
+	VS2PS_EditorTopoGrid Output = (VS2PS_EditorTopoGrid)0;
 
-// float4 redgrid = (1-grid) * float4(1, 0, 0, 1);
-// return indata.Col + redgrid;
-float4 ret = indata.Col;
-ret += float4(0, 0, 0.3, 1);
-ret *= (grid);
-return ret;
+	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	Output.HPos = mul(WorldPos, _ViewProj);
+	Output.Pos = WorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
 
+	Output.Tex0.xy = Input.Tex0 * 128.0;
+	Output.Tex0.z = Input.Pos1.x / 65535;
+
+	return Output;
 }
 
-technique EditorTopoGrid
+PS2FB PS_EditorGrid(VS2PS_EditorGrid Input)
 {
-	pass p0
-	{
-		CullMode = CW;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		FogEnable = FALSE;
-	
-		MipMapLodBias[0] = -0.5;
-		MaxAnisotropy[0] = 8;
+	PS2FB Output = (PS2FB)0;
 
-		VertexShader = compile vs_1_1 vsEditorTopoGrid();
-		PixelShader = compile PS2_EXT psEditorTopoGrid();
-	}
+	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.xy);
+	float4 Grid = tex2Dbias(SampleTex1Wrap, float4(Input.Tex0.zw, 0.0, -1.5));
+
+	Output.Color = ColorMap * Grid;
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 }
 
-float4 camerapos : CAMERAPOS;
-float3 componentsel : COMPONENTSELECTOR;
-float2 vNearFarMorphLimits : NEARFARMORPHLIMITS;
-texture texture3 : TEXLAYER3;
-texture texture4 : TEXLAYER4;
-texture texture5 : TEXLAYER5;
-texture texture6 : TEXLAYER6;
-
-float4 vTexScale : TEXSCALE;
-float4 vNearTexTiling : NEARTEXTILING;
-float4 vFarTexTiling : FARTEXTILING;
-
-
-sampler sampler0Clamp = sampler_state
+PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 {
-	Texture = (texture0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
+	PS2FB Output = (PS2FB)0;
 
-sampler sampler1Wrap = sampler_state
-{
-	Texture = (texture1);
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
+	float4 Grid = tex2Dbias(SampleTex1Wrap, float4(Input.Tex0.xy, 0.0, -0.5));
+	float4 Color = Input.Tex0.z;
 
-sampler sampler2Clamp = sampler_state
-{
-	Texture = (texture2);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
+	Color += float4(0.0, 0.0, 0.3, 1.0);
+	Color *= (Grid);
 
-sampler sampler3Wrap = sampler_state 
-{ 
-	Texture = (texture3);
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-};
+	Output.Color = Color;
 
-sampler sampler3Clamp = sampler_state
-{
-	Texture = (texture3);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
-sampler sampler4Clamp = sampler_state 
-{ 
-	Texture = (texture4);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-};
-
-sampler sampler5Clamp = sampler_state 
-{ 
-	Texture = (texture5);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-};
-
-sampler sampler6Clamp = sampler_state 
-{ 
-	Texture = (texture6);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-// MinFilter = POINT;
-// MagFilter = POINT;
-// MipFilter = POINT;
-};
-
-struct APP2VSEditorDetailTextured
-{
-    float4 Pos0 : POSITION0;
-    float2 TexCoord0 : TEXCOORD0;
-    float4 Pos1 : POSITION1;
-    float3 Normal : NORMAL;
-// float1 Alpha : COLOR0;
-};
-struct VS2PSEditorDetailTextured
-{
-    float4 Pos : POSITION;
-    float2 Tex0 : TEXCOORD0;
-    float2 Tex1 : TEXCOORD1;
-    float2 Tex2 : TEXCOORD2;
-    float2 Tex3 : TEXCOORD3;
-    float2 Tex4 : TEXCOORD4;
-    float4 BlendValueAndFade : TEXCOORD5;
-    float3 FogAndWaterFadeAndFade2 : TEXCOORD6;
-    float2 BiFixTex : TEXCOORD7;
-};
-
-VS2PSEditorDetailTextured vsEditorDetailTextured(APP2VSEditorDetailTextured indata)
-{
-	VS2PSEditorDetailTextured outdata;
-	
-	float4 wPos;
-	wPos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-	wPos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
-// wPos.yw = indata.Pos1.xw;
-
- 	outdata.FogAndWaterFadeAndFade2.y = 1 - saturate((waterHeight - wPos.y)/3.0f);
-
- 	outdata.Pos = mul(wPos, mViewProj);
-
-	float cameraDist = length(wPos.xz - camerapos.xz) + camerapos.w;
-	
-	float3 tex = float3((indata.Pos0.y * vTexScale.z), -(((indata.Pos1.x) * vTexScale.y)) , (indata.Pos0.x * vTexScale.x));
-	float2 xPlaneTexCord = tex.xy;
-	float2 yPlaneTexCord = tex.zx;
-	float2 zPlaneTexCord = tex.zy;
-
- 	outdata.Tex0 = yPlaneTexCord;
- 	outdata.BiFixTex = (yPlaneTexCord * vBiFixTex.x) + vBiFixTex.y;
- 	
-	outdata.Tex1 = yPlaneTexCord * vNearTexTiling.z;
- 	
- 	outdata.Tex2 = yPlaneTexCord * vFarTexTiling.z;
-	outdata.Tex3.xy = xPlaneTexCord.xy * vFarTexTiling.xy;
-	outdata.Tex3.y += vFarTexTiling.w;
-	outdata.Tex4.xy = zPlaneTexCord.xy * vFarTexTiling.xy;
-	outdata.Tex4.y += vFarTexTiling.w;
-
-	outdata.BlendValueAndFade.xyz = saturate(abs(indata.Normal) - vBlendMod);
-	float tot = dot(1, outdata.BlendValueAndFade.xyz);
-	outdata.BlendValueAndFade.xyz /= tot;
-
-	float interpVal = saturate(cameraDist * vNearFarMorphLimits.x - vNearFarMorphLimits.y);
-	outdata.BlendValueAndFade.w = saturate(interpVal * detailFadeMod);
-	outdata.FogAndWaterFadeAndFade2.z = 0.5+interpVal*0.5;
-
- 	outdata.FogAndWaterFadeAndFade2.x = saturate(calcFog(outdata.Pos.w));
-
-	return outdata;
+	return Output;
 }
 
-float4 psEditorDetailTextured(VS2PSEditorDetailTextured indata) : COLOR
-{
-	float4 staticColormap = tex2D(sampler0Clamp, indata.BiFixTex);
-	float4 component = tex2D(sampler2Clamp, indata.BiFixTex);
-	float4 lowComponent = tex2D(sampler5Clamp, indata.BiFixTex);
-	float4 detailmap = tex2D(sampler1Wrap, indata.Tex1);
-	float4 yplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex2);
-	float4 xplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex3);
-	float4 zplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex4);
-
-	float4 lightmap = tex2D(sampler4Clamp, indata.BiFixTex);
-	float4 light = (lightmap.y * vSunColor*4) + (lightmap.z * vGIColor*2) +  + (lightmap.x * vPointColor);
-	
-	float3 blendValue = indata.BlendValueAndFade.xyz;
-	float fade = indata.BlendValueAndFade.w;
-	
-	float4 colormap = staticColormap;
-	
-	float chartcontrib = dot(componentsel, component);
-
-	float4 lowDetailmap = lerp(1, yplaneLowDetailmap.z, lowComponent.x*indata.FogAndWaterFadeAndFade2.z);
-	float mounten = (xplaneLowDetailmap.y * blendValue.x) + (yplaneLowDetailmap.x * blendValue.y) + (zplaneLowDetailmap.y * blendValue.z);
-	lowDetailmap *= lerp(1, mounten, lowComponent.z);
-	
-	float4 bothDetailmap = detailmap * lowDetailmap;
-	float4 detailout = 2 * lerp(bothDetailmap, 0.5*lowDetailmap, fade);
-
-// return lightmap.y * chartcontrib;
-// return light * chartcontrib;
-// return colormap * chartcontrib;
-// return lowDetailmap*0.5 * chartcontrib;
-// return component * chartcontrib;
-// return float4(blendValue, 1) * chartcontrib;
-// return detailout * chartcontrib;
-
-	float4 outColor = detailout * colormap * light;
-	
-	float4 waterOutColor = lerp(terrainWaterColor, outColor, indata.FogAndWaterFadeAndFade2.y);
-	float4 fogWaterOutColor = lerp(FogColor, waterOutColor, indata.FogAndWaterFadeAndFade2.x);
-	
-	fogWaterOutColor.a = 1.0f;
-	return chartcontrib * fogWaterOutColor;
-}
-
-float4 psEditorDetailTexturedColorOnly(VS2PSEditorDetailTextured indata) : COLOR
-{
-	float4 staticColormap = tex2D(sampler0Clamp, indata.BiFixTex);
-	float4 component = tex2D(sampler2Clamp, indata.BiFixTex);
-	float4 lowComponent = tex2D(sampler5Clamp, indata.BiFixTex);
-	float4 detailmap = tex2D(sampler1Wrap, indata.Tex1);
-	float4 yplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex2);
-	float4 xplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex3);
-	float4 zplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex4);
-
-	float3 blendValue = indata.BlendValueAndFade.xyz;
-	float fade = indata.BlendValueAndFade.w;
-	
-	float4 colormap = staticColormap;
-	
-	float chartcontrib = dot(componentsel, component);
-
-	float4 lowDetailmap = lerp(1, yplaneLowDetailmap.z, lowComponent.x*indata.FogAndWaterFadeAndFade2.z);
-	float mounten = (xplaneLowDetailmap.y * blendValue.x) + (yplaneLowDetailmap.x * blendValue.y) + (zplaneLowDetailmap.y * blendValue.z);
-	lowDetailmap *= lerp(1, mounten, lowComponent.z);
-	
-	float4 bothDetailmap = detailmap * lowDetailmap;
-	float4 detailout = 2 * lerp(bothDetailmap, 0.5*lowDetailmap, fade);
-
-// return colormap * chartcontrib;
-// return lowDetailmap*0.5 * chartcontrib;
-// return float4(blendValue, 1) * chartcontrib;
-// return detailout * chartcontrib;
-
-	float4 outColor = detailout * colormap;
-	
-	float4 waterOutColor = lerp(terrainWaterColor, outColor, indata.FogAndWaterFadeAndFade2.y);
-	float4 fogWaterOutColor = lerp(FogColor, waterOutColor, indata.FogAndWaterFadeAndFade2.x);
-	
-	fogWaterOutColor.a = 1.0f;
-	return chartcontrib * fogWaterOutColor;
-}
-
-
-struct VS2PSEditorDetailTexturedPlaneMapping
-{
-    float4 Pos : POSITION;
-    float4 Tex0AndBiFixTex : TEXCOORD0;
-    float2 Tex1 : TEXCOORD1;
-    float2 Tex2 : TEXCOORD2;
-    float2 Tex3 : TEXCOORD3;
-    float2 Tex4 : TEXCOORD4;
-    float4 BlendValueAndFade : TEXCOORD5;
-    float3 Tex5AndFade2 : TEXCOORD6;
-    float4 Tex6AndFogAndWaterFade : TEXCOORD7;
-};
-
-VS2PSEditorDetailTexturedPlaneMapping vsEditorDetailTexturedPlaneMapping(APP2VSEditorDetailTextured indata)
-{
-	VS2PSEditorDetailTexturedPlaneMapping outdata;
-	
-	float4 wPos;
-	wPos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-	wPos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
-
- 	outdata.Tex6AndFogAndWaterFade.w = 1 - saturate((waterHeight - wPos.y)/3.0f);
-
- 	outdata.Pos = mul(wPos, mViewProj);
-
-	float cameraDist = length(wPos.xz - camerapos.xz) + camerapos.w;
-	
-	float3 tex = float3((indata.Pos0.y * vTexScale.z), -(((indata.Pos1.x) * vTexScale.y)) , (indata.Pos0.x * vTexScale.x));
-	float2 xPlaneTexCord = tex.xy;
-	float2 yPlaneTexCord = tex.zx;
-	float2 zPlaneTexCord = tex.zy;
-
- 	outdata.Tex0AndBiFixTex.xy = yPlaneTexCord;
- 	outdata.Tex0AndBiFixTex.zw = (yPlaneTexCord * vBiFixTex.x) + vBiFixTex.y;
-	outdata.Tex1 = yPlaneTexCord * vNearTexTiling.z;
-	outdata.Tex5AndFade2.xy = xPlaneTexCord.xy * vNearTexTiling.xy;
-	outdata.Tex5AndFade2.y += vNearTexTiling.w;
-	outdata.Tex6AndFogAndWaterFade.xy = zPlaneTexCord.xy * vNearTexTiling.xy;
-	outdata.Tex6AndFogAndWaterFade.y += vNearTexTiling.w;
- 	
- 	outdata.Tex2 = yPlaneTexCord * vFarTexTiling.z;
-	outdata.Tex3.xy = xPlaneTexCord.xy * vFarTexTiling.xy;
-	outdata.Tex3.y += vFarTexTiling.w;
-	outdata.Tex4.xy = zPlaneTexCord.xy * vFarTexTiling.xy;
-	outdata.Tex4.y += vFarTexTiling.w;
-
-	outdata.BlendValueAndFade.xyz = saturate(abs(indata.Normal) - vBlendMod);
-	float tot = dot(1, outdata.BlendValueAndFade.xyz);
-	outdata.BlendValueAndFade.xyz /= tot;
-
-	float interpVal = saturate(cameraDist * vNearFarMorphLimits.x - vNearFarMorphLimits.y);
-	outdata.BlendValueAndFade.w = saturate(interpVal * detailFadeMod);
-	outdata.Tex5AndFade2.z = 0.5+interpVal*0.5;
-
- 	outdata.Tex6AndFogAndWaterFade.z = saturate(calcFog(outdata.Pos.w));
-
-	return outdata;
-}
-
-float4 psEditorDetailTexturedPlaneMapping(VS2PSEditorDetailTexturedPlaneMapping indata) : COLOR
-{
-	float4 staticColormap = tex2D(sampler0Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 component = tex2D(sampler2Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 lowComponent = tex2D(sampler5Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 yplaneDetailmap = tex2D(sampler1Wrap, indata.Tex1);
-	float4 xplaneDetailmap = tex2D(sampler1Wrap, indata.Tex5AndFade2);
-	float4 zplaneDetailmap = tex2D(sampler1Wrap, indata.Tex6AndFogAndWaterFade.xy);
-	float4 yplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex2);
-	float4 xplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex3);
-	float4 zplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex4);
-
-	float4 lightmap = tex2D(sampler4Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 light = (lightmap.y * vSunColor*4) + (lightmap.z * vGIColor*2) + (lightmap.x * vPointColor);
-
-	float3 blendValue = indata.BlendValueAndFade.xyz;
-	float fade = indata.BlendValueAndFade.w;
-	
-	float4 colormap = staticColormap;
-
-	float chartcontrib = dot(componentsel, component);
-
-	float4 lowDetailmap = lerp(1, yplaneLowDetailmap.z, lowComponent.x*indata.Tex5AndFade2.z);
-	float mounten = (xplaneLowDetailmap.y * blendValue.x) + (yplaneLowDetailmap.x * blendValue.y) + (zplaneLowDetailmap.y * blendValue.z);
-	lowDetailmap *= lerp(1, mounten, lowComponent.z);
-	
-	float4 detailmap = (xplaneDetailmap * blendValue.x) + (yplaneDetailmap * blendValue.y) + (zplaneDetailmap * blendValue.z);
-	
-	float4 bothDetailmap = detailmap * lowDetailmap;
-	float4 detailout = 2 * lerp(bothDetailmap, 0.5*lowDetailmap, fade);
-
-	float4 outColor = detailout * colormap * light;
-	float4 waterOutColor = lerp(terrainWaterColor, outColor, indata.Tex6AndFogAndWaterFade.w);
-	float4 fogWaterOutColor = lerp(FogColor, waterOutColor, indata.Tex6AndFogAndWaterFade.z);
-	fogWaterOutColor.a = 1.0f;
-	return chartcontrib * fogWaterOutColor;
-}
-
-float4 psEditorDetailTexturedPlaneMappingColorOnly(VS2PSEditorDetailTexturedPlaneMapping indata) : COLOR
-{
-	float4 staticColormap = tex2D(sampler0Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 component = tex2D(sampler2Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 lowComponent = tex2D(sampler5Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 yplaneDetailmap = tex2D(sampler1Wrap, indata.Tex1);
-	float4 xplaneDetailmap = tex2D(sampler1Wrap, indata.Tex5AndFade2);
-	float4 zplaneDetailmap = tex2D(sampler1Wrap, indata.Tex6AndFogAndWaterFade.xy);
-	float4 yplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex2);
-	float4 xplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex3);
-	float4 zplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex4);
-
-	float3 blendValue = indata.BlendValueAndFade.xyz;
-	float fade = indata.BlendValueAndFade.w;
-	
-	float4 colormap = staticColormap;
-
-	float chartcontrib = dot(componentsel, component);
-
-	float4 lowDetailmap = lerp(1, yplaneLowDetailmap.z, lowComponent.x*indata.Tex5AndFade2.z);
-	float mounten = (xplaneLowDetailmap.y * blendValue.x) + (yplaneLowDetailmap.x * blendValue.y) + (zplaneLowDetailmap.y * blendValue.z);
-	lowDetailmap *= lerp(1, mounten, lowComponent.z);
-	
-	float4 detailmap = (xplaneDetailmap * blendValue.x) + (yplaneDetailmap * blendValue.y) + (zplaneDetailmap * blendValue.z);
-	
-	float4 bothDetailmap = detailmap * lowDetailmap;
-	float4 detailout = 2 * lerp(bothDetailmap, 0.5*lowDetailmap, fade);
-
-	float4 outColor = detailout * colormap;
-	float4 waterOutColor = lerp(terrainWaterColor, outColor, indata.Tex6AndFogAndWaterFade.w);
-	float4 fogWaterOutColor = lerp(FogColor, waterOutColor, indata.Tex6AndFogAndWaterFade.z);
-	fogWaterOutColor.a = 1.0f;
-	return chartcontrib * fogWaterOutColor;
-}
-
-
-
-
-struct VS2PSEditorDetailTexturedWithEnvMap
-{
-    float4 Pos : POSITION;
-    float4 Tex0AndBiFixTex : TEXCOORD0;
-    float2 Tex1 : TEXCOORD1;
-    float2 Tex2 : TEXCOORD2;
-    float2 Tex3 : TEXCOORD3;
-    float2 Tex4 : TEXCOORD4;
-    float4 BlendValueAndFade : TEXCOORD5;
-    float3 FogAndWaterFadeAndFade2 : TEXCOORD6;
-    float3 EnvMap : TEXCOORD7;
-};
-
-texture texture7 : TEXLAYER7;
-samplerCUBE sampler7Cube = sampler_state { Texture = (texture7); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-
-float refractionIndexRatio = 0.15;
-static float R0 = pow(1.0 - refractionIndexRatio, 2.0) / pow(1.0 + refractionIndexRatio, 2.0);
-
-
-VS2PSEditorDetailTexturedWithEnvMap vsEditorDetailTexturedWithEnvMap(APP2VSEditorDetailTextured indata)
-{
-	VS2PSEditorDetailTexturedWithEnvMap outdata;
-	
-	float4 wPos;
-	wPos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-	wPos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
-
- 	outdata.FogAndWaterFadeAndFade2.y = 1 - saturate((waterHeight - wPos.y)/3.0f);
- 	
- 	outdata.Pos = mul(wPos, mViewProj);
-
-	float cameraDist = length(wPos.xz - camerapos.xz) + camerapos.w;
-	
-	float3 tex = float3((indata.Pos0.y * vTexScale.z), -(((indata.Pos1.x) * vTexScale.y)) , (indata.Pos0.x * vTexScale.x));
-	float2 xPlaneTexCord = tex.xy;
-	float2 yPlaneTexCord = tex.zx;
-	float2 zPlaneTexCord = tex.zy;
-
- 	outdata.Tex0AndBiFixTex.xy = yPlaneTexCord;
-	outdata.Tex1 = yPlaneTexCord * vNearTexTiling.z;
- 	outdata.Tex0AndBiFixTex.zw = (yPlaneTexCord * vBiFixTex.x) + vBiFixTex.y;
- 	
- 	outdata.Tex2 = yPlaneTexCord * vFarTexTiling.z;
-	outdata.Tex3.xy = xPlaneTexCord.xy * vFarTexTiling.xy;
-	outdata.Tex3.y += vFarTexTiling.w;
-	outdata.Tex4.xy = zPlaneTexCord.xy * vFarTexTiling.xy;
-	outdata.Tex4.y += vFarTexTiling.w;
-
-	outdata.BlendValueAndFade.xyz = saturate(abs(indata.Normal) - vBlendMod);
-	float tot = dot(1, outdata.BlendValueAndFade.xyz);
-	outdata.BlendValueAndFade.xyz /= tot;
-
-	float interpVal = saturate(cameraDist * vNearFarMorphLimits.x - vNearFarMorphLimits.y);
-	outdata.BlendValueAndFade.w = saturate(interpVal * detailFadeMod);
-	outdata.FogAndWaterFadeAndFade2.z = 0.5+interpVal*0.5;
-
- 	outdata.FogAndWaterFadeAndFade2.x = saturate(calcFog(outdata.Pos.w));
-
-	// Environment map
-	float3 worldEyeVec = normalize(wPos.xyz - camerapos.xyz);
-	outdata.EnvMap = normalize(reflect(worldEyeVec, float3(0,1,0)));
- 
- 	outdata.FogAndWaterFadeAndFade2.y = 1;
- 	
-	return outdata;
-}
-
-float4 psEditorDetailTexturedWithEnvMap(VS2PSEditorDetailTexturedWithEnvMap indata) : COLOR
-{
-	float4 staticColormap = tex2D(sampler0Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 component = tex2D(sampler2Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 lowComponent = tex2D(sampler5Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 detailmap = tex2D(sampler1Wrap, indata.Tex1);
-	float4 yplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex2);
-	float4 xplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex3);
-	float4 zplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex4);
-	float4 envmapColor = texCUBE(sampler7Cube, indata.EnvMap);
-	
-	float4 lightmap = tex2D(sampler4Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 light = (lightmap.y * vSunColor*4) + (lightmap.z * vGIColor*2) +  + (lightmap.x * vPointColor);
-	
-	float3 blendValue = indata.BlendValueAndFade.xyz;
-	float fade = indata.BlendValueAndFade.w;
-	
-	float4 colormap = staticColormap;
-	
-	float chartcontrib = dot(componentsel, component);
-
-	float4 lowDetailmap = lerp(1, yplaneLowDetailmap.z, lowComponent.x*indata.FogAndWaterFadeAndFade2.z);
-	float mounten = (xplaneLowDetailmap.y * blendValue.x) + (yplaneLowDetailmap.x * blendValue.y) + (zplaneLowDetailmap.y * blendValue.z);
-	lowDetailmap *= lerp(1, mounten, lowComponent.z);
-	
-	float4 bothDetailmap = detailmap * lowDetailmap;
-	float4 detailout = 2 * lerp(bothDetailmap, 0.5*lowDetailmap, fade);
-
-	float4 outColor = detailout * colormap * light;
-	float4 waterOutColor = lerp(terrainWaterColor, outColor, indata.FogAndWaterFadeAndFade2.y);
-	float4 fogWaterOutColor = lerp(FogColor, waterOutColor, indata.FogAndWaterFadeAndFade2.x);
-	fogWaterOutColor.a = 1.0f;
-	return chartcontrib * fogWaterOutColor;
-}
-
-float4 psEditorDetailTexturedWithEnvMapColorOnly(VS2PSEditorDetailTexturedWithEnvMap indata) : COLOR
-{
-	float4 staticColormap = tex2D(sampler0Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 component = tex2D(sampler2Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 lowComponent = tex2D(sampler5Clamp, indata.Tex0AndBiFixTex.zw);
-	float4 detailmap = tex2D(sampler1Wrap, indata.Tex1);
-	float4 yplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex2);
-	float4 xplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex3);
-	float4 zplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex4);
-	float4 envmapColor = texCUBE(sampler7Cube, indata.EnvMap);
-	
-	float3 blendValue = indata.BlendValueAndFade.xyz;
-	float fade = indata.BlendValueAndFade.w;
-	
-	float4 colormap = staticColormap;
-	
-	float chartcontrib = dot(componentsel, component);
-
-	float4 lowDetailmap = lerp(1, yplaneLowDetailmap.z, lowComponent.x*indata.FogAndWaterFadeAndFade2.z);
-	float mounten = (xplaneLowDetailmap.y * blendValue.x) + (yplaneLowDetailmap.x * blendValue.y) + (zplaneLowDetailmap.y * blendValue.z);
-	lowDetailmap *= lerp(1, mounten, lowComponent.z);
-	
-	float4 bothDetailmap = detailmap * lowDetailmap;
-	float4 detailout = 2 * lerp(bothDetailmap, 0.5*lowDetailmap, fade);
-
-	float4 outColor = detailout * colormap;
-	float4 waterOutColor = lerp(terrainWaterColor, outColor, indata.FogAndWaterFadeAndFade2.y);
-	float4 fogWaterOutColor = lerp(FogColor, waterOutColor, indata.FogAndWaterFadeAndFade2.x);
-	fogWaterOutColor.a = 1.0f;
-	return chartcontrib * fogWaterOutColor;
-}
-
-
-
-technique EditorDetailTextured
-{
-	pass topDownMapping
-	{
-		CullMode = CW;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
-		FogEnable = FALSE;
-	
-		VertexShader = compile vs_1_1 vsEditorDetailTextured();
-		PixelShader = compile PS2_EXT psEditorDetailTextured();
-	}
-	
-	pass planeMapping
-	{
-		CullMode = CW;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
-		FogEnable = FALSE;		
-	
-		VertexShader = compile vs_1_1 vsEditorDetailTexturedPlaneMapping();
-		PixelShader = compile PS2_EXT psEditorDetailTexturedPlaneMapping();
+#define CREATE_TECHNIQUE(TECHNIQUE_NAME, VERTEX_SHADER, PIXEL_SHADER) \
+	technique TECHNIQUE_NAME \
+	{ \
+		pass p0 \
+		{ \
+			CullMode = CW; \
+			ZEnable = TRUE; \
+			ZWriteEnable = TRUE; \
+			ZFunc = LESSEQUAL; \
+			VertexShader = compile vs_3_0 VERTEX_SHADER; \
+			PixelShader = compile ps_3_0 PIXEL_SHADER; \
+		} \
 	}
 
-	pass topDownMappingWithEnvMap
-	{
-		CullMode = CW;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
-		FogEnable = FALSE;		
-	
-		VertexShader = compile vs_1_1 vsEditorDetailTexturedWithEnvMap();
-		PixelShader = compile PS2_EXT psEditorDetailTexturedWithEnvMap();
-	}
-	
-	
+CREATE_TECHNIQUE(EditorGrid, VS_EditorGrid(), PS_EditorGrid())
+CREATE_TECHNIQUE(EditorTopoGrid, VS_EditorTopoGrid(), PS_EditorTopoGrid())
 
+#undef CREATE_TECHNIQUE
 
-	pass topDownMappingColorOnly
-	{
-		CullMode = CW;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
-		FogEnable = FALSE;
-	
-		VertexShader = compile vs_1_1 vsEditorDetailTextured();
-		PixelShader = compile PS2_EXT psEditorDetailTexturedColorOnly();
-	}
-	
-	pass planeMappingColorOnly
-	{
-		CullMode = CW;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
-		FogEnable = FALSE;		
-	
-		VertexShader = compile vs_1_1 vsEditorDetailTexturedPlaneMapping();
-		PixelShader = compile PS2_EXT psEditorDetailTexturedPlaneMappingColorOnly();
-	}
+/*
+	[ZFILL SHADER]
+*/
 
-	pass topDownMappingWithEnvMapColorOnly
-	{
-		CullMode = CW;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;
-		DestBlend = ONE;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
-		FogEnable = FALSE;		
-	
-		VertexShader = compile vs_1_1 vsEditorDetailTexturedWithEnvMap();
-		PixelShader = compile PS2_EXT psEditorDetailTexturedWithEnvMapColorOnly();
-	}
-	
+VS2PS_ZFill VS_EditorZFill(APP2VS_VS_EditorZFill Input)
+{
+	VS2PS_ZFill Output = (VS2PS_ZFill)0;
+
+	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	Output.HPos = mul(WorldPos, _ViewProj);
+	Output.Pos = WorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+ 	return Output;
 }
 
-
-struct APP2VS_vsEditorZFill
+PS2FB PS_EditorZFill(VS2PS_ZFill Input)
 {
-    float4 Pos0 : POSITION0;
-    float2 TexCoord0 : TEXCOORD0;
-    float4 Pos1 : POSITION1;
-};
+	PS2FB Output = (PS2FB)0;
 
-float4 vsEditorZFill(APP2VS_vsEditorZFill indata) : POSITION
-{
-	float4 wPos;
-	wPos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-	wPos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
-// wPos.yw = indata.Pos1.xw;
+	Output.Color = 0.0;
 
- 	return mul(wPos, mViewProj);
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 }
 
 technique EditorDetailBasePass
@@ -1007,134 +677,120 @@ technique EditorDetailBasePass
 	pass p0
 	{
 		CullMode = CW;
-	
 		ColorWriteEnable = 0;
-		
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
 
-		VertexShader = compile vs_1_1 vsEditorZFill();
-		PixelShader = asm {
-			ps.1.1
-			def c0, 0, 0, 0, 0
-			mov r0, c0
-		};
+		VertexShader = compile vs_3_0 VS_EditorZFill();
+		PixelShader = compile ps_3_0 PS_EditorZFill();
 	}
 }
 
-struct VS2PSEditorUndergrowth
-{
-    float4 Pos : POSITION;
-    float2 Tex0 : TEXCOORD0;
-};
+/*
+	[UNDERGROWTH/OVERGROWTH SHADERS]
+*/
 
-VS2PSEditorUndergrowth vsEditorUndergrowth(APP2VS indata)
+VS2PS_EditorFoliage VS_EditorUndergrowth(APP2VS Input)
 {
-	VS2PSEditorUndergrowth outdata;
-	
-	outdata.Pos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-	outdata.Pos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
-// outdata.Pos.yw = indata.Pos1.xw;
- 	outdata.Pos = mul(outdata.Pos, mViewProj);
- 	outdata.Tex0 = indata.TexCoord0;
- 	
-	return outdata;
+	VS2PS_EditorFoliage Output = (VS2PS_EditorFoliage)0;
+
+	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	Output.HPos = mul(WorldPos, _ViewProj);
+	Output.Pos = WorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.Tex0 = Input.Tex0;
+
+	return Output;
 }
 
-float4 psEditorUndergrowth(VS2PSEditorUndergrowth indata) : COLOR
+PS2FB PS_EditorUndergrowth(VS2PS_EditorFoliage Input)
 {
-	float4 undergrowthmap = tex2D(sampler0_point, indata.Tex0);
-	return undergrowthmap;
+	PS2FB Output = (PS2FB)0;
+
+	Output.Color = tex2D(SampleTex0, Input.Tex0);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 }
 
-technique EditorUndergrowth
-{
-	pass p0
-	{
-		CullMode = CW;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
-		FogEnable = FALSE;		
-
-		VertexShader = compile vs_1_1 vsEditorUndergrowth();
-		PixelShader = compile PS2_EXT psEditorUndergrowth();
+#define CREATE_TECHNIQUE(TECHNIQUE_NAME, VERTEX_SHADER, PIXEL_SHADER) \
+	technique TECHNIQUE_NAME \
+	{ \
+		pass p0 \
+		{ \
+			CullMode = CW; \
+			ZEnable = TRUE; \
+			ZWriteEnable = TRUE; \
+			ZFunc = LESSEQUAL; \
+			ColorWriteEnable = RED|BLUE|GREEN|ALPHA; \
+			VertexShader = compile vs_3_0 VERTEX_SHADER; \
+			PixelShader = compile ps_3_0 PIXEL_SHADER; \
+		} \
 	}
+
+CREATE_TECHNIQUE(EditorUndergrowth, VS_EditorUndergrowth(), PS_EditorUndergrowth())
+CREATE_TECHNIQUE(EditorOvergrowth, VS_EditorUndergrowth(), PS_EditorUndergrowth())
+CREATE_TECHNIQUE(EditorOvergrowthShadow, VS_EditorUndergrowth(), PS_EditorUndergrowth())
+CREATE_TECHNIQUE(EditorMaterialmap, VS_EditorUndergrowth(), PS_EditorUndergrowth())
+
+#undef CREATE_TECHNIQUE
+
+/*
+	[HEMIMAP SHADERS]
+*/
+
+VS2PS_EditorFoliage VS_EditorHemimap(APP2VS Input)
+{
+	VS2PS_EditorFoliage Output = (VS2PS_EditorFoliage)0;
+
+	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	Output.HPos = mul(WorldPos, _ViewProj);
+	Output.Pos = WorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.Tex0 = (Input.Tex0 * _TexOffset.zz) + _TexOffset.xy;
+	Output.Tex0.y = 1.0 - Output.Tex0.y;
+
+	return Output;
 }
 
-technique EditorOvergrowth
+PS2FB PS_EditorHemimap(VS2PS_EditorFoliage Input)
 {
-	pass p0
-	{
-		CullMode = CW;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
-		FogEnable = FALSE;		
+	PS2FB Output = (PS2FB)0;
 
-		VertexShader = compile vs_1_1 vsEditorUndergrowth();
-		PixelShader = compile PS2_EXT psEditorUndergrowth();
-	}
+	float4 HemiMap = tex2D(SampleTex0, Input.Tex0);
+
+	Output.Color = float4(HemiMap.rgb, 1.0);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 }
 
-technique EditorOvergrowthShadow
+PS2FB PS_EditorHemimapAlpha(VS2PS_EditorFoliage Input)
 {
-	pass p0
-	{
-		CullMode = CW;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
+	PS2FB Output = (PS2FB)0;
 
-		VertexShader = compile vs_1_1 vsEditorUndergrowth();
-		PixelShader = compile PS2_EXT psEditorUndergrowth();
-	}
-}
+	float4 HemiMap = tex2D(SampleTex0, Input.Tex0);
 
-technique EditorMaterialmap
-{
-	pass p0
-	{
-		CullMode = CW;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
-		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
+	Output.Color = float4(HemiMap.aaa, 1.0);
 
-		VertexShader = compile vs_1_1 vsEditorUndergrowth();
-		PixelShader = compile PS2_EXT psEditorUndergrowth();
-	}
-}
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
-VS2PSEditorUndergrowth vsEditorHemimap(APP2VS indata)
-{
-	VS2PSEditorUndergrowth outdata;
-	
-	outdata.Pos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-	outdata.Pos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
-// outdata.Pos.yw = indata.Pos1.xw;
- 	outdata.Pos = mul(outdata.Pos, mViewProj);
- 	outdata.Tex0 = indata.TexCoord0 * vTexOffset.zz + vTexOffset.xy;
- 	outdata.Tex0.y = 1 - outdata.Tex0.y;
- 	
-	return outdata;
-}
-
-float4 psEditorHemimap(VS2PSEditorUndergrowth indata) : COLOR
-{
-	float4 hemimap = tex2D(sampler0, indata.Tex0);
-	return float4(hemimap.rgb, 1);
-}
-
-float4 psEditorHemimapAlpha(VS2PSEditorUndergrowth indata) : COLOR
-{
-	float4 hemimap = tex2D(sampler0, indata.Tex0);
-	
-	return float4(hemimap.aaa, 1);
+	return Output;
 }
 
 technique EditorHemimap
@@ -1144,64 +800,76 @@ technique EditorHemimap
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
+		ZFunc = LESSEQUAL;
 		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
-		VertexShader = compile vs_1_1 vsEditorHemimap();
-		PixelShader = compile PS2_EXT psEditorHemimap();
+		VertexShader = compile vs_3_0 VS_EditorHemimap();
+		PixelShader = compile ps_3_0 PS_EditorHemimap();
 	}
-	
+
 	pass p1
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;	
+		ZFunc = LESSEQUAL;
 		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
-		VertexShader = compile vs_1_1 vsEditorHemimap();
-		PixelShader = compile PS2_EXT psEditorHemimapAlpha();
+		VertexShader = compile vs_3_0 VS_EditorHemimap();
+		PixelShader = compile ps_3_0 PS_EditorHemimapAlpha();
 	}
-	
 }
-// -------------------  Lightmap generation techniques 
-float4x4 vSETTransXZ : SETTRANSXZ;
 
+/*
+	[LIGHTMAPPING SHADERS]
+*/
 
-PS2FB PShader_LightmapGeneration(VS2PS indata)
+VS2PS_LightmapGeneration VS_LightmapGeneration_QP(APP2VS Input)
 {
-	PS2FB outdata;
+	VS2PS_LightmapGeneration Output = (VS2PS_LightmapGeneration)0;
+
+	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	Output.HPos = mul(WorldPos, _ViewProj);
+	Output.Pos = WorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.Tex0 = Input.Tex0;
+
+	return Output;
+}
+
+VS2PS_LightmapGeneration VS_LightmapGeneration_SP(APP2VS Input)
+{
+	VS2PS_LightmapGeneration Output = (VS2PS_LightmapGeneration)0;
+
+	float4 WorldPos = 0.0;
+	WorldPos.xz = mul(float4(Input.Pos0.xy, 0.0, 1.0), _SETTransXZ).xy;
+	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy) + _ScaleTransY.zw;
+	Output.HPos = mul(WorldPos, _ViewProj);
+	Output.Pos = WorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.Tex0 = Input.Tex0;
+
+	return Output;
+}
+
+PS2FB PS_LightmapGeneration(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
+
 	// Output pure black.
-	outdata.Col = float4(0, 0, 0, 1);
-	return outdata;
-}
+	Output.Color = float4(0.0, 0.0, 0.0, 1.0);
 
-VS2PS VShader_LightmapGeneration_QP(APP2VS indata)
-{
-	VS2PS outdata;	
-	outdata.Pos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-	outdata.Pos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
- 	outdata.Pos = mul(outdata.Pos, mViewProj);
- 	outdata.Tex0 = indata.TexCoord0;
- 	outdata.Tex1 = indata.TexCoord0;
- 	outdata.Fog = saturate(calcFog(outdata.Pos.w));
- 	outdata.Color = 1;
- 
-	return outdata;
-}
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
 
-VS2PS VShader_LightmapGeneration_SP(APP2VS indata)
-{
-	VS2PS outdata;	
-	outdata.Pos.xz = mul(float4(indata.Pos0.xy,0,1), vSETTransXZ).xy;
-	outdata.Pos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
- 	outdata.Pos = mul(outdata.Pos, mViewProj);
- 	outdata.Tex0 = indata.TexCoord0;
- 	outdata.Tex1 = indata.TexCoord0;
- 	outdata.Fog = saturate(calcFog(outdata.Pos.w));
- 	outdata.Color = 1;
- 
-	return outdata;
+	return Output;
 }
 
 technique lightmapGeneration <
@@ -1214,157 +882,157 @@ technique lightmapGeneration <
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
 		CullMode = CW;
-		ZEnable = true;
-		ZWriteEnable = true;
-		FogEnable = FALSE;		
-		VertexShader = compile vs_1_1 VShader_LightmapGeneration_QP();		
-		PixelShader = compile ps_1_1 PShader_LightmapGeneration();
+		ZEnable = TRUE;
+		ZWriteEnable = TRUE;
+
+		VertexShader = compile vs_3_0 VS_LightmapGeneration_QP();
+		PixelShader = compile ps_3_0 PS_LightmapGeneration();
 	}
+
 	pass p0 // SurroundingPatchs
 	{
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
 		CullMode = CW;
-		ZEnable = true;
-		ZWriteEnable = true;
-		FogEnable = FALSE;		
-		VertexShader = compile vs_1_1 VShader_LightmapGeneration_SP();		
-		PixelShader = compile ps_1_1 PShader_LightmapGeneration();
+		ZEnable = TRUE;
+		ZWriteEnable = TRUE;
+
+		VertexShader = compile vs_3_0 VS_LightmapGeneration_SP();
+		PixelShader = compile ps_3_0 PS_LightmapGeneration();
 	}
 }
 
+/*
+	[SURROUNDING EDITOR TERRAIN (SET)]
+*/
 
-
-
-
-
-struct SETVS2PS
+VS2PS_SET VS_SET(APP2VS_SET Input)
 {
-    float4 Pos : POSITION;
-    float WaterFade : TEXCOORD0;
-    float2 Tex1 : TEXCOORD1;
-    float2 Tex2 : TEXCOORD2;
-    float2 Tex3 : TEXCOORD3;
-    float2 BiFixTex : TEXCOORD4;
-    float2 BiFixTex2 : TEXCOORD6;
-    float Fog : FOG;
-    float3 BlendValue : TEXCOORD5;
+	VS2PS_SET Output = (VS2PS_SET)0;
+
+	float4 WorldPos = 0.0;
+	WorldPos.xz = mul(float4(Input.Pos0.xy, 0.0, 1.0), _SETTransXZ).xy;
+	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy) + _ScaleTransY.zw;
+
+	Output.HPos = mul(WorldPos, _ViewProj);
+	Output.Pos = WorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.Normal = Input.Normal;
+	Output.Tex0 = float3(Input.Tex0, Input.Pos1.x);
+	Output.BiTex.xy = (Input.Tex0.xy * _SETBiFixTex.x) + _SETBiFixTex.y;
+	Output.BiTex.zw = (Input.Tex0.xy * _SETBiFixTex2.x) + _SETBiFixTex2.y;
+
+	return Output;
+}
+
+VS2PS_SET_ColorLightingOnly VS_SET_ColorLightingOnly(APP2VS_SET Input)
+{
+	VS2PS_SET_ColorLightingOnly Output = (VS2PS_SET_ColorLightingOnly)0;
+
+	float4 WorldPos = 0.0;
+	WorldPos.xz = mul(float4(Input.Pos0.xy, 0.0, 1.0), _SETTransXZ).xy;
+	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy) + _ScaleTransY.zw;
+
+	Output.HPos = mul(WorldPos, _ViewProj);
+	Output.Pos = WorldPos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.BiTex.xy = (Input.Tex0.xy * _SETBiFixTex.x) + _SETBiFixTex.y;
+	Output.BiTex.zw = (Input.Tex0.xy * _SETBiFixTex2.x) + _SETBiFixTex2.y;
+
+	return Output;
+}
+
+struct SurroundingTerrain
+{
+	float2 YPlane;
+	float2 XPlane;
+	float2 ZPlane;
 };
 
-
-struct SETAPP2VS
+SurroundingTerrain GetSurroundingTerrain(float3 WorldPos, float3 Tex)
 {
-    float2 Pos0 : POSITION0;
-    float2 TexCoord0 : TEXCOORD0;
-    float4 Pos1 : POSITION1;
-    float3 Normal : NORMAL;
-};
+	SurroundingTerrain Output = (SurroundingTerrain)0;
 
-SETVS2PS vsSET(SETAPP2VS indata)
-{
-	SETVS2PS outdata;
-	
-	float4 wPos;
-	wPos.xz = mul(float4(indata.Pos0.xy,0,1), vSETTransXZ).xy;
-	wPos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
- 	outdata.BiFixTex = (indata.TexCoord0 * vSETBiFixTex.x) + vSETBiFixTex.y;
- 	outdata.BiFixTex2 = (indata.TexCoord0 * vSETBiFixTex2.x) + vSETBiFixTex2.y;
- 	
- 	outdata.WaterFade = 1 - saturate((waterHeight - wPos.y)/3.0f);
+	float3 WorldTex = 0.0;
+	WorldTex.x = WorldPos.x * _TexScale.x;
+	WorldTex.y = -(Tex.z * _TexScale.y);
+	WorldTex.z = WorldPos.z * _TexScale.z;
 
+	float2 YPlaneTex = WorldTex.xz;
+	float2 XPlaneTex = WorldTex.zy;
+	float2 ZPlaneTex = WorldTex.xy;
+	Output.YPlane = (YPlaneTex * _FarTexTiling.z);
+	Output.XPlane = (XPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	Output.ZPlane = (ZPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
 
-// float3 tex = float3((indata.Pos0.y * vTexScale.z), -(((indata.Pos1.x) * vTexScale.y)) , (indata.Pos0.x * vTexScale.x));
-// float3 tex = float3((outdata.Pos.z * vTexScale.z), -(((indata.Pos1.x) * vTexScale.y)) , (outdata.Pos.x * vTexScale.x));
-	float3 tex = float3((wPos.z * vTexScale.z), -(((indata.Pos1.x) * vTexScale.y)) , (wPos.x * vTexScale.x));
-
- 	outdata.Pos = mul(wPos, mViewProj);
-
-	
-	float2 xPlaneTexCord = tex.xy;
-	float2 yPlaneTexCord = tex.zx;
-	float2 zPlaneTexCord = tex.zy;
-
- 	outdata.Fog = saturate(calcFog(outdata.Pos.w));
-
-
- 	outdata.Tex1 = yPlaneTexCord * vFarTexTiling.z;
-	outdata.Tex2.xy = xPlaneTexCord.xy * vFarTexTiling.xy;
-	outdata.Tex2.y += vFarTexTiling.w;
-	outdata.Tex3.xy = zPlaneTexCord.xy * vFarTexTiling.xy;
-	outdata.Tex3.y += vFarTexTiling.w;
-
-	outdata.BlendValue = saturate(abs(indata.Normal) - vBlendMod);
-	float tot = dot(1, outdata.BlendValue);
-	outdata.BlendValue /= tot;
-
-// outdata.BlendValue = saturate(abs(indata.Normal));
-
-	return outdata;
+	return Output;
 }
 
-float4 psSETNormal(SETVS2PS indata) : COLOR
+PS2FB PS_SET(VS2PS_SET Input)
 {
-	float4 colormap = tex2D(sampler0Clamp, indata.BiFixTex2);
-	
-	float4 lightmap = tex2D(sampler1Clamp, indata.BiFixTex);
-	float4 light = (lightmap.y * vSunColor*4) + (lightmap.z * vGIColor*2) + (lightmap.x * vPointColor);
+	PS2FB Output = (PS2FB)0;
 
-	float4 lowComponent = tex2D(sampler4Clamp, indata.BiFixTex2);
-	float4 yplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex1);
-	float4 xplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex2);
-	float4 zplaneLowDetailmap = 2*tex2D(sampler3Wrap, indata.Tex3);
+	float3 WorldPos = Input.Pos.xyz;
+	float3 WorldNormal = normalize(Input.Normal);
+	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
+	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
+	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 
-	float4 lowDetailmap = lerp(1, yplaneLowDetailmap.z, lowComponent.x);
-	float mounten = (xplaneLowDetailmap.y * indata.BlendValue.x) + 
-			(yplaneLowDetailmap.x * indata.BlendValue.y) + 
-			(zplaneLowDetailmap.y * indata.BlendValue.z);
-	lowDetailmap *= lerp(1, mounten, lowComponent.z);
+	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos, Input.Tex0);
+	float4 ColorMap = tex2D(SampleTex0, Input.BiTex.zw);
+	float4 LowComponent = tex2D(SampleTex4, Input.BiTex.zw);
+	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, ST.YPlane) * 2.0;
+	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, ST.XPlane) * 2.0;
+	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, ST.ZPlane) * 2.0;
 
-	float4 outColor = lowDetailmap * colormap * light;
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.z, saturate(dot(LowComponent.xy, 1.0)));
+	float Blue = 0.0;
+	Blue += (XPlaneLowDetailmap.y * BlendValue.x);
+	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
+	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
+	LowDetailMap *= lerp(1.0, Blue, LowComponent.z);
 
-	float4 waterOutColor = lerp(terrainWaterColor, outColor, indata.WaterFade);
+	float4 Lights = GetTerrainLights(SampleTex1, Input.BiTex.xy, _PointColor);
+	float4 OutputColor = ColorMap * LowDetailMap * Lights;
 
-// return float4(indata.BlendValue, 1);
-// return lowComponent;
-// return colormap;
-// return lowDetailmap*0.5;
-// return light;	
-// return light*0.5;
+	Output.Color = OutputColor;
+	Output.Color = lerp(_TerrainWaterColor, Output.Color, WaterLerp);
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
 
-	return waterOutColor;
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 }
 
-
-float4 psSETColorLightingOnly(SETVS2PS indata) : COLOR
+PS2FB PS_SET_ColorLightingOnly(VS2PS_SET_ColorLightingOnly Input)
 {
-	float4 colormap = tex2D(sampler0_point, indata.BiFixTex2);
-	
-	float4 lightmap = tex2D(sampler1_point, indata.BiFixTex);
-	float4 light = (lightmap.y * vSunColor*4) + (lightmap.z * vGIColor*2) + (lightmap.x * vPointColor);
-	float4 outColor = colormap * light;
+	PS2FB Output = (PS2FB)0;
 
-	float4 waterOutColor = lerp(terrainWaterColor, outColor, indata.WaterFade);
+	float3 WorldPos = Input.Pos.xyz;
+	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 
-// return float4(1,0,0,1);
-// return float4(indata.BlendValue, 1);
-// return lowComponent;
-// return colormap;
-// return lowDetailmap*0.5;
-// return light;	
+	float4 ColorMap = tex2D(SampleTex0, Input.BiTex.zw);
+	float4 Lights = GetTerrainLights(SampleTex1, Input.BiTex.xy, _PointColor);
 
-	return waterOutColor;
+	float4 OutputColor = ColorMap * Lights;
+	Output.Color = OutputColor;
+	Output.Color = lerp(_TerrainWaterColor, Output.Color, WaterLerp);
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 technique SurroundingEditorTerrain <
 	int DetailLevel = DLUltraHigh+DLVeryHigh;
@@ -1378,10 +1046,11 @@ technique SurroundingEditorTerrain <
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		AlphaBlendEnable = FALSE;
-		FogEnable = TRUE;
-		VertexShader = compile vs_1_1 vsSET();		
-		PixelShader = compile PS2_EXT psSETNormal();
+
+		VertexShader = compile vs_3_0 VS_SET();
+		PixelShader = compile ps_3_0 PS_SET();
 	}
+
 	pass p1 // ColorLighting Only
 	{
 		CullMode = CW;
@@ -1389,8 +1058,8 @@ technique SurroundingEditorTerrain <
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		AlphaBlendEnable = FALSE;
-		FogEnable = TRUE;
-		VertexShader = compile vs_1_1 vsSET();		
-		PixelShader = compile PS2_EXT psSETColorLightingOnly();
+
+		VertexShader = compile vs_3_0 VS_SET_ColorLightingOnly();
+		PixelShader = compile ps_3_0 PS_SET_ColorLightingOnly();
 	}
 }
