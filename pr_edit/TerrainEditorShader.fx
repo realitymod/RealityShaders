@@ -1002,7 +1002,7 @@ PS2FB PS_SET(VS2PS_SET Input)
 	float4 OutputColor = ColorMap * LowDetailMap * Lights;
 
 	Output.Color = OutputColor;
-	Output.Color = lerp(_TerrainWaterColor, Output.Color, WaterLerp);
+	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
 
 	#if defined(LOG_DEPTH)
@@ -1024,7 +1024,7 @@ PS2FB PS_SET_ColorLightingOnly(VS2PS_SET_ColorLightingOnly Input)
 
 	float4 OutputColor = ColorMap * Lights;
 	Output.Color = OutputColor;
-	Output.Color = lerp(_TerrainWaterColor, Output.Color, WaterLerp);
+	Output.Color = lerp(Output.Color,_TerrainWaterColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
 
 	#if defined(LOG_DEPTH)
