@@ -43,13 +43,15 @@ struct VS2PS_FullDetail_Hi
 	float4 Pos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
 	float3 Tex0 : TEXCOORD2; // .xy = Input.Pos0.xy; .z = Depth;
-	float4 LightTex : TEXCOORD3;
+	float4 Tex1 : TEXCOORD3; // .xy = ColorLight; .zw = Detail;
+	float4 LightTex : TEXCOORD4;
 };
 
 VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 {
 	VS2PS_FullDetail_Hi Output = (VS2PS_FullDetail_Hi)0;
 	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
+	float4 YPlaneTex = Input.Pos0.xy * _TexScale.xz;
 
 	// tl: output HPos as early as possible.
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
@@ -58,6 +60,8 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 	// tl: uncompress normal
 	Output.Normal.xyz = (Input.Normal * 2.0) - 1.0;
 	Output.Tex0.xy = Input.Pos0.xy;
+	Output.Tex1.xy = (YPlaneTex * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Tex1.zw = (YPlaneTex * _DetailTex.x) + _DetailTex.y;
 	Output.LightTex = ProjToLighting(Output.HPos);
 
 	#if defined(LOG_DEPTH)
@@ -75,8 +79,6 @@ struct FullDetail
 	float2 FarYPlane;
 	float2 FarXPlane;
 	float2 FarZPlane;
-	float2 ColorLight;
-	float2 Detail;
 };
 
 FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
@@ -98,8 +100,6 @@ FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
 	Output.FarYPlane = (YPlaneTex * _FarTexTiling.z);
 	Output.FarXPlane = (XPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
 	Output.FarZPlane = (ZPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
-	Output.ColorLight = (YPlaneTex * _ColorLightTex.x) + _ColorLightTex.y;
-	Output.Detail = (YPlaneTex * _DetailTex.x) + _DetailTex.y;
 
 	return Output;
 }
@@ -115,7 +115,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	FullDetail FD = GetFullDetail(WorldPos.xyz, Input.Tex0.xy);
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
-	float4 Component = tex2D(SampleTex2_Clamp, FD.Detail);
+	float4 Component = tex2D(SampleTex2_Clamp, Input.Tex1.zw);
 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
@@ -125,8 +125,8 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#if defined(LIGHTONLY)
 		float3 OutputColor = TerrainLights;
 	#else
-		float3 ColorMap = tex2D(SampleTex0_Clamp, FD.ColorLight);
-		float4 LowComponent = tex2D(SampleTex5_Clamp, FD.Detail);
+		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex1.xy);
+		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex1.zw);
 		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, FD.NearYPlane);
 		float4 XPlaneDetailmap = GetProceduralTiles(SampleTex6_Wrap, FD.NearXPlane);
 		float4 ZPlaneDetailmap = GetProceduralTiles(SampleTex6_Wrap, FD.NearZPlane);

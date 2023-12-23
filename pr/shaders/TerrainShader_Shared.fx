@@ -158,7 +158,8 @@ struct VS2PS_Shared_LowDetail
 	float4 Pos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
 	float2 Tex0 : TEXCOORD2; // .xy = ColorTex; .zw = CompTex;
-	float4 LightTex : TEXCOORD3;
+	float4 Tex1 : TEXCOORD3; // .xy = ColorLight; .zw = DetailTex;
+	float4 LightTex : TEXCOORD4;
 };
 
 VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
@@ -174,6 +175,8 @@ VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 
 	Output.Normal = (Input.Normal * 2.0) - 1.0;
 	Output.Tex0 = Input.Pos0.xy;
+	Output.Tex1.xy = ((Output.Tex0 * _ScaleBaseUV) * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Tex1.zw = ((Output.Tex0 * _TexScale.xz) * _DetailTex.x) + _DetailTex.y;
 	Output.LightTex = ProjToLighting(Output.HPos);
 
 	return Output;
@@ -184,8 +187,6 @@ struct LowDetail
 	float2 YPlane;
 	float2 XPlane;
 	float2 ZPlane;
-	float2 ColorLight;
-	float2 Detail;
 };
 
 LowDetail GetLowDetail(float3 WorldPos, float2 Tex)
@@ -203,8 +204,6 @@ LowDetail GetLowDetail(float3 WorldPos, float2 Tex)
 	Output.YPlane = (YPlaneTex * _FarTexTiling.z);
 	Output.XPlane = (XPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
 	Output.ZPlane = (ZPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
-	Output.ColorLight = (Tex.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
-	Output.Detail = (YPlaneTex * _DetailTex.x) + _DetailTex.y;
 
 	return Output;
 }
@@ -220,8 +219,8 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 
 	LowDetail LD = GetLowDetail(WorldPos, Input.Tex0);
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
-	float4 ColorMap = tex2D(SampleTex0_Clamp, LD.ColorLight);
-	float4 LowComponent = tex2D(SampleTex5_Clamp, LD.Detail);
+	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex1.xy);
+	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex1.zw);
 	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.YPlane);
 	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.XPlane);
 	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.ZPlane);
@@ -420,6 +419,7 @@ struct VS2PS_Shared_ST_Normal
 	float4 Pos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
 	float3 Tex0 : TEXCOORD2; // .xy = Tex0; .z = Input.Pos1.x;
+	float4 Tex1 : TEXCOORD3; // .xy = ColorLight; .zw = LowDetail;
 };
 
 VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
@@ -438,6 +438,8 @@ VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
 
 	Output.Normal = Input.Normal;
 	Output.Tex0 = float3(Input.Tex0, Input.Pos1.x);
+	Output.Tex1.xy = (Output.Tex0.xy * _STColorLightTex.x) + _STColorLightTex.y;
+	Output.Tex1.zw = (Output.Tex0.xy * _STLowDetailTex.x) + _STLowDetailTex.y;
 
 	return Output;
 }
@@ -447,8 +449,6 @@ struct SurroundingTerrain
 	float2 YPlane;
 	float2 XPlane;
 	float2 ZPlane;
-	float2 ColorLight;
-	float2 LowDetail;
 };
 
 SurroundingTerrain GetSurroundingTerrain(float3 WorldPos, float3 Tex)
@@ -466,8 +466,6 @@ SurroundingTerrain GetSurroundingTerrain(float3 WorldPos, float3 Tex)
 	Output.YPlane = (YPlaneTex * _STFarTexTiling.z);
 	Output.XPlane = (XPlaneTex * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
 	Output.ZPlane = (ZPlaneTex * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
-	Output.ColorLight = (Tex.xy * _STColorLightTex.x) + _STColorLightTex.y;
-	Output.LowDetail = (Tex.xy * _STLowDetailTex.x) + _STLowDetailTex.y;
 
 	return Output;
 }
@@ -482,8 +480,8 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos, Input.Tex0);
-	float4 ColorMap = tex2D(SampleTex0_Clamp, ST.ColorLight);
-	float4 LowComponent = tex2D(SampleTex5_Clamp, ST.LowDetail);
+	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex1.xy);
+	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex1.zw);
 	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, ST.YPlane) * 2.0;
 	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, ST.XPlane) * 2.0;
 	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, ST.ZPlane) * 2.0;
