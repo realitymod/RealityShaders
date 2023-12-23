@@ -165,6 +165,8 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	return Output;
 }
 
+// { StreamNo, DataType, Usage, UsageIdx }
+// DECLARATION_END => End macro
 #define CREATE_TECHNIQUE_UG(TECHNIQUE_NAME, VERTEX_SHADER, PIXEL_SHADER) \
 	technique TECHNIQUE_NAME \
 	< \
@@ -363,7 +365,8 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 	return Output;
 }
 
-
+// { StreamNo, DataType, Usage, UsageIdx }
+// DECLARATION_END => End macro
 #define CREATE_TECHNIQUE_UG_ZONLY(TECHNIQUE_NAME, VERTEX_SHADER, PIXEL_SHADER) \
 	technique TECHNIQUE_NAME \
 	< \
