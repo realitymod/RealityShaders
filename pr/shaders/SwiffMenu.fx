@@ -24,6 +24,12 @@ uniform texture TexMap : TEXTURE;
 CREATE_SAMPLER(SampleTexMap_Clamp, TexMap, CLAMP)
 CREATE_SAMPLER(SampleTexMap_Wrap, TexMap, WRAP)
 
+struct APP2VS_Shape
+{
+	float3 Pos : POSITION;
+	float4 Color : COLOR0;
+};
+
 struct VS2PS_Shape
 {
 	float4 HPos : POSITION;
@@ -38,19 +44,17 @@ struct VS2PS_ShapeTexture
 	float4 Selector : TEXCOORD2;
 };
 
-VS2PS_Shape VS_Shape(float3 Position : POSITION, float4 VertexColor : COLOR0)
+VS2PS_Shape VS_Shape(APP2VS_Shape Input)
 {
 	VS2PS_Shape Output = (VS2PS_Shape)0;
-	Output.HPos = float4(Position.xy, 0.0, 1.0); // mul(float4(Position.xy, 0.0, 1.0), WorldView);
-	Output.Diffuse = saturate(VertexColor); // saturate(DiffuseColor);
+	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
+	Output.Diffuse = saturate(Input.Color);
 	return Output;
 }
 
 VS2PS_Shape VS_Line(float3 Position : POSITION)
 {
 	VS2PS_Shape Output = (VS2PS_Shape)0;
-	// Output.HPos = mul(float4(Position.xy, 0.0, 1.0), WorldView);
-	// Output.HPos = float4(Position.xy, 0.0, 1.0);
 	Output.HPos = float4(Position.xy, 0.0, 1.0);
 	Output.Diffuse = saturate(DiffuseColor);
 	return Output;
