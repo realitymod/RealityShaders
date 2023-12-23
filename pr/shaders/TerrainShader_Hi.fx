@@ -51,7 +51,7 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 {
 	VS2PS_FullDetail_Hi Output = (VS2PS_FullDetail_Hi)0;
 	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
-	float4 YPlaneTex = Input.Pos0.xy * _TexScale.xz;
+	float2 YPlaneTex = Input.Pos0.xy * _TexScale.xz;
 
 	// tl: output HPos as early as possible.
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
