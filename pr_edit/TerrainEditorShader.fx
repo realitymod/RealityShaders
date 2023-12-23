@@ -16,37 +16,36 @@
 
 #define POINT_WATER_BIAS 2
 
-float4x4 _ViewProj: matVIEWPROJ;
-float4 _ScaleTransXZ : SCALETRANSXZ;
-float4 _ScaleTransY : SCALETRANSY;
-float4x4 _SETTransXZ : SETTRANSXZ;
+uniform float4x4 _ViewProj: matVIEWPROJ;
+uniform float4 _ScaleTransXZ : SCALETRANSXZ;
+uniform float4 _ScaleTransY : SCALETRANSY;
+uniform float4x4 _SETTransXZ : SETTRANSXZ;
 
-float4 _SunColor : SUNCOLOR;
-float4 _GIColor : GICOLOR;
-float4 _PointColor: POINTCOLOR;
-float _DetailFadeMod : DETAILFADEMOD;
-float4 _TexOffset : TEXOFFSET;
-float2 _SETBiFixTex : SETBIFIXTEX;
-float2 _SETBiFixTex2 : SETBIFIXTEX2;
-float2 _BiFixTex : BIFIXTEX;
+uniform float4 _SunColor : SUNCOLOR;
+uniform float4 _GIColor : GICOLOR;
+uniform float4 _PointColor: POINTCOLOR;
+uniform float _DetailFadeMod : DETAILFADEMOD;
+uniform float4 _TexOffset : TEXOFFSET;
+uniform float2 _SETBiFixTex : SETBIFIXTEX;
+uniform float2 _SETBiFixTex2 : SETBIFIXTEX2;
+uniform float2 _BiFixTex : BIFIXTEX;
 
-float3 _BlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
-float _WaterHeight : WaterHeight;
-
-float4 _TerrainWaterColor : TerrainWaterColor;
+uniform float3 _BlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
+uniform float _WaterHeight : WaterHeight;
+uniform float4 _TerrainWaterColor : TerrainWaterColor;
 
 // #define WaterLevel 22.5
 // #define _PointColor float4(1.0, 0.5, 0.5, 1.0)
 
-float4 _CameraPos : CAMERAPOS;
-float3 _ComponentSelector : COMPONENTSELECTOR;
-float2 _NearFarMorphLimits : NEARFARMORPHLIMITS;
+uniform float4 _CameraPos : CAMERAPOS;
+uniform float3 _ComponentSelector : COMPONENTSELECTOR;
+uniform float2 _NearFarMorphLimits : NEARFARMORPHLIMITS;
 
-float4 _TexScale : TEXSCALE;
-float4 _NearTexTiling : NEARTEXTILING;
-float4 _FarTexTiling : FARTEXTILING;
+uniform float4 _TexScale : TEXSCALE;
+uniform float4 _NearTexTiling : NEARTEXTILING;
+uniform float4 _FarTexTiling : FARTEXTILING;
 
-float _RefractionIndexRatio = 0.15;
+uniform float _RefractionIndexRatio = 0.15;
 static float R0 = pow(1.0 - _RefractionIndexRatio, 2.0) / pow(1.0 + _RefractionIndexRatio, 2.0);
 
 uniform texture Tex0 : TEXLAYER0;
@@ -268,7 +267,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 	float3 WorldNormal = normalize(Input.Normal);
 	float LerpValue = GetLerpValue(WorldPos.xyz);
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
-	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
+	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
 	FullDetail FD = GetFullDetail(WorldPos.xyz, Input.Tex0.xy);
 
@@ -296,7 +295,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
-	float4 DetailMap = 0.0;
+	float4 DetailMap = 1.0;
 	if(UsePlaneMapping)
 	{
 		DetailMap += (XPlaneDetailmap * BlendValue.x);
@@ -982,7 +981,7 @@ PS2FB PS_SET(VS2PS_SET Input)
 	float3 WorldNormal = normalize(Input.Normal);
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
-	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
+	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
 	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos, Input.Tex0);
 	float4 ColorMap = tex2D(SampleTex0, Input.BiTex.zw);
@@ -1017,14 +1016,14 @@ PS2FB PS_SET_ColorLightingOnly(VS2PS_SET_ColorLightingOnly Input)
 	PS2FB Output = (PS2FB)0;
 
 	float3 WorldPos = Input.Pos.xyz;
-	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
+	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
 	float4 ColorMap = tex2D(SampleTex0, Input.BiTex.zw);
 	float4 Lights = GetTerrainLights(SampleTex1, Input.BiTex.xy, _PointColor);
 
 	float4 OutputColor = ColorMap * Lights;
 	Output.Color = OutputColor;
-	Output.Color = lerp(Output.Color,_TerrainWaterColor, WaterLerp);
+	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
 
 	#if defined(LOG_DEPTH)

@@ -73,21 +73,6 @@ float GetFadeOut(float3 Pos)
 	return saturate(FadeOut * (Pos.y > 0.0));
 }
 
-bool IsTisActive()
-{
-	return _UnderwaterFog.r == 0;
-}
-
-float4 ApplyTis(in out float4 color)
-{
-	// TIS uses Green + Red channel to determine heat
-	color.r = 0;
-	// Green = 1 means cold, Green = 0 hot. Invert channel so clouds (high green) become hot
-	// Add constant to make everything colder
-	color.g = (1 - color.g) + 0.5;
-	return color;
-}
-
 /*
 	General SkyDome shaders
 */
@@ -116,14 +101,7 @@ PS2FB PS_SkyDome_UnderWater(VS2PS_SkyDome Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	if (IsTisActive())
-	{
-		Output.Color = 0;
-	}
-	else
-	{
-		Output.Color = _UnderwaterFog;
-	}
+	Output.Color = _UnderwaterFog;
 
 	return Output;
 }
@@ -138,12 +116,6 @@ PS2FB PS_SkyDome(VS2PS_SkyDome Input)
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 
-	// If thermals make it dark
-	if (IsTisActive())
-	{
-		Output.Color = ApplyTis(Output.Color);
-	}
-
 	return Output;
 }
 
@@ -157,12 +129,6 @@ PS2FB PS_SkyDome_Lit(VS2PS_SkyDome Input)
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
-
-	// If thermals make it dark
-	if (IsTisActive())
-	{
-		Output.Color = ApplyTis(Output.Color);
-	}
 
 	return Output;
 }
@@ -205,12 +171,6 @@ PS2FB PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
 
 	Output.Color = lerp(SkyDome, Temp, Temp.a);
 
-	// If thermals make it dark
-	if (IsTisActive())
-	{
-		Output.Color = ApplyTis(Output.Color);
-	}
-
 	return Output;
 }
 
@@ -244,12 +204,6 @@ PS2FB PS_SkyDome_NoClouds(VS2PS_NoClouds Input)
 
 	Output.Color = tex2D(SampleTex0, Input.Tex0);
 
-	// If thermals make it dark
-	if (IsTisActive())
-	{
-		Output.Color = ApplyTis(Output.Color);
-	}
-
 	return Output;
 }
 
@@ -261,12 +215,6 @@ PS2FB PS_SkyDome_NoClouds_Lit(VS2PS_NoClouds Input)
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = SkyDome;
-
-	// If thermals make it dark
-	if (IsTisActive())
-	{
-		Output.Color = ApplyTis(Output.Color);
-	}
 
 	return Output;
 }

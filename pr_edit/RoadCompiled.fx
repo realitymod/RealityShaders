@@ -125,18 +125,7 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
 	OutputColor.a = Detail0.a * saturate(ZFade * Input.Alpha);
 
-	// On thermals no shadows
-	if (IsTisActive())
-	{
-		TerrainLights = (TerrainSunColor + AccumLights.rgb) * 2.0;
-		OutputColor.rgb *= TerrainLights;
-		OutputColor.g = clamp(OutputColor.g, 0.0, 0.5);
-	}
-	else
-	{
-		OutputColor.rgb *= TerrainLights;
-	}
-
+	OutputColor.rgb *= TerrainLights;
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos.xyz));
 

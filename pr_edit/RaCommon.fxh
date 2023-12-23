@@ -84,15 +84,6 @@
 	}
 
 	/*
-		Shared thermal code
-	*/
-
-	bool IsTisActive()
-	{
-		return FogColor.r == 0;
-	}
-
-	/*
 		Shared fogging and fading functions
 	*/
 
@@ -108,16 +99,6 @@
 	void ApplyFog(inout float3 Color, in float FogValue)
 	{
 		float3 Fog = FogColor.rgb;
-		// Adjust fog for thermals same way as the sky in SkyDome
-		if (IsTisActive())
-		{
-			// TIS uses Green + Red channel to determine heat
-			Fog.r = 0.0;
-			// Green = 1 means cold, Green = 0 hot. Invert channel so clouds (high green) become hot
-			// Add constant to make everything colder
-			Fog.g = (1.0 - FogColor.g) + 0.5;
-		}
-
 		Color = lerp(Fog, Color, FogValue);
 	}
 
