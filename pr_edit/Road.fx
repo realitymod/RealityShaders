@@ -11,7 +11,7 @@ uniform float4 _DiffuseColor : DiffuseColor;
 uniform float _BlendFactor : BlendFactor;
 uniform float _Material : Material;
 
-float4 _FogColor : FogColor;
+uniform float4 _FogColor : FogColor;
 
 uniform texture DetailTex0 : TEXLAYER0;
 uniform texture DetailTex1 : TEXLAYER1;
