@@ -1,60 +1,109 @@
-#line 2 "TreeBillboard.fx"
 
-float4x4 mViewProj : matVIEWPROJ;
+#include "shaders/RealityGraphics.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+#endif
 
+uniform float4x4 _ViewProj : matVIEWPROJ;
 
-bool bAlphaBlend : ALPHABLEND = true;
-dword dwSrcBlend : SRCBLEND = D3DBLEND_SRCALPHA;
-dword dwDestBlend : DESTBLEND = D3DBLEND_INVSRCALPHA;
+uniform bool _AlphaBlend : ALPHABLEND = true;
+uniform dword _SrcBlend : SRCBLEND = D3DBLEND_SRCALPHA;
+uniform dword _DestBlend : DESTBLEND = D3DBLEND_INVSRCALPHA;
 
-bool bAlphaTest : ALPHATEST = true;
-dword dwAlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
-dword dwAlphaRef : ALPHAREF = 0;
+uniform bool _AlphaTest : ALPHATEST = true;
+uniform dword _AlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
+uniform dword _AlphaRef : ALPHAREF = 0;
 
-dword dwZEnable : ZMODE = D3DZB_TRUE;
-bool bZWriteEnable : ZWRITEENABLE = false;
+uniform dword _ZEnable : ZMODE = D3DZB_TRUE;
+uniform bool _ZWriteEnable : ZWRITEENABLE = false;
 
-dword dwTexFactor : TEXFACTOR = 0;
+uniform dword _TexFactor : TEXFACTOR = 0;
 
-texture texture0: TEXLAYER0;
-texture texture1: TEXLAYER1;
+uniform texture Tex0: TEXLAYER0;
+uniform texture Tex1: TEXLAYER1;
 
+sampler SampleTex0 = sampler_state
+{
+	Texture = (Tex0);
+	AddressU = WRAP;
+	AddressV = CLAMP;
+	MipFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+};
+
+sampler SampleTex1 = sampler_state
+{
+	Texture = (Tex1);
+	AddressU = WRAP;
+	AddressV = CLAMP;
+	MipFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+};
 
 struct APP2VS
 {
-    float4 Pos : POSITION;
-    float4 Col : COLOR;
-    float4 Col2 : COLOR;
-    float2 Tex : TEXCOORD0;
-    float2 Tex2 : TEXCOORD1;
+	float4 Pos : POSITION;
+	float2 Tex1 : TEXCOORD0;
+	float2 Tex2 : TEXCOORD1;
+	float4 Color1 : COLOR;
+	float4 Color2 : COLOR;
 };
 
 struct VS2PS
 {
-    float4 Pos : POSITION;
-    float4 Col : COLOR0;
-    float4 Col2 : COLOR1;
-    float2 Tex : TEXCOORD0;
-    float2 Tex2 : TEXCOORD1;
+	float4 HPos : POSITION;
+	float2 Pos : TEXCOORD0;
+	float4 Tex : TEXCOORD1; // .xy = Tex1; .zw = Tex2;
+	float4 Color1 : TEXCOORD2;
+	float4 Color2 : TEXCOORD3;
 };
 
-VS2PS vsFFP(APP2VS indata)
+struct PS2FB
 {
-	VS2PS outdata;
-	
-	outdata.Pos = mul(indata.Pos, mViewProj);
-	outdata.Col = indata.Col;
-	outdata.Col2 = indata.Col2;	
- 	outdata.Tex = indata.Tex;
- 	outdata.Tex2 = indata.Tex2;
- 	
-	return outdata;
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
+VS2PS VS_Quad(APP2VS Input)
+{
+	VS2PS Output;
+
+	Output.HPos = mul(Input.Pos, _ViewProj);
+	Output.Pos = Input.Pos;
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.Color1 = Input.Color1;
+	Output.Color2 = Input.Color2;
+ 	Output.Tex = float4(Input.Tex1, Input.Tex2);
+
+	return Output;
 }
 
+PS2FB PS_Quad(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float4 Tex0 = tex2D(SampleTex0, Input.Tex.xy);
+	float4 Tex1 = tex2D(SampleTex1, Input.Tex.zw);
+
+	Output.Color = lerp(Tex1, Tex0, Input.Color2.a);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
 
 technique QuadWithTexture
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0,
@@ -69,44 +118,16 @@ technique QuadWithTexture
 	pass p0
 	{
 		// App alpha/depth settings
-		AlphaBlendEnable = (bAlphaBlend);
-		SrcBlend = (dwSrcBlend);
-		DestBlend = (dwDestBlend);
-		AlphaTestEnable = true;//(bAlphaTest);
-		AlphaFunc = (dwAlphaFunc);
-		AlphaRef = (dwAlphaRef);
-		ZWriteEnable = (bZWriteEnable);
-		// TextureFactor = (dwTexFactor);
+		AlphaBlendEnable = (_AlphaBlend);
+		SrcBlend = (_SrcBlend);
+		DestBlend = (_DestBlend);
+		AlphaTestEnable = TRUE; // (_AlphaTest);
+		AlphaFunc = (_AlphaFunc);
+		AlphaRef = (_AlphaRef);
+		ZWriteEnable = (_ZWriteEnable);
 		CullMode = NONE;
-		
-		Texture[0] = (texture0);
-		AddressU[0] = WRAP;
-		AddressV[0] = CLAMP;
-		MipFilter[0] = LINEAR;
-		MinFilter[0] = LINEAR;
-		MagFilter[0] = LINEAR;
 
-		Texture[1] = (texture1);
-		AddressU[1] = WRAP;
-		AddressV[1] = CLAMP;
-		MipFilter[1] = LINEAR;
-		MinFilter[1] = LINEAR;
-		MagFilter[1] = LINEAR;
-
-		VertexShader = compile vs_1_1 vsFFP();
-		PixelShader = asm 
-		{
-			ps.1.1
-
-			tex t0
-			tex t1
-
-			// mov r0, t0
-			lrp r1, v1.a, t0, t1
-			mov r0, r1
-			// mul_x2 r0, r1, v0
-			// mul r0.a, r1.a, v0.a
-		};
+		VertexShader = compile vs_3_0 VS_Quad();
+		PixelShader = compile ps_3_0 PS_Quad();
 	}
 }
-
