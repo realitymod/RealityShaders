@@ -198,13 +198,11 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	// Lighting data
 	float3 ViewDir = normalize(ObjectSpaceCamPos.xyz - ObjectPos.xyz);
 	float3 LightDir = -Lights[0].dir.xyz;
-	#if _OBJSPACENORMALMAP_
-		// Object-space normalmap
+	#if _OBJSPACENORMALMAP_ // Object-space normalmap
 		// [skinned-object-space] -> [object_space]
 		Output.ViewDir = normalize(GetObjectDir(B, ViewDir));
 		Output.LightDir = normalize(GetObjectDir(B, LightDir));
-	#else
-		// Tangent-space normalmap, or no normalmap
+	#else // Tangent-space normalmap, or no normalmap
 		// [skinned-object-space] -> [object-space] -> [tangent-space]
 		Output.ViewDir = normalize(GetTangentDir(B, ObjectTBN, ViewDir));
 		Output.LightDir = normalize(GetTangentDir(B, ObjectTBN, LightDir));
@@ -248,6 +246,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 		float3 WorldNormal = mul(NormalMap.xyz, WorldTBN);
 	#else
 		float3 WorldNormal = normalize(Input.WorldNormal);
+		NormalMap = float4(0.0, 0.0, 1.0, 0.0);
 	#endif
 
 	#if _HASSHADOW_
@@ -286,17 +285,11 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	float4 OutputColor = 1.0;
 
-	// Prevents non-detailed bundledmesh from looking shiny
-	#if _HASNORMALMAP_
-		float Gloss = NormalMap.a;
-	#else
-		float Gloss = 0.0;
-	#endif
+	// Calculate lighting
 	ColorPair Light = ComputeLights(NormalMap.xyz, LightDir, ViewDir, SpecularPower);
-
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * TotalLights;
-	float3 SpecularRGB = ((Light.Specular * Gloss) * GetSpecularColor()) * TotalLights;
+	float3 SpecularRGB = ((Light.Specular * NormalMap.a) * GetSpecularColor()) * TotalLights;
 	OutputColor.rgb = CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB);
 	OutputColor.a = ColorMap.a * Transparency.a;
 
