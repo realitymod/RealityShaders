@@ -225,17 +225,12 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	PS2FB Output = (PS2FB)0;
 
 	// Lighting data
+	float3 WorldPos = Input.Pos.xyz;
 	float3 LightDir = normalize(Input.LightDir);
 	float3 ViewDir = normalize(Input.ViewDir);
 
 	// Texture-space data
 	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
-	// NormalMap.a stores the glossmap
-	float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
-	NormalMap.xyz = normalize((NormalMap.xyz * 2.0) - 1.0);
-
-	// Get world-space data
-	float3 WorldPos = Input.Pos.xyz;
 	#if _HASNORMALMAP_
 		float3x3 WorldTBN =
 		{
@@ -243,10 +238,14 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 			normalize(Input.WorldBinormal),
 			normalize(Input.WorldNormal)
 		};
+
+		// NormalMap.a stores the glossmap
+		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
+		NormalMap.xyz = normalize((NormalMap.xyz * 2.0) - 1.0);
 		float3 WorldNormal = mul(NormalMap.xyz, WorldTBN);
 	#else
+		float4 NormalMap = float4(0.0, 0.0, 1.0, 0.0);
 		float3 WorldNormal = normalize(Input.WorldNormal);
-		NormalMap = float4(0.0, 0.0, 1.0, 0.0);
 	#endif
 
 	#if _HASSHADOW_
