@@ -59,11 +59,16 @@
 		https://developer.valvesoftware.com/wiki/Half_Lambert
 	*/
 
+	float ToHalfNL(float DotNL)
+	{
+		DotNL = (DotNL * 0.5) + 0.5;
+		return DotNL * DotNL;
+	}
+
 	float GetHalfNL(float3 Normal, float3 LightDir)
 	{
 		float DotNL = dot(Normal, LightDir);
-		DotNL = (DotNL * 0.5) + 0.5;
-		return DotNL * DotNL;
+		return ToHalfNL(DotNL);
 	}
 
 	ColorPair ComputeLights
@@ -75,13 +80,13 @@
 		ColorPair Output = (ColorPair)0;
 
 		float3 HalfVec = normalize(LightDir + ViewDir);
-		float DotNL = GetHalfNL(Normal, LightDir);
 		float DotNH = saturate(dot(Normal, HalfVec));
-		float ZeroNL = step(0.0, DotNL);
+		float DotNL = dot(Normal, LightDir);
+		float HalfNL = ToHalfNL(DotNL);
 		float N = (Normalized) ? (SpecPower + 8.0) / 8.0 : 1.0;
 
-		Output.Diffuse = DotNL * ZeroNL;
-		Output.Specular = N * pow(abs(DotNH * ZeroNL), SpecPower) * DotNL;
+		Output.Diffuse = HalfNL;
+		Output.Specular = N * pow(abs(DotNH), SpecPower) * DotNL;
 		return Output;
 	}
 
