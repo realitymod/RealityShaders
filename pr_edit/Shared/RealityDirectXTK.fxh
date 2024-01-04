@@ -82,10 +82,11 @@
 		float3 HalfVec = normalize(LightDir + ViewDir);
 		float DotNH = saturate(dot(Normal, HalfVec));
 		float DotNL = dot(Normal, LightDir);
+		float DotNL_Clamped = saturate(DotNL);
 		float N = (Normalized) ? (SpecPower + 8.0) / 8.0 : 1.0;
 
 		Output.Diffuse = ToHalfNL(DotNL);
-		Output.Specular = N * pow(abs(DotNH), SpecPower) * DotNL;
+		Output.Specular = N * pow(abs(DotNH), SpecPower) * DotNL_Clamped;
 		return Output;
 	}
 
