@@ -7,13 +7,13 @@
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaDefines.fx"
-#include "shaders/RaShaderBMCommon.fxh"
+#include "shaders/RaShaderBM.fxh"
 #if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "RaCommon.fxh"
 	#include "RaDefines.fx"
-	#include "RaShaderBMCommon.fxh"
+	#include "RaShaderBM.fxh"
 #endif
 
 /*

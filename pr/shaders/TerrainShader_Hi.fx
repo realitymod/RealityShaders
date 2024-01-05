@@ -1,6 +1,6 @@
-#include "shaders/TerrainShader_Common.fxh"
+#include "shaders/TerrainShader.fxh"
 #if !defined(INCLUDED_HEADERS)
-	#include "TerrainShader_Common.fxh"
+	#include "TerrainShader.fxh"
 #endif
 
 /*

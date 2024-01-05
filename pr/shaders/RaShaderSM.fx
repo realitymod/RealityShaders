@@ -9,7 +9,7 @@
 #include "shaders/shared/RealityVertex.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
-#include "shaders/RaShaderSMCommon.fxh"
+#include "shaders/RaShaderSM.fxh"
 #if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
@@ -17,7 +17,7 @@
 	#include "shared/RealityVertex.fxh"
 	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
-	#include "RaShaderSMCommon.fxh"
+	#include "RaShaderSM.fxh"
 #endif
 
 /*
