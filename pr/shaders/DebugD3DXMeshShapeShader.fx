@@ -216,13 +216,17 @@ technique occluder
 	Debug editor shaders
 */
 
-void PS_Debug_Editor(in VS2PS Input, in uniform float AmbientColorFactor = 1.0, out PS2FB Output)
+PS2FB PS_Debug_Editor(in VS2PS Input, uniform float AmbientColorFactor = 1.0)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	Output.Color = float4(_MaterialAmbient.rgb * AmbientColorFactor, _MaterialAmbient.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique EditorDebug
@@ -286,8 +290,10 @@ void VS_Debug_CollisionMesh(in APP2VS Input, out VS2PS_CollisionMesh Output)
 	Output.Normal = Input.Normal;
 }
 
-void PS_Debug_CollisionMesh(in VS2PS_CollisionMesh Input, in uniform float MaterialFactor = 1.0, out PS2FB Output)
+PS2FB PS_Debug_CollisionMesh(in VS2PS_CollisionMesh Input, uniform float MaterialFactor = 1.0)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float3 Normal = normalize(Input.Normal);
 	float3 LightDir = normalize(float3(-1.0, -1.0, 1.0));
 
@@ -300,6 +306,8 @@ void PS_Debug_CollisionMesh(in VS2PS_CollisionMesh Input, in uniform float Mater
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique collisionMesh
@@ -685,13 +693,17 @@ void VS_Debug_Frustum(in APP2VS_Frustum Input, out VS2PS_Frustum Output)
 	Output.Color = Input.Color;
 }
 
-void PS_Debug_Frustum(in VS2PS_Frustum Input, in uniform float AlphaValue, out PS2FB Output)
+PS2FB PS_Debug_Frustum(in VS2PS_Frustum Input, uniform float AlphaValue)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	Output.Color = float4(Input.Color.rgb, Input.Color.a * AlphaValue);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique wirefrustum

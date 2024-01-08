@@ -105,9 +105,9 @@ float4 GetUndergrowthPos(float4 InputPos, float4 InputPacked)
 	return Pos;
 }
 
-void VS_Undergrowth(in APP2VS Input, in uniform bool ShadowMapEnable, out VS2PS Output)
+VS2PS VS_Undergrowth(in APP2VS Input, uniform bool ShadowMapEnable)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0;
 
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
@@ -121,17 +121,20 @@ void VS_Undergrowth(in APP2VS Input, in uniform bool ShadowMapEnable, out VS2PS 
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
 	Output.Scale = Input.Packed.w * 0.5;
+
+	return Output;
 }
 
-void PS_Undergrowth
+PS2FB PS_Undergrowth
 (
 	in VS2PS Input,
-	in uniform bool PointLightEnable,
-	in uniform int LightCount,
-	in uniform bool ShadowMapEnable,
-	out PS2FB Output
+	uniform bool PointLightEnable,
+	uniform int LightCount,
+	uniform bool ShadowMapEnable
 )
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float3 LocalPos = Input.Pos.xyz;
 	float3 TerrainSunColor = _SunColor * 2.0;
 
@@ -168,6 +171,8 @@ void PS_Undergrowth
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 // { StreamNo, DataType, Usage, UsageIdx }
@@ -230,9 +235,9 @@ struct VS2PS_Simple
 	float4 TerrainColorMap : TEXCOORD4;
 };
 
-void VS_Undergrowth_Simple(in APP2VS_Simple Input, in uniform bool ShadowMapEnable, out VS2PS_Simple Output)
+VS2PS_Simple VS_Undergrowth_Simple(in APP2VS_Simple Input, uniform bool ShadowMapEnable)
 {
-	Output = (VS2PS_Simple)0;
+	VS2PS_Simple Output = (VS2PS_Simple)0;
 
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
@@ -247,17 +252,20 @@ void VS_Undergrowth_Simple(in APP2VS_Simple Input, in uniform bool ShadowMapEnab
 
 	Output.TerrainColorMap = saturate(Input.TerrainColorMap);
 	Output.TerrainLightMap = saturate(Input.TerrainLightMap);
+
+	return Output;
 }
 
-void PS_Undergrowth_Simple
+PS2FB PS_Undergrowth_Simple
 (
 	in VS2PS_Simple Input,
-	in uniform bool PointLightEnable,
-	in uniform int LightCount,
-	in uniform bool ShadowMapEnable,
-	out PS2FB Output
+	uniform bool PointLightEnable,
+	uniform int LightCount,
+	uniform bool ShadowMapEnable
 )
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float3 LocalPos = Input.Pos.xyz;
 	float3 TerrainColor = Input.TerrainColorMap;
 	float3 TerrainLightMap = Input.TerrainLightMap;
@@ -294,6 +302,8 @@ void PS_Undergrowth_Simple
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 // { StreamNo, DataType, Usage, UsageIdx }

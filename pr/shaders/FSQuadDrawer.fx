@@ -178,8 +178,10 @@ void VS_ScaleDown4x4(in APP2VS_Blit Input, out VS2PS_4Tap Output)
 	Output.FilterCoords[3] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[3].xy;
 }
 
-void VS_Sample5(in APP2VS_Blit Input, in uniform float Offsets[5], in uniform bool Horizontal, out VS2PS_5Tap Output)
+VS2PS_5Tap VS_Sample5(in APP2VS_Blit Input, uniform float Offsets[5], uniform bool Horizontal)
 {
+	VS2PS_5Tap Output = (VS2PS_5Tap)0.0;
+
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 
 	float2 VSOffset = (Horizontal) ? float2(Offsets[4], 0.0) : float2(0.0, Offsets[4]);
@@ -191,6 +193,8 @@ void VS_Sample5(in APP2VS_Blit Input, in uniform float Offsets[5], in uniform bo
 		Output.FilterCoords[i].xy = Input.TexCoord0.xy + VSOffsetA;
 		Output.FilterCoords[i].zw = Input.TexCoord0.xy + VSOffsetB;
 	}
+
+	return Output;
 }
 
 void PS_Passthrough(in VS2PS_Blit Input, out float4 Output : COLOR0)
@@ -351,14 +355,14 @@ void PS_Poisson13AndDilation(in VS2PS_Blit Input, out float4 Output : COLOR0)
 	Output = Colors / Colors.a;
 }
 
-void PS_GlowFilter(in VS2PS_5Tap Input, in uniform float Weights[5], in uniform bool Horizontal, out float4 Output : COLOR0)
+float4 PS_GlowFilter(in VS2PS_5Tap Input, uniform float Weights[5], uniform bool Horizontal, out float4 Output) : COLOR0
 {
 	float4 Output = Weights[0] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy);
 	Output += Weights[1] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].zw);
 	Output += Weights[2] * tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy);
 	Output += Weights[3] * tex2D(SampleTex0_Clamp, Input.FilterCoords[1].zw);
 	Output += Weights[4] * tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	Output = Output;
+	return Output;
 }
 
 void PS_HighPassFilter(in VS2PS_Blit Input, out float4 Output : COLOR0)
@@ -404,7 +408,7 @@ void PS_LumaAndBrightPass(in VS2PS_Blit Input, out float4 Output : COLOR0)
 	Output = Colors;
 }
 
-void PS_BloomFilter(in VS2PS_5Tap Input, in uniform bool Is_Blur, out float4 Output : COLOR0)
+float4 PS_BloomFilter(in VS2PS_5Tap Input, uniform bool Is_Blur) : COLOR0
 {
 	float4 Blur = 0.0;
 	Blur.rgb += tex2D(SampleTex0_Clamp, Input.TexCoord0.xy);
@@ -416,7 +420,7 @@ void PS_BloomFilter(in VS2PS_5Tap Input, in uniform bool Is_Blur, out float4 Out
 		Blur.rgb += tex2D(SampleTex0_Clamp, Input.FilterCoords[i].zw);
 	}
 
-	Output = float4(Blur.rgb /= 5.0, Blur.a);
+	return float4(Blur.rgb /= 5.0, Blur.a);
 }
 
 void PS_ScaleUpBloomFilter(in VS2PS_Blit Input, out float4 Output : COLOR0)
