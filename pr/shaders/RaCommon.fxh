@@ -65,7 +65,7 @@
 
 	float3 GetWorldPos(float3 ObjectPos)
 	{
-		return mul(float4(ObjectPos, 1.0), World);
+		return mul(float4(ObjectPos, 1.0), World).xyz;
 	}
 
 	float3 GetWorldNormal(float3 ObjectNormal)
@@ -75,7 +75,7 @@
 
 	float3 GetWorldLightPos(float3 ObjectLightPos)
 	{
-		return mul(float4(ObjectLightPos, 1.0), World);
+		return mul(float4(ObjectLightPos, 1.0), World).xyz;
 	}
 
 	float3 GetWorldLightDir(float3 ObjectLightDir)

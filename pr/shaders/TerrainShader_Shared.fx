@@ -290,9 +290,9 @@ VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
 float4 PS_Shared_DynamicShadowmap(VS2PS_Shared_DynamicShadowmap Input) : COLOR0
 {
 	#if NVIDIA
-		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex);
+		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex).r;
 	#else
-		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex) == 1.0;
+		float AvgShadowValue = (tex2Dproj(SampleTex2_Clamp, Input.ShadowTex).r == 1.0);
 	#endif
 	return AvgShadowValue.x;
 }
@@ -387,7 +387,7 @@ PS2FB PS_Shared_UnderWater(VS2PS_Shared_UnderWater Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float3 WorldPos = Input.Pos;
+	float3 WorldPos = Input.Pos.xyz;
 	float3 OutputColor = _TerrainWaterColor.rgb;
 	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 
@@ -563,7 +563,7 @@ float4 GetOccluderShadow(float4 Pos, float4x4 LightTrapMat, float4x4 LightMat)
 
 HI_VS2PS_OccluderShadow VS_Hi_OccluderShadow(HI_APP2VS_OccluderShadow Input)
 {
-	HI_VS2PS_OccluderShadow Output = (VS2PS_OccluderShadow)0.0;
+	HI_VS2PS_OccluderShadow Output = (HI_VS2PS_OccluderShadow)0.0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
 	Output.HPos = GetOccluderShadow(WorldPos, _vpLightTrapezMat, _vpLightMat);
