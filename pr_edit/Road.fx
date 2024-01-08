@@ -60,10 +60,9 @@ struct VS2PS
 	float Alpha : TEXCOORD2;
 };
 
-void VS_RoadEditable(in APP2VS Input, out VS2PS Output)
+VS2PS VS_RoadEditable(APP2VS Input)
 {
-	Output = (VS2PS)0.0;
-
+	VS2PS Output = (VS2PS)0.0;
 	Input.Pos.y +=  0.01;
 	Output.HPos = mul(Input.Pos, _WorldViewProj);
 
@@ -74,10 +73,14 @@ void VS_RoadEditable(in APP2VS Input, out VS2PS Output)
 
 	Output.Tex0 = float4(Input.Tex0, Input.Tex1);
 	Output.Alpha = Input.Alpha;
+
+	return Output;
 }
 
-void PS_RoadEditable(in VS2PS Input, out PS2FB Output)
+PS2FB PS_RoadEditable(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float4 ColorMap0 = tex2D(SampleDetailTex0, Input.Tex0.xy);
 	float4 ColorMap1 = tex2D(SampleDetailTex1, Input.Tex0.zw);
 
@@ -90,6 +93,8 @@ void PS_RoadEditable(in VS2PS Input, out PS2FB Output)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 struct APP2VS_DrawMaterial
@@ -105,24 +110,32 @@ struct VS2PS_DrawMaterial
 	float4 Pos : TEXCOORD0;
 };
 
-void VS_RoadEditable_DrawMaterial(in APP2VS_DrawMaterial Input, out VS2PS_DrawMaterial Output)
+VS2PS_DrawMaterial VS_RoadEditable_DrawMaterial(APP2VS_DrawMaterial Input)
 {
-	Output = (VS2PS_DrawMaterial)0;
+	VS2PS_DrawMaterial Output = (VS2PS_DrawMaterial)0.0;
 
 	Output.HPos = mul(Input.Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
+
+	return Output;
 }
 
-void PS_RoadEditable_DrawMaterial(in VS2PS_DrawMaterial Input, out PS2FB Output)
+PS2FB PS_RoadEditable_DrawMaterial(VS2PS_DrawMaterial Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
+	float3 LocalPos = Input.Pos.xyz;
+
 	Output.Color = float4((float3)_Material, 1.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique roadeditable

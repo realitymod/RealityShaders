@@ -105,7 +105,7 @@ struct Bone
 
 Bone GetBoneData(APP2VS Input)
 {
-	Bone Output = (Bone)0;
+	Bone Output = (Bone)0.0;
 	Output.Mat[0] = GetBoneMatrix(Input, 0);
 	Output.Mat[1] = GetBoneMatrix(Input, 1);
 	Output.Weight[0] = Input.BlendWeights;
@@ -149,9 +149,9 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
 }
 
-void VS_SkinnedMesh(in APP2VS Input, out VS2PS Output)
+VS2PS VS_SkinnedMesh(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	// Get skinned object-space data
 	Bone B = GetBoneData(Input);
@@ -207,6 +207,8 @@ void VS_SkinnedMesh(in APP2VS Input, out VS2PS Output)
 		Output.ViewDir = normalize(GetTangentDir(B, ObjectTBN, ViewDir));
 		Output.LightDir = normalize(GetTangentDir(B, ObjectTBN, LightDir));
 	#endif
+
+	return Output;
 }
 
 float3 GetSpecularColor()
@@ -218,8 +220,10 @@ float3 GetSpecularColor()
 	#endif
 }
 
-void PS_SkinnedMesh(in VS2PS Input, out PS2FB Output)
+PS2FB PS_SkinnedMesh(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	// Lighting data
 	float3 WorldPos = Input.Pos.xyz;
 	float3 LightDir = normalize(Input.LightDir);
@@ -278,25 +282,27 @@ void PS_SkinnedMesh(in VS2PS Input, out PS2FB Output)
 		const float Attenuation = 1.0;
 	#endif
 
+	float4 OutputColor = 1.0;
+
 	// Calculate lighting
 	ColorPair Light = ComputeLights(NormalMap.xyz, LightDir, ViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * TotalLights;
 	float3 SpecularRGB = ((Light.Specular * NormalMap.a) * GetSpecularColor()) * TotalLights;
-
-	Output.Color.rgb = CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB);
-	Output.Color.a = ColorMap.a * Transparency.a;
+	OutputColor.rgb = CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB);
+	OutputColor.a = ColorMap.a * Transparency.a;
 
 	// Thermals
 	if (IsTisActive())
 	{
 		#if _HASENVMAP_ // If EnvMap enabled, then should be hot on thermals
-			Output.Color.rgb = float3(lerp(0.60, 0.30, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
+			OutputColor.rgb = float3(lerp(0.60, 0.30, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
 		#else // Else cold
-			Output.Color.rgb = float3(lerp(0.43, 0.17, ColorMap.b), 1.0, 0.0);
+			OutputColor.rgb = float3(lerp(0.43, 0.17, ColorMap.b), 1.0, 0.0);
 		#endif
 	}
 
+	Output.Color = OutputColor;
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
@@ -304,6 +310,8 @@ void PS_SkinnedMesh(in VS2PS Input, out PS2FB Output)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique VariableTechnique

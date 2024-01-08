@@ -14,25 +14,27 @@ struct VS2PS
 	float4 HPos : POSITION;
 };
 
-void VS_Spline(in APP2VS Input, out float4 HPos : POSITION)
+VS2PS VS_Spline(APP2VS Input) : POSITION
 {
+	VS2PS Output = (VS2PS)0.0;
 	float4 Pos = float4(Input.Pos.xyz * (0.035 * Input.Normal), Input.Pos.w);
-	HPos = mul(Pos, _WorldViewProj);
+	Output.HPos = mul(Pos, _WorldViewProj);
+	return Output;
 }
 
-void PS_Spline(out float4 Output : COLOR0)
+float4 PS_Spline() : COLOR0
 {
-	Output = _Diffuse;
+	return _Diffuse;
 }
 
-void VS_ControlPoint(float4 Pos : POSITION, out float4 HPos : POSITION)
+float4 VS_ControlPoint(float4 Pos : POSITION) : POSITION
 {
-	HPos = mul(Pos, _WorldViewProj);
+	return mul(Pos, _WorldViewProj);
 }
 
-void PS_ControlPoint(out float4 Output : COLOR0)
+float4 PS_ControlPoint() : COLOR0
 {
-	Output = _Diffuse;
+	return _Diffuse;
 }
 
 technique spline

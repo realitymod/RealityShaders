@@ -233,7 +233,7 @@ float4 calcShadowProjection(SMVariableVSInput input)
 
 SMVariableVSOutput vs(SMVariableVSInput input)
 {
-	SMVariableVSOutput Out = (SMVariableVSOutput)0;
+	SMVariableVSOutput Out = (SMVariableVSOutput)0.0;
 	
 	float4 objSpacePosition = skinPosition(input);
 	

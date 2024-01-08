@@ -90,9 +90,9 @@ struct PS2FB
 	#endif
 };
 
-void VS_TrunkOG(in APP2VS Input, out VS2PS Output)
+VS2PS VS_TrunkOG(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
 
@@ -108,13 +108,17 @@ void VS_TrunkOG(in APP2VS Input, out VS2PS Output)
 	Output.WorldNormal = GetWorldNormal((Input.Normal * 2.0) - 1.0);
 
 	Output.Tex0 = float3(Input.Tex0, Input.Pos.w) / 32767.0;
+
+	return Output;
 }
 
 // There will be small differences between this lighting and the one produced by the static mesh shader,
 // not enough to worry about, ambient is added here and lerped in the static mesh, etc
 // NOTE: could be an issue at some point.
-void PS_TrunkOG(in VS2PS Input, out PS2FB Output)
+PS2FB PS_TrunkOG(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	// World-space data
 	float LodScale = Input.Tex0.z;
 	float3 WorldPos = Input.Pos.xyz;
@@ -129,14 +133,18 @@ void PS_TrunkOG(in VS2PS Input, out PS2FB Output)
 	float3 Ambient = OverGrowthAmbient.rgb * LodScale;
 	float3 Diffuse = GetHalfNL(WorldNormal, WorldLightDir) * LightColor;
 
-	Output.Color.rgb = CompositeLights(DiffuseMap.rgb * 2.0, Ambient, Diffuse, 0.0);
-	Output.Color.a = Transparency.a * 2.0;
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb * 2.0, Ambient, Diffuse, 0.0);
+	OutputColor.a = Transparency.a * 2.0;
 
+	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 };
 
 technique defaultTechnique

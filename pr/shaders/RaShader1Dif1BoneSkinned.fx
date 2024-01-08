@@ -73,9 +73,9 @@ struct PS2FB
 	#endif
 };
 
-void VS_DiffuseBone(in APP2VS Input, out VS2PS Output)
+VS2PS VS_DiffuseBone(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
@@ -86,15 +86,23 @@ void VS_DiffuseBone(in APP2VS Input, out VS2PS Output)
 	#if defined(LOG_DEPTH)
 		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 	#endif
+
+	return Output;
 }
 
-void PS_DiffuseBone(in VS2PS Input, out PS2FB Output)
+PS2FB PS_DiffuseBone(VS2PS Input)
 {
-	Output.Color = tex2D(SampleDiffuseMap, Input.Tex0.xy) * float4(1.0, 0.0, 1.0, 1.0);
+	PS2FB Output = (PS2FB)0.0;
+
+	float4 ColorTex = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+
+	Output.Color = ColorTex * float4(1.0, 0.0, 1.0, 1.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
+
+	return Output;
 };
 
 technique defaultTechnique

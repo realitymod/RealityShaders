@@ -143,8 +143,10 @@ struct VS2PS_Specular
 	float3 WorldNormal : TEXCOORD4;
 };
 
-void VS_Lighting(in APP2VS Input, out VS2PS_Specular Output)
+VS2PS_Specular VS_Lighting(APP2VS Input)
 {
+	VS2PS_Specular Output = (VS2PS_Specular)0.0;
+
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
@@ -164,9 +166,11 @@ void VS_Lighting(in APP2VS Input, out VS2PS_Specular Output)
 
 	Output.HPos = mul(float4(WorldPos.xyz, 1.0), _ViewProjMatrix);
 	Output.Tex = Input.TexCoord;
+
+	return Output;
 }
 
-void PS_Lighting(in VS2PS_Specular Input, out float4 Output : COLOR0)
+float4 PS_Lighting(VS2PS_Specular Input) : COLOR0
 {
 	const float4 Ambient = float4(0.4, 0.4, 0.4, 1.0);
 
@@ -199,9 +203,9 @@ void PS_Lighting(in VS2PS_Specular Input, out float4 Output : COLOR0)
 	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir);
 	float3 Diffuse = DiffuseMap * (Ambient + Light.Diffuse);
 	float3 Specular = Light.Specular * Gloss;
+	float3 Lighting = saturate(Diffuse + Specular);
 
-	Output.rgb = saturate(Diffuse + Specular);
-	Output.a = DiffuseMap.a;
+	return float4(Lighting, DiffuseMap.a);
 }
 
 technique Full
@@ -224,8 +228,10 @@ struct VS2PS_Diffuse
 	float3 WorldNormal : TEXCOORD1;
 };
 
-void VS_Diffuse(in APP2VS Input, out VS2PS_Diffuse Output)
+VS2PS_Diffuse VS_Diffuse(APP2VS Input)
 {
+	VS2PS_Diffuse Output = (VS2PS_Diffuse)0.0;
+
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
@@ -240,9 +246,11 @@ void VS_Diffuse(in APP2VS Input, out VS2PS_Diffuse Output)
 
 	// Get texcoord data
 	Output.Tex0 = Input.TexCoord;
+
+	return Output;
 }
 
-void PS_Diffuse(in VS2PS_Diffuse Input, out float4 Output : COLOR0)
+float4 PS_Diffuse(VS2PS_Diffuse Input) : COLOR0
 {
 	// Constants
 	const float4 Ambient = 0.8;
@@ -255,8 +263,9 @@ void PS_Diffuse(in VS2PS_Diffuse Input, out float4 Output : COLOR0)
 	// Get lighting data
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
 	float3 HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
+	float4 Lighting = DiffuseMap * float4(Ambient.rgb + HalfNL, 1.0);
 
-	Output = DiffuseMap * float4(Ambient.rgb + HalfNL, 1.0);
+	return Lighting;
 }
 
 technique t1
@@ -287,8 +296,10 @@ struct VS2PS_Alpha
 	float4 ProjTex : TEXCOORD1;
 };
 
-void VS_Alpha(in APP2VS Input, out VS2PS_Alpha Output)
+VS2PS_Alpha VS_Alpha(APP2VS Input)
 {
+	VS2PS_Alpha Output;
+
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
@@ -304,17 +315,21 @@ void VS_Alpha(in APP2VS Input, out VS2PS_Alpha Output)
 	Output.ProjTex.y = 1.0 - Output.ProjTex.y;
 	Output.ProjTex.xy = (Output.ProjTex.xy + _TexProjOffset) * Output.HPos.w;
 	Output.ProjTex.zw = Output.HPos.zw;
+
+	return Output;
 }
 
-void PS_Alpha(in VS2PS_Alpha Input, out float4 Output : COLOR0)
+float4 PS_Alpha(VS2PS_Alpha Input) : COLOR0
 {
 	// Texture data
 	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex0);
 	float4 ProjLight = tex2Dproj(SampleTex1, Input.ProjTex);
 
 	// Composite lighting
-	Output.rgb = (DiffuseMap.rgb * ProjLight.rgb) + ProjLight.a;
-	Output.a = 0.0;
+	float4 Lighting = 0.0;
+	Lighting.rgb = (DiffuseMap.rgb * ProjLight.rgb) + ProjLight.a;
+
+	return Lighting;
 }
 
 /*
@@ -332,8 +347,10 @@ struct VS2PS_EnvMap_Alpha
 	float3 WorldNormal : TEXCOORD5;
 };
 
-void VS_EnvMap_Alpha(in APP2VS Input, out VS2PS_EnvMap_Alpha Output)
+VS2PS_EnvMap_Alpha VS_EnvMap_Alpha(APP2VS Input)
 {
+	VS2PS_EnvMap_Alpha Output = (VS2PS_EnvMap_Alpha)0.0;
+
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
@@ -359,9 +376,11 @@ void VS_EnvMap_Alpha(in APP2VS Input, out VS2PS_EnvMap_Alpha Output)
 	Output.ProjTex.y = 1.0 - Output.ProjTex.y;
 	Output.ProjTex.xy = (Output.ProjTex.xy + _TexProjOffset) * Output.HPos.w;
 	Output.ProjTex.zw = Output.HPos.zw;
+
+	return Output;
 }
 
-void PS_EnvMap_Alpha(in VS2PS_EnvMap_Alpha Input, out float4 Output : COLOR0)
+float4 PS_EnvMap_Alpha(VS2PS_EnvMap_Alpha Input) : COLOR0
 {
 	// Tangent-space data
 	float4 DiffuseMap = tex2D(SampleTex0, Input.Tex);
@@ -385,9 +404,9 @@ void PS_EnvMap_Alpha(in VS2PS_EnvMap_Alpha Input, out float4 Output : COLOR0)
 	// Get reflection data
 	float3 EnvMapTex = reflect(WorldViewDir, WorldNormal);
 	float3 EnvMap = texCUBE(SampleCubeTex3, EnvMapTex) * (Reflection * TangentNormal.a);
+	float3 Lighting = ((DiffuseMap.rgb * AccumLight.rgb) + EnvMap) + AccumLight.a;
 
-	Output.rgb = ((DiffuseMap.rgb * AccumLight.rgb) + EnvMap) + AccumLight.a;
-	Output.a = DiffuseMap.a;
+	return float4(Lighting, DiffuseMap.a);
 }
 
 #define GET_RENDERSTATES_ALPHA \
@@ -428,8 +447,10 @@ struct VS2PS_ShadowMap
 	float4 DepthPos : TEXCOORD0;
 };
 
-void VS_ShadowMap(in APP2VS Input, out VS2PS_ShadowMap Output)
+VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 {
+	VS2PS_ShadowMap Output = (VS2PS_ShadowMap)0.0;
+
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
@@ -440,14 +461,16 @@ void VS_ShadowMap(in APP2VS Input, out VS2PS_ShadowMap Output)
 
 	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
 	Output.DepthPos = Output.HPos; // Output shadow depth
+
+	return Output;
 }
 
-void PS_ShadowMap(in VS2PS_ShadowMap Input, out float4 Output : COLOR0)
+float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
 	#if NVIDIA
-		Output = 0.0;
+		return 0.0;
 	#else
-		Output = Input.DepthPos.z / Input.DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 
@@ -458,8 +481,10 @@ struct VS2PS_ShadowMap_Alpha
 	float2 Tex0 : TEXCOORD1;
 };
 
-void VS_ShadowMap_Alpha(in APP2VS Input, out VS2PS_ShadowMap_Alpha Output)
+VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
 {
+	VS2PS_ShadowMap_Alpha Output;
+
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
@@ -475,16 +500,18 @@ void VS_ShadowMap_Alpha(in APP2VS Input, out VS2PS_ShadowMap_Alpha Output)
 	// Texcoord data
 	Output.DepthPos = Output.HPos; // Output shadow depth
 	Output.Tex0 = Input.TexCoord;
+
+	return Output;
 }
 
-void PS_ShadowMap_Alpha(in VS2PS_ShadowMap_Alpha Input, out float4 Output : COLOR0)
+float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap_Alpha Input) : COLOR0
 {
 	float Alpha = tex2D(SampleTex0, Input.Tex0).a - _ShadowAlphaThreshold;
 	#if NVIDIA
-		Output = Alpha;
+		return Alpha;
 	#else
 		clip(Alpha);
-		Output = Input.DepthPos.z / Input.DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 

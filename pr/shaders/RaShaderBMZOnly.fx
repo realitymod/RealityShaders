@@ -88,24 +88,29 @@ float4 GetWorldPos(APP2VS Input)
 	return float4(mul(unpackedPos, GetSkinnedWorldMatrix(Input)), 1.0);
 }
 
-void VS_BM_ZOnly(in APP2VS Input, out VS2PS Output)
+VS2PS VS_BM_ZOnly(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	Output.HPos = mul(GetWorldPos(Input), ViewProjection); // Output HPOS
 	Output.Pos = Output.HPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
+	
+	return Output;
 }
 
-void PS_BM_ZOnly(in VS2PS Input, out PS2FB Output)
+PS2FB PS_BM_ZOnly(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
 	Output.Color = 0.0;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique Variable

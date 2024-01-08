@@ -116,12 +116,13 @@ struct PS2FB
 	#endif
 };
 
-void VS_Road(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Road(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	float4 WorldPos = mul(Input.Pos * PosUnpack, World);
 	WorldPos.y += 0.01;
+
 	Output.HPos = mul(WorldPos, ViewProjection);
 
 	Output.Pos.xyz = WorldPos.xyz;
@@ -139,10 +140,14 @@ void VS_Road(in APP2VS Input, out VS2PS Output)
 	Output.LightTex.y = 1.0 - Output.LightTex.y;
 	Output.LightTex.xy = Output.LightTex.xy * Output.HPos.w;
 	Output.LightTex.zw = Output.HPos.zw;
+
+	return Output;
 }
 
-void PS_Road(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Road(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float3 WorldPos = Input.Pos.xyz;
 	float ZFade = GetRoadZFade(WorldPos, WorldSpaceCamPos.xyz, RoadFadeOut);
 
@@ -174,12 +179,13 @@ void PS_Road(in VS2PS Input, out PS2FB Output)
 	#endif
 
 	Output.Color = Diffuse;
-
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 };
 
 technique defaultTechnique

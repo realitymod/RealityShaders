@@ -29,7 +29,7 @@ struct VS2PS_SimpleShader
 
 VS2PS_SimpleShader VS_SimpleShader(APP2VS Input)
 {
-	VS2PS_SimpleShader Output = (VS2PS_SimpleShader)0;
+	VS2PS_SimpleShader Output = (VS2PS_SimpleShader)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
 	Output.Tex0 = Input.TexCoord;

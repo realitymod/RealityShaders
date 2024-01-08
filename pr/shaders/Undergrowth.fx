@@ -105,9 +105,9 @@ float4 GetUndergrowthPos(float4 InputPos, float4 InputPacked)
 	return Pos;
 }
 
-VS2PS VS_Undergrowth(in APP2VS Input, uniform bool ShadowMapEnable)
+VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 {
-	VS2PS Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
@@ -125,13 +125,7 @@ VS2PS VS_Undergrowth(in APP2VS Input, uniform bool ShadowMapEnable)
 	return Output;
 }
 
-PS2FB PS_Undergrowth
-(
-	in VS2PS Input,
-	uniform bool PointLightEnable,
-	uniform int LightCount,
-	uniform bool ShadowMapEnable
-)
+PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int LightCount, uniform bool ShadowMapEnable)
 {
 	PS2FB Output = (PS2FB)0.0;
 
@@ -163,9 +157,11 @@ PS2FB PS_Undergrowth
 	TerrainLight += (TerrainSunColor * (TerrainShadow * TerrainLightMap.y));
 	TerrainLight += Lights;
 
-	Output.Color.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight;
-	Output.Color.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight;
+	OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
 
+	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
@@ -235,9 +231,9 @@ struct VS2PS_Simple
 	float4 TerrainColorMap : TEXCOORD4;
 };
 
-VS2PS_Simple VS_Undergrowth_Simple(in APP2VS_Simple Input, uniform bool ShadowMapEnable)
+VS2PS_Simple VS_Undergrowth_Simple(APP2VS_Simple Input, uniform bool ShadowMapEnable)
 {
-	VS2PS_Simple Output = (VS2PS_Simple)0;
+	VS2PS_Simple Output = (VS2PS_Simple)0.0;
 
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
@@ -256,13 +252,7 @@ VS2PS_Simple VS_Undergrowth_Simple(in APP2VS_Simple Input, uniform bool ShadowMa
 	return Output;
 }
 
-PS2FB PS_Undergrowth_Simple
-(
-	in VS2PS_Simple Input,
-	uniform bool PointLightEnable,
-	uniform int LightCount,
-	uniform bool ShadowMapEnable
-)
+PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, uniform int LightCount, uniform bool ShadowMapEnable)
 {
 	PS2FB Output = (PS2FB)0.0;
 
@@ -294,9 +284,11 @@ PS2FB PS_Undergrowth_Simple
 	TerrainLight += (TerrainSunColor * (TerrainShadow * TerrainLightMap.y));
 	TerrainLight += Lights;
 
-	Output.Color.rgb = (Base.rgb * TerrainColor) * TerrainLight;
-	Output.Color.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
+	OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
 
+	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
@@ -355,9 +347,9 @@ struct VS2PS_ZOnly
 	float3 Tex0 : TEXCOORD0;
 };
 
-void VS_Undergrowth_ZOnly(in APP2VS Input, out VS2PS_ZOnly Output)
+VS2PS_ZOnly VS_Undergrowth_ZOnly(APP2VS Input)
 {
-	Output = (VS2PS_ZOnly)0;
+	VS2PS_ZOnly Output = (VS2PS_ZOnly)0.0;
 
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
@@ -365,18 +357,24 @@ void VS_Undergrowth_ZOnly(in APP2VS Input, out VS2PS_ZOnly Output)
 	#if defined(LOG_DEPTH)
 		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 	#endif
+
+	return Output;
 }
 
-void PS_Undergrowth_ZOnly(in VS2PS_ZOnly Input, out PS2FB Output)
+PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 {
-	float4 ColorMap = tex2D(SampleColorMap, Input.Tex0.xy);
+	PS2FB Output = (PS2FB)0.0;
 
-	Output.Color = ColorMap;
-	Output.Color.a *= (_Transparency_x8.a * 8.0);
+	float4 OutputColor = tex2D(SampleColorMap, Input.Tex0.xy);
+	OutputColor.a *= (_Transparency_x8.a * 8.0);
+
+	Output.Color = OutputColor;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
+
+	return Output;
 }
 
 // { StreamNo, DataType, Usage, UsageIdx }

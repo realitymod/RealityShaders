@@ -74,9 +74,9 @@ struct VS2PS_Basic
 	float3 Normal : TEXCOORD1;
 };
 
-void VS_Debug_Basic(in APP2VS Input, out VS2PS_Basic Output)
+VS2PS_Basic VS_Debug_Basic(APP2VS Input)
 {
-	Output = (VS2PS_Basic)0.0;
+	VS2PS_Basic Output = (VS2PS_Basic)0.0;
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
@@ -86,11 +86,13 @@ void VS_Debug_Basic(in APP2VS Input, out VS2PS_Basic Output)
 	#endif
 
 	Output.Normal = Input.Normal;
+
+	return Output;
 }
 
-void VS_Debug_Cone(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Debug_Cone(APP2VS Input)
 {
-	Output = (VS2PS)0.0;
+	VS2PS Output = (VS2PS)0.0;
 
 	float2 RadScale = lerp(_ConeSkinValues.x, _ConeSkinValues.y, Input.Pos.z + 0.5);
 	float4 WorldPos = mul(Input.Pos * float4(RadScale, 1.0, 1.0), _World);
@@ -100,10 +102,14 @@ void VS_Debug_Cone(in APP2VS Input, out VS2PS Output)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
+
+	return Output;
 }
 
-void PS_Debug_Basic_1(in VS2PS_Basic Input, out PS2FB Output)
+PS2FB PS_Debug_Basic_1(VS2PS_Basic Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float3 Normal = normalize(Input.Normal);
 
 	float4 Ambient = _MaterialAmbient;
@@ -115,24 +121,34 @@ void PS_Debug_Basic_1(in VS2PS_Basic Input, out PS2FB Output)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
-void PS_Debug_Basic_2(in VS2PS_Basic Input, out PS2FB Output)
+PS2FB PS_Debug_Basic_2(VS2PS_Basic Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	Output.Color = float4(_MaterialAmbient.rgb, 0.3);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
-void PS_Debug_Object(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Debug_Object(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	Output.Color = _MaterialAmbient;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique t0
@@ -163,9 +179,9 @@ technique t0
 	Debug occluder shaders
 */
 
-void VS_Debug_Occluder(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Debug_Occluder(APP2VS Input)
 {
-	Output = (VS2PS)0.0;
+	VS2PS Output = (VS2PS)0.0;
 
 	float4 WorldPos = mul(Input.Pos, _World);
 	Output.HPos = mul(WorldPos, _WorldViewProj);
@@ -173,15 +189,21 @@ void VS_Debug_Occluder(in APP2VS Input, out VS2PS Output)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
+
+	return Output;
 }
 
-void PS_Debug_Occluder(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Debug_Occluder(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	Output.Color = float4(1.0, 0.5, 0.5, 0.5);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique occluder
@@ -216,7 +238,7 @@ technique occluder
 	Debug editor shaders
 */
 
-PS2FB PS_Debug_Editor(in VS2PS Input, uniform float AmbientColorFactor = 1.0)
+PS2FB PS_Debug_Editor(VS2PS Input, uniform float AmbientColorFactor = 1.0)
 {
 	PS2FB Output = (PS2FB)0.0;
 
@@ -276,9 +298,9 @@ struct VS2PS_CollisionMesh
 	float3 Normal : TEXCOORD1;
 };
 
-void VS_Debug_CollisionMesh(in APP2VS Input, out VS2PS_CollisionMesh Output)
+VS2PS_CollisionMesh VS_Debug_CollisionMesh(APP2VS Input)
 {
-	Output = (VS2PS_CollisionMesh)0.0;
+	VS2PS_CollisionMesh Output = (VS2PS_CollisionMesh)0.0;
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
@@ -288,9 +310,11 @@ void VS_Debug_CollisionMesh(in APP2VS Input, out VS2PS_CollisionMesh Output)
 	#endif
 
 	Output.Normal = Input.Normal;
+
+	return Output;
 }
 
-PS2FB PS_Debug_CollisionMesh(in VS2PS_CollisionMesh Input, uniform float MaterialFactor = 1.0)
+PS2FB PS_Debug_CollisionMesh(VS2PS_CollisionMesh Input, uniform float MaterialFactor = 1.0)
 {
 	PS2FB Output = (PS2FB)0.0;
 
@@ -447,9 +471,9 @@ struct VS2PS_Grid
 	float3 Normal : TEXCOORD1;
 };
 
-void VS_Debug_Grid(in APP2VS Input, out VS2PS_Grid Output)
+VS2PS_Grid VS_Debug_Grid(APP2VS Input)
 {
-	Output = (VS2PS_Grid)0.0;
+	VS2PS_Grid Output = (VS2PS_Grid)0.0;
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
@@ -461,23 +485,30 @@ void VS_Debug_Grid(in APP2VS Input, out VS2PS_Grid Output)
 	#endif
 
 	Output.Normal = Input.Normal;
+
+	return Output;
 }
 
-void PS_Debug_Grid(in VS2PS_Grid Input, out PS2FB Output)
+PS2FB PS_Debug_Grid(VS2PS_Grid Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float3 Normal = normalize(Input.Normal);
 
-	float4 Tex = tex2D(SampleTex0, Input.Tex0.xy);
 	float HalfNL = GetHalfNL(Normal, _LightDir.xyz);
 	float3 Lighting = _MaterialAmbient.rgb + (HalfNL * _MaterialDiffuse.rgb);
 
-	Output.Color.rgb = Tex.rgb * Lighting;
-	Output.Color.a = 1.0 - Tex.b;
-	// Output.Color.a = _MaterialDiffuse.a;
+	float4 Tex = tex2D(SampleTex0, Input.Tex0.xy);
+	// float4 OutputColor = float4(Tex.rgb * Lighting, _MaterialDiffuse.a);
+	float4 OutputColor = float4(Tex.rgb * Lighting, 1.0 - Tex.b);
+
+	Output.Color = OutputColor;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
+
+	return Output;
 }
 
 technique grid
@@ -508,9 +539,9 @@ technique grid
 	Debug SpotLight shaders
 */
 
-void VS_Debug_SpotLight(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Debug_SpotLight(APP2VS Input)
 {
-	Output = (VS2PS)0.0;
+	VS2PS Output = (VS2PS)0.0;
 
 	float4 Pos = Input.Pos;
 	Pos.z += 0.5;
@@ -523,6 +554,8 @@ void VS_Debug_SpotLight(in APP2VS Input, out VS2PS Output)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
+
+	return Output;
 }
 
 technique spotlight
@@ -571,9 +604,9 @@ technique spotlight
 	Debug PivotBox shaders
 */
 
-void VS_Debug_PivotBox(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Debug_PivotBox(APP2VS Input)
 {
-	Output = (VS2PS)0.0;
+	VS2PS Output = (VS2PS)0.0;
 
 	float4 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(Pos, _WorldViewProj);
@@ -581,6 +614,8 @@ void VS_Debug_PivotBox(in APP2VS Input, out VS2PS Output)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
+
+	return Output;
 }
 
 technique pivotBox
@@ -680,9 +715,9 @@ struct VS2PS_Frustum
 	float4 Color : TEXCOORD1;
 };
 
-void VS_Debug_Frustum(in APP2VS_Frustum Input, out VS2PS_Frustum Output)
+VS2PS_Frustum VS_Debug_Frustum(APP2VS_Frustum Input)
 {
-	Output = (VS2PS_Frustum)0.0;
+	VS2PS_Frustum Output = (VS2PS_Frustum)0.0;
 
 	Output.HPos = mul(Input.Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
@@ -691,9 +726,11 @@ void VS_Debug_Frustum(in APP2VS_Frustum Input, out VS2PS_Frustum Output)
 	#endif
 
 	Output.Color = Input.Color;
+
+	return Output;
 }
 
-PS2FB PS_Debug_Frustum(in VS2PS_Frustum Input, uniform float AlphaValue)
+PS2FB PS_Debug_Frustum(VS2PS_Frustum Input, uniform float AlphaValue)
 {
 	PS2FB Output = (PS2FB)0.0;
 

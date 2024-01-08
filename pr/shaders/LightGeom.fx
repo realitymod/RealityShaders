@@ -42,24 +42,30 @@ struct PS2FB
 	#endif
 };
 
-void VS_PointLight(in APP2VS Input, out VS2PS Output)
+VS2PS VS_PointLight(APP2VS Input)
 {
-	Output = (VS2PS)0.0;
+	VS2PS Output = (VS2PS)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos = Output.HPos;
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
+
+	return Output;
 }
 
-void PS_PointLight(in VS2PS Input, out PS2FB Output)
+PS2FB PS_PointLight(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	Output.Color = _LightColor;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique Pointlight
@@ -96,9 +102,9 @@ struct VS2PS_Spot
 	float3 SpotDir : TEXCOORD1;
 };
 
-void VS_SpotLight(in APP2VS Input, out VS2PS_Spot Output)
+VS2PS_Spot VS_SpotLight(APP2VS Input)
 {
-	Output = (VS2PS_Spot)0.0;
+	VS2PS_Spot Output = (VS2PS_Spot)0.0;
 
  	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 
@@ -110,10 +116,14 @@ void VS_SpotLight(in APP2VS Input, out VS2PS_Spot Output)
 	#endif
 
 	Output.SpotDir = mul(_SpotDir, (float3x3)_WorldView);
+
+	return Output;
 }
 
-void PS_SpotLight(in VS2PS_Spot Input, out PS2FB Output)
+PS2FB PS_SpotLight(VS2PS_Spot Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float3 LightDir = normalize(Input.Pos.xyz);
 	float3 SpotDir = normalize(Input.SpotDir.xyz);
 	float DotLD = saturate(dot(LightDir, SpotDir));
@@ -124,6 +134,8 @@ void PS_SpotLight(in VS2PS_Spot Input, out PS2FB Output)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique Spotlight

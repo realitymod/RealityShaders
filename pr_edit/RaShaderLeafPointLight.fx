@@ -44,7 +44,7 @@ float3 leafNormal: NORMAL,
 float2 tex0 : TEXCOORD0
 )
 {
-	VS_OUTPUT Out = (VS_OUTPUT)0;
+	VS_OUTPUT Out = (VS_OUTPUT)0.0;
 
 	inPos *= PosUnpack;
 	

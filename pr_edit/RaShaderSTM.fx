@@ -144,7 +144,7 @@ float3 getVectorTo(float3 vertexPos, float3 camPos)
 VS_OUT 
 vsStaticMesh(VS_IN indata)
 {
-	VS_OUT Out = (VS_OUT)0;
+	VS_OUT Out = (VS_OUT)0.0;
  
  	// output position early
  	float4 unpackedPos = float4(indata.Pos.xyz,1) * PosUnpack;

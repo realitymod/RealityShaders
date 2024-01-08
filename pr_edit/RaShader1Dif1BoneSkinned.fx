@@ -45,7 +45,7 @@ float2 tex0 : TEXCOORD0,
 float4 blendIndices : BLENDINDICES
 )
 {
-	VS_OUTPUT Out = (VS_OUTPUT)0;
+	VS_OUTPUT Out = (VS_OUTPUT)0.0;
 
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 indexVector = D3DCOLORtoUBYTE4(blendIndices);

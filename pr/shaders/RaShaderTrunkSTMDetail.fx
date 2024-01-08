@@ -122,9 +122,9 @@ struct PS2FB
 	#endif
 };
 
-void VS_TrunkSTMDetail(in APP2VS Input, out VS2PS Output)
+VS2PS VS_TrunkSTMDetail(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	// Object-space data
 	float4 ObjectPos = Input.Pos * PosUnpack;
@@ -149,10 +149,14 @@ void VS_TrunkSTMDetail(in APP2VS Input, out VS2PS Output)
 	#if _HASSHADOW_
 		Output.TexShadow = GetShadowProjection(float4(ObjectPos.xyz, 1.0));
 	#endif
+
+	return Output;
 }
 
-void PS_TrunkSTMDetail(in VS2PS Input, out PS2FB Output)
+PS2FB PS_TrunkSTMDetail(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	// World-space data
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
@@ -175,14 +179,18 @@ void PS_TrunkSTMDetail(in VS2PS Input, out PS2FB Output)
 	float3 Ambient = OverGrowthAmbient.rgb;
 	float3 Diffuse = GetHalfNL(WorldNormal, WorldLightDir) * LightColor;
 
-	Output.Color.rgb = CompositeLights(DiffuseMap.rgb * 2.0, Ambient, Diffuse, 0.0);
-	Output.Color.a = Transparency.a * 2.0;
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb * 2.0, Ambient, Diffuse, 0.0);
+	OutputColor.a = Transparency.a * 2.0;
 
+	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 };
 
 technique defaultTechnique

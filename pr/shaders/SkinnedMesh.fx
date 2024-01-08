@@ -112,14 +112,14 @@ struct SkinnedData
 
 SkinnedData SkinSoldier(in APP2VS Input)
 {
-	SkinnedData Output = (SkinnedData)0;
+	SkinnedData Output = (SkinnedData)0.0;
 
 	// Cast the vectors to arrays for use in the for loop below
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
 	int IndexArray[4] = (int[4])IndexVector;
 
-	float4x3 BoneMatrix = (float4x3)0;
+	float4x3 BoneMatrix = (float4x3)0.0;
 	BoneMatrix += (_BoneArray[IndexArray[0]] * (BlendWeightsArray[0]));
 	BoneMatrix += (_BoneArray[IndexArray[1]] * (1.0 - BlendWeightsArray[0]));
 
@@ -152,7 +152,7 @@ struct WorldSpace
 
 WorldSpace GetWorldSpaceData(float3 WorldPos, float3 TangentNormal)
 {
-	WorldSpace Output = (WorldSpace)0;
+	WorldSpace Output = (WorldSpace)0.0;
 
 	Output.Pos = WorldPos;
 	Output.LightDir = normalize(GetWorldLightDir(-_SunLightDirection.xyz));
@@ -172,7 +172,7 @@ struct Lighting
 
 Lighting GetLighting(WorldSpace WS)
 {
-	Lighting Output = (Lighting)0;
+	Lighting Output = (Lighting)0.0;
 
 	// Get dot-products
 	float DotNL = dot(WS.Normal, WS.LightDir);
@@ -207,9 +207,9 @@ struct VS2PS_PreSkin
 	float2 Tex0 : TEXCOORD1;
 };
 
-void VS_PreSkin(in APP2VS Input, out VS2PS_PreSkin Output)
+VS2PS_PreSkin VS_PreSkin(APP2VS Input)
 {
-	Output = (VS2PS_PreSkin)0.0;
+	VS2PS_PreSkin Output = (VS2PS_PreSkin)0.0;
 
 	// Object-space data
 	SkinnedData Skin = SkinSoldier(Input);
@@ -223,9 +223,11 @@ void VS_PreSkin(in APP2VS Input, out VS2PS_PreSkin Output)
 
 	// Get texcoord data
 	Output.Tex0 = Input.TexCoord0;
+
+	return Output;
 }
 
-void PS_PreSkin(in VS2PS_PreSkin Input, out float4 Output : COLOR0)
+float4 PS_PreSkin(VS2PS_PreSkin Input) : COLOR0
 {
 	// Tangent-space data
 	float4 TangentNormal = tex2D(SampleTex0, Input.Tex0.xy);
@@ -239,9 +241,9 @@ void PS_PreSkin(in VS2PS_PreSkin Input, out float4 Output : COLOR0)
 
 	// Get diffuse
 	Lighting Diffuse = GetLighting(WS);
+	float3 Lighting = (Diffuse.Wrap + Diffuse.Rim) * (HemiMap.a * HemiMap.a);
 
-	Output.rgb = (Diffuse.Wrap + Diffuse.Rim) * (HemiMap.a * HemiMap.a);
-	Output.a = TangentNormal.a;
+	return float4(Lighting, TangentNormal.a);
 }
 
 struct VS2PS_ShadowedPreSkin
@@ -252,9 +254,9 @@ struct VS2PS_ShadowedPreSkin
 	float4 ShadowTex : TEXCOORD2;
 };
 
-void VS_ShadowedPreSkin(in APP2VS Input, out VS2PS_ShadowedPreSkin Output)
+VS2PS_ShadowedPreSkin VS_ShadowedPreSkin(APP2VS Input)
 {
-	Output = (VS2PS_ShadowedPreSkin)0.0;
+	VS2PS_ShadowedPreSkin Output = (VS2PS_ShadowedPreSkin)0.0;
 
 	// Object-space data
 	SkinnedData Skin = SkinSoldier(Input);
@@ -270,9 +272,11 @@ void VS_ShadowedPreSkin(in APP2VS Input, out VS2PS_ShadowedPreSkin Output)
 	// Get texcoord data
 	Output.Tex0 = Input.TexCoord0;
 	Output.ShadowTex = mul(float4(Skin.Pos, 1.0), _LightViewProj);
+
+	return Output;
 }
 
-void PS_ShadowedPreSkin(in VS2PS_ShadowedPreSkin Input, out float4 Output : COLOR0)
+float4 PS_ShadowedPreSkin(VS2PS_ShadowedPreSkin Input) : COLOR0
 {
 	// Tangent-space data
 	float4 TangentNormal = tex2D(SampleTex0, Input.Tex0.xy);
@@ -300,10 +304,13 @@ void PS_ShadowedPreSkin(in VS2PS_ShadowedPreSkin Input, out float4 Output : COLO
 
 	Lighting Diffuse = GetLighting(WS);
 
-	Output.r = (Diffuse.Rim + Diffuse.Wrap);
-	Output.g = TotalShadow;
-	Output.b = saturate(TotalShadow + 0.35);
-	Output.a = TangentNormal.a;
+	float4 OutputColor = 0.0;
+	OutputColor.r = (Diffuse.Rim + Diffuse.Wrap);
+	OutputColor.g = TotalShadow;
+	OutputColor.b = saturate(TotalShadow + 0.35);
+	OutputColor.a = TangentNormal.a;
+
+	return OutputColor;
 }
 
 struct VS2PS_ApplySkin
@@ -313,9 +320,9 @@ struct VS2PS_ApplySkin
 	float2 Tex0 : TEXCOORD1;
 };
 
-void VS_ApplySkin(in APP2VS Input, out VS2PS_ApplySkin Output)
+VS2PS_ApplySkin VS_ApplySkin(APP2VS Input)
 {
-	Output = (VS2PS_ApplySkin)0;
+	VS2PS_ApplySkin Output = (VS2PS_ApplySkin)0.0;
 
 	// Object-space data
 	SkinnedData Skin = SkinSoldier(Input);
@@ -329,9 +336,11 @@ void VS_ApplySkin(in APP2VS Input, out VS2PS_ApplySkin Output)
 
 	// Texcoord data
 	Output.Tex0 = Input.TexCoord0;
+
+	return Output;
 }
 
-void PS_ApplySkin(in VS2PS_ApplySkin Input, out float4 Output : COLOR0)
+float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR0
 {
 	// Tangent-space data
 	float4 TangentNormal = tex2D(SampleTex1, Input.Tex0);
@@ -356,9 +365,9 @@ void PS_ApplySkin(in VS2PS_ApplySkin Input, out float4 Output : COLOR0)
 	// Composite diffuse lighting
 	ColorPair Light = ComputeLights(WS.Normal.xyz, WS.LightDir, WS.ViewDir);
 	Light.Specular *= DiffuseMap.a * ShadowIntensity;
+	float3 Lighting = saturate((DiffuseMap * (Ambient + Diffuse)) + Light.Specular);
 
-	Output.rgb = saturate((DiffuseMap * (Ambient + Diffuse)) + Light.Specular);
-	Output.a = DiffuseMap.a;
+	return float4(Lighting, DiffuseMap.a);
 }
 
 #define GET_RENDERSTATES_SKIN(CULLMODE) \
@@ -404,9 +413,9 @@ struct VS2PS_ShadowMap
 	float2 Tex0 : TEXCOORD1;
 };
 
-void VS_ShadowMap(in APP2VS Input, out VS2PS_ShadowMap Output)
+VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 {
-	Output = (VS2PS_ShadowMap)0.0;
+	VS2PS_ShadowMap Output;
 
 	// Cast the vectors to arrays for use in the for loop below
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
@@ -421,25 +430,27 @@ void VS_ShadowMap(in APP2VS Input, out VS2PS_ShadowMap Output)
 	Output.HPos = GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat);
 	Output.DepthPos = Output.HPos; // Output depth
 	Output.Tex0 = Input.TexCoord0;
+
+	return Output;
 }
 
-void PS_ShadowMap(in VS2PS_ShadowMap Input, out float4 Output : COLOR0)
+float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
 	#if NVIDIA
-		Output = 0.0;
+		return 0.0;
 	#else
-		Output = Input.DepthPos.z / Input.DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 
-void PS_ShadowMap_Alpha(in VS2PS_ShadowMap Input, out float4 Output : COLOR0)
+float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
 {
 	float Alpha = tex2D(SampleTex0, Input.Tex0).a - _ShadowAlphaThreshold;
 	#if NVIDIA
-		Output = Alpha;
+		return Alpha;
 	#else
 		clip(Alpha);
-		Output = Input.DepthPos.z / Input.DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 

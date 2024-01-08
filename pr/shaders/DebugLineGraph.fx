@@ -18,18 +18,23 @@ struct VS2PS
 	float4 Color : TEXCOORD0;
 };
 
-void VS_Debug_Linegraph(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Debug_Linegraph(APP2VS Input)
 {
+	VS2PS Output;
+
 	float2 ScreenPos = Input.ScreenPos + _GraphPos;
 	ScreenPos = ScreenPos / (_ViewportSize * 0.5) - 1.0;
 
 	Output.HPos = (ScreenPos.x, -ScreenPos.y, 0.001, 1.0);
+
 	Output.Color = Input.Color;
+
+	return Output;
 }
 
-void PS_Debug_Linegraph(in VS2PS Input, out float4 Output : COLOR0)
+float4 PS_Debug_Linegraph(VS2PS Input) : COLOR0
 {
-	Output = Input.Color;
+	return Input.Color;
 }
 
 technique Graph <

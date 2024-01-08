@@ -73,9 +73,9 @@ struct PS2FB
 	#endif
 };
 
-void VS_BM_Additive(in APP2VS Input, out VS2PS Output)
+VS2PS VS_BM_Additive(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
@@ -88,16 +88,24 @@ void VS_BM_Additive(in APP2VS Input, out VS2PS Output)
 	#endif
 
 	Output.Tex0 = Input.Tex0;
+
+	return Output;
 }
 
-void PS_BM_Additive(in VS2PS Input, out PS2FB Output)
+PS2FB PS_BM_Additive(VS2PS Input)
 {
-	float4 ColorTex = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	Output.Color = ColorTex * Transparency;
+	PS2FB Output = (PS2FB)0.0;
+
+	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	OutputColor.rgb *= Transparency;
+
+	Output.Color = OutputColor;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique defaultTechnique

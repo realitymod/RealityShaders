@@ -87,7 +87,7 @@ VS2PS VS_Quad(APP2VS Input)
 
 PS2FB PS_Quad(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0;
+	PS2FB Output = (PS2FB)0.0;
 
 	float4 Tex0 = tex2D(SampleTex0, Input.Tex.xy);
 	float4 Tex1 = tex2D(SampleTex1, Input.Tex.zw);

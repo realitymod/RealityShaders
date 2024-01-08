@@ -142,7 +142,7 @@ VS_OUTPUT bumpSpecularVertexShaderBlinn1
 	uniform float4 EyePos
 )
 {
-	VS_OUTPUT Out = (VS_OUTPUT)0;
+	VS_OUTPUT Out = (VS_OUTPUT)0.0;
    	
  	Out.HPos = mul(input.Pos, WorldViewProj);
 	
@@ -201,7 +201,7 @@ VS_OUTPUT2 spriteVertexShader
 	uniform float4 LightColor
 )
 {
-	VS_OUTPUT2 Out = (VS_OUTPUT2)0;
+	VS_OUTPUT2 Out = (VS_OUTPUT2)0.0;
 	float4 pos =  mul(input.Pos, WorldView);
 	float4 scaledPos = float4(float2(input.Width_height.xy * SpriteScale.xy), 0, 0) + (pos);
  	Out.HPos = mul(scaledPos, Proj);
@@ -240,7 +240,7 @@ OUT_vsBumpSpecularHemiAndSunPV vsBumpSpecularHemiAndSunPV
 	uniform float NormalOffsetScale
 )
 {
-	OUT_vsBumpSpecularHemiAndSunPV Out = (OUT_vsBumpSpecularHemiAndSunPV)0;
+	OUT_vsBumpSpecularHemiAndSunPV Out = (OUT_vsBumpSpecularHemiAndSunPV)0.0;
    	
    	// float4 Constants = float4(0.5, 0.5, 0.5, 1.0);
    	
@@ -377,7 +377,7 @@ OUT_vsBumpSpecularPointLight vsBumpSpecularPointLight
 	uniform float4 LightPos
 )
 {
-	OUT_vsBumpSpecularPointLight Out = (OUT_vsBumpSpecularPointLight)0;
+	OUT_vsBumpSpecularPointLight Out = (OUT_vsBumpSpecularPointLight)0.0;
    	   	
  	Out.HPos = mul(float4(input.Pos.xyz, 1.0f), ViewProj);
  		
@@ -491,7 +491,7 @@ OUT_vsBumpSpecularSpotLight vsBumpSpecularSpotLight
 	uniform float4 LightDir
 )
 {
-	OUT_vsBumpSpecularSpotLight Out = (OUT_vsBumpSpecularSpotLight)0;
+	OUT_vsBumpSpecularSpotLight Out = (OUT_vsBumpSpecularSpotLight)0.0;
    	   	
    	// Compensate for lack of UBYTE4 on Geforce3
 	Out.HPos = mul(float4(input.Pos.xyz, 1.0f), ViewProj);
@@ -598,7 +598,7 @@ OUT_vsBumpSpecularMulDiffuse vsBumpSpecularMulDiffuse
 	uniform float4x4 ViewInv
 )
 {
-	OUT_vsBumpSpecularMulDiffuse Out = (OUT_vsBumpSpecularMulDiffuse)0;
+	OUT_vsBumpSpecularMulDiffuse Out = (OUT_vsBumpSpecularMulDiffuse)0.0;
    	   	
    	// Compensate for lack of UBYTE4 on Geforce3
  	Out.HPos = mul(float4(input.Pos.xyz, 1.0f), ViewProj);

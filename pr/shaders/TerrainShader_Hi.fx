@@ -47,10 +47,9 @@ struct VS2PS_FullDetail_Hi
 	float4 LightTex : TEXCOORD4;
 };
 
-void VS_FullDetail_Hi(in APP2VS_Shared Input, out VS2PS_FullDetail_Hi Output)
+VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 {
-	Output = (VS2PS_FullDetail_Hi)0;
-
+	VS2PS_FullDetail_Hi Output = (VS2PS_FullDetail_Hi)0.0;
 	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 	float2 YPlaneTex = Input.Pos0.xy * _TexScale.xz;
 
@@ -68,6 +67,8 @@ void VS_FullDetail_Hi(in APP2VS_Shared Input, out VS2PS_FullDetail_Hi Output)
 	#if defined(LOG_DEPTH)
 		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 	#endif
+
+	return Output;
 }
 
 struct FullDetail
@@ -82,7 +83,7 @@ struct FullDetail
 
 FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
 {
-	FullDetail Output = (FullDetail)0;
+	FullDetail Output = (FullDetail)0.0;
 
 	// Calculate triplanar texcoords
 	float3 WorldTex = 0.0;
@@ -105,7 +106,7 @@ FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
 
 PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform bool UseEnvMap)
 {
-	PS2FB Output = (PS2FB)0;
+	PS2FB Output = (PS2FB)0.0;
 
 	float4 WorldPos = Input.Pos;
 	float3 WorldNormal = normalize(Input.Normal);
@@ -185,19 +186,19 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	return Output;
 }
 
-void PS_FullDetail_Hi(in VS2PS_FullDetail_Hi Input, out PS2FB Output)
+PS2FB PS_FullDetail_Hi(VS2PS_FullDetail_Hi Input)
 {
-	Output = FullDetail_Hi(Input, false, false);
+	return FullDetail_Hi(Input, false, false);
 }
 
-void PS_FullDetail_Hi_Mounten(in VS2PS_FullDetail_Hi Input, out PS2FB Output)
+PS2FB PS_FullDetail_Hi_Mounten(VS2PS_FullDetail_Hi Input)
 {
-	Output = FullDetail_Hi(Input, true, false);
+	return FullDetail_Hi(Input, true, false);
 }
 
-void PS_FullDetail_Hi_EnvMap(in VS2PS_FullDetail_Hi Input, out PS2FB Output)
+PS2FB PS_FullDetail_Hi_EnvMap(VS2PS_FullDetail_Hi Input)
 {
-	Output = FullDetail_Hi(Input, false, true);
+	return FullDetail_Hi(Input, false, true);
 }
 
 /*

@@ -161,7 +161,7 @@ float3 GetWorldLightVec(float3 WorldPos)
 
 WorldSpace GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 {
-	WorldSpace Output = (WorldSpace)0;
+	WorldSpace Output = (WorldSpace)0.0;
 
 	// Get OverGrowth world-space position
 	#if defined(OVERGROWTH)
@@ -179,9 +179,9 @@ WorldSpace GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 	return Output;
 }
 
-void VS_Leaf(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Leaf(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	// Calculate object-space position data
 	#if !defined(OVERGROWTH)
@@ -224,10 +224,14 @@ void VS_Leaf(in APP2VS Input, out VS2PS Output)
 	#if _HASSHADOW_
 		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
 	#endif
+
+	return Output;
 }
 
-void PS_Leaf(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Leaf(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float LodScale = Input.Tex0.z;
 	float HalfNL = Input.Tex0.w;
 	float3 WorldPos = Input.Pos.xyz;
@@ -243,12 +247,14 @@ void PS_Leaf(in VS2PS Input, out PS2FB Output)
 	float3 Ambient = OverGrowthAmbient.rgb * LodScale;
 	float3 Diffuse = (HalfNL * LodScale) * LightColor;
 
-	Output.Color.rgb = CompositeLights(DiffuseMap.rgb, Ambient, Diffuse, 0.0);
-	Output.Color.a = (DiffuseMap.a * 2.0) * Transparency;
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, Ambient, Diffuse, 0.0);
+	OutputColor.a = (DiffuseMap.a * 2.0) * Transparency;
 	#if defined(OVERGROWTH) && HASALPHA2MASK
-		Output.Color.a *= (DiffuseMap.a * 2.0);
+		OutputColor.a *= (DiffuseMap.a * 2.0);
 	#endif
 
+	Output.Color = OutputColor;
 	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos.xyz);
 	#if _POINTLIGHT_
 		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
@@ -261,6 +267,8 @@ void PS_Leaf(in VS2PS Input, out PS2FB Output)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 };
 
 technique defaultTechnique

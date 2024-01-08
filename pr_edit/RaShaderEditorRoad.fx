@@ -64,7 +64,7 @@ float4 inPos: POSITION0,
 float2 tex0 : TEXCOORD0
 )
 {
-	VS_OUTPUT Out = (VS_OUTPUT)0;
+	VS_OUTPUT Out = (VS_OUTPUT)0.0;
 
 	float4 wPos = mul(inPos * PosUnpack, World);
 	wPos.y += .01;

@@ -48,7 +48,7 @@ struct VS_OUT
 
 VS_OUT vs(VS_IN indata)
 {
-	VS_OUT Out = (VS_OUT)0;
+	VS_OUT Out = (VS_OUT)0.0;
  
  	int4 IndexVector = D3DCOLORtoUBYTE4(indata.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;

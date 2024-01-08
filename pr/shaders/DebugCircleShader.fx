@@ -40,9 +40,9 @@ struct PS2FB
 	#endif
 };
 
-void VS_Debug_Circle(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Debug_Circle(APP2VS Input)
 {
-	Output = (VS2PS)0.0;
+	VS2PS Output = (VS2PS)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos = Output.HPos;
@@ -51,15 +51,21 @@ void VS_Debug_Circle(in APP2VS Input, out VS2PS Output)
 	#endif
 
 	Output.Diffuse = float4(Input.Diffuse.rgb, 0.8);
+
+	return Output;
 }
 
-void PS_Debug_Circle(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Debug_Circle(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	Output.Color = Input.Diffuse;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique t0

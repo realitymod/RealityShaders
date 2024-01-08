@@ -67,9 +67,9 @@ struct PS2FB
 	[Vertex Shaders]
 */
 
-void VS_Particle(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Particle(APP2VS Input)
 {
-	Output = (VS2PS)0.0;
+	VS2PS Output = (VS2PS)0.0;
 
 	// Unpack vertex attributes
 	float AgeFactor = Input.AgeFactorAndGraphIndex[0];
@@ -126,6 +126,8 @@ void VS_Particle(in APP2VS Input, out VS2PS Output)
 	#if defined(LOG_DEPTH)
 		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 	#endif
+
+	return Output;
 }
 
 /*
@@ -142,7 +144,7 @@ struct VFactors
 
 VFactors GetVFactors(VS2PS Input)
 {
-	VFactors Output = (VFactors)0;
+	VFactors Output = (VFactors)0.0;
 	Output.LightMapBlend = Input.Maps[0];
 	Output.AlphaBlend = Input.Maps[1];
 	Output.IntensityBlend = Input.Maps[2];
@@ -150,13 +152,17 @@ VFactors GetVFactors(VS2PS Input)
 	return Output;
 }
 
-void PS_Particle_ShowFill(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Particle_ShowFill(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
 	Output.Color = _EffectSunColor.rrrr;
+	return Output;
 }
 
-void PS_Particle_Low(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Particle_Low(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
 
@@ -169,10 +175,14 @@ void PS_Particle_Low(in VS2PS Input, out PS2FB Output)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+
+	return Output;
 }
 
-void PS_Particle_Medium(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Particle_Medium(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
 
@@ -184,13 +194,18 @@ void PS_Particle_Medium(in VS2PS Input, out PS2FB Output)
 	// Apply lighting
 	float3 Lighting = GetParticleLighting(1.0, VF.LightMapOffset, VF.LightMapBlend);
 	float4 LightColor = float4(Input.Color.rgb * Lighting, VF.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
 
-	Output.Color = DiffuseMap * LightColor;
+	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+
+	return Output;
 }
 
-void PS_Particle_High(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Particle_High(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
 
@@ -206,13 +221,18 @@ void PS_Particle_High(in VS2PS Input, out PS2FB Output)
 	// Apply lighting
 	float3 Lighting = GetParticleLighting(HemiMap.a, VF.LightMapOffset, VF.LightMapBlend);
 	float4 LightColor = float4(Input.Color.rgb * Lighting, VF.AlphaBlend);
+	float4 OutputColor = DiffuseMap * LightColor;
 
-	Output.Color = DiffuseMap * LightColor;
+	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+
+	return Output;
 }
 
-void PS_Particle_Low_Additive(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Particle_Low_Additive(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
 
@@ -223,13 +243,18 @@ void PS_Particle_Low_Additive(in VS2PS Input, out PS2FB Output)
 	// Mask with alpha since were doing an add
 	float AlphaMask = DiffuseMap.a * VF.AlphaBlend;
 	float4 LightColor = float4(Input.Color.rgb * AlphaMask, 1.0);
+	float4 OutputColor = DiffuseMap * LightColor;
 
-	Output.Color = DiffuseMap * LightColor;
+	Output.Color = OutputColor;
 	Output.Color.rgb *= GetFogValue(Input.ViewPos, 0.0);
+
+	return Output;
 }
 
-void PS_Particle_High_Additive(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Particle_High_Additive(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
 
@@ -242,9 +267,12 @@ void PS_Particle_High_Additive(in VS2PS Input, out PS2FB Output)
 	// Mask with alpha since were doing an add
 	float AlphaMask = DiffuseMap.a * VF.AlphaBlend;
 	float4 LightColor = float4(Input.Color.rgb * AlphaMask, 1.0);
+	float4 OutputColor = DiffuseMap * LightColor;
 
-	Output.Color = DiffuseMap * LightColor;
+	Output.Color = OutputColor;
 	Output.Color.rgb *= GetFogValue(Input.ViewPos, 0.0);
+
+	return Output;
 }
 
 #define GET_RENDERSTATES_PARTICLES(SRCBLEND, DESTBLEND) \

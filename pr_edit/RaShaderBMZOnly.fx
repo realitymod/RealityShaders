@@ -64,7 +64,7 @@ float4 getWorldPos(BMVariableVSInput input)
 
 BMVariableVSOutput vs(BMVariableVSInput input)
 {
-	BMVariableVSOutput Out = (BMVariableVSOutput)0;
+	BMVariableVSOutput Out = (BMVariableVSOutput)0.0;
 
 	Out.HPos = mul(getWorldPos(input), ViewProjection);	// output HPOS
 	

@@ -38,7 +38,7 @@ float3 normal: NORMAL,
 float2 tex0 : TEXCOORD0
 )
 {
-	VS_OUTPUT Out = (VS_OUTPUT)0;
+	VS_OUTPUT Out = (VS_OUTPUT)0.0;
 
 	Out.Pos = mul(float4(inPos.xyz, 1), WorldViewProjection);
 

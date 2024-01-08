@@ -44,25 +44,25 @@ struct VS2PS_ShapeTexture
 	float4 Selector : TEXCOORD2;
 };
 
-void VS_Shape(in APP2VS_Shape Input, out VS2PS_Shape Output)
+VS2PS_Shape VS_Shape(APP2VS_Shape Input)
 {
-	Output = (VS2PS_Shape)0.0;
-
+	VS2PS_Shape Output = (VS2PS_Shape)0.0;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.Diffuse = saturate(Input.Color);
+	return Output;
 }
 
-void VS_Line(in float3 Position : POSITION, out VS2PS_Shape Output)
+VS2PS_Shape VS_Line(float3 Position : POSITION)
 {
-	Output = (VS2PS_Shape)0.0;
-
+	VS2PS_Shape Output = (VS2PS_Shape)0.0;
 	Output.HPos = float4(Position.xy, 0.0, 1.0);
 	Output.Diffuse = saturate(DiffuseColor);
+	return Output;
 }
 
-void VS_ShapeTexture(in float3 Position : POSITION, out VS2PS_ShapeTexture Output)
+VS2PS_ShapeTexture VS_ShapeTexture(float3 Position : POSITION)
 {
-	Output = (VS2PS_ShapeTexture)0;
+	VS2PS_ShapeTexture Output = (VS2PS_ShapeTexture)0.0;
 
 	Output.HPos = mul(float4(Position.xy, 0.0, 1.0), WorldView);
 	Output.Diffuse = saturate(DiffuseColor);
@@ -71,32 +71,36 @@ void VS_ShapeTexture(in float3 Position : POSITION, out VS2PS_ShapeTexture Outpu
 	float4 TexPos = float4(Position.xy, 0.0, 1.0);
 	Output.TexCoord.x = mul(TexPos, TexGenS);
 	Output.TexCoord.y = mul(TexPos, TexGenT);
+
+	return Output;
 }
 
-void PS_RegularWrap(in VS2PS_ShapeTexture Input, out float4 Output : COLOR0)
+float4 PS_RegularWrap(VS2PS_ShapeTexture Input) : COLOR0
 {
+	float4 OutputColor = 0.0;
 	float4 Tex = tex2D(SampleTexMap_Wrap, Input.TexCoord);
-
-	Output.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
-	Output.a = Tex.a * Input.Diffuse.a;
+	OutputColor.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
+	OutputColor.a = Tex.a * Input.Diffuse.a;
+	return OutputColor;
 }
 
-void PS_RegularClamp(in VS2PS_ShapeTexture Input, out float4 Output : COLOR0)
+float4 PS_RegularClamp(VS2PS_ShapeTexture Input) : COLOR0
 {
+	float4 OutputColor = 0.0;
 	float4 Tex = tex2D(SampleTexMap_Clamp, Input.TexCoord);
-
-	Output.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
-	Output.a = Tex.a * Input.Diffuse.a;
+	OutputColor.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
+	OutputColor.a = Tex.a * Input.Diffuse.a;
+	return OutputColor;
 }
 
-void PS_Diffuse(in VS2PS_Shape Input, out float4 Output : COLOR0)
+float4 PS_Diffuse(VS2PS_Shape Input) : COLOR0
 {
-	Output = Input.Diffuse;
+	return Input.Diffuse;
 }
 
-void PS_Line(in VS2PS_Shape Input, out float4 Output : COLOR0)
+float4 PS_Line(VS2PS_Shape Input) : COLOR0
 {
-	Output = Input.Diffuse;
+	return Input.Diffuse;
 }
 
 technique Shape

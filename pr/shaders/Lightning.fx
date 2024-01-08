@@ -58,9 +58,9 @@ struct PS2FB
 	#endif
 };
 
-void VS_Lightning(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Lightning(APP2VS Input)
 {
-	Output = (VS2PS)0.0;
+	VS2PS Output = (VS2PS)0.0;
 
 	Output.HPos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
 
@@ -70,10 +70,14 @@ void VS_Lightning(in APP2VS Input, out VS2PS Output)
 	#endif
 
 	Output.Color = saturate(Input.Color);
+
+	return Output;
 }
 
-void PS_Lightning(in VS2PS Input, out VS2PS Output)
+PS2FB PS_Lightning(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float4 ColorTex = tex2D(SampleLightning, Input.Tex0.xy);
 
 	Output.Color = ColorTex * _LightningColor;
@@ -82,6 +86,8 @@ void PS_Lightning(in VS2PS Input, out VS2PS Output)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
+
+	return Output;
 }
 
 technique Lightning

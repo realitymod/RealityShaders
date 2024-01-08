@@ -54,7 +54,7 @@ float2 tex0 : TEXCOORD0,
 float2 tex1 : TEXCOORD1
 )
 {
-	VS_OUTPUT Out = (VS_OUTPUT)0;
+	VS_OUTPUT Out = (VS_OUTPUT)0.0;
 
 	Out.Pos = mul(float4(inPos, 1), mul(World, ViewProjection));
 	Out.Fog = calcFog(FogRange, Out.Pos.w);

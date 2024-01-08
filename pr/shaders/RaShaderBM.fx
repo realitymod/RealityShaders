@@ -151,9 +151,9 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
 }
 
-void VS_BundledMesh(in APP2VS Input, out VS2PS Output)
+VS2PS VS_BundledMesh(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	// Get object-space data
 	float4 ObjectPos = Input.Pos * PosUnpack; // Unpack object-space position
@@ -199,6 +199,8 @@ void VS_BundledMesh(in APP2VS Input, out VS2PS Output)
 	#if _HASCOCKPIT_
 		Output.SkinLightDir = mul(-Lights[0].dir.xyz, SkinnedWorldMatrix);
 	#endif
+
+	return Output;
 }
 
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
@@ -217,8 +219,10 @@ float3 GetWorldLightVec(VS2PS Input, float3 WorldPos)
 	#endif
 }
 
-void PS_BundledMesh(in VS2PS Input, out PS2FB Output)
+PS2FB PS_BundledMesh(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	/*
 		World-space data
 	*/
@@ -400,6 +404,8 @@ void PS_BundledMesh(in VS2PS Input, out PS2FB Output)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique Variable

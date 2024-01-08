@@ -103,20 +103,19 @@ struct VS2PS_Simple
 	float2 TexCoord : TEXCOORD0;
 };
 
-void VS_StaticMesh_Simple(in APP2VS Input, out VS2PS_Simple Output)
+VS2PS_Simple VS_StaticMesh_Simple(APP2VS Input)
 {
-	Output = (VS2PS_Simple)0.0;	
-
+	VS2PS_Simple Output;
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	Output.TexCoord = Input.TexCoord;
+	return Output;
 }
 
-void PS_StaticMesh_Simple(in VS2PS_Simple Input, out float4 Output : COLOR0)
+float4 PS_StaticMesh_Simple(VS2PS_Simple Input) : COLOR0
 {
 	float4 Ambient = float4(1.0, 1.0, 1.0, 0.8);
 	float4 NormalMap = tex2D(SampleTex0_Wrap, Input.TexCoord);
-
-	Output = NormalMap * Ambient;
+	return NormalMap * Ambient;
 }
 
 technique alpha_one
@@ -157,9 +156,9 @@ struct VS2PS_ShadowMap
 	float2 Tex0 : TEXCOORD1;
 };
 
-void VS_ShadowMap(in APP2VS_ShadowMap Input, out VS2PS_ShadowMap Output)
+VS2PS_ShadowMap VS_ShadowMap(APP2VS_ShadowMap Input)
 {
-	Output = (VS2PS_ShadowMap)0.0;
+	VS2PS_ShadowMap Output;
 
 	float4 UnpackPos = Input.Pos * _PosUnpack;
 	float4 WorldPos = mul(float4(UnpackPos.xyz, 1.0), _WorldMat);
@@ -168,27 +167,28 @@ void VS_ShadowMap(in APP2VS_ShadowMap Input, out VS2PS_ShadowMap Output)
 	Output.DepthPos = Output.HPos; // Output shadow depth
 
 	Output.Tex0 = Input.Tex * _TexUnpack;
+
+	return Output;
 }
 
-void PS_ShadowMap(in VS2PS_ShadowMap Input, out float4 Output : COLOR0)
+float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
 	#if NVIDIA
-		Output = 0.0;
+		return 0;
 	#else
-		Output = Input.DepthPos.z / Input.DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 
-void PS_ShadowMap_Alpha(in VS2PS_ShadowMap Input, out float4 Output : COLOR0)
+float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
 {
 	const float AlphaRef = 96.0 / 255.0;
 	float4 Alpha = tex2D(SampleShadowAlpha, Input.Tex0);
-
 	#if NVIDIA
-		Output = Alpha;
+		return Alpha;
 	#else
 		clip(Alpha.a - AlphaRef);
-		Output = Input.DepthPos.z / Input.DepthPos.w;
+		return Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 

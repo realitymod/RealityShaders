@@ -43,32 +43,34 @@ struct VS2PS_REGULAR
 	float4 Diffuse : TEXCOORD1;
 };
 
-void VS_Regular(in APP2VS Input, out VS2PS_REGULAR Output)
+VS2PS_REGULAR VS_Regular(APP2VS Input)
 {
+	VS2PS_REGULAR Output = (VS2PS_REGULAR)0.0;
 	// Output.Output.HPos = mul(float4(Input.Pos.xy, 0.5, 1.0), _WorldView);
 	Output.HPos = float4(Input.Pos.xy, 0.5, 1.0);
 	Output.TexCoord = Input.TexCoord;
 	Output.Diffuse = saturate(Input.Color);
+	return Output;
 }
 
-void PS_Regular(in VS2PS_REGULAR Input, out float4 Output : COLOR0)
+float4 PS_Regular(VS2PS_REGULAR Input) : COLOR0
 {
-	Output = tex2D(SampleTexMap, Input.TexCoord) * Input.Diffuse;
+	return tex2D(SampleTexMap, Input.TexCoord) * Input.Diffuse;
 }
 
-void PS_Regular_Scaled(in VS2PS_REGULAR Input, out float4 Output : COLOR0)
+float4 PS_Regular_Scaled(VS2PS_REGULAR Input) : COLOR0
 {
-	Output = tex2D(SampleTexMap_Linear, Input.TexCoord) * Input.Diffuse;
+	return tex2D(SampleTexMap_Linear, Input.TexCoord) * Input.Diffuse;
 }
 
-void VS_SelectionQuad(in float3 Pos : POSITION, out float4 HPos : POSITION)
+float4 VS_SelectionQuad(float3 Pos : POSITION) : POSITION
 {
-	HPos = mul(float4(Pos.xy, 0.0, 1.0), _WorldView);
+	return mul(float4(Pos.xy, 0.0, 1.0), _WorldView);
 }
 
-void PS_SelectionQuad(out float4 Output : COLOR0)
+float4 PS_SelectionQuad() : COLOR0
 {
-	Output = saturate(_DiffuseColor);
+	return saturate(_DiffuseColor);
 }
 
 technique Regular

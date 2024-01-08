@@ -77,7 +77,7 @@
 		uniform float SpecPower = 32.0, uniform bool Normalized = false
 	)
 	{
-		ColorPair Output = (ColorPair)0;
+		ColorPair Output = (ColorPair)0.0;
 
 		float3 HalfVec = normalize(LightDir + ViewDir);
 		float DotNH = saturate(dot(Normal, HalfVec));

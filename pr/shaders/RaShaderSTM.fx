@@ -102,9 +102,9 @@ float GetBinormalFlipping(APP2VS Input)
 	return 1.0 + Input.Pos.w * -2.0;
 }
 
-void VS_StaticMesh(in APP2VS Input, out VS2PS Output)
+VS2PS VS_StaticMesh(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	// Object-space data
 	float4 ObjectPos = float4(Input.Pos.xyz, 1.0) * PosUnpack;
@@ -143,6 +143,8 @@ void VS_StaticMesh(in APP2VS Input, out VS2PS Output)
 	#if _SHADOW_ && _LIGHTMAP_
 		Output.ShadowTex = GetShadowProjection(ObjectPos);
 	#endif
+
+	return Output;
 }
 
 float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
@@ -231,8 +233,12 @@ float3 GetWorldLightVec(float3 WorldPos)
 	#endif
 }
 
-void PS_StaticMesh(in VS2PS Input, out PS2FB Output)
+PS2FB PS_StaticMesh(VS2PS Input)
 {
+	// Initialize variables
+	float4 OutputColor = 1.0;
+	PS2FB Output = (PS2FB)0.0;
+
 	// World-space data
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldLightVec = GetWorldLightVec(WorldPos);
@@ -270,8 +276,8 @@ void PS_StaticMesh(in VS2PS Input, out PS2FB Output)
 		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		DiffuseRGB *= Attenuation;
 		SpecularRGB *= Attenuation;
-		Output.Color.rgb = (ColorMap.rgb * DiffuseRGB) + SpecularRGB;
-		Output.Color.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
+		OutputColor.rgb = (ColorMap.rgb * DiffuseRGB) + SpecularRGB;
+		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
@@ -291,11 +297,10 @@ void PS_StaticMesh(in VS2PS Input, out PS2FB Output)
 		DiffuseRGB += (Lightmap.r * SinglePointColor);
 		SpecularRGB *= Lightmap.g;
 
-		Output.Color.rgb = CompositeLights(ColorMap.rgb * 2.0, 0.0, DiffuseRGB, SpecularRGB);
+		OutputColor.rgb = CompositeLights(ColorMap.rgb * 2.0, 0.0, DiffuseRGB, SpecularRGB);
 	#endif
 
-	Output.Color.a = ColorMap.a;
-
+	Output.Color = float4(OutputColor.rgb, ColorMap.a);
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
@@ -303,6 +308,8 @@ void PS_StaticMesh(in VS2PS Input, out PS2FB Output)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 };
 
 technique defaultTechnique
