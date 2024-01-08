@@ -72,7 +72,7 @@ void VS_Lightning(in APP2VS Input, out VS2PS Output)
 	Output.Color = saturate(Input.Color);
 }
 
-void PS_Lightning(in VS2PS Input, out PS2FB Output)
+void PS_Lightning(in VS2PS Input, out VS2PS Output)
 {
 	float4 ColorTex = tex2D(SampleLightning, Input.Tex0.xy);
 
