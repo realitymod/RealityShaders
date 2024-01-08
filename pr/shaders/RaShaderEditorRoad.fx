@@ -116,9 +116,9 @@ struct PS2FB
 	#endif
 };
 
-VS2PS VS_Editor_Road(APP2VS Input)
+void VS_Editor_Road(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
+	Output = (VS2PS)0;
 
 	float4 WorldPos = mul(Input.Pos * PosUnpack, World);
 	WorldPos.y += 0.01;
@@ -138,14 +138,10 @@ VS2PS VS_Editor_Road(APP2VS Input)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
-
-	return Output;
 }
 
-PS2FB PS_Editor_Road(VS2PS Input)
+void PS_Editor_Road(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	float4 Diffuse = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
 	#if defined(USE_DETAIL)
 		float4 Detail = tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw);
@@ -161,8 +157,6 @@ PS2FB PS_Editor_Road(VS2PS Input)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 };
 
 technique defaultTechnique

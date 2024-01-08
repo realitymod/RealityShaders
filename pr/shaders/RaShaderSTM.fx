@@ -102,9 +102,9 @@ float GetBinormalFlipping(APP2VS Input)
 	return 1.0 + Input.Pos.w * -2.0;
 }
 
-VS2PS VS_StaticMesh(APP2VS Input)
+void VS_StaticMesh(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
+	Output = (VS2PS)0;
 
 	// Object-space data
 	float4 ObjectPos = float4(Input.Pos.xyz, 1.0) * PosUnpack;
@@ -143,8 +143,6 @@ VS2PS VS_StaticMesh(APP2VS Input)
 	#if _SHADOW_ && _LIGHTMAP_
 		Output.ShadowTex = GetShadowProjection(ObjectPos);
 	#endif
-
-	return Output;
 }
 
 float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
@@ -233,12 +231,8 @@ float3 GetWorldLightVec(float3 WorldPos)
 	#endif
 }
 
-PS2FB PS_StaticMesh(VS2PS Input)
+void PS_StaticMesh(in VS2PS Input, out PS2FB Output)
 {
-	// Initialize variables
-	float4 OutputColor = 1.0;
-	PS2FB Output = (PS2FB)0;
-
 	// World-space data
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldLightVec = GetWorldLightVec(WorldPos);
@@ -276,8 +270,8 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		DiffuseRGB *= Attenuation;
 		SpecularRGB *= Attenuation;
-		OutputColor.rgb = (ColorMap.rgb * DiffuseRGB) + SpecularRGB;
-		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
+		Output.Color.rgb = (ColorMap.rgb * DiffuseRGB) + SpecularRGB;
+		Output.Color.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
@@ -297,10 +291,11 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		DiffuseRGB += (Lightmap.r * SinglePointColor);
 		SpecularRGB *= Lightmap.g;
 
-		OutputColor.rgb = CompositeLights(ColorMap.rgb * 2.0, 0.0, DiffuseRGB, SpecularRGB);
+		Output.Color.rgb = CompositeLights(ColorMap.rgb * 2.0, 0.0, DiffuseRGB, SpecularRGB);
 	#endif
 
-	Output.Color = float4(OutputColor.rgb, ColorMap.a);
+	Output.Color.a = ColorMap.a;
+
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
@@ -308,8 +303,6 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 };
 
 technique defaultTechnique

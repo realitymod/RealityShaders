@@ -86,9 +86,9 @@ float4 ProjToLighting(float4 HPos)
 	return HPos * _TexProjScale + (_TexProjOffset * HPos.w);
 }
 
-VS2PS VS_RoadCompiled(APP2VS Input)
+void VS_RoadCompiled(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
+	Output = (VS2PS)0;
 
 	float4 WorldPos = Input.Pos;
 	WorldPos.y += 0.01;
@@ -103,14 +103,10 @@ VS2PS VS_RoadCompiled(APP2VS Input)
 	Output.LightTex = ProjToLighting(Output.HPos);
 
 	Output.Alpha = Input.Alpha;
-
-	return Output;
 }
 
-PS2FB PS_RoadCompiled(VS2PS Input)
+void PS_RoadCompiled(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	float3 LocalPos = Input.Pos.xyz;
 	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 
@@ -121,30 +117,26 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	float4 Detail0 = tex2D(SampleDetailMap0, Input.Tex0.xy);
 	float4 Detail1 = tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1);
 
-	float4 OutputColor = 0.0;
-	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
-	OutputColor.a = Detail0.a * saturate(ZFade * Input.Alpha);
+	Output.Color.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
+	Output.Color.a = Detail0.a * saturate(ZFade * Input.Alpha);
 
 	// On thermals no shadows
 	if (IsTisActive())
 	{
 		TerrainLights = (TerrainSunColor + AccumLights.rgb) * 2.0;
-		OutputColor.rgb *= TerrainLights;
-		OutputColor.g = clamp(OutputColor.g, 0.0, 0.5);
+		Output.Color.rgb *= TerrainLights;
+		Output.Color.g = clamp(Output.Color.g, 0.0, 0.5);
 	}
 	else
 	{
-		OutputColor.rgb *= TerrainLights;
+		Output.Color.rgb *= TerrainLights;
 	}
 
-	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 }
 
 technique roadcompiledFull

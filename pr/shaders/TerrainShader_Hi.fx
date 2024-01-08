@@ -47,9 +47,10 @@ struct VS2PS_FullDetail_Hi
 	float4 LightTex : TEXCOORD4;
 };
 
-VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
+void VS_FullDetail_Hi(in APP2VS_Shared Input, out VS2PS_FullDetail_Hi Output)
 {
-	VS2PS_FullDetail_Hi Output = (VS2PS_FullDetail_Hi)0;
+	Output = (VS2PS_FullDetail_Hi)0;
+
 	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 	float2 YPlaneTex = Input.Pos0.xy * _TexScale.xz;
 
@@ -67,8 +68,6 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 	#if defined(LOG_DEPTH)
 		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 	#endif
-
-	return Output;
 }
 
 struct FullDetail
@@ -186,19 +185,19 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	return Output;
 }
 
-PS2FB PS_FullDetail_Hi(VS2PS_FullDetail_Hi Input)
+void PS_FullDetail_Hi(in VS2PS_FullDetail_Hi Input, out PS2FB Output)
 {
-	return FullDetail_Hi(Input, false, false);
+	Output = FullDetail_Hi(Input, false, false);
 }
 
-PS2FB PS_FullDetail_Hi_Mounten(VS2PS_FullDetail_Hi Input)
+void PS_FullDetail_Hi_Mounten(in VS2PS_FullDetail_Hi Input, out PS2FB Output)
 {
-	return FullDetail_Hi(Input, true, false);
+	Output = FullDetail_Hi(Input, true, false);
 }
 
-PS2FB PS_FullDetail_Hi_EnvMap(VS2PS_FullDetail_Hi Input)
+void PS_FullDetail_Hi_EnvMap(in VS2PS_FullDetail_Hi Input, out PS2FB Output)
 {
-	return FullDetail_Hi(Input, false, true);
+	Output = FullDetail_Hi(Input, false, true);
 }
 
 /*

@@ -49,7 +49,7 @@ struct PS2FB
 	#endif
 };
 
-VS2PS VS_Default(APP2VS Input)
+void VS_Default(in APP2VS Input, out VS2PS Output)
 {
 	VS2PS Output = (VS2PS)0;
 	
@@ -58,21 +58,15 @@ VS2PS VS_Default(APP2VS Input)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
-
-	return Output;
 }
 
-PS2FB PS_Default(VS2PS Input)
+void PS_Default(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	Output.Color = float4(0.9, 0.4, 0.8, 1.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 };
 
 technique defaultShader

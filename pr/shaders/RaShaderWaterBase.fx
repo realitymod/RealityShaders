@@ -151,9 +151,9 @@ struct PS2FB
 	#endif
 };
 
-VS2PS VS_Water(APP2VS Input)
+void VS_Water(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
+	Output = (VS2PS)0;
 
 	// World-space data
 	float4 WorldPos = mul(Input.Pos, World);
@@ -170,8 +170,6 @@ VS2PS VS_Water(APP2VS Input)
 	#if defined(USE_SHADOWS)
 		Output.ShadowTex = GetShadowProjection(WorldPos);
 	#endif
-
-	return Output;
 }
 
 #define INV_LIGHTDIR float3(0.4, 0.5, 0.6)
@@ -188,10 +186,8 @@ float3 GetWaterTex(float3 WorldPos)
 	return WaterTex;
 }
 
-PS2FB PS_Water(in VS2PS Input)
+void PS_Water(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldLightDir = normalize(-Lights[0].dir);
 	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
@@ -223,9 +219,6 @@ PS2FB PS_Water(in VS2PS Input)
 		TangentNormal.xyz = normalize((TangentNormal.xyz * 2.0) - 1.0);
 	#endif
 
-	// Initialize output factor
-	float4 OutputColor = 0.0;
-
 	// Generate water color
 	float3 Reflection = normalize(reflect(-WorldViewDir, TangentNormal));
 	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
@@ -235,26 +228,25 @@ PS2FB PS_Water(in VS2PS Input)
 	// Composite light on water color
 	float3 LightColors = SpecularColor.rgb * (SpecularColor.a * Shadow);
 	ColorPair Light = ComputeLights(TangentNormal, WorldLightDir, WorldViewDir, SpecularPower);
-	OutputColor.rgb = WaterLerp + (Light.Specular * LightColors.rgb);
+
+	// Compute Fresnel 
+	float Fresnel = ComputeFresnelFactor(TangentNormal, WorldViewDir, POW_TRANSPARENCY);
+
+	Output.Color.rgb = WaterLerp + (Light.Specular * LightColors.rgb);
 
 	// Thermals
 	if (IsTisActive())
 	{
-		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
+		Output.Color.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
-	// Compute Fresnel 
-	float Fresnel = ComputeFresnelFactor(TangentNormal, WorldViewDir, POW_TRANSPARENCY);
-	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.a);
+	Output.Color.a = saturate((LightMap.r * Fresnel) + _WaterColor.a);
 
-	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 }
 
 technique defaultShader

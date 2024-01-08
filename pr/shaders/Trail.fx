@@ -71,9 +71,9 @@ struct PS2FB
 	[Vertex Shaders]
 */
 
-VS2PS VS_Trail(APP2VS Input)
+void VS_Trail(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
+	Output = (VS2PS)0;
 
 	// Unpack vertex attributes
 	float Intensity = Input.IntensityAgeAnimBlendFactorAndAlpha[0];
@@ -130,8 +130,6 @@ VS2PS VS_Trail(APP2VS Input)
 	// Offset texcoords
 	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
-
-	return Output;
 }
 
 /*
@@ -154,42 +152,35 @@ VFactors GetVFactors(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Trail_ShowFill(VS2PS Input)
+void PS_Trail_ShowFill(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
 	Output.Color = _EffectSunColor.rrrr;
+
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
-	return Output;
 }
 
-PS2FB PS_Trail_Low(VS2PS Input)
+void PS_Trail_Low(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	// Vertex blend factors
 	VFactors VF = GetVFactors(Input);
 
 	// Lighting
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	float4 LightColor = float4(Input.Color.rgb, VF.AlphaBlend);
-	float4 OutputColor = DiffuseMap * LightColor;
 
-	Output.Color = OutputColor;
+	Output.Color.rgb = DiffuseMap.rgb * Input.Color.rgb;
+	Output.Color.a = DiffuseMap.a * VF.AlphaBlend;
+
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
-
-	return Output;
 }
 
-PS2FB PS_Trail_Medium(VS2PS Input)
+void PS_Trail_Medium(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	// Vertex blend factors
 	VFactors VF = GetVFactors(Input);
 
@@ -198,25 +189,20 @@ PS2FB PS_Trail_Medium(VS2PS Input)
 	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.AnimationBlend);
 
-	// Lighting
 	float3 Lighting = GetParticleLighting(1.0, VF.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
-	float4 LightColor = float4(Input.Color.rgb * Lighting, VF.AlphaBlend);
-	float4 OutputColor = DiffuseMap * LightColor;
 
-	Output.Color = OutputColor;
+	Output.Color.rgb = (DiffuseMap.rgb * Input.Color.rgb) * Lighting;
+	Output.Color.a = DiffuseMap.a * VF.AlphaBlend;
+
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
-
-	return Output;
 }
 
-PS2FB PS_Trail_High(VS2PS Input)
+void PS_Trail_High(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	// Vertex blend factors
 	VFactors VF = GetVFactors(Input);
 
@@ -231,17 +217,15 @@ PS2FB PS_Trail_High(VS2PS Input)
 
 	// Apply lighting
 	float3 Lighting = GetParticleLighting(HemiMap.a, VF.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
-	float4 LightColor = float4(Input.Color.rgb * Lighting, VF.AlphaBlend);
-	float4 OutputColor = DiffuseMap * LightColor;
 
-	Output.Color = OutputColor;
+	Output.Color.rgb = (DiffuseMap.rgb * Input.Color.rgb) * Lighting;
+	Output.Color.a = DiffuseMap.a * VF.AlphaBlend;
+
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
-
-	return Output;
 }
 
 // Ordinary technique

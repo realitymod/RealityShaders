@@ -77,9 +77,9 @@ struct PS2FB
 	#endif
 };
 
-VS2PS VS_Diffuse(APP2VS Input)
+void VS_Diffuse(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
+	Output = (VS2PS)0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 
@@ -90,14 +90,10 @@ VS2PS VS_Diffuse(APP2VS Input)
 	#endif
 
 	Output.Tex0 = Input.Tex0;
-
-	return Output;
 }
 
-PS2FB PS_Diffuse(VS2PS Input)
+void PS_Diffuse(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	float3 WorldPos = Input.Pos.xyz;
 
 	Output.Color = tex2D(SampleDiffuseMap, Input.Tex0);
@@ -106,8 +102,6 @@ PS2FB PS_Diffuse(VS2PS Input)
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 };
 
 technique defaultTechnique

@@ -42,22 +42,19 @@ struct VS2PS
 	float2 TexCoord : TEXCOORD1;
 };
 
-VS2PS VS_HPos(APP2VS Input)
+void VS_HPos(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output;
 	Output.HPos = Input.HPos;
 	Output.Color = saturate(Input.Color);
 	Output.TexCoord = Input.TexCoord0;
-	return Output;
 }
 
-float4 PS_HPos(VS2PS Input) : COLOR0
+void PS_HPos(in VS2PS Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord);
+	float4 ColorTex = tex2D(SampleTex0_Clamp, Input.TexCoord);
 	float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
-	OutputColor = dot(OutputColor, NoAlpha);
-	OutputColor.rgb = OutputColor.rgb * Input.Color;
-	return OutputColor;
+	Output = dot(ColorTex, NoAlpha);
+	Output.rgb = Output.rgb * Input.Color;
 }
 
 technique Text_States <bool Restore = true;>
@@ -105,10 +102,10 @@ technique Overlay_States <bool Restore = true;>
 	pass EndStates { }
 }
 
-float4 PS_Overlay_HPos(VS2PS Input) : COLOR0
+void PS_Overlay_HPos(in VS2PS Input, out float4 Output : COLOR0)
 {
-	float4 InputTexture0 = tex2D(SampleTex0_Wrap, Input.TexCoord);
-	return InputTexture0 * float4(1.0, 1.0, 1.0, _Alpha.a);
+	float4 ColorTex = tex2D(SampleTex0_Wrap, Input.TexCoord);
+	Output = ColorTex * float4(1.0, 1.0, 1.0, _Alpha.a);
 }
 
 technique Overlay <

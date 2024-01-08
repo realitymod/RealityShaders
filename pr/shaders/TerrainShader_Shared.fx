@@ -18,41 +18,40 @@ struct VS2PS_Shared_ZFillLightMap
 	float3 Tex0 : TEXCOORD0;
 };
 
-VS2PS_Shared_ZFillLightMap VS_Shared_ZFillLightMap(APP2VS_Shared Input)
+void VS_Shared_ZFillLightMap(in APP2VS_Shared Input, out VS2PS_Shared_ZFillLightMap Output)
 {
-	VS2PS_Shared_ZFillLightMap Output = (VS2PS_Shared_ZFillLightMap)0;
-	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
+	Output = (VS2PS_Shared_ZFillLightMap)0.0;
 
+	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
+
 	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
 	#if defined(LOG_DEPTH)
 		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
 	#endif
-
-	return Output;
 }
 
 float4 ZFillLightMapColor : register(c0);
 
-PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
+void PS_Shared_ZFillLightMap_1(in VS2PS_Shared_ZFillLightMap Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
-	Output.Color = saturate(float4(_GIColor.rgb * LightMap.bbb, LightMap.g));
+
+	Output.Color.rgb = saturate(_GIColor.rgb * LightMap.b);
+	Output.Color.a = saturate(LightMap.g);
+
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
-	return Output;
 }
 
-PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
+void PS_Shared_ZFillLightMap_2(in VS2PS_Shared_ZFillLightMap Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
 	Output.Color = saturate(ZFillLightMapColor);
+
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
-	return Output;
 }
 
 /*
@@ -78,9 +77,10 @@ struct VS2PS_Shared_PointLight_PerVertex
 	float2 Tex0 : TEXCOORD0; // .x = DotNL; .y = Depth;
 };
 
-VS2PS_Shared_PointLight_PerVertex VS_Shared_PointLight_PerVertex(APP2VS_Shared Input)
+void VS_Shared_PointLight_PerVertex(in APP2VS_Shared Input, out VS2PS_Shared_PointLight_PerVertex Output)
 {
-	VS2PS_Shared_PointLight_PerVertex Output = (VS2PS_Shared_PointLight_PerVertex)0;
+	Output = (VS2PS_Shared_PointLight_PerVertex)0.0;
+
 	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
 	// Uncompress normal
@@ -92,22 +92,16 @@ VS2PS_Shared_PointLight_PerVertex VS_Shared_PointLight_PerVertex(APP2VS_Shared I
 	#if defined(LOG_DEPTH)
 		Output.Tex0.y = Output.HPos.w + 1.0; // Output depth
 	#endif
-
-	return Output;
 }
 
-PS2FB PS_Shared_PointLight_PerVertex(VS2PS_Shared_PointLight_PerVertex Input)
+void PS_Shared_PointLight_PerVertex(in VS2PS_Shared_PointLight_PerVertex Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
-	float DotNL = Input.Tex0.x;
-	Output.Color = float4(_PointLight.col * DotNL, 0.0);
+	Output.Color.rgb = _PointLight.col * Input.Tex0.x;
+	Output.Color.a = 0.0;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.y);
 	#endif
-
-	return Output;
 }
 
 struct VS2PS_Shared_PointLight_PerPixel
@@ -117,9 +111,10 @@ struct VS2PS_Shared_PointLight_PerPixel
 	float3 Normal : TEXCOORD1;
 };
 
-VS2PS_Shared_PointLight_PerPixel VS_Shared_PointLight_PerPixel(APP2VS_Shared Input)
+void VS_Shared_PointLight_PerPixel(in APP2VS_Shared Input, out VS2PS_Shared_PointLight_PerPixel Output)
 {
-	VS2PS_Shared_PointLight_PerPixel Output = (VS2PS_Shared_PointLight_PerPixel)0;
+	Output = (VS2PS_Shared_PointLight_PerPixel)0.0;
+
 	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
@@ -129,23 +124,19 @@ VS2PS_Shared_PointLight_PerPixel VS_Shared_PointLight_PerPixel(APP2VS_Shared Inp
 	#endif
 
 	Output.Normal = (Input.Normal * 2.0) - 1.0;
-
-	return Output;
 }
 
-PS2FB PS_Shared_PointLight_PerPixel(VS2PS_Shared_PointLight_PerPixel Input)
+void PS_Shared_PointLight_PerPixel(in VS2PS_Shared_PointLight_PerPixel Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	float3 WorldPos = Input.Pos.xyz;
 	float Lighting = GetLighting(WorldPos, Input.Normal);
-	Output.Color = float4(Lighting * _PointLight.col, 0.0);
+
+	Output.Color.rgb = _PointLight.col * Lighting;
+	Output.Color.a = 0.0;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 }
 
 /*
@@ -162,9 +153,10 @@ struct VS2PS_Shared_LowDetail
 	float4 LightTex : TEXCOORD4;
 };
 
-VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
+void VS_Shared_LowDetail(in APP2VS_Shared Input, out VS2PS_Shared_LowDetail Output)
 {
-	VS2PS_Shared_LowDetail Output = (VS2PS_Shared_LowDetail)0;
+	Output = (VS2PS_Shared_LowDetail)0.0;
+
 	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
@@ -174,12 +166,11 @@ VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 	#endif
 
 	Output.Normal = (Input.Normal * 2.0) - 1.0;
+
 	Output.Tex0 = Input.Pos0.xy;
 	Output.Tex1.xy = ((Output.Tex0 * _ScaleBaseUV) * _ColorLightTex.x) + _ColorLightTex.y;
 	Output.Tex1.zw = ((Output.Tex0 * _TexScale.xz) * _DetailTex.x) + _DetailTex.y;
 	Output.LightTex = ProjToLighting(Output.HPos);
-
-	return Output;
 }
 
 struct LowDetail
@@ -191,7 +182,7 @@ struct LowDetail
 
 LowDetail GetLowDetail(float3 WorldPos, float2 Tex)
 {
-	LowDetail Output = (LowDetail)0;
+	LowDetail Output = (LowDetail)0.0;
 
 	float3 WorldTex = 0.0;
 	WorldTex.x = Tex.x * _TexScale.x;
@@ -208,10 +199,8 @@ LowDetail GetLowDetail(float3 WorldPos, float2 Tex)
 	return Output;
 }
 
-PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
+void PS_Shared_LowDetail(in VS2PS_Shared_LowDetail Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	float3 WorldPos = Input.Pos.xyz;
 	float3 Normals = normalize(Input.Normal);
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
@@ -243,26 +232,22 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
-	float4 OutputColor = ColorMap * LowDetailMap * TerrainLights * 2.0;
-
 	// tl: changed a few things with this factor:
 	// - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.
 	// - by pre-multiplying the _WaterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
 	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
-	OutputColor = lerp(OutputColor, _TerrainWaterColor, WaterLerp);
+	Output.Color = ColorMap * LowDetailMap * TerrainLights * 2.0;
+	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
 
 	#if defined(LIGHTONLY)
-		OutputColor = TerrainLights;
+		Output.Color = TerrainLights;
 	#endif
 
-	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 }
 
 /*
@@ -275,26 +260,24 @@ struct VS2PS_Shared_DynamicShadowmap
 	float4 ShadowTex : TEXCOORD0;
 };
 
-VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
+void VS_Shared_DynamicShadowmap(in APP2VS_Shared Input, out VS2PS_Shared_DynamicShadowmap Output)
 {
-	VS2PS_Shared_DynamicShadowmap Output;
+	Output = (VS2PS_Shared_DynamicShadowmap)0.0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
+
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.ShadowTex = mul(WorldPos, _LightViewProj);
 	Output.ShadowTex.z = Output.ShadowTex.w;
-
-	return Output;
 }
 
-float4 PS_Shared_DynamicShadowmap(VS2PS_Shared_DynamicShadowmap Input) : COLOR0
+void PS_Shared_DynamicShadowmap(in VS2PS_Shared_DynamicShadowmap Input, out float4 Output : COLOR0)
 {
 	#if NVIDIA
-		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex);
+		Output = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex);
 	#else
-		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex) == 1.0;
+		Output = (tex2Dproj(SampleTex2_Clamp, Input.ShadowTex) == 1.0);
 	#endif
-	return AvgShadowValue.x;
 }
 
 /*
@@ -313,9 +296,10 @@ struct VS2PS_Shared_DirectionalLightShadows
 	float4 ShadowTex : TEXCOORD2;
 };
 
-VS2PS_Shared_DirectionalLightShadows VS_Shared_DirectionalLightShadows(APP2VS_Shared Input)
+void VS_Shared_DirectionalLightShadows(in APP2VS_Shared Input, out VS2PS_Shared_DirectionalLightShadows Output)
 {
-	VS2PS_Shared_DirectionalLightShadows Output = (VS2PS_Shared_DirectionalLightShadows)0;
+	Output = (VS2PS_Shared_DirectionalLightShadows)0.0;
+
 	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
@@ -333,14 +317,10 @@ VS2PS_Shared_DirectionalLightShadows VS_Shared_DirectionalLightShadows(APP2VS_Sh
 	#endif
 
 	Output.Tex0 = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
-
-	return Output;
 }
 
-PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Input)
+void PS_Shared_DirectionalLightShadows(in VS2PS_Shared_DirectionalLightShadows Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 	#if HIGHTERRAIN || MIDTERRAIN
 		float AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
@@ -348,15 +328,12 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 		float AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
 	#endif
 
-	float4 Light = saturate((LightMap.z * _GIColor) * 2.0) * 0.5;
-	Light.w = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
-	Output.Color = Light;
+	Output.Color = saturate((LightMap.z * _GIColor) * 2.0) * 0.5;
+	Output.Color.w = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 }
 
 /*
@@ -369,9 +346,10 @@ struct VS2PS_Shared_UnderWater
 	float4 Pos : TEXCOORD0;
 };
 
-VS2PS_Shared_UnderWater VS_Shared_UnderWater(APP2VS_Shared Input)
+void VS_Shared_UnderWater(in APP2VS_Shared Input, out VS2PS_Shared_UnderWater Output)
 {
-	VS2PS_Shared_UnderWater Output = (VS2PS_Shared_UnderWater)0;
+	Output = (VS2PS_Shared_UnderWater)0.0;
+
 	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
@@ -379,26 +357,20 @@ VS2PS_Shared_UnderWater VS_Shared_UnderWater(APP2VS_Shared Input)
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
 	#endif
-
-	return Output;
 }
 
-PS2FB PS_Shared_UnderWater(VS2PS_Shared_UnderWater Input)
+void PS_Shared_UnderWater(in VS2PS_Shared_UnderWater Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
+	float3 WorldPos = Input.Pos.xyz;
 
-	float3 WorldPos = Input.Pos;
-	float3 OutputColor = _TerrainWaterColor.rgb;
-	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
+	Output.Color.rgb = _TerrainWaterColor.rgb;
+	Output.Color.a = saturate((WorldPos.y / -3.0) + _WaterHeight);
 
-	Output.Color = float4(OutputColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 }
 
 /*
@@ -422,9 +394,9 @@ struct VS2PS_Shared_ST_Normal
 	float4 Tex1 : TEXCOORD3; // .xy = ColorLight; .zw = LowDetail;
 };
 
-VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
+void VS_Shared_ST_Normal(in APP2VS_Shared_ST_Normal Input, out VS2PS_Shared_ST_Normal Output)
 {
-	VS2PS_Shared_ST_Normal Output = (VS2PS_Shared_ST_Normal)0;
+	Output = (VS2PS_Shared_ST_Normal)0.0;
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = mul(float4(Input.Pos0.xy, 0.0, 1.0), _STTransXZ).xy;
@@ -437,11 +409,10 @@ VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
 	#endif
 
 	Output.Normal = Input.Normal;
+
 	Output.Tex0 = float3(Input.Tex0, Input.Pos1.x);
 	Output.Tex1.xy = (Output.Tex0.xy * _STColorLightTex.x) + _STColorLightTex.y;
 	Output.Tex1.zw = (Output.Tex0.xy * _STLowDetailTex.x) + _STLowDetailTex.y;
-
-	return Output;
 }
 
 struct SurroundingTerrain
@@ -453,7 +424,7 @@ struct SurroundingTerrain
 
 SurroundingTerrain GetSurroundingTerrain(float3 WorldPos, float3 Tex)
 {
-	SurroundingTerrain Output = (SurroundingTerrain)0;
+	SurroundingTerrain Output = (SurroundingTerrain)0.0;
 
 	float3 WorldTex = 0.0;
 	WorldTex.x = WorldPos.x * _STTexScale.x;
@@ -470,10 +441,8 @@ SurroundingTerrain GetSurroundingTerrain(float3 WorldPos, float3 Tex)
 	return Output;
 }
 
-PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
+void PS_Shared_ST_Normal(in VS2PS_Shared_ST_Normal Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.Normal);
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
@@ -498,22 +467,20 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 	LowDetailMap *= lerp(1.0, Blue, LowComponent.z);
-	float4 OutputColor = ColorMap * LowDetailMap;
+
+	Output.Color = ColorMap * LowDetailMap;
 
 	// M (temporary fix)
 	if (_GIColor.r < 0.01)
 	{
-		OutputColor.rb = 0.0;
+		Output.Color.rb = 0.0;
 	}
 
-	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
-
-	return Output;
 }
 
 technique Shared_SurroundingTerrain
@@ -561,23 +528,21 @@ float4 GetOccluderShadow(float4 Pos, float4x4 LightTrapMat, float4x4 LightMat)
 	return ShadowTex;
 }
 
-HI_VS2PS_OccluderShadow VS_Hi_OccluderShadow(HI_APP2VS_OccluderShadow Input)
+void VS_Hi_OccluderShadow(in HI_APP2VS_OccluderShadow Input, out HI_VS2PS_OccluderShadow Output)
 {
-	HI_VS2PS_OccluderShadow Output;
+	Output = (HI_VS2PS_OccluderShadow)0.0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
 	Output.HPos = GetOccluderShadow(WorldPos, _vpLightTrapezMat, _vpLightMat);
 	Output.DepthPos = Output.HPos; // Output shadow depth
-
-	return Output;
 }
 
-float4 PS_Hi_OccluderShadow(HI_VS2PS_OccluderShadow Input) : COLOR0
+void PS_Hi_OccluderShadow(in HI_VS2PS_OccluderShadow Input, out float4 Output : COLOR0)
 {
 	#if NVIDIA
-		return 0.5;
+		Output = 0.5;
 	#else
-		return Input.DepthPos.z / Input.DepthPos.w;
+		Output = Input.DepthPos.z / Input.DepthPos.w;
 	#endif
 }
 

@@ -91,12 +91,9 @@ struct VS2PS_2TEX
 	Nametag shader
 */
 
-VS2PS VS_Nametag(APP2VS Input)
+void VS_Nametag(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
-
 	float4 IndexedTrans = _Transformations[Input.Indices.x];
-
 	Output.HPos = float4(Input.Pos.xyz + IndexedTrans.xyz, 1.0);
 
 	Output.TexCoord0 = Input.TexCoord0;
@@ -105,13 +102,12 @@ VS2PS VS_Nametag(APP2VS Input)
 	Output.Color0.a = _Alphas[Input.Indices.x];
 	Output.Color0.a *= 1.0 - saturate(IndexedTrans.w * _FadeoutValues.x + _FadeoutValues.y);
 	Output.Color0 = saturate(Output.Color0);
-	return Output;
 }
 
-float4 PS_Nametag(VS2PS Input) : COLOR0
+void PS_Nametag(in VS2PS Input, out float4 Output : COLOR0)
 {
 	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
-	return Tex0 * Input.Color0;
+	Output = Tex0 * Input.Color0;
 }
 
 technique nametag
@@ -146,10 +142,8 @@ technique nametag
 	Nametag arrow shader
 */
 
-VS2PS VS_Nametag_Arrow(APP2VS Input)
+void VS_Nametag_Arrow(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
-
 	// Does a 2x2 matrix 2d rotation of the local vertex coordinates in screen space
 	Output.HPos.x = dot(Input.Pos.xy, _ArrowRot.xy);
 	Output.HPos.y = dot(Input.Pos.xy, _ArrowRot.zw);
@@ -163,13 +157,12 @@ VS2PS VS_Nametag_Arrow(APP2VS Input)
 	Output.Color0 = _Colors[Input.Indices.y];
 	Output.Color0.a = 0.5;
 	Output.Color0 = saturate(Output.Color0);
-	return Output;
 }
 
-float4 PS_Nametag_Arrow(VS2PS Input) : COLOR0
+void PS_Nametag_Arrow(in VS2PS Input, out float4 Output : COLOR0)
 {
 	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
-	return Tex0 * Input.Color0;
+	Output = Tex0 * Input.Color0;
 }
 
 technique nametag_arrow
@@ -204,10 +197,8 @@ technique nametag_arrow
 	Nametag healthbar shader
 */
 
-VS2PS_2TEX VS_Nametag_Healthbar(APP2VS Input)
+void VS_Nametag_Healthbar(in APP2VS Input, out VS2PS_2TEX Output)
 {
-	VS2PS_2TEX Output = (VS2PS_2TEX)0;
-
 	Output.HPos = float4(Input.Pos.xyz + _HealthBarTrans.xyz, 1.0);
 
 	Output.TexCoord0 = Input.TexCoord0;
@@ -221,15 +212,13 @@ VS2PS_2TEX VS_Nametag_Healthbar(APP2VS Input)
 
 	Output.Color0 = saturate(Output.Color0);
 	Output.Color1 = saturate(Output.Color1);
-
-	return Output;
 }
 
-float4 PS_Nametag_Healthbar(VS2PS_2TEX Input) : COLOR0
+void PS_Nametag_Healthbar(in VS2PS_2TEX Input, out float4 Output : COLOR0)
 {
 	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
 	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
-	return lerp(Tex0, Tex1, _HealthValue < Input.Color0.b) * Input.Color0.a * Input.Color1;
+	Output = lerp(Tex0, Tex1, _HealthValue < Input.Color0.b) * Input.Color0.a * Input.Color1;
 }
 
 technique nametag_healthbar
@@ -264,10 +253,8 @@ technique nametag_healthbar
 	Nametag vehicle icon shader
 */
 
-VS2PS VS_Nametag_Vehicle_Icons(APP2VS Input)
+void VS_Nametag_Vehicle_Icons(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
-
 	float3 TempPos = Input.Pos;
 
 	// Since Input is aspect-compensated we need to compensate for that
@@ -285,7 +272,7 @@ VS2PS VS_Nametag_Vehicle_Icons(APP2VS Input)
 	Output.HPos = float4(RotPos.xyz + _HealthBarTrans.xyz, 1.0);
 
 	Output.TexCoord0 = Input.TexCoord0 + _IconTexOffset;
-	Output.TexCoord1 = Input.TexCoord0 * _IconFlashTexScaleOffset.xy + _IconFlashTexScaleOffset.zw;
+	Output.TexCoord1 = (Input.TexCoord0 * _IconFlashTexScaleOffset.xy) + _IconFlashTexScaleOffset.zw;
 
 	// Counter-rotate tex1 (flash icon)
 	// float2 TempUV = Input.TexCoord0;
@@ -302,15 +289,13 @@ VS2PS VS_Nametag_Vehicle_Icons(APP2VS Input)
 	Output.Color0 = lerp(Color0, Color1, _CrossFadeValue);
 	Output.Color0.a *= 1.0 - saturate(_HealthBarTrans.w * _FadeoutValues.x + _FadeoutValues.y);
 	Output.Color0 = saturate(Output.Color0);
-
-	return Output;
 }
 
-float4 PS_Nametag_Vehicle_Icons(VS2PS Input) : COLOR0
+void PS_Nametag_Vehicle_Icons(in VS2PS Input, out float4 Output : COLOR0)
 {
 	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
 	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
-	return lerp(Tex0, Tex1, _CrossFadeValue) * Input.Color0;
+	Output = lerp(Tex0, Tex1, _CrossFadeValue) * Input.Color0;
 }
 
 technique nametag_vehicleIcons
