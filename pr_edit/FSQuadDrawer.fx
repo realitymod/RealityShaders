@@ -111,28 +111,24 @@ struct VS2PS_Blit
 	float2 TexCoord0 : TEXCOORD0;
 };
 
-VS2PS_Blit VS_Blit(APP2VS_Blit Input)
+void VS_Blit(in APP2VS_Blit Input, out VS2PS_Blit Output)
 {
-	VS2PS_Blit Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.TexCoord0 = Input.TexCoord0;
-	return Output;
 }
 
-VS2PS_Blit VS_Blit_Custom(APP2VS_Blit Input)
+void VS_Blit_Custom(in APP2VS_Blit Input, out VS2PS_Blit Output)
 {
-	VS2PS_Blit Output;
 	Output.HPos = mul(float4(Input.Pos.xy, 0.0, 1.0), _CustomMtx);
 	Output.TexCoord0 = Input.TexCoord0;
-	return Output;
 }
 
-float4 PS_TR_OpticsSpiralBlur(VS2PS_Blit Input) : COLOR0
+void PS_TR_OpticsSpiralBlur(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return GetSpiralBlur(SampleTex0_Mirror, Input.TexCoord0, 1.0, true);
+	Output = GetSpiralBlur(SampleTex0_Mirror, Input.TexCoord0, 1.0, true);
 }
 
-float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR0
+void PS_TR_OpticsMask(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
 	// Get distance from the Center of the screen
 	float AspectRatio = GetAspectRatio(GetScreenSize(Input.TexCoord0).yx);
@@ -149,51 +145,47 @@ float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR0
 	float3 Color = tex2D(SampleTex0_Aniso, Input.TexCoord0).rgb;
 
 	// Alpha (.a) is the mask to be composited in the pixel shader's blend operation
-	return float4(Color, BlendMask);
+	Output = float4(Color, BlendMask);
 }
 
-float4 PS_TR_PassthroughBilinear(VS2PS_Blit Input) : COLOR0
+void PS_TR_PassthroughBilinear(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Output = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 }
 
-float4 PS_TR_PassthroughAnisotropy(VS2PS_Blit Input) : COLOR0
+void PS_TR_PassthroughAnisotropy(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return tex2D(SampleTex0_Aniso, Input.TexCoord0);
+	Output = tex2D(SampleTex0_Aniso, Input.TexCoord0);
 }
 
-float4 PS_Dummy() : COLOR0
+void PS_Dummy(out float4 Output : COLOR0)
 {
-	return 0.0;
+	Output = 0.0;
 }
 
-VS2PS_Blit PS_Blit_Magnified(APP2VS_Blit Input)
+void PS_Blit_Magnified(in APP2VS_Blit Input, out VS2PS_Blit Output)
 {
-	VS2PS_Blit Output;
 	Output.HPos = float4(Input.Pos.xy * 1.1, 0.0, 1.0);
 	Output.TexCoord0 = Input.TexCoord0;
-	return Output;
 }
 
-VS2PS_4Tap VS_ScaleDown4x4(APP2VS_Blit Input)
+void VS_ScaleDown4x4(in APP2VS_Blit Input, out VS2PS_4Tap Output)
 {
-	VS2PS_4Tap Output;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.FilterCoords[0] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[0].xy;
 	Output.FilterCoords[1] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[1].xy;
 	Output.FilterCoords[2] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[2].xy;
 	Output.FilterCoords[3] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[3].xy;
-	return Output;
 }
 
-VS2PS_5Tap VS_Sample5(APP2VS_Blit Input, uniform float Offsets[5], uniform bool Horizontal)
+VS2PS_5Tap VS_Sample5(in APP2VS_Blit Input, uniform float Offsets[5], uniform bool Horizontal)
 {
-	VS2PS_5Tap Output;
+	VS2PS_5Tap Output = (VS2PS_5Tap)0.0;
+
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 
 	float2 VSOffset = (Horizontal) ? float2(Offsets[4], 0.0) : float2(0.0, Offsets[4]);
 	Output.TexCoord0 = Input.TexCoord0 + VSOffset;
-
 	for(int i = 0; i < 2; i++)
 	{
 		float2 VSOffsetA = (Horizontal) ? float2(Offsets[i * 2], 0.0) : float2(0.0, Offsets[i * 2]);
@@ -205,255 +197,243 @@ VS2PS_5Tap VS_Sample5(APP2VS_Blit Input, uniform float Offsets[5], uniform bool 
 	return Output;
 }
 
-float4 PS_Passthrough(VS2PS_Blit Input) : COLOR0
+void PS_Passthrough(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Output = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 }
 
-float4 PS_PassthroughSaturateAlpha(VS2PS_Blit Input) : COLOR0
+void PS_PassthroughSaturateAlpha(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	OutputColor.a = 1.0;
-	return OutputColor;
+	Output = float4(tex2D(SampleTex0_Clamp, Input.TexCoord0).rgb, 1.0);
 }
 
-float4 PS_CopyRGBToAlpha(VS2PS_Blit Input) : COLOR0
+void PS_CopyRGBToAlpha(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	OutputColor.a = dot(OutputColor.rgb, 1.0 / 3.0);
-	return OutputColor;
+	Output = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Output.a = dot(Output.rgb, 1.0 / 3.0);
+	Output = Output;
 }
 
-float4 PS_PosTo8Bit(VS2PS_Blit Input) : COLOR0
+void PS_PosTo8Bit(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
 	float4 ViewPosition = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	ViewPosition /= 50.0;
 	ViewPosition = (ViewPosition * 0.5) + 0.5;
-	return ViewPosition;
+	Output = ViewPosition;
 }
 
-float4 PS_NormalTo8Bit(VS2PS_Blit Input) : COLOR0
+void PS_NormalTo8Bit(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return (normalize(tex2D(SampleTex0_Clamp, Input.TexCoord0)) * 0.5) + 0.5;
-	// return tex2D(SampleTex0_Clamp, Input.TexCoord0).a;
+	Output = (normalize(tex2D(SampleTex0_Clamp, Input.TexCoord0)) * 0.5) + 0.5;
+	// Output = tex2D(SampleTex0_Clamp, Input.TexCoord0).a;
 }
 
-float4 PS_ShadowMapFrontTo8Bit(VS2PS_Blit Input) : COLOR0
+void PS_ShadowMapFrontTo8Bit(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Output = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 }
 
-float4 PS_ShadowMapBackTo8Bit(VS2PS_Blit Input) : COLOR0
+void PS_ShadowMapBackTo8Bit(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return -tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Output = -tex2D(SampleTex0_Clamp, Input.TexCoord0);
 }
 
-float4 PS_ScaleUp4x4(VS2PS_Blit Input) : COLOR0
+void PS_ScaleUp4x4(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Output = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 }
 
-float4 PS_ScaleDown2x2(VS2PS_Blit Input) : COLOR0
+void PS_ScaleDown2x2(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = 0.0;
-	OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[0].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[1].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[2].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[3].xy);
-	return OutputColor * 0.25;
+	Output = 0.0;
+	Output += (tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[0].xy)) * 0.25;
+	Output += (tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[1].xy)) * 0.25;
+	Output += (tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[2].xy)) * 0.25;
+	Output += (tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[3].xy)) * 0.25;
 }
 
-float4 PS_ScaleDown4x4(in VS2PS_Blit Input) : COLOR0
+void PS_ScaleDown4x4(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = 0.0;
+	Output = 0.0;
 	for(int i = 0; i < 16; i++)
 	{
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown4x4SampleOffsets[i].xy) * 0.0625;
+		float2 Tex = Input.TexCoord0 + _ScaleDown4x4SampleOffsets[i].xy;
+		Output += (tex2D(SampleTex0_Clamp, Tex) * 0.0625);
 	}
-	return OutputColor;
 }
 
-float4 PS_ScaleDown4x4Linear(VS2PS_4Tap Input) : COLOR0
+void PS_ScaleDown4x4Linear(in VS2PS_4Tap Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = 0.0;
-	OutputColor += tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.FilterCoords[2].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.FilterCoords[3].xy);
-	return OutputColor * 0.25;
+	Output = 0.0;
+	Output += (tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy)) * 0.25;
+	Output += (tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy)) * 0.25;
+	Output += (tex2D(SampleTex0_Clamp, Input.FilterCoords[2].xy)) * 0.25;
+	Output += (tex2D(SampleTex0_Clamp, Input.FilterCoords[3].xy)) * 0.25;
 }
 
-float4 PS_CheapGaussianBlur5x5(in VS2PS_Blit Input) : COLOR0
+void PS_CheapGaussianBlur5x5(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = 0.0;
+	Output = 0.0;
 	for(int i = 0; i < 13; i++)
 	{
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy) * _GaussianBlur5x5CheapSampleWeights[i];
+		float2 Tex = Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy;
+		float4 Color = tex2D(SampleTex0_Clamp, Tex);
+		Output += (Color * _GaussianBlur5x5CheapSampleWeights[i]);
 	}
-	return OutputColor;
 }
 
-float4 PS_Gaussian_Blur_5x5_Cheap_Filter_Blend(VS2PS_Blit Input) : COLOR0
+void PS_Gaussian_Blur_5x5_Cheap_Filter_Blend(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = 0.0;
+	Output = 0.0;
 	for(int i = 0; i < 13; i++)
 	{
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy) * _GaussianBlur5x5CheapSampleWeights[i];
+		float2 Tex = Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy;
+		float4 Color = tex2D(SampleTex0_Clamp, Tex);
+		Output += (Color * _GaussianBlur5x5CheapSampleWeights[i]);
 	}
-	OutputColor.a = _BlurStrength;
-	return OutputColor;
+	Output.a = _BlurStrength;
 }
 
-float4 PS_GaussianBlur15x15H(VS2PS_Blit Input) : COLOR0
+void PS_GaussianBlur15x15H(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = 0.0;
+	Output = 0.0;
 	for(int i = 0; i < 15; i++)
 	{
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur15x15HorizontalSampleOffsets[i].xy) * _GaussianBlur15x15HorizontalSampleWeights[i];
+		float2 Tex = Input.TexCoord0 + _GaussianBlur15x15HorizontalSampleOffsets[i].xy;
+		float4 Color = tex2D(SampleTex0_Clamp, Tex);
+		Output += (Color * _GaussianBlur15x15HorizontalSampleWeights[i]);
 	}
-	return OutputColor;
 }
 
-float4 PS_GaussianBlur15x15V(VS2PS_Blit Input) : COLOR0
+void PS_GaussianBlur15x15V(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = 0.0;
+	Output = 0.0;
 	for(int i = 0; i < 15; i++)
 	{
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur15x15VerticalSampleOffsets[i].xy) * _GaussianBlur15x15VerticalSampleWeights[i];
+		float2 Tex = Input.TexCoord0 + _GaussianBlur15x15VerticalSampleOffsets[i].xy;
+		float4 Color = tex2D(SampleTex0_Clamp, Tex);
+		Output += (Color * _GaussianBlur15x15VerticalSampleWeights[i]);
 	}
-	return OutputColor;
 }
 
-float4 PS_Poisson13Blur(VS2PS_Blit Input) : COLOR0
+void PS_Poisson13Blur(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = 0.0;
+	float4 Colors = 0.0;
 	float Samples = 1.0;
-
-	OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Colors = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 
 	for(int i = 0; i < 11; i++)
 	{
-		// float4 V = tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GrowablePoisson13SampleOffsets[i]);
-		float4 V = tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GrowablePoisson13SampleOffsets[i].xy * 0.1 * OutputColor.a);
+		// float2 Offset = _GrowablePoisson13SampleOffsets[i];
+		float2 Offset = _GrowablePoisson13SampleOffsets[i].xy * 0.1 * Colors.a;
+		float4 V = tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset);
 		if(V.a > 0)
 		{
-			OutputColor.rgb += V;
+			Colors.rgb += V;
 			Samples += 1.0;
 		}
 	}
 
-	return OutputColor / Samples;
+	Output = Colors / Samples;
 }
 
-float4 PS_Poisson13AndDilation(VS2PS_Blit Input) : COLOR0
+void PS_Poisson13AndDilation(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
 	float4 Center = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-
-	float4 OutputColor = 0.0;
-	OutputColor = (Center.a > 0) ? float4(Center.rgb, 1.0) : OutputColor;
+	float4 Colors = 0.0;
+	Colors = (Center.a > 0) ? float4(Center.rgb, 1.0) : Colors;
 
 	for(int i = 0; i < 11; i++)
 	{
 		float Scale = Center.a * 3.0;
-
-		if(Scale == 0)
-		{
-			Scale = 1.5;
-		}
+		Scale = (Scale == 0) ? 1.5 : Scale;
 
 		float4 V = tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GrowablePoisson13SampleOffsets[i].xy*Scale);
-
-		if(V.a > 0)
-		{
-			OutputColor.rgb += V.rgb;
-			OutputColor.a += 1.0;
-		}
+		Colors = (V.a > 0) ? Colors + float4(V.rgb, 1.0) : Colors;
 	}
 
-	return OutputColor / OutputColor.a;
+	Output = Colors / Colors.a;
 }
 
-float4 PS_GlowFilter(VS2PS_5Tap Input, uniform float Weights[5], uniform bool Horizontal) : COLOR0
+float4 PS_GlowFilter(in VS2PS_5Tap Input, uniform float Weights[5], uniform bool Horizontal) : COLOR0
 {
-	float4 OutputColor = Weights[0] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy);
-	OutputColor += Weights[1] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].zw);
-	OutputColor += Weights[2] * tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy);
-	OutputColor += Weights[3] * tex2D(SampleTex0_Clamp, Input.FilterCoords[1].zw);
-	OutputColor += Weights[4] * tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	return OutputColor;
+	float4 Output = Weights[0] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy);
+	Output += Weights[1] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].zw);
+	Output += Weights[2] * tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy);
+	Output += Weights[3] * tex2D(SampleTex0_Clamp, Input.FilterCoords[1].zw);
+	Output += Weights[4] * tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	return Output;
 }
 
-float4 PS_HighPassFilter(VS2PS_Blit Input) : COLOR0
+void PS_HighPassFilter(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	OutputColor -= _HighPassGate;
-	return max(OutputColor, 0.0);
+	Output = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Output -= _HighPassGate;
+	Output = max(Output, 0.0);
 }
 
-float4 PS_HighPassFilterFade(VS2PS_Blit Input) : COLOR0
+void PS_HighPassFilterFade(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	OutputColor.rgb = saturate(OutputColor.rgb - _HighPassGate);
-	OutputColor.a = _BlurStrength;
-	return OutputColor;
+	float4 Colors = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Colors.rgb = saturate(Colors.rgb - _HighPassGate);
+	Colors.a = _BlurStrength;
+	Output = Colors;
 }
 
-float4 PS_Clear(VS2PS_Blit Input) : COLOR0
+void PS_Clear(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return 0.0;
+	Output = 0.0;
 }
 
-float4 PS_ExtractGlowFilter(VS2PS_Blit Input) : COLOR0
+void PS_ExtractGlowFilter(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	OutputColor.rgb = OutputColor.a;
-	OutputColor.a = 1.0;
-	return OutputColor;
+	float4 Colors = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Colors.rgb = Colors.a;
+	Colors.a = 1.0;
+	Output = Colors;
 }
 
-float4 PS_ExtractHDRFilterFade(VS2PS_Blit Input) : COLOR0
+void PS_ExtractHDRFilterFade(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	OutputColor.rgb = saturate(OutputColor.a - _HighPassGate);
-	OutputColor.a = _BlurStrength;
-	return OutputColor;
+	float4 Colors = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Colors.rgb = saturate(Colors.a - _HighPassGate);
+	Colors.a = _BlurStrength;
+	Output = Colors;
 }
 
-float4 PS_LumaAndBrightPass(VS2PS_Blit Input) : COLOR0
+void PS_LumaAndBrightPass(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0) * _HighPassGate;
-	// float luminance = dot(OutputColor, float3(0.299f, 0.587f, 0.114f));
-	return OutputColor;
+	float4 Colors = tex2D(SampleTex0_Clamp, Input.TexCoord0) * _HighPassGate;
+	// float luminance = dot(Colors, float3(0.299f, 0.587f, 0.114f));
+	Output = Colors;
 }
 
-float4 PS_BloomFilter(VS2PS_5Tap Input, uniform bool Is_Blur) : COLOR0
+float4 PS_BloomFilter(in VS2PS_5Tap Input, uniform bool Is_Blur) : COLOR0
 {
-	float4 OutputColor = 0.0;
-	OutputColor.a = (Is_Blur) ? _BlurStrength : OutputColor.a;
-
-	OutputColor.rgb += tex2D(SampleTex0_Clamp, Input.TexCoord0.xy);
+	float4 Blur = 0.0;
+	Blur.rgb += tex2D(SampleTex0_Clamp, Input.TexCoord0.xy);
+	Blur.a = (Is_Blur) ? _BlurStrength : Blur.a;
 
 	for(int i = 0; i < 2; i++)
 	{
-		OutputColor.rgb += tex2D(SampleTex0_Clamp, Input.FilterCoords[i].xy);
-		OutputColor.rgb += tex2D(SampleTex0_Clamp, Input.FilterCoords[i].zw);
+		Blur.rgb += tex2D(SampleTex0_Clamp, Input.FilterCoords[i].xy);
+		Blur.rgb += tex2D(SampleTex0_Clamp, Input.FilterCoords[i].zw);
 	}
 
-	OutputColor.rgb /= 5.0;
-	return OutputColor;
+	return float4(Blur.rgb /= 5.0, Blur.a);
 }
 
-float4 PS_ScaleUpBloomFilter(VS2PS_Blit Input) : COLOR0
+void PS_ScaleUpBloomFilter(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
 	float Offset = 0.01;
 	// We can use a blur for this
 	float4 Close = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	return Close;
+	Output = Close;
 }
 
-float4 PS_Blur(VS2PS_Blit Input) : COLOR0
+void PS_Blur(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return float4(tex2D(SampleTex0_Clamp, Input.TexCoord0).rgb, _BlurStrength);
+	Output = float4(tex2D(SampleTex0_Clamp, Input.TexCoord0).rgb, _BlurStrength);
 }
 
 /*
@@ -684,15 +664,15 @@ technique Blit
 
 }
 
-float4 PS_StencilGather(VS2PS_Blit Input) : COLOR0
+void PS_StencilGather(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	return _dwordStencilRef / 255.0;
+	Output = _dwordStencilRef / 255.0;
 }
 
-float4 PS_StencilMap(VS2PS_Blit Input) : COLOR0
+void PS_StencilMap(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
 	float4 Stencil = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-	return tex1D(SampleTex1, Stencil.x / 255.0);
+	Output = tex1D(SampleTex1, Stencil.x / 255.0);
 }
 
 technique StencilPasses

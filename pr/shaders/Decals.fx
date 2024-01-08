@@ -89,8 +89,10 @@ struct PS2FB
 	#endif
 };
 
-void GetVertexDecals(in APP2VS Input, in bool UseShadow, inout VS2PS Output)
+void GetVertexDecals(in APP2VS Input, in bool UseShadow, out VS2PS Output)
 {
+	Output = (VS2PS)0.0;
+
 	float Index = Input.P_Tex_Index_Alpha.z;
 	float4x3 WorldMat = _InstanceTransformations[Index];
 	float3 WorldPos = mul(Input.Pos, WorldMat);
@@ -118,7 +120,7 @@ void VS_Decals(in APP2VS Input, out VS2PS Output)
 	GetVertexDecals(Input, false, Output);
 }
 
-void GetPixelDecals(in VS2PS Input, in bool UseShadow, inout PS2FB Output)
+void GetPixelDecals(in VS2PS Input, in bool UseShadow, out PS2FB Output)
 {
 	float3 Normals = normalize(Input.Normal.xyz);
 

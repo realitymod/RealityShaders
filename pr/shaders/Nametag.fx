@@ -66,23 +66,22 @@ sampler SampleDetail1 = sampler_state
 struct APP2VS
 {
 	float4 Pos : POSITION;
-	float2 TexCoord0 : TEXCOORD0;
+	float2 Tex0 : TEXCOORD0;
 	int4 Indices : BLENDINDICES0;
 };
 
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float2 TexCoord0 : TEXCOORD0;
-	float2 TexCoord1 : TEXCOORD1;
+	float2 Tex0 : TEXCOORD0;
 	float4 Color0 : TEXCOORD2;
 };
 
 struct VS2PS_2TEX
 {
 	float4 HPos : POSITION;
-	float2 TexCoord0 : TEXCOORD0;
-	float2 TexCoord1 : TEXCOORD1;
+	float2 Tex0 : TEXCOORD0;
+	float2 Tex1 : TEXCOORD1;
 	float4 Color0 : TEXCOORD2;
 	float4 Color1 : TEXCOORD3;
 };
@@ -96,7 +95,7 @@ void VS_Nametag(in APP2VS Input, out VS2PS Output)
 	float4 IndexedTrans = _Transformations[Input.Indices.x];
 	Output.HPos = float4(Input.Pos.xyz + IndexedTrans.xyz, 1.0);
 
-	Output.TexCoord0 = Input.TexCoord0;
+	Output.Tex0 = Input.Tex0;
 
 	Output.Color0 = lerp(_Colors[Input.Indices.y], _Colors[Input.Indices.z], _CrossFadeValue);
 	Output.Color0.a = _Alphas[Input.Indices.x];
@@ -106,7 +105,7 @@ void VS_Nametag(in APP2VS Input, out VS2PS Output)
 
 void PS_Nametag(in VS2PS Input, out float4 Output : COLOR0)
 {
-	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
+	float4 Tex0 = tex2D(SampleDetail0, Input.Tex0);
 	Output = Tex0 * Input.Color0;
 }
 
@@ -152,7 +151,7 @@ void VS_Nametag_Arrow(in APP2VS Input, out VS2PS Output)
 	Output.HPos.xyz += _ArrowTrans * _ArrowMult;
 	Output.HPos.w = 1.0;
 
-	Output.TexCoord0 = Input.TexCoord0;
+	Output.Tex0 = Input.Tex0;
 
 	Output.Color0 = _Colors[Input.Indices.y];
 	Output.Color0.a = 0.5;
@@ -161,7 +160,7 @@ void VS_Nametag_Arrow(in APP2VS Input, out VS2PS Output)
 
 void PS_Nametag_Arrow(in VS2PS Input, out float4 Output : COLOR0)
 {
-	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
+	float4 Tex0 = tex2D(SampleDetail0, Input.Tex0);
 	Output = Tex0 * Input.Color0;
 }
 
@@ -201,10 +200,10 @@ void VS_Nametag_Healthbar(in APP2VS Input, out VS2PS_2TEX Output)
 {
 	Output.HPos = float4(Input.Pos.xyz + _HealthBarTrans.xyz, 1.0);
 
-	Output.TexCoord0 = Input.TexCoord0;
-	Output.TexCoord1 = Input.TexCoord0;
+	Output.Tex0 = Input.Tex0;
+	Output.Tex1 = Input.Tex0;
 
-	Output.Color0.rgb = Input.TexCoord0.x;
+	Output.Color0.rgb = Input.Tex0.x;
 	Output.Color0.a = 1.0 - saturate(_HealthBarTrans.w * _FadeoutValues.x + _FadeoutValues.y);
 	float4 Color0 = _Colors[_ColorIndex1];
 	float4 Color1 = _Colors[_ColorIndex2];
@@ -216,8 +215,8 @@ void VS_Nametag_Healthbar(in APP2VS Input, out VS2PS_2TEX Output)
 
 void PS_Nametag_Healthbar(in VS2PS_2TEX Input, out float4 Output : COLOR0)
 {
-	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
-	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
+	float4 Tex0 = tex2D(SampleDetail0, Input.Tex0);
+	float4 Tex1 = tex2D(SampleDetail1, Input.Tex1);
 	Output = lerp(Tex0, Tex1, _HealthValue < Input.Color0.b) * Input.Color0.a * Input.Color1;
 }
 
@@ -253,8 +252,10 @@ technique nametag_healthbar
 	Nametag vehicle icon shader
 */
 
-void VS_Nametag_Vehicle_Icons(in APP2VS Input, out VS2PS Output)
+void VS_Nametag_Vehicle_Icons(in APP2VS Input, out VS2PS_2TEX Output)
 {
+	Output = (VS2PS_2TEX)0.0;
+
 	float3 TempPos = Input.Pos;
 
 	// Since Input is aspect-compensated we need to compensate for that
@@ -271,17 +272,17 @@ void VS_Nametag_Vehicle_Icons(in APP2VS Input, out VS2PS Output)
 
 	Output.HPos = float4(RotPos.xyz + _HealthBarTrans.xyz, 1.0);
 
-	Output.TexCoord0 = Input.TexCoord0 + _IconTexOffset;
-	Output.TexCoord1 = (Input.TexCoord0 * _IconFlashTexScaleOffset.xy) + _IconFlashTexScaleOffset.zw;
+	Output.Tex0 = Input.Tex0 + _IconTexOffset;
+	Output.Tex1 = (Input.Tex0 * _IconFlashTexScaleOffset.xy) + _IconFlashTexScaleOffset.zw;
 
 	// Counter-rotate tex1 (flash icon)
-	// float2 TempUV = Input.TexCoord0;
+	// float2 TempUV = Input.Tex0;
 	// TempUV -= 0.5;
 	// float2 RotUV;
 	// RotUV.x = dot(TempUV, _FIconRot.xz);
 	// RotUV.y = dot(TempUV, _FIconRot.yw);
 	// RotUV += 0.5;
-	// Output.TexCoord1 = RotUV * _IconFlashTexScaleOffset.xy + _IconFlashTexScaleOffset.zw;
+	// Output.Tex1 = RotUV * _IconFlashTexScaleOffset.xy + _IconFlashTexScaleOffset.zw;
 
 	float4 Color0 = _Colors[_ColorIndex1];
 	float4 Color1 = _Colors[_ColorIndex2];
@@ -291,10 +292,10 @@ void VS_Nametag_Vehicle_Icons(in APP2VS Input, out VS2PS Output)
 	Output.Color0 = saturate(Output.Color0);
 }
 
-void PS_Nametag_Vehicle_Icons(in VS2PS Input, out float4 Output : COLOR0)
+void PS_Nametag_Vehicle_Icons(in VS2PS_2TEX Input, out float4 Output : COLOR0)
 {
-	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
-	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
+	float4 Tex0 = tex2D(SampleDetail0, Input.Tex0);
+	float4 Tex1 = tex2D(SampleDetail1, Input.Tex1);
 	Output = lerp(Tex0, Tex1, _CrossFadeValue) * Input.Color0;
 }
 

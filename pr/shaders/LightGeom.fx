@@ -98,7 +98,7 @@ struct VS2PS_Spot
 
 void VS_SpotLight(in APP2VS Input, out VS2PS_Spot Output)
 {
-	Output = (VS2PS)0.0;
+	Output = (VS2PS_Spot)0.0;
 
  	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 

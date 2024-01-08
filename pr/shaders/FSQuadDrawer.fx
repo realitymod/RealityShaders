@@ -207,14 +207,14 @@ void PS_PassthroughSaturateAlpha(in VS2PS_Blit Input, out float4 Output : COLOR0
 	Output = float4(tex2D(SampleTex0_Clamp, Input.TexCoord0).rgb, 1.0);
 }
 
-void PS_CopyRGBToAlpha(in VS2PS_Blit Input, out float4 Output)
+void PS_CopyRGBToAlpha(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 Output = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Output = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	Output.a = dot(Output.rgb, 1.0 / 3.0);
 	Output = Output;
 }
 
-void PS_PosTo8Bit(in VS2PS_Blit Input, out float4 Output)
+void PS_PosTo8Bit(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
 	float4 ViewPosition = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	ViewPosition /= 50.0;
@@ -222,7 +222,7 @@ void PS_PosTo8Bit(in VS2PS_Blit Input, out float4 Output)
 	Output = ViewPosition;
 }
 
-void PS_NormalTo8Bit(in VS2PS_Blit Input, out float4 Output)
+void PS_NormalTo8Bit(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
 	Output = (normalize(tex2D(SampleTex0_Clamp, Input.TexCoord0)) * 0.5) + 0.5;
 	// Output = tex2D(SampleTex0_Clamp, Input.TexCoord0).a;
@@ -277,7 +277,7 @@ void PS_CheapGaussianBlur5x5(in VS2PS_Blit Input, out float4 Output : COLOR0)
 	for(int i = 0; i < 13; i++)
 	{
 		float2 Tex = Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy;
-		float2 Color = tex2D(SampleTex0_Clamp, Tex);
+		float4 Color = tex2D(SampleTex0_Clamp, Tex);
 		Output += (Color * _GaussianBlur5x5CheapSampleWeights[i]);
 	}
 }
@@ -288,7 +288,7 @@ void PS_Gaussian_Blur_5x5_Cheap_Filter_Blend(in VS2PS_Blit Input, out float4 Out
 	for(int i = 0; i < 13; i++)
 	{
 		float2 Tex = Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy;
-		float2 Color = tex2D(SampleTex0_Clamp, Tex);
+		float4 Color = tex2D(SampleTex0_Clamp, Tex);
 		Output += (Color * _GaussianBlur5x5CheapSampleWeights[i]);
 	}
 	Output.a = _BlurStrength;
@@ -355,7 +355,7 @@ void PS_Poisson13AndDilation(in VS2PS_Blit Input, out float4 Output : COLOR0)
 	Output = Colors / Colors.a;
 }
 
-float4 PS_GlowFilter(in VS2PS_5Tap Input, uniform float Weights[5], uniform bool Horizontal, out float4 Output) : COLOR0
+float4 PS_GlowFilter(in VS2PS_5Tap Input, uniform float Weights[5], uniform bool Horizontal) : COLOR0
 {
 	float4 Output = Weights[0] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy);
 	Output += Weights[1] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].zw);
@@ -367,7 +367,7 @@ float4 PS_GlowFilter(in VS2PS_5Tap Input, uniform float Weights[5], uniform bool
 
 void PS_HighPassFilter(in VS2PS_Blit Input, out float4 Output : COLOR0)
 {
-	float4 Output = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	Output = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	Output -= _HighPassGate;
 	Output = max(Output, 0.0);
 }

@@ -1,0 +1,105 @@
+
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+#endif
+
+/*
+	Description: Renders lightning
+*/
+
+/*
+	[Attributes from app]
+*/
+
+uniform float4x4 _WorldViewProj : WORLDVIEWPROJ;
+uniform float4 _LightningColor: LIGHTNINGCOLOR = { 1.0, 1.0, 1.0, 1.0 };
+
+/*
+	[Textures and samplers]
+*/
+
+uniform texture Tex0 : TEXTURE;
+sampler SampleLightning = sampler_state
+{
+	Texture = (Tex0);
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
+struct APP2VS
+{
+	float3 Pos: POSITION;
+	float2 TexCoords: TEXCOORD0;
+	float4 Color : COLOR;
+};
+
+struct VS2PS
+{
+	float4 HPos: POSITION;
+	float3 Tex0 : TEXCOORD0;
+	float4 Color : TEXCOORD1;
+};
+
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
+void VS_Lightning(in APP2VS Input, out VS2PS Output)
+{
+	Output = (VS2PS)0.0;
+
+	Output.HPos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
+
+	Output.Tex0.xy = Input.TexCoords;
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+	#endif
+
+	Output.Color = saturate(Input.Color);
+}
+
+void PS_Lightning(in VS2PS Input, out VS2PS Output)
+{
+	float4 ColorTex = tex2D(SampleLightning, Input.Tex0.xy);
+
+	Output.Color = ColorTex * _LightningColor;
+	Output.Color.a *= Input.Color.a;
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
+}
+
+technique Lightning
+{
+	pass p0
+	{
+		CullMode = NONE;
+
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
+
+		AlphaBlendEnable = TRUE;
+		SrcBlend = SRCALPHA;
+		DestBlend = ONE;
+
+
+		VertexShader = compile vs_3_0 VS_Lightning();
+		PixelShader = compile ps_3_0 PS_Lightning();
+	}
+}

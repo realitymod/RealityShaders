@@ -89,9 +89,9 @@ struct PS2FB
 	#endif
 };
 
-VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
+void GetVertexDecals(in APP2VS Input, in bool UseShadow, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
+	Output = (VS2PS)0.0;
 
 	float Index = Input.P_Tex_Index_Alpha.z;
 	float4x3 WorldMat = _InstanceTransformations[Index];
@@ -112,16 +112,15 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 		Output.ShadowTex = mul(float4(WorldPos, 1.0), _ShadowTransformations[Index]);
 		Output.ViewPortMap = _ShadowViewPortMaps[Index];
 	}
-
-	return Output;
 }
 
-VS2PS VS_Decals(APP2VS Input)
+void VS_Decals(in APP2VS Input, out VS2PS Output)
 {
-	return GetVertexDecals(Input, false);
+	Output = (VS2PS)0.0;
+	GetVertexDecals(Input, false, Output);
 }
 
-float4 GetPixelDecals(VS2PS Input, bool UseShadow)
+void GetPixelDecals(in VS2PS Input, in bool UseShadow, out PS2FB Output)
 {
 	float3 Normals = normalize(Input.Normal.xyz);
 
@@ -131,7 +130,7 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 
 	if(UseShadow)
 	{
-		float4 Samples;
+		float4 Samples = 0.0;
 		float2 Texel = 1.0 / 1024.0;
 		Input.ShadowTex.xy = clamp(Input.ShadowTex.xy,  Input.ViewPortMap.xy, Input.ViewPortMap.zw);
 		Samples.x = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy);
@@ -147,23 +146,19 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 	float3 Diffuse = (HalfNL * _SunColor) * Shadow;
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
-	float4 OutputColor = DiffuseMap * float4(Lighting, Alpha);
+	Output.Color.rgb = DiffuseMap.rgb * Lighting;
+	Output.Color.a = DiffuseMap.a * Alpha;
 
-	return OutputColor;
-}
-
-PS2FB PS_Decals(VS2PS Input)
-{
-	PS2FB Output = (PS2FB)0;
-
-	Output.Color = GetPixelDecals(Input, false);
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos.xyz, 0.0));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+}
 
-	return Output;
+void PS_Decals(in VS2PS Input, out PS2FB Output)
+{
+	GetPixelDecals(Input, false, Output);
 }
 
 #define GET_RENDERSTATES_DECAL \

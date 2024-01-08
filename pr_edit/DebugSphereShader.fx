@@ -70,9 +70,9 @@ float3 Diffuse(float3 Normal)
 	return saturate(dot(Normal, _LightDir.xyz));
 }
 
-VS2PS VS_Debug_Basic(APP2VS Input)
+void VS_Debug_Basic(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
+	Output = (VS2PS)0.0;
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
@@ -85,34 +85,24 @@ VS2PS VS_Debug_Basic(APP2VS Input)
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.xyz = _MaterialAmbient.xyz + Diffuse(Input.Normal) * _MaterialDiffuse.xyz;
 	Output.Diffuse.w = 1.0;
-
-	return Output;
 }
 
-PS2FB PS_Debug_Basic(VS2PS Input)
+void PS_Debug_Basic(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	Output.Color = tex2D(SampleBaseTex, Input.Tex0.xy) * Input.Diffuse;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
-
-	return Output;
 }
 
-PS2FB PS_Debug_Marked(VS2PS Input)
+void PS_Debug_Marked(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	Output.Color = (tex2D(SampleBaseTex, Input.Tex0.xy) * Input.Diffuse) + float4(1.0, 0.0, 0.0, 0.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
-
-	return Output;
 }
 
 technique t0_States < bool Restore = false; >
@@ -176,9 +166,9 @@ technique marked
 	Debug lightsource shaders
 */
 
-VS2PS VS_Debug_LightSource(APP2VS Input)
+void VS_Debug_LightSource(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
+	Output = (VS2PS)0.0;
 
 	float4 Pos;
 	Pos.xyz = mul(Input.Pos, _World);
@@ -193,21 +183,15 @@ VS2PS VS_Debug_LightSource(APP2VS Input)
 	// Lighting. Shade (Ambient + etc.)
 	Output.Diffuse.rgb = _MaterialDiffuse.xyz;
 	Output.Diffuse.a = _MaterialDiffuse.w;
-
-	return Output;
 }
 
-PS2FB PS_Debug_LightSource(VS2PS Input)
+void PS_Debug_LightSource(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	Output.Color = Input.Diffuse;
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
-
-	return Output;
 }
 
 technique lightsource

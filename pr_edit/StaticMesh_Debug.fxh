@@ -16,16 +16,14 @@ struct VS2PS_ShowTangentBasis
 	float4 Diffuse : COLOR;
 };
 
-VS2PS_ShowTangentBasis VS_ShowTangentBasis(APP2VS_ShowTangentBasis Input)
+void VS_ShowTangentBasis(in APP2VS_ShowTangentBasis Input, out VS2PS_ShowTangentBasis Output)
 {
-	VS2PS_ShowTangentBasis Output;
+	VS2PS_ShowTangentBasis Output = (VS2PS_ShowTangentBasis)0.0;
 
 	float3 WorldPos = Input.Pos; // mul(Pos, _OneBoneSkinning[0]);
 
 	Output.HPos = mul(float4(WorldPos.xyz, 1.0f), _ViewProjMatrix);
 	Output.Diffuse = Input.Color;
-
-	return Output;
 }
 
 float4 PS_ShowTangentBasis(VS2PS_ShowTangentBasis Input) : COLOR0

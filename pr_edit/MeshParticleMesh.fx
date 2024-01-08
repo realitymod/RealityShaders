@@ -66,9 +66,9 @@ struct PS2FB
 	float4 Color : COLOR0;
 };
 
-VS2PS VS_Diffuse(APP2VS Input)
+void VS_Diffuse(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output = (VS2PS)0;
+	Output = (VS2PS)0.0;
 
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
@@ -94,15 +94,11 @@ VS2PS VS_Diffuse(APP2VS Input)
 	#if defined(LOG_DEPTH)
 		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 	#endif
-
-	return Output;
 }
 
 // Renders 3D debris found in explosions like in PRBot4/Num6
-PS2FB PS_Diffuse(VS2PS Input)
+void PS_Diffuse(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	// Textures
 	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo.xyz, false);
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
@@ -112,30 +108,21 @@ PS2FB PS_Diffuse(VS2PS Input)
 	float LightMapOffset = GetAltitude(Input.WorldPos, _LightmapIntensityOffset);
 	float3 Lighting = GetParticleLighting(HemiMap.a, LightMapOffset, saturate(m_color1AndLightFactor.a));
 	float4 LightColor = (Input.Color.rgb * Lighting, Input.Color.a);
-	float4 OutputColor = DiffuseMap * LightColor;
 
-	Output.Color = OutputColor;
+	Output.Color = DiffuseMap * LightColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
-
-	return Output;
 }
 
 // Renders circular shockwave found in explosions like in PRBot4/Num6
-PS2FB PS_Additive(VS2PS Input)
+void PS_Additive(in VS2PS Input, out PS2FB Output)
 {
-	PS2FB Output = (PS2FB)0;
-
 	// Textures
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color;
 	DiffuseMap.rgb = (_EffectSunColor.b < -0.1) ? float3(1.0, 0.0, 0.0) : DiffuseMap.rgb;
 
 	// Mask with alpha since were doing an add
 	float3 AlphaMask = DiffuseMap.aaa * Input.Color.aaa;
-	float4 OutputColor = DiffuseMap * float4(AlphaMask, 1.0);
-
-	Output.Color = OutputColor;
-
-	return Output;
+	Output.Color = DiffuseMap * float4(AlphaMask, 1.0);
 }
 
 #define GET_RENDERSTATES_MESH_PARTICLES(ZWRITE, SRCBLEND, DESTBLEND) \

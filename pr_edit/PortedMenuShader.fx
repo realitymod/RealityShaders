@@ -59,15 +59,13 @@ struct VS2PS
 	float2 TexCoord1 : TEXCOORD2;
 };
 
-VS2PS VS_Basic(APP2VS Input)
+void VS_Basic(in APP2VS Input, out VS2PS Output)
 {
-	VS2PS Output;
 	float4x4 WorldViewProj = _WorldMatrix * _ViewMatrix * _ProjMatrix;
 	Output.HPos = mul(Input.Pos, WorldViewProj);
 	Output.Color = saturate(Input.Color);
  	Output.TexCoord0 = Input.TexCoord0;
  	Output.TexCoord1 = Input.TexCoord1;
-	return Output;
 }
 
 technique Menu
@@ -81,22 +79,23 @@ technique Menu_States <bool Restore = true;>
 	pass EndStates { }
 }
 
-float4 PS_Quad_WTex_NoTex(VS2PS Input) : COLOR0
+void PS_Quad_WTex_NoTex(in VS2PS Input, out float4 Output : COLOR0)
 {
-	return Input.Color;
+	Output = Input.Color;
 }
 
-float4 PS_Quad_WTex_Tex(VS2PS Input) : COLOR0
+void PS_Quad_WTex_Tex(in VS2PS Input, out float4 Output : COLOR0)
 {
-	return tex2D(SampleTex0, Input.TexCoord0) * Input.Color;
+	Output = tex2D(SampleTex0, Input.TexCoord0) * Input.Color;
 }
 
-float4 PS_Quad_WTex_Tex_Masked(VS2PS Input) : COLOR0
+void PS_Quad_WTex_Tex_Masked(in VS2PS Input, out float4 Output : COLOR0)
 {
 	float4 Color = tex2D(SampleTex0, Input.TexCoord0) * Input.Color;
-	// Color *= tex2D(SampleTex1, Input.TexCoord1);
-	Color.a *= tex2D(SampleTex1, Input.TexCoord1).a;
-	return Color;
+	float4 Mask = tex2D(SampleTex1, Input.TexCoord1);
+	// Color *= Mask;
+	Color.a *= Mask.a;
+	Output = Color;
 }
 
 // Macro for app render-state settings from [1]
@@ -149,10 +148,10 @@ technique QuadWithTexture
 	}
 }
 
-float4 PS_Quad_Cache(VS2PS Input) : COLOR0
+void PS_Quad_Cache(in VS2PS Input, out float4 Output : COLOR0)
 {
-	float4 InputTexture = tex2D(SampleTex0, Input.TexCoord0);
-	return (InputTexture + 1.0) * Input.Color;
+	float4 ColorTex = tex2D(SampleTex0, Input.TexCoord0);
+	Output = (ColorTex + 1.0) * Input.Color;
 }
 
 technique QuadCache
