@@ -78,7 +78,7 @@ struct VS2PS_ShadowMap
 
 VS2PS_ShadowMap VS_ShadowMap(APPDATA_ShadowMap Input)
 {
-	VS2PS_ShadowMap Output;
+	VS2PS_ShadowMap Output = (VS2PS_ShadowMap)0.0;
 
  	float4 WorldPos = mul(Input.Pos, _WorldMatrix);
  	Output.Pos = mul(Input.Pos, _ViewProjMatrix);
@@ -96,7 +96,7 @@ float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
 
 VS2PS_ShadowMap VS_ShadowMapPoint(APPDATA_ShadowMap Input)
 {
-	VS2PS_ShadowMap Output;
+	VS2PS_ShadowMap Output = (VS2PS_ShadowMap)0.0;
 
   	float4 oPos = Input.Pos;
  	Output.Pos = mul(oPos, _ViewProjMatrix);

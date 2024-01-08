@@ -339,7 +339,7 @@ struct PS2FB_MRT4
 
 VS2PS_GBuffBase VS_GBuffBase(APP2VS_GBuffBase Input)
 {
-	VS2PS_GBuffBase Output;
+	VS2PS_GBuffBase Output = (VS2PS_GBuffBase)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -354,7 +354,7 @@ VS2PS_GBuffBase VS_GBuffBase(APP2VS_GBuffBase Input)
 
 VS2PS_GBuffBaseLM VS_GBuffBaseLM(APP2VS_GBuffBaseLM Input)
 {
-	VS2PS_GBuffBaseLM Output;
+	VS2PS_GBuffBaseLM Output = (VS2PS_GBuffBaseLM)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -371,7 +371,7 @@ VS2PS_GBuffBaseLM VS_GBuffBaseLM(APP2VS_GBuffBaseLM Input)
 
 VS2PS_GBuffBaseLMAT VS_GBuffBaseLMAT(APP2VS_GBuffBaseLM Input)
 {
-	VS2PS_GBuffBaseLMAT Output;
+	VS2PS_GBuffBaseLMAT Output = (VS2PS_GBuffBaseLMAT)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -397,7 +397,7 @@ VS2PS_GBuffBaseLMAT VS_GBuffBaseLMAT(APP2VS_GBuffBaseLM Input)
 
 VS2PS_GBuffBaseLMAT1 VS_GBuffBaseLMAT1(APP2VS_GBuffBaseLM Input)
 {
-	VS2PS_GBuffBaseLMAT1 Output;
+	VS2PS_GBuffBaseLMAT1 Output = (VS2PS_GBuffBaseLMAT1)0.0;
 
   	Output.Pos = mul(Input.Pos, _ViewProjMatrix);
 
@@ -414,7 +414,7 @@ VS2PS_GBuffBaseLMAT1 VS_GBuffBaseLMAT1(APP2VS_GBuffBaseLM Input)
 
 VS2PS_GBuffBaseDetail VS_GBuffBaseDetail(APP2VS_GBuffBaseDetail Input)
 {
-	VS2PS_GBuffBaseDetail Output;
+	VS2PS_GBuffBaseDetail Output = (VS2PS_GBuffBaseDetail)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -430,7 +430,7 @@ VS2PS_GBuffBaseDetail VS_GBuffBaseDetail(APP2VS_GBuffBaseDetail Input)
 
 VS2PS_GBuffBaseDetailParallax VS_GBuffBaseDetailParallax(APP2VS_GBuffBaseDetail Input)
 {
-	VS2PS_GBuffBaseDetailParallax Output;
+	VS2PS_GBuffBaseDetailParallax Output = (VS2PS_GBuffBaseDetailParallax)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -447,7 +447,7 @@ VS2PS_GBuffBaseDetailParallax VS_GBuffBaseDetailParallax(APP2VS_GBuffBaseDetail 
 
 VS2PS_GBuffBaseDetailLM VS_GBuffBaseDetailLM(APP2VS_GBuffBaseDetailLM Input)
 {
-	VS2PS_GBuffBaseDetailLM Output;
+	VS2PS_GBuffBaseDetailLM Output = (VS2PS_GBuffBaseDetailLM)0.0;
 
   	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -463,7 +463,7 @@ VS2PS_GBuffBaseDetailLM VS_GBuffBaseDetailLM(APP2VS_GBuffBaseDetailLM Input)
 
 VS2PS_GBuffBaseDetailLMParallax VS_GBuffBaseDetailLMParallax(APP2VS_GBuffBaseDetailLM Input)
 {
-	VS2PS_GBuffBaseDetailLMParallax Output;
+	VS2PS_GBuffBaseDetailLMParallax Output = (VS2PS_GBuffBaseDetailLMParallax)0.0;
 
   	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -482,7 +482,7 @@ VS2PS_GBuffBaseDetailLMParallax VS_GBuffBaseDetailLMParallax(APP2VS_GBuffBaseDet
 
 VS2PS_GBuffBaseDetailDirt VS_GBuffBaseDetailDirt(APP2VS_GBuffBaseDetailDirt Input)
 {
-	VS2PS_GBuffBaseDetailDirt Output;
+	VS2PS_GBuffBaseDetailDirt Output = (VS2PS_GBuffBaseDetailDirt)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -498,7 +498,7 @@ VS2PS_GBuffBaseDetailDirt VS_GBuffBaseDetailDirt(APP2VS_GBuffBaseDetailDirt Inpu
 
 VS2PS_GBuffBaseDetailDirtParallax VS_GBuffBaseDetailDirtParallax(APP2VS_GBuffBaseDetailDirt Input)
 {
-	VS2PS_GBuffBaseDetailDirtParallax Output;
+	VS2PS_GBuffBaseDetailDirtParallax Output = (VS2PS_GBuffBaseDetailDirtParallax)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -515,7 +515,7 @@ VS2PS_GBuffBaseDetailDirtParallax VS_GBuffBaseDetailDirtParallax(APP2VS_GBuffBas
 
 VS2PS_GBuffBaseDetailDirtLM VS_GBuffBaseDetailDirtLM(APP2VS_GBuffBaseDetailDirtLM Input)
 {
-	VS2PS_GBuffBaseDetailDirtLM Output;
+	VS2PS_GBuffBaseDetailDirtLM Output = (VS2PS_GBuffBaseDetailDirtLM)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -532,7 +532,7 @@ VS2PS_GBuffBaseDetailDirtLM VS_GBuffBaseDetailDirtLM(APP2VS_GBuffBaseDetailDirtL
 
 VS2PS_GBuffBaseDetailDirtLMParallax VS_GBuffBaseDetailDirtLMParallax(APP2VS_GBuffBaseDetailDirtLM Input)
 {
-	VS2PS_GBuffBaseDetailDirtLMParallax Output;
+	VS2PS_GBuffBaseDetailDirtLMParallax Output = (VS2PS_GBuffBaseDetailDirtLMParallax)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -550,7 +550,7 @@ VS2PS_GBuffBaseDetailDirtLMParallax VS_GBuffBaseDetailDirtLMParallax(APP2VS_GBuf
 
 VS2PS_GBuffBaseDetailCrack VS_GBuffBaseDetailCrack(APP2VS_GBuffBaseDetailCrack Input)
 {
-	VS2PS_GBuffBaseDetailCrack Output;
+	VS2PS_GBuffBaseDetailCrack Output = (VS2PS_GBuffBaseDetailCrack)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -567,7 +567,7 @@ VS2PS_GBuffBaseDetailCrack VS_GBuffBaseDetailCrack(APP2VS_GBuffBaseDetailCrack I
 
 VS2PS_GBuffBaseDetailCrackParallax VS_GBuffBaseDetailCrackParallax(APP2VS_GBuffBaseDetailCrack Input)
 {
-	VS2PS_GBuffBaseDetailCrackParallax Output;
+	VS2PS_GBuffBaseDetailCrackParallax Output = (VS2PS_GBuffBaseDetailCrackParallax)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -585,7 +585,7 @@ VS2PS_GBuffBaseDetailCrackParallax VS_GBuffBaseDetailCrackParallax(APP2VS_GBuffB
 
 VS2PS_GBuffBaseDetailCrackLM VS_GBuffBaseDetailCrackLM(APP2VS_GBuffBaseDetailCrackLM Input)
 {
-	VS2PS_GBuffBaseDetailCrackLM Output;
+	VS2PS_GBuffBaseDetailCrackLM Output = (VS2PS_GBuffBaseDetailCrackLM)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -603,7 +603,7 @@ VS2PS_GBuffBaseDetailCrackLM VS_GBuffBaseDetailCrackLM(APP2VS_GBuffBaseDetailCra
 
 VS2PS_GBuffBaseDetailCrackLMParallax VS_GBuffBaseDetailCrackLMParallax(APP2VS_GBuffBaseDetailCrackLM Input)
 {
-	VS2PS_GBuffBaseDetailCrackLMParallax Output;
+	VS2PS_GBuffBaseDetailCrackLMParallax Output = (VS2PS_GBuffBaseDetailCrackLMParallax)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -623,7 +623,7 @@ VS2PS_GBuffBaseDetailCrackLMParallax VS_GBuffBaseDetailCrackLMParallax(APP2VS_GB
 
 VS2PS_GBuffBaseDetailDirtCrack VS_GBuffBaseDetailDirtCrack(APP2VS_GBuffBaseDetailDirtCrack Input)
 {
-	VS2PS_GBuffBaseDetailDirtCrack Output;
+	VS2PS_GBuffBaseDetailDirtCrack Output = (VS2PS_GBuffBaseDetailDirtCrack)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -640,7 +640,7 @@ VS2PS_GBuffBaseDetailDirtCrack VS_GBuffBaseDetailDirtCrack(APP2VS_GBuffBaseDetai
 
 VS2PS_GBuffBaseDetailDirtCrackParallax VS_GBuffBaseDetailDirtCrackParallax(APP2VS_GBuffBaseDetailDirtCrack Input)
 {
-	VS2PS_GBuffBaseDetailDirtCrackParallax Output;
+	VS2PS_GBuffBaseDetailDirtCrackParallax Output = (VS2PS_GBuffBaseDetailDirtCrackParallax)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -658,7 +658,7 @@ VS2PS_GBuffBaseDetailDirtCrackParallax VS_GBuffBaseDetailDirtCrackParallax(APP2V
 
 VS2PS_GBuffBaseDetailDirtCrackLM VS_GBuffBaseDetailDirtCrackLM(APP2VS_GBuffBaseDetailDirtCrackLM Input)
 {
-	VS2PS_GBuffBaseDetailDirtCrackLM Output;
+	VS2PS_GBuffBaseDetailDirtCrackLM Output = (VS2PS_GBuffBaseDetailDirtCrackLM)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
@@ -676,7 +676,7 @@ VS2PS_GBuffBaseDetailDirtCrackLM VS_GBuffBaseDetailDirtCrackLM(APP2VS_GBuffBaseD
 
 VS2PS_GBuffBaseDetailDirtCrackLMParallax VS_GBuffBaseDetailDirtCrackLMParallax(APP2VS_GBuffBaseDetailDirtCrackLM Input)
 {
-	VS2PS_GBuffBaseDetailDirtCrackLMParallax Output;
+	VS2PS_GBuffBaseDetailDirtCrackLMParallax Output = (VS2PS_GBuffBaseDetailDirtCrackLMParallax)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);

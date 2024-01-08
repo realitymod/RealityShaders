@@ -113,7 +113,7 @@ struct VS2PS_Blit
 
 VS2PS_Blit VS_Blit(APP2VS_Blit Input)
 {
-	VS2PS_Blit Output;
+	VS2PS_Blit Output = (VS2PS_Blit)0.0;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.TexCoord0 = Input.TexCoord0;
 	return Output;
@@ -121,7 +121,7 @@ VS2PS_Blit VS_Blit(APP2VS_Blit Input)
 
 VS2PS_Blit VS_Blit_Custom(APP2VS_Blit Input)
 {
-	VS2PS_Blit Output;
+	VS2PS_Blit Output = (VS2PS_Blit)0.0;
 	Output.HPos = mul(float4(Input.Pos.xy, 0.0, 1.0), _CustomMtx);
 	Output.TexCoord0 = Input.TexCoord0;
 	return Output;
@@ -169,7 +169,7 @@ float4 PS_Dummy() : COLOR0
 
 VS2PS_Blit PS_Blit_Magnified(APP2VS_Blit Input)
 {
-	VS2PS_Blit Output;
+	VS2PS_Blit Output = (VS2PS_Blit)0.0;
 	Output.HPos = float4(Input.Pos.xy * 1.1, 0.0, 1.0);
 	Output.TexCoord0 = Input.TexCoord0;
 	return Output;
@@ -177,7 +177,7 @@ VS2PS_Blit PS_Blit_Magnified(APP2VS_Blit Input)
 
 VS2PS_4Tap VS_ScaleDown4x4(APP2VS_Blit Input)
 {
-	VS2PS_4Tap Output;
+	VS2PS_4Tap Output = (VS2PS_4Tap)0.0;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.FilterCoords[0] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[0].xy;
 	Output.FilterCoords[1] = Input.TexCoord0 + _ScaleDown4x4LinearSampleOffsets[1].xy;
@@ -188,7 +188,7 @@ VS2PS_4Tap VS_ScaleDown4x4(APP2VS_Blit Input)
 
 VS2PS_5Tap VS_Sample5(APP2VS_Blit Input, uniform float Offsets[5], uniform bool Horizontal)
 {
-	VS2PS_5Tap Output;
+	VS2PS_5Tap Output = (VS2PS_5Tap)0.0;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 
 	float2 VSOffset = (Horizontal) ? float2(Offsets[4], 0.0) : float2(0.0, Offsets[4]);

@@ -298,7 +298,7 @@ struct VS2PS_Alpha
 
 VS2PS_Alpha VS_Alpha(APP2VS Input)
 {
-	VS2PS_Alpha Output;
+	VS2PS_Alpha Output = (VS2PS_Alpha)0.0;
 
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
@@ -483,7 +483,7 @@ struct VS2PS_ShadowMap_Alpha
 
 VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
 {
-	VS2PS_ShadowMap_Alpha Output;
+	VS2PS_ShadowMap_Alpha Output = (VS2PS_ShadowMap_Alpha)0.0;
 
 	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);

@@ -277,7 +277,7 @@ struct VS2PS_Shared_DynamicShadowmap
 
 VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
 {
-	VS2PS_Shared_DynamicShadowmap Output;
+	VS2PS_Shared_DynamicShadowmap Output = (VS2PS_Shared_DynamicShadowmap)0.0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
 	Output.HPos = mul(WorldPos, _ViewProj);
@@ -563,7 +563,7 @@ float4 GetOccluderShadow(float4 Pos, float4x4 LightTrapMat, float4x4 LightMat)
 
 HI_VS2PS_OccluderShadow VS_Hi_OccluderShadow(HI_APP2VS_OccluderShadow Input)
 {
-	HI_VS2PS_OccluderShadow Output;
+	HI_VS2PS_OccluderShadow Output = (VS2PS_OccluderShadow)0.0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
 	Output.HPos = GetOccluderShadow(WorldPos, _vpLightTrapezMat, _vpLightMat);

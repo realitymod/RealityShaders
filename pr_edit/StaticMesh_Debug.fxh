@@ -18,7 +18,7 @@ struct VS2PS_ShowTangentBasis
 
 VS2PS_ShowTangentBasis VS_ShowTangentBasis(APP2VS_ShowTangentBasis Input)
 {
-	VS2PS_ShowTangentBasis Output;
+	VS2PS_ShowTangentBasis Output = (VS2PS_ShowTangentBasis)0.0;
 
 	float3 WorldPos = Input.Pos; // mul(Pos, _OneBoneSkinning[0]);
 

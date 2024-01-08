@@ -44,7 +44,7 @@ struct VS2PS
 
 VS2PS VS_HPos(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0.0;
 	Output.HPos = Input.HPos;
 	Output.Color = saturate(Input.Color);
 	Output.TexCoord = Input.TexCoord0;

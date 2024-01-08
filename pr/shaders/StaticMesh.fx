@@ -105,7 +105,7 @@ struct VS2PS_Simple
 
 VS2PS_Simple VS_StaticMesh_Simple(APP2VS Input)
 {
-	VS2PS_Simple Output;
+	VS2PS_Simple Output = (VS2PS_Simple)0.0;
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	Output.TexCoord = Input.TexCoord;
 	return Output;
@@ -158,7 +158,7 @@ struct VS2PS_ShadowMap
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS_ShadowMap Input)
 {
-	VS2PS_ShadowMap Output;
+	VS2PS_ShadowMap Output = (VS2PS_ShadowMap)0.0;
 
 	float4 UnpackPos = Input.Pos * _PosUnpack;
 	float4 WorldPos = mul(float4(UnpackPos.xyz, 1.0), _WorldMat);

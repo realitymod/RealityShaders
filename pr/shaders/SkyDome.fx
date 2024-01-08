@@ -101,7 +101,7 @@ struct VS2PS_SkyDome
 
 VS2PS_SkyDome VS_SkyDome(APP2VS Input)
 {
-	VS2PS_SkyDome Output;
+	VS2PS_SkyDome Output = (VS2PS_SkyDome)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
 	Output.Pos = Input.Pos;
@@ -181,7 +181,7 @@ struct VS2PS_DualClouds
 
 VS2PS_DualClouds VS_SkyDome_DualClouds(APP2VS Input)
 {
-	VS2PS_DualClouds Output;
+	VS2PS_DualClouds Output = (VS2PS_DualClouds)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
 	Output.Pos = Input.Pos;
@@ -227,7 +227,7 @@ struct VS2PS_NoClouds
 
 VS2PS_NoClouds VS_SkyDome_NoClouds(APP2VS_NoClouds Input)
 {
-	VS2PS_NoClouds Output;
+	VS2PS_NoClouds Output = (VS2PS_NoClouds)0.0;
 
 	float4 ScaledPos = float4(Input.Pos.xyz, 10.0); // plo: fix for artifacts on BFO.
 	Output.HPos = mul(ScaledPos, _ViewProjMatrix);

@@ -20,7 +20,7 @@ struct VS2PS
 
 VS2PS VS_Debug_Linegraph(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0.0;
 
 	float2 ScreenPos = Input.ScreenPos + _GraphPos;
 	ScreenPos = ScreenPos / (_ViewportSize * 0.5) - 1.0;

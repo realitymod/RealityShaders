@@ -415,7 +415,7 @@ struct VS2PS_ShadowMap
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 {
-	VS2PS_ShadowMap Output;
+	VS2PS_ShadowMap Output = (VS2PS_ShadowMap)0.0;
 
 	// Cast the vectors to arrays for use in the for loop below
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);

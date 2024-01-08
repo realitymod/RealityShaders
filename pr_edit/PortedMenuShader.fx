@@ -61,7 +61,7 @@ struct VS2PS
 
 VS2PS VS_Basic(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0.0;
 	float4x4 WorldViewProj = _WorldMatrix * _ViewMatrix * _ProjMatrix;
 	Output.HPos = mul(Input.Pos, WorldViewProj);
 	Output.Color = saturate(Input.Color);

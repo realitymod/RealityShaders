@@ -70,7 +70,7 @@ struct PS2FB
 
 VS2PS VS_Quad(APP2VS Input)
 {
-	VS2PS Output;
+	VS2PS Output = (VS2PS)0.0;
 
 	Output.HPos = mul(Input.Pos, _ViewProj);
 	Output.Pos = Input.Pos;

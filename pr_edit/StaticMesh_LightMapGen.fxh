@@ -28,7 +28,7 @@ struct VS2PS_LightMapGen
 
 VS2PS_LightMapGen VS_LightMapBase(APP2VS_LightMapGen Input)
 {
-	VS2PS_LightMapGen Output;
+	VS2PS_LightMapGen Output = (VS2PS_LightMapGen)0.0;
 
 	// Compensate for lack of UBYTE4 on Geforce3
 	// int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
@@ -45,7 +45,7 @@ VS2PS_LightMapGen VS_LightMapBase(APP2VS_LightMapGen Input)
 
 VS2PS_LightMapGen VS_LightMapBase2(APP2VS_LightMapGen2 Input)
 {
-	VS2PS_LightMapGen Output;
+	VS2PS_LightMapGen Output = (VS2PS_LightMapGen)0.0;
 
 	// Compensate for lack of UBYTE4 on Geforce3
 	// int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);

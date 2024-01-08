@@ -116,7 +116,7 @@ struct VS2PS_Quad
 
 VS2PS_Quad VS_Quad(APP2VS_Quad Input)
 {
-	VS2PS_Quad Output;
+	VS2PS_Quad Output = (VS2PS_Quad)0.0;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.Tex0 = Input.Tex0;
 	return Output;
@@ -134,7 +134,7 @@ float4 GetTex(float2 Tex, float4 Offset)
 
 VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 {
-	VS2PS_Quad Output;
+	VS2PS_Quad Output = (VS2PS_Quad)0.0;
 	FSTriangle FST;
 	GetFSTriangle(Input.Tex0, FST);
 	Output.HPos = float4(FST.Pos, 0.0, 1.0);
@@ -276,7 +276,7 @@ TV GetTV(float2 Tex)
 
 VS2PS_Quad VS_ThermalVision(APP2VS_Quad Input)
 {
-	VS2PS_Quad Output;
+	VS2PS_Quad Output = (VS2PS_Quad)0.0;
 	if (_Interference < 0) // Use fullscreen triangle for thermals
 	{
 		FSTriangle FST;
@@ -419,7 +419,7 @@ struct VS2PS_Distortion
 
 VS2PS_Distortion VS_WaveDistortion(APP2VS_Quad Input)
 {
-	VS2PS_Distortion Output;
+	VS2PS_Distortion Output = (VS2PS_Distortion)0.0;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.Tex0 = Input.Tex0.xy;
 	return Output;
