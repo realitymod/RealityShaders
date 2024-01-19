@@ -25,6 +25,10 @@ Shader Model 3.0 allows modders to add more grapical updates into the game, such
 
 This fogging method eliminates "corner-peeking".
 
+### Half-Lambert Lighting
+
+[Valve Software's](https://advances.realtimerendering.com/s2006/Mitchell-ShadingInValvesSourceEngine.pdf) smoother version of the Lambertian Term used in lighting.
+
 ### Logarithmic Depth Buffer
 
 Logarithmic depth buffering eliminates flickering within distant objects.
