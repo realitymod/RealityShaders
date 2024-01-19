@@ -45,14 +45,18 @@ This shader package includes updated thermal and suppression effects.
 
 No more visible texture repetition in clouds and far-away terrain.
 
+### Sharpened Filtering
+
+Support for 16x anisotropic filtering.
+
 ## Coding Convention
 
 Practice | Elements
 -------- | --------
-**ALLCAPS** | system semantics • state parameters
-**ALL_CAPS** | preprocessor (macros & arguments)
+**ALLCAPS** | state parameters • system semantics
+**ALL_CAPS** | preprocessor (macros and its arguments)
 **_SnakeCase** | variables (uniform)
-**SnakeCase** | variables (local & global) • method arguments
+**SnakeCase** | method arguments • variables (global, local, textures, samplers)
 **Snake_Case** | data subcatagory
 **PREFIX_Data** | `struct` • `PixelShader` • `VertexShader`
 
