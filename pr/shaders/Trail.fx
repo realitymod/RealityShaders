@@ -91,8 +91,10 @@ VS2PS VS_Trail(APP2VS Input)
 	float4 Pos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
 	Output.WorldPos = float4(Input.Pos, 0.0);
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.WorldPos.w = Output.HPos.w + 1.0; // Output depth
+		Output.WorldPos.w = Output.HPos.w + 1.0;
 	#endif
 
 	// Project eyevec to Tangent vector to get position on axis

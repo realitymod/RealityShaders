@@ -159,8 +159,10 @@ VS2PS VS_Water(APP2VS Input)
 	float4 WorldPos = mul(Input.Pos, World);
 	Output.HPos = mul(WorldPos, ViewProjection);
 	Output.Pos.xyz = WorldPos.xyz;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	// Get texture surface data
@@ -261,6 +263,9 @@ technique defaultShader
 {
 	pass p0
 	{
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
+
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif

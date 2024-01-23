@@ -101,8 +101,10 @@ VS2PS VS_Particle(APP2VS Input)
 	Output.HPos = mul(Pos, _ProjMat);
 	Output.WorldPos = Input.Pos.xyz;
 	Output.ViewPos = Pos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.ViewPos.w = Output.HPos.w + 1.0; // Output depth
+		Output.ViewPos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Maps[0] = Template[ID].m_color1AndLightFactor.a;

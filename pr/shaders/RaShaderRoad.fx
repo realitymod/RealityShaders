@@ -126,8 +126,10 @@ VS2PS VS_Road(APP2VS Input)
 	Output.HPos = mul(WorldPos, ViewProjection);
 
 	Output.Pos.xyz = WorldPos.xyz;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0.xy = Input.Tex0 * TexUnpack;
@@ -198,9 +200,10 @@ technique defaultTechnique
 
 		CullMode = CCW;
 		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
-		AlphaTestEnable = FALSE;
 
+		AlphaTestEnable = FALSE;
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;

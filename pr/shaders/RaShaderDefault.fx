@@ -55,8 +55,10 @@ VS2PS VS_Default(APP2VS Input)
 	
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -82,6 +84,9 @@ technique defaultShader
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
+
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
 		CullMode = NONE;
 		AlphaTestEnable = FALSE;

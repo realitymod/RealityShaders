@@ -182,8 +182,10 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 		Output.WorldNormal = WorldTBN[2];
 	#endif
 	Output.Pos = SkinWorldPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	// Texture-space data
@@ -318,6 +320,9 @@ technique VariableTechnique
 {
 	pass p0
 	{
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
+
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (AlphaTestRef);
 

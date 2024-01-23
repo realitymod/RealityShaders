@@ -85,8 +85,10 @@ VS2PS VS_Diffuse(APP2VS Input)
 
 	// World-space data
 	Output.Pos.xyz = GetWorldPos(Input.Pos.xyz);
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0 = Input.Tex0;
@@ -117,6 +119,9 @@ technique defaultTechnique
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
+
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
 		AlphaTestEnable = TRUE; // <AlphaTest>;
 		AlphaRef = (alphaRef);

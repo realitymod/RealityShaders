@@ -25,8 +25,10 @@ VS2PS_Shared_ZFillLightMap VS_Shared_ZFillLightMap(APP2VS_Shared Input)
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -89,8 +91,10 @@ VS2PS_Shared_PointLight_PerVertex VS_Shared_PointLight_PerVertex(APP2VS_Shared I
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Tex0.x = Lighting;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.y = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.y = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -124,8 +128,10 @@ VS2PS_Shared_PointLight_PerPixel VS_Shared_PointLight_PerPixel(APP2VS_Shared Inp
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Pos = MorphedWorldPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Normal = (Input.Normal * 2.0) - 1.0;
@@ -169,8 +175,10 @@ VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Pos = MorphedWorldPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Normal = (Input.Normal * 2.0) - 1.0;
@@ -320,8 +328,10 @@ VS2PS_Shared_DirectionalLightShadows VS_Shared_DirectionalLightShadows(APP2VS_Sh
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.ShadowTex = mul(MorphedWorldPos, _LightViewProj);
@@ -376,8 +386,10 @@ VS2PS_Shared_UnderWater VS_Shared_UnderWater(APP2VS_Shared Input)
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Pos = MorphedWorldPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -432,8 +444,10 @@ VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
 
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = WorldPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Normal = Input.Normal;
@@ -524,8 +538,8 @@ technique Shared_SurroundingTerrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;
 
@@ -541,13 +555,13 @@ technique Shared_SurroundingTerrain
 float4x4 _vpLightMat : vpLightMat;
 float4x4 _vpLightTrapezMat : vpLightTrapezMat;
 
-struct HI_APP2VS_OccluderShadow
+struct APP2VS_HI_OccluderShadow
 {
 	float4 Pos0 : POSITION0;
 	float4 Pos1 : POSITION1;
 };
 
-struct HI_VS2PS_OccluderShadow
+struct VS2PS_HI_OccluderShadow
 {
 	float4 HPos : POSITION;
 	float4 DepthPos : TEXCOORD0;
@@ -561,9 +575,9 @@ float4 GetOccluderShadow(float4 Pos, float4x4 LightTrapMat, float4x4 LightMat)
 	return ShadowTex;
 }
 
-HI_VS2PS_OccluderShadow VS_Hi_OccluderShadow(HI_APP2VS_OccluderShadow Input)
+VS2PS_HI_OccluderShadow VS_Hi_OccluderShadow(APP2VS_HI_OccluderShadow Input)
 {
-	HI_VS2PS_OccluderShadow Output = (HI_VS2PS_OccluderShadow)0.0;
+	VS2PS_HI_OccluderShadow Output = (VS2PS_HI_OccluderShadow)0.0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
 	Output.HPos = GetOccluderShadow(WorldPos, _vpLightTrapezMat, _vpLightMat);
@@ -572,7 +586,7 @@ HI_VS2PS_OccluderShadow VS_Hi_OccluderShadow(HI_APP2VS_OccluderShadow Input)
 	return Output;
 }
 
-float4 PS_Hi_OccluderShadow(HI_VS2PS_OccluderShadow Input) : COLOR0
+float4 PS_Hi_OccluderShadow(VS2PS_HI_OccluderShadow Input) : COLOR0
 {
 	#if NVIDIA
 		return 0.5;
@@ -589,8 +603,8 @@ technique TerrainOccludershadow
 		CullMode = NONE;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESS;
+		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;

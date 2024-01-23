@@ -60,4 +60,5 @@
 		float4 CMPBits = step(saturate(GetSlopedBasedBias(ShadowCoords.z)), Samples);
 		return dot(CMPBits, 0.25);
 	}
+
 #endif

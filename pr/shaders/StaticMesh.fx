@@ -123,6 +123,7 @@ technique alpha_one
 	pass p0
 	{
 		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
 		CullMode = NONE;
 

@@ -171,9 +171,12 @@ VS2PS VS_BundledMesh(APP2VS Input)
 
 	// Output world-space data
 	Output.Pos.xyz = WorldPos.xyz;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
+
 	#if _HASNORMALMAP_
 		Output.WorldTangent = WorldTBN[0];
 		Output.WorldBinormal = WorldTBN[1];
@@ -415,6 +418,9 @@ technique Variable
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
+
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (AlphaTestRef);

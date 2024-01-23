@@ -78,8 +78,10 @@ VS2PS VS_Debug_Basic(APP2VS Input)
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 
 	Output.Tex0.xy = Input.TexCoord0;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
 	// Lighting. Shade (Ambient + etc.)
@@ -186,8 +188,10 @@ VS2PS VS_Debug_LightSource(APP2VS Input)
 	Output.HPos = mul(Pos, _WorldViewProj);
 
 	Output.Tex0 = 0.0;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
 	// Lighting. Shade (Ambient + etc.)
@@ -300,9 +304,9 @@ technique EditorDebug
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		ZWriteEnable = 1;
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
 
 		ShadeMode = FLAT;
 		FillMode = SOLID;

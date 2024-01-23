@@ -102,9 +102,12 @@ VS2PS VS_TrunkOG(APP2VS Input)
 
 	// World-space data
 	Output.Pos.xyz = WorldPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
+
 	Output.WorldNormal = GetWorldNormal((Input.Normal * 2.0) - 1.0);
 
 	Output.Tex0 = float3(Input.Tex0, Input.Pos.w) / 32767.0;
@@ -151,6 +154,9 @@ technique defaultTechnique
 {
 	pass p0
 	{
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
+
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif

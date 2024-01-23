@@ -135,8 +135,10 @@ VS2PS VS_Editor_Road(APP2VS Input)
 	Output.LightTex.zw = Output.HPos.zw;
 
 	Output.Pos.xyz = WorldPos.xyz;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -175,7 +177,8 @@ technique defaultTechnique
 
 		CullMode = CCW;
 	
-		ZEnable	= TRUE;
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
 
 		AlphaTestEnable = FALSE;

@@ -135,9 +135,12 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 
 	// World-space data
 	Output.Pos.xyz = GetWorldPos(ObjectPos.xyz);
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
+
 	Output.WorldNormal.xyz = GetWorldNormal(ObjectNormal);
 
 	// Get surface-space data
@@ -197,6 +200,9 @@ technique defaultTechnique
 {
 	pass p0
 	{
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
+
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif

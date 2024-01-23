@@ -3,8 +3,12 @@
 	Include header files
 */
 
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
 
@@ -104,6 +108,12 @@ VS2PS_SkyDome VS_SkyDome(APP2VS Input)
 	VS2PS_SkyDome Output = (VS2PS_SkyDome)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+
+	// Output Depth
+	#if !defined(LOG_DEPTH)
+		ReverseDepth(Output.HPos);
+	#endif
+
 	Output.Pos = Input.Pos;
 
 	Output.Tex0.xy = Input.Tex0; // Sky coords
@@ -184,6 +194,12 @@ VS2PS_DualClouds VS_SkyDome_DualClouds(APP2VS Input)
 	VS2PS_DualClouds Output = (VS2PS_DualClouds)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+
+	// Output Depth
+	#if !defined(LOG_DEPTH)
+		ReverseDepth(Output.HPos);
+	#endif
+
 	Output.Pos = Input.Pos;
 
 	Output.SkyTex = Input.Tex0;
@@ -231,6 +247,12 @@ VS2PS_NoClouds VS_SkyDome_NoClouds(APP2VS_NoClouds Input)
 
 	float4 ScaledPos = float4(Input.Pos.xyz, 10.0); // plo: fix for artifacts on BFO.
 	Output.HPos = mul(ScaledPos, _ViewProjMatrix);
+
+	// Output Depth
+	#if !defined(LOG_DEPTH)
+		ReverseDepth(Output.HPos);
+	#endif
+
 	Output.Pos = Input.Pos;
 
 	Output.Tex0 = Input.Tex0;
@@ -280,6 +302,12 @@ VS2PS_NoClouds VS_SkyDome_SunFlare(APP2VS_NoClouds Input)
 	VS2PS_NoClouds Output = (VS2PS_NoClouds)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+
+	// Output Depth
+	#if !defined(LOG_DEPTH)
+		ReverseDepth(Output.HPos);
+	#endif
+
 	Output.Pos = Input.Pos;
 
 	Output.Tex0 = Input.Tex0;

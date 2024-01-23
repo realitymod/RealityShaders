@@ -64,8 +64,9 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 	Output.Tex1.zw = (YPlaneTex * _DetailTex.x) + _DetailTex.y;
 	Output.LightTex = ProjToLighting(Output.HPos);
 
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -213,8 +214,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESS;
+		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;
 
@@ -232,8 +233,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -256,8 +257,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
@@ -276,8 +277,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -304,8 +305,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -330,8 +331,8 @@ technique Hi_Terrain
 		// ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
 
  		AlphaBlendEnable = FALSE;
 
@@ -358,8 +359,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -388,8 +389,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
@@ -409,8 +410,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
 		AlphaTestEnable = TRUE;
 		AlphaRef = 15; // tl: leave cap above 0 for better results
@@ -435,8 +436,8 @@ technique Hi_Terrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
 		ZFunc = LESS;
+		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;
 

@@ -83,8 +83,10 @@ VS2PS VS_BM_Additive(APP2VS Input)
 	Output.HPos = float4(mul(Input.Pos, GeomBones[IndexArray[0]]), 1.0);
 	Output.HPos = mul(Output.HPos, ViewProjection);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0 = Input.Tex0;
@@ -116,6 +118,7 @@ technique defaultTechnique
 			FillMode = WireFrame;
 		#endif
 
+		ZEnable = TRUE;
 		ZFunc = ALWAYS;
 		ZWriteEnable = FALSE;
 

@@ -117,9 +117,12 @@ VS2PS VS_StaticMesh(APP2VS Input)
 
 	// Output world-space data
 	Output.Pos.xyz = GetWorldPos(ObjectPos.xyz);
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
+
 	float3x3 WorldTBN = mul(ObjectTBN, (float3x3)World);
 	Output.WorldTangent = WorldTBN[0];
 	Output.WorldBinormal = WorldTBN[1];
@@ -320,7 +323,9 @@ technique defaultTechnique
 			FillMode = WireFrame;
 		#endif
 
+		ZEnable = TRUE;
 		ZFunc = LESS;
+
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 

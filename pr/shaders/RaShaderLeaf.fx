@@ -217,8 +217,10 @@ VS2PS VS_Leaf(APP2VS Input)
 
 	// Calculate vertex position data
 	Output.Pos.xyz = WS.Pos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	#if _HASSHADOW_
@@ -278,6 +280,9 @@ technique defaultTechnique
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
+
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
 		CullMode = NONE;
 		AlphaTestEnable = TRUE;

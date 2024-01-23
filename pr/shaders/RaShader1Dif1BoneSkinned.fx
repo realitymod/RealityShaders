@@ -5,9 +5,11 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
+#include "shaders/shared/RealityDepth.fxh"
 #if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
 	#include "RaCommon.fxh"
+	#include "shared/RealityDepth.fxh"
 #endif
 
 /*
@@ -83,8 +85,10 @@ VS2PS VS_DiffuseBone(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(Bones[IndexArray[0]], ViewProjection));
 	Output.Tex0.xy = Input.Tex0;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -112,6 +116,9 @@ technique defaultTechnique
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;
 		#endif
+
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (alphaRef);

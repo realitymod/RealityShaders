@@ -65,8 +65,10 @@ VS2PS VS_Lightning(APP2VS Input)
 	Output.HPos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
 
 	Output.Tex0.xy = Input.TexCoords;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Color = saturate(Input.Color);

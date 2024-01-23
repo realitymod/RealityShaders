@@ -94,8 +94,10 @@ VS2PS VS_BM_ZOnly(APP2VS Input)
 
 	Output.HPos = mul(GetWorldPos(Input), ViewProjection); // Output HPOS
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 	
 	return Output;
@@ -120,8 +122,9 @@ technique Variable
 		AlphaBlendEnable = FALSE;
 		AlphaTestEnable = FALSE;
 
-		ZWriteEnable = TRUE;
+		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
 
 		ColorWriteEnable = 0;
 		CullMode = CCW;

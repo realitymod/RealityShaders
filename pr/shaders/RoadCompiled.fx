@@ -95,8 +95,10 @@ VS2PS VS_RoadCompiled(APP2VS Input)
 
 	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos.xyz = Input.Pos.xyz;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0 = float4(Input.Tex0, Input.Tex1);
@@ -167,6 +169,7 @@ technique roadcompiledFull
 	pass NV3X
 	{
 		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
@@ -180,6 +183,8 @@ technique roadcompiledFull
 	pass DirectX9
 	{
 		ZEnable = FALSE;
+		ZFunc = LESSEQUAL;
+
 		DepthBias = -0.0001f;
 		SlopeScaleDepthBias = -0.00001f;
 

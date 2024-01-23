@@ -90,7 +90,7 @@ VS2PS VS_Diffuse(APP2VS Input)
 	// Pass-through texcoords
 	Output.Tex0 = Input.TexCoord;
 
-	// Output depth (VS)
+	// Output Depth
 	#if defined(LOG_DEPTH)
 		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 	#endif
@@ -142,6 +142,7 @@ PS2FB PS_Additive(VS2PS Input)
 	ColorWriteEnable = RED|GREEN|BLUE; \
 	CullMode = NONE; \
 	ZEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
 	ZWriteEnable = ZWRITE; \
 	AlphaTestEnable = TRUE; \
 	AlphaRef = 0; \

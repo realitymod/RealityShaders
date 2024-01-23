@@ -4,8 +4,10 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
 #if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
 #endif
 
 /*
@@ -48,8 +50,10 @@ VS2PS VS_PointLight(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -111,8 +115,10 @@ VS2PS_Spot VS_SpotLight(APP2VS Input)
 	// Transform vertex
 	float3 VertPos = mul(float4(Input.Pos.xyz, 1.0), _WorldView);
 	Output.Pos.xyz = -normalize(VertPos);
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.SpotDir = mul(_SpotDir, (float3x3)_WorldView);

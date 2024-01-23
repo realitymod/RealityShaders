@@ -4,8 +4,10 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
 #if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
 #endif
 
 /*
@@ -58,8 +60,10 @@ VS2PS VS_Shader(APP2VS Input)
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 
 	Output.Tex0.xy = Input.Tex0;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -83,6 +87,7 @@ technique t0_States <bool Restore = true;>
 	pass BeginStates
 	{
 		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE; // MatsD 030903: Due to transparent isn't sorted yet. Write Z values
 
 		CullMode = NONE;
