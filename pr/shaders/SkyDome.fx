@@ -3,12 +3,8 @@
 	Include header files
 */
 
-#include "shaders/RealityGraphics.fxh"
-#include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #if !defined(INCLUDED_HEADERS)
-	#include "RealityGraphics.fxh"
-	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
 
@@ -82,14 +78,14 @@ bool IsTisActive()
 	return _UnderwaterFog.r == 0;
 }
 
-float4 ApplyTis(in out float4 color)
+float4 ApplyTis(in out float4 Color)
 {
 	// TIS uses Green + Red channel to determine heat
-	color.r = 0;
+	Color.r = 0.0;
 	// Green = 1 means cold, Green = 0 hot. Invert channel so clouds (high green) become hot
 	// Add constant to make everything colder
-	color.g = (1 - color.g) + 0.5;
-	return color;
+	Color.g = (1.0 - Color.g) + 0.5;
+	return Color;
 }
 
 /*
@@ -108,11 +104,6 @@ VS2PS_SkyDome VS_SkyDome(APP2VS Input)
 	VS2PS_SkyDome Output = (VS2PS_SkyDome)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-
-	// Output Depth
-	#if !defined(LOG_DEPTH)
-		ReverseDepth(Output.HPos);
-	#endif
 
 	Output.Pos = Input.Pos;
 
@@ -195,11 +186,6 @@ VS2PS_DualClouds VS_SkyDome_DualClouds(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
 
-	// Output Depth
-	#if !defined(LOG_DEPTH)
-		ReverseDepth(Output.HPos);
-	#endif
-
 	Output.Pos = Input.Pos;
 
 	Output.SkyTex = Input.Tex0;
@@ -247,11 +233,6 @@ VS2PS_NoClouds VS_SkyDome_NoClouds(APP2VS_NoClouds Input)
 
 	float4 ScaledPos = float4(Input.Pos.xyz, 10.0); // plo: fix for artifacts on BFO.
 	Output.HPos = mul(ScaledPos, _ViewProjMatrix);
-
-	// Output Depth
-	#if !defined(LOG_DEPTH)
-		ReverseDepth(Output.HPos);
-	#endif
 
 	Output.Pos = Input.Pos;
 
@@ -302,12 +283,6 @@ VS2PS_NoClouds VS_SkyDome_SunFlare(APP2VS_NoClouds Input)
 	VS2PS_NoClouds Output = (VS2PS_NoClouds)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-
-	// Output Depth
-	#if !defined(LOG_DEPTH)
-		ReverseDepth(Output.HPos);
-	#endif
-
 	Output.Pos = Input.Pos;
 
 	Output.Tex0 = Input.Tex0;
