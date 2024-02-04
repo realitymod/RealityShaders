@@ -115,19 +115,19 @@
 
 	void ApplyFog(inout float3 Color, in float FogValue)
 	{
-		float3 FogColor = FogColor;
+		float3 Fog = FogColor;
 
 		// Adjust fog for thermals same way as the sky in SkyDome
 		if (IsTisActive())
 		{
 			// TIS uses Green + Red channel to determine heat
-			FogColor.r = 0.0;
+			Fog.r = 0.0;
 			// Green = 1 means cold, Green = 0 hot. Invert channel so clouds (high green) become hot
 			// Add constant to make everything colder
-			FogColor.g = (1.0 - FogColor.g) + 0.5;
+			Fog.g = (1.0 - Fog.g) + 0.5;
 		}
 
-		Color = lerp(FogColor, Color, FogValue);
+		Color = lerp(Fog, Color, FogValue);
 	}
 
 	float GetRoadZFade(float3 ObjectPos, float3 CameraPos, float2 FadeValues)
