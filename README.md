@@ -51,14 +51,39 @@ Support for 16x anisotropic filtering.
 
 ## Coding Convention
 
-Practice | Elements
--------- | --------
-**ALLCAPS** | state parameters • system semantics
-**ALL_CAPS** | preprocessor (macros and its arguments)
-**_SnakeCase** | variables (uniform)
-**SnakeCase** | method arguments • variables (global, local, textures, samplers)
-**Snake_Case** | data subcatagory
-**PREFIX_Data** | `struct` • `PixelShader` • `VertexShader`
+- **ALLCAPS**
+    - State parameters
+    - System semantics
+- **ALL_CAPS**
+    - Preprocessor Macros
+    - Preprocessor Macro Arguments
+- **_SnakeCase**
+    - Uniform variables
+- **SnakeCase**
+    - Function arguments
+    - Global Variables
+    - Local Variables
+    - Textures and Samples
+- **Snake_Case**
+    - Data subcategory
+- **PREFIX_Data**
+    - `Struct`
+
+        `APP2VS_`
+
+        `VS2PS_`
+
+        `PS2FB_`
+
+        `PS2MRT_`
+
+    - `VertexShader` method
+
+        `VS_`
+
+    - `PixelShader` method
+
+        `PS_`
 
 ## Acknowledgment
 
