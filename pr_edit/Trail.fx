@@ -90,9 +90,11 @@ VS2PS VS_Trail(APP2VS Input)
 	// Displace vertex
 	float4 Pos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
-	Output.WorldPos = float4(Input.Pos, 0.0);
+	Output.WorldPos = float4(Input.Pos, Output.HPos.w);
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.WorldPos.w = Output.HPos.w + 1.0; // Output depth
+		Output.WorldPos.w = Output.HPos.w + 1.0;
 	#endif
 
 	// Project eyevec to Tangent vector to get position on axis
@@ -177,7 +179,7 @@ PS2FB PS_Trail_Low(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 0.0)));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
@@ -204,7 +206,7 @@ PS2FB PS_Trail_Medium(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 0.0)));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
@@ -235,7 +237,7 @@ PS2FB PS_Trail_High(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 0.0)));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);

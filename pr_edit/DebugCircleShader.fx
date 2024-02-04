@@ -46,8 +46,10 @@ VS2PS VS_Debug_Circle(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Diffuse = float4(Input.Diffuse.rgb, 0.8);
@@ -61,6 +63,7 @@ PS2FB PS_Debug_Circle(VS2PS Input)
 
 	Output.Color = Input.Diffuse;
 
+	// Output Depth
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
@@ -91,9 +94,9 @@ technique t0
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		ZWriteEnable = 1;
 		ZEnable = FALSE;
 		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_Circle();
 		PixelShader = compile ps_3_0 PS_Debug_Circle();
@@ -118,8 +121,10 @@ technique t0_usezbuffer
 	{
 		CullMode = NONE;
 		AlphaBlendEnable = FALSE;
-		ZWriteEnable = 1;
+
 		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_Circle();
 		PixelShader = compile ps_3_0 PS_Debug_Circle();

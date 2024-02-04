@@ -1,6 +1,22 @@
 
-#include "shaders/RaCommon.fx"
-#include "shaders/RaShaderBMCommon.fx"
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/RaCommon.fxh"
+#include "shaders/RaShaderBM.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "RaCommon.fxh"
+	#include "RaShaderBM.fxh"
+#endif
+
+/*
+	Description: Renders additive lighting for bundledmesh (dynamic, nonhuman objects)
+*/
 
 string GenerateStructs[] =
 {
@@ -10,81 +26,111 @@ string GenerateStructs[] =
 	"InstanceParameters"
 };
 
-string reqVertexElement[] = {
+string reqVertexElement[] =
+{
 	"Position",
 	"Normal",
 	"Bone4Idcs",
 	"TBase2D"
 };
 
-string GlobalParameters[] = {
+string GlobalParameters[] =
+{
 	"ViewProjection"
 };
 
-string TemplateParameters[] = {
+string TemplateParameters[] =
+{
 	"DiffuseMap"
 };
 
-string InstanceParameters[] = {
+string InstanceParameters[] =
+{
 	"GeomBones",
 	"Transparency"
 };
 
-struct VS_IN
+struct APP2VS
 {
 	float4 Pos : POSITION;
-// float3 Normal : NORMAL;
-	float4 BlendIndices : BLENDINDICES;  
-	float4 Tex : TEXCOORD0;
+	// float3 Normal : NORMAL;
+	float4 BlendIndices : BLENDINDICES;
+	float4 Tex0 : TEXCOORD0;
 };
 
-
-struct VS_OUT
+struct VS2PS
 {
-	float4 Pos : POSITION0;
-	float4 Tex : TEXCOORD0;
-	float Fog : FOG;
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float4 Tex0 : TEXCOORD1;
 };
 
-VS_OUT vs(VS_IN indata)
+struct PS2FB
 {
-	VS_OUT Out = (VS_OUT)0.0;
- 
- 	int4 IndexVector = D3DCOLORtoUBYTE4(indata.BlendIndices);
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
+VS2PS VS_BM_Additive(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0.0;
+
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
-	
-	Out.Pos = float4(mul(indata.Pos, GeomBones[IndexArray[0]]), 1);
-	Out.Pos = mul(Out.Pos, ViewProjection);
-	Out.Fog = calcFog(Out.Pos.w);
-	Out.Tex = indata.Tex;
 
-	return Out;
+	Output.HPos = float4(mul(Input.Pos, GeomBones[IndexArray[0]]), 1.0);
+	Output.HPos = mul(Output.HPos, ViewProjection);
+	Output.Pos = Output.HPos;
+
+	// Output Depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0;
+	#endif
+
+	Output.Tex0 = Input.Tex0;
+
+	return Output;
 }
 
-
-float4 ps(VS_OUT indata) : COLOR
+PS2FB PS_BM_Additive(VS2PS Input)
 {
-	float4 outCol = tex2D(DiffuseMapSampler, indata.Tex);
-	outCol.rgb *= Transparency;
-	return outCol;
+	PS2FB Output = (PS2FB)0.0;
+
+	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	OutputColor.rgb *= Transparency;
+
+	Output.Color = OutputColor;
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 }
 
 technique defaultTechnique
 {
-	pass P0
+	pass p0
 	{
-		vertexShader = compile vs_1_1 vs();
-		pixelShader = compile ps_1_3 ps();
+		#if defined(ENABLE_WIREFRAME)
+			FillMode = WireFrame;
+		#endif
 
-#ifdef ENABLE_WIREFRAME
-		FillMode = WireFrame;
-#endif
+		ZEnable = TRUE;
 		ZFunc = ALWAYS;
+		ZWriteEnable = FALSE;
+
 		AlphaTestEnable = TRUE;
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
+
 		AlphaBlendEnable = TRUE;
-		SrcBlend = ONE;// SRCALPHA;
-		DestBlend = ONE;// INVSRCALPHA;
+		SrcBlend = ONE; // SRCALPHA;
+		DestBlend = ONE; // INVSRCALPHA;
+
+		VertexShader = compile vs_3_0 VS_BM_Additive();
+		PixelShader = compile ps_3_0 PS_BM_Additive();
 	}
 }

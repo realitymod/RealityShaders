@@ -70,12 +70,14 @@ struct PS2FB
 
 VS2PS VS_Quad(APP2VS Input)
 {
-	VS2PS Output = (VS2PS)0.0;
+	VS2PS Output;
 
 	Output.HPos = mul(Input.Pos, _ViewProj);
 	Output.Pos = Input.Pos;
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Color1 = Input.Color1;
@@ -87,7 +89,7 @@ VS2PS VS_Quad(APP2VS Input)
 
 PS2FB PS_Quad(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	float4 Tex0 = tex2D(SampleTex0, Input.Tex.xy);
 	float4 Tex1 = tex2D(SampleTex1, Input.Tex.zw);

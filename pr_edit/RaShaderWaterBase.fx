@@ -220,7 +220,7 @@ float4 inPos : POSITION0,
 float2 lmtex : TEXCOORD1
 )
 {
-	VS_OUTPUT_WATER Out;// = (VS_OUTPUT_WATER)0.0;
+	VS_OUTPUT_WATER Out;// = (VS_OUTPUT_WATER)0;
 
 	float4 wPos = mul(inPos, World);
 	

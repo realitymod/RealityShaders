@@ -55,7 +55,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float3 WorldPos : TEXCOORD0;
-	float3 ViewPos : TEXCOORD1;
+	float4 ViewPos : TEXCOORD1;
 	float4 Color : TEXCOORD2;
 
 	float2 Tex0 : TEXCOORD3;
@@ -77,7 +77,7 @@ VS2PS VS_Diffuse(APP2VS Input)
 	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.WorldPos = Pos.xyz;
-	Output.ViewPos = Output.HPos.xyz;
+	Output.ViewPos = Output.HPos;
 
 	// Compute Cubic polynomial factors.
 	float Age = _AgeAndAlphaArray[IndexArray[0]][0];
@@ -90,7 +90,7 @@ VS2PS VS_Diffuse(APP2VS Input)
 	// Pass-through texcoords
 	Output.Tex0 = Input.TexCoord;
 
-	// Output depth (VS)
+	// Output Depth
 	#if defined(LOG_DEPTH)
 		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 	#endif
@@ -142,6 +142,7 @@ PS2FB PS_Additive(VS2PS Input)
 	ColorWriteEnable = RED|GREEN|BLUE; \
 	CullMode = NONE; \
 	ZEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
 	ZWriteEnable = ZWRITE; \
 	AlphaTestEnable = TRUE; \
 	AlphaRef = 0; \

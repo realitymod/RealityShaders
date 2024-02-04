@@ -33,8 +33,7 @@
 	{
 		float3 pos;
 		float3 dir;
-		float4 color;
-		float4 specularColor;
+		float3 color;
 		float attenuation;
 	};
 
@@ -102,7 +101,7 @@
 		float2 FogValues = FogDistance * FogRange.xy + FogRange.zw;
 		float Close = max(FogValues.y, FogColor.w);
 		float Far = pow(FogValues.x, 3.0);
-		return saturate(Close - Far);
+		return smoothstep(0.0, 1.0, Close - Far);
 	}
 
 	void ApplyFog(inout float3 Color, in float FogValue)

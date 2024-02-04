@@ -14,7 +14,7 @@ string GenerateStructs[] =
 
 
 // this is the common vertexElement members
-string reqVertexElementBase[] = 
+string reqVertexElementBase[] =
 {
  	"PositionPacked",
  	"NormalPacked8",
@@ -23,21 +23,21 @@ string reqVertexElementBase[] =
 };
 
 // this is the common global parameters
-string GlobalParametersBase[] = 
+string GlobalParametersBase[] =
 {
 	"ViewProjection",
 	"DiffuseColorAndAmbient",
 	"SpecularColor",
 	"SpecularPower",
-	"SpecLUT64SpecularColor",
-	"NormalizationCube",
+	// "SpecLUT64SpecularColor",
+	// "NormalizationCube",
 	"FogRange",
 	"FogColor",
 	"WorldSpaceCamPos" // should be as an "inverted specialized" instead
 };
 
 // this is the common template parameters
-string TemplateParametersBase[] = 
+string TemplateParametersBase[] =
 {
 	"DiffuseMap",
 	"PosUnpack",
@@ -46,7 +46,7 @@ string TemplateParametersBase[] =
 };
 
 // this is the common instance parameters
-string InstanceParametersBase[] = 
+string InstanceParametersBase[] =
 {
 	"World",
 	"AlphaBlendEnable",
@@ -67,11 +67,11 @@ const dword _nothing_ : LITERAL;
 
 const dword _hasuvanimation_ : LITERAL
 <
-	string reqVertexElement[] = 
+	string reqVertexElement[] =
 	{
 	 	"TUVAnimationPacked2D"
 	};
-	string InstanceParameters[] = 
+	string InstanceParameters[] =
 	{
 		"UserData"
 	};
@@ -79,11 +79,12 @@ const dword _hasuvanimation_ : LITERAL
 
 const dword _hasnormalmap_ : LITERAL
 <
-	string reqVertexElement[] = 
+	string reqVertexElement[] =
 	{
 	 	"TangentSpacePacked8"
 	};
-	string TemplateParameters[] = 
+
+	string TemplateParameters[] =
 	{
 		"NormalMap"
 	};
@@ -91,7 +92,7 @@ const dword _hasnormalmap_ : LITERAL
 
 const dword _hasgimap_ : LITERAL
 <
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
 		"GIMap"
 	};
@@ -99,9 +100,9 @@ const dword _hasgimap_ : LITERAL
 
 const dword _hasenvmap_ : LITERAL
 <
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
-		"CubeMap",		// Funky name!!!
+		"CubeMap", // Funky name!!!
 	};
 >;
 
@@ -109,11 +110,11 @@ const dword _hascockpit_ : LITERAL;
 
 const dword _hasshadow_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"ShadowMap"
 	};
-	string InstanceParameters[] = 
+	string InstanceParameters[] =
 	{
 		"ShadowProjMat",
 		"ShadowTrapMat"
@@ -122,19 +123,19 @@ const dword _hasshadow_ : LITERAL
 
 const dword _hascolormapgloss_ : LITERAL;
 
-/*const dword _hasnormalmapgloss_ : LITERAL
-<
-	string TemplateParameters[] = 
-	{
-		"NormalMap"
-	};
->;
+/*
+	const dword _hasnormalmapgloss_ : LITERAL
+	<
+		string TemplateParameters[] =
+		{
+			"NormalMap"
+		};
+	>;
 */
-
 
 const dword _hasstaticgloss_ : LITERAL
 <
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
 		"StaticGloss"
 	};
@@ -144,16 +145,18 @@ const dword _hasdot3alphatest_ : LITERAL;
 
 const dword _usehemimap_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"HemiMap",
 		"HemiMapConstants",
 		"HemiMapSkyColor"
 	};
+
 	string TemplateParameters[] =
-	{ 
+	{
 		"InvHemiHeightScale"
 	};
+
 	string InstanceParameters[] =
 	{
 		"HeightOverTerrain"
@@ -164,7 +167,6 @@ const dword _pointlight_ : LITERAL;
 
 // const dword _useperpixelnormalize_ : LITERAL;
 // const dword _userenormalizedtextures_ : LITERAL;
-
 
 // This is the array of the shader permutations to generate.
 // the resulting shadername is the name of this file + the permutationname - "_"

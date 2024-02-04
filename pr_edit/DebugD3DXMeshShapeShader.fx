@@ -81,8 +81,10 @@ VS2PS_Basic VS_Debug_Basic(APP2VS Input)
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Normal = Input.Normal;
@@ -99,8 +101,10 @@ VS2PS VS_Debug_Cone(APP2VS Input)
 
 	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -186,8 +190,10 @@ VS2PS VS_Debug_Occluder(APP2VS Input)
 	float4 WorldPos = mul(Input.Pos, _World);
 	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -280,6 +286,7 @@ technique EditorDebug
 		CullMode = CW;
 
 		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 		FillMode = WIREFRAME;
 
 		VertexShader = compile vs_3_0 VS_Debug_Cone();
@@ -305,8 +312,10 @@ VS2PS_CollisionMesh VS_Debug_CollisionMesh(APP2VS Input)
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Normal = Input.Normal;
@@ -350,7 +359,7 @@ technique collisionMesh
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		ZWriteEnable = 1;
+		ZWriteEnable = TRUE;
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 
@@ -368,7 +377,8 @@ technique collisionMesh
 		DestBlend = INVSRCALPHA;
 
 		ZEnable = TRUE;
-		ZWriteEnable = 1;
+		ZFunc = LESSEQUAL;
+		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_CollisionMesh();
 		PixelShader = compile ps_3_0 PS_Debug_CollisionMesh(0.5);
@@ -399,6 +409,8 @@ technique marked
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
+		ZFunc = LESSEQUAL;
+
 		VertexShader = compile vs_3_0 VS_Debug_Basic();
 		PixelShader = compile ps_3_0 PS_Debug_Basic_1();
 	}
@@ -424,6 +436,7 @@ technique gamePlayObject
 		DestBlend = INVSRCALPHA;
 
 		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
 		VertexShader = compile vs_3_0 VS_Debug_Basic();
 		PixelShader = compile ps_3_0 PS_Debug_Basic_2();
@@ -480,8 +493,10 @@ VS2PS_Grid VS_Debug_Grid(APP2VS Input)
 
 	Output.Tex0.xy = (Input.Pos.xz * 0.5) + 0.5;
 	Output.Tex0.xy *= _TextureScale;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Normal = Input.Normal;
@@ -530,6 +545,8 @@ technique grid
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
+		ZFunc = LESSEQUAL;
+
 		VertexShader = compile vs_3_0 VS_Debug_Grid();
 		PixelShader = compile ps_3_0 PS_Debug_Grid();
 	}
@@ -551,8 +568,10 @@ VS2PS VS_Debug_SpotLight(APP2VS Input)
 
 	Output.HPos = mul(Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -611,8 +630,10 @@ VS2PS VS_Debug_PivotBox(APP2VS Input)
 	float4 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -635,8 +656,8 @@ technique pivotBox
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		ZWriteEnable = 0;
 		ZEnable = FALSE;
+		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_Debug_PivotBox();
 		PixelShader = compile ps_3_0 PS_Debug_Object();
@@ -675,8 +696,8 @@ technique pivot
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		ZWriteEnable = 0;
 		ZEnable = FALSE;
+		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_Debug_Cone();
 		PixelShader = compile ps_3_0 PS_Debug_Object();
@@ -721,8 +742,10 @@ VS2PS_Frustum VS_Debug_Frustum(APP2VS_Frustum Input)
 
 	Output.HPos = mul(Input.Pos, _WorldViewProj);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Color = Input.Color;

@@ -16,4 +16,6 @@
 	// This hardcoded value fixes a bug with undergrowth's alphatesting
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
 	#define PR_ALPHA_REF 127
+
+	#define IS_EDITOR
 #endif

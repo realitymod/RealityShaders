@@ -74,8 +74,10 @@ void VS_Point(in APP2PS Input, out VS2PS Output)
 
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.Tex0.xy = Input.Tex0;
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
@@ -135,8 +137,10 @@ void VS_Line(in APP2PS Input, out VS2PS_Line Output)
 	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.Tex0.xy = Input.Tex0;
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 }
 
@@ -189,8 +193,10 @@ void VS_Cells(in APP2PS Input, out VS2PS_Cell Output)
 	Output.Color = saturate(_ParticleColor);
 	Output.HPos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
 	Output.Tex0.xy = Input.Tex0;
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0; // Output depth
+		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 }
 

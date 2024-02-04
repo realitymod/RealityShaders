@@ -1,9 +1,14 @@
-/// SkinnedMesh MetaFx
 
+//
+/// SkinnedMesh MetaFx
+//
+
+//
 // This array specifies what the shaderPermutator should build
 // in the case below it will first look for reqVertexElement + "Base"
 // and get the common members of that array. And will then complement
 // that array for each permutation based on the requirements of each individual LITERAL
+//
 string GenerateStructs[] =
 {
 	"reqVertexElement",
@@ -12,65 +17,61 @@ string GenerateStructs[] =
 	"InstanceParameters"
 };
 
-
-// this is the common vertexElement members
-string reqVertexElementBase[] = 
+// This is the common VertexElement members
+string reqVertexElementBase[] =
 {
- 	"Position",
- 	"Normal",
+	"Position",
+	"Normal",
 	"Bone4Idcs",
 	"Bone2Weights",
 	"TBase2D"
 };
 
-// this is the common global parameters
-string GlobalParametersBase[] = 
+// This is the common global parameters
+string GlobalParametersBase[] =
 {
-	"DiffuseColor",
-	"SpecularColor",
 	"SpecularPower",
-	"Ambient",
 	"FogRange",
-	"FogColor", 
-	"WorldSpaceCamPos" // should be as an "inverted specialized" instead
+	"FogColor",
+	"WorldSpaceCamPos",
 };
 
-// this is the common template parameters
-string TemplateParametersBase[] = 
+// This is the common template parameters
+string TemplateParametersBase[] =
 {
 	"DiffuseMap",
-// "CubeMap",		// Funky name!!!
+	// "CubeMap", //Funky name!!!
 };
 
-
-// this is the common instance parameters
-string InstanceParametersBase[] = 
+// This is the common instance parameters
+string InstanceParametersBase[] =
 {
-// "AlphaBlendEnable",
-// "DepthWrite",
-	"CullMode",
+	// "AlphaBlendEnable",
+	// "DepthWrite",
 	"AlphaTest",
 	"AlphaTestRef",
-	"ObjectSpaceCamPos",
 	"Lights",
 	"MatBones",
 	"WorldViewProjection",
 	"World",
 	"Transparency",
+	"ObjectSpaceCamPos",
 };
 
-
+//
 // Literals, and their requirements
+//
 
 const dword _nothing_ : LITERAL;
 
 const dword _hasnormalmap_ : LITERAL
 <
-	string reqVertexElement[] = 
+	string reqVertexElement[] =
 	{
-	 	"TangentSpace"
+		"TangentSpace"
 	};
-	string TemplateParameters[] = 
+
+	string TemplateParameters[] =
 	{
 		"NormalMap"
 	};
@@ -80,42 +81,64 @@ const dword _objspacenormalmap_ : LITERAL;
 
 const dword _hasenvmap_ : LITERAL
 <
-	string TemplateParameters[] = 
+	string TemplateParameters[] =
 	{
-		"CubeMap",		// Funky name!!!
-		"Reflectivity"	// Also somewhat funky. Means env map scale.
+		"CubeMap", // Funky name!!!
+		"Reflectivity" // Also somewhat funky. Means env map scale.
 	};
 >;
 
 const dword _hasshadow_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"ShadowMap"
 	};
-	string InstanceParameters[] = 
+
+	string InstanceParameters[] =
 	{
 		"ShadowProjMat",
 		"ShadowTrapMat"
 	};
 >;
 
-// const dword _hascolormapgloss_ : LITERAL;
-/*const dword _hasstaticgloss_ : LITERAL
+const dword _hasshadowocclusion_ : LITERAL
 <
-	string TemplateParameters[] = 
+	string GlobalParameters[] =
 	{
-		"StaticGloss"
+		"ShadowOccluderMap"
 	};
->;*/
+
+	string InstanceParameters[] =
+	{
+		"ShadowOccProjMat",
+		"ShadowTrapMat"
+	};
+>;
+
+// const dword _hascolormapgloss_ : LITERAL;
+/*
+	const dword _hasstaticgloss_ : LITERAL
+	<
+		string TemplateParameters[] =
+		{
+			"StaticGloss"
+		};
+	>;
+*/
+
 // const dword _hasdot3alphatest_ : LITERAL;
 
 const dword _usehemimap_ : LITERAL
 <
-	string GlobalParameters[] = 
+	string GlobalParameters[] =
 	{
 		"HemiMap",
-		"HemiMapConstants",
+		"HemiMapConstants"
+	};
+
+	string InstanceParameters[] =
+	{
 		"HemiMapSkyColor",
 		"HeightOverTerrain"
 	};
@@ -123,13 +146,11 @@ const dword _usehemimap_ : LITERAL
 
 const dword _pointlight_ : LITERAL;
 
-// const dword _useperpixelnormalize_ : LITERAL;
-// const dword _userenormalizedtextures_ : LITERAL;
-
-
+//
 // This is the array of the shader permutations to generate.
 // the resulting shadername is the name of this file + the permutationname - "_"
 // ie. RaShaderSTMBaseDetail etc
+//
 string GenerateShaderPermutations[] =
 {
 	"_nothing_",
@@ -146,12 +167,12 @@ string GenerateShaderPermutations[] =
 	"_hasenvmap_|_usehemimap_",
 };
 
-// for each shader in the permutation array, the following variants will be generated
+// For each shader in the permutation array, the following variants will be generated
 string GenerateShaderModifiers[] =
 {
 	"_hasshadow_",
-	//"_hascolormapgloss_",
-	//"_hasstaticgloss_",
+	"_hasshadow_|_hasshadowocclusion_",
+
 	"_pointlight_",
 	"_hasshadow_|_pointlight_",
 };
@@ -159,8 +180,8 @@ string GenerateShaderModifiers[] =
 // Fallback stuff
 string DeprecationList[] =
 {
-	{"hasnormalmap", "objspacenormalmap", ""},
-	{"usehemimap", "hasenvmap", ""},
-	{"hasshadow", ""},
-	{"hascolormapgloss", ""},
+	{ "hasnormalmap", "objspacenormalmap", "" },
+	{ "usehemimap", "hasenvmap", "" },
+	{ "hasshadow", "hasshadowocclusion", "" },
+	{ "hascolormapgloss", "" },
 };

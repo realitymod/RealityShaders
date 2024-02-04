@@ -73,6 +73,21 @@ float GetFadeOut(float3 Pos)
 	return saturate(FadeOut * (Pos.y > 0.0));
 }
 
+bool IsTisActive()
+{
+	return _UnderwaterFog.r == 0;
+}
+
+float4 ApplyTis(in out float4 Color)
+{
+	// TIS uses Green + Red channel to determine heat
+	Color.r = 0.0;
+	// Green = 1 means cold, Green = 0 hot. Invert channel so clouds (high green) become hot
+	// Add constant to make everything colder
+	Color.g = (1.0 - Color.g) + 0.5;
+	return Color;
+}
+
 /*
 	General SkyDome shaders
 */
@@ -89,6 +104,7 @@ VS2PS_SkyDome VS_SkyDome(APP2VS Input)
 	VS2PS_SkyDome Output = (VS2PS_SkyDome)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+
 	Output.Pos = Input.Pos;
 
 	Output.Tex0.xy = Input.Tex0; // Sky coords
@@ -101,7 +117,14 @@ PS2FB PS_SkyDome_UnderWater(VS2PS_SkyDome Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	Output.Color = _UnderwaterFog;
+	if (IsTisActive())
+	{
+		Output.Color = 0;
+	}
+	else
+	{
+		Output.Color = _UnderwaterFog;
+	}
 
 	return Output;
 }
@@ -116,6 +139,12 @@ PS2FB PS_SkyDome(VS2PS_SkyDome Input)
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
+
 	return Output;
 }
 
@@ -129,6 +158,12 @@ PS2FB PS_SkyDome_Lit(VS2PS_SkyDome Input)
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
+
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
 
 	return Output;
 }
@@ -150,6 +185,7 @@ VS2PS_DualClouds VS_SkyDome_DualClouds(APP2VS Input)
 	VS2PS_DualClouds Output = (VS2PS_DualClouds)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
+
 	Output.Pos = Input.Pos;
 
 	Output.SkyTex = Input.Tex0;
@@ -171,6 +207,12 @@ PS2FB PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
 
 	Output.Color = lerp(SkyDome, Temp, Temp.a);
 
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
+
 	return Output;
 }
 
@@ -191,6 +233,7 @@ VS2PS_NoClouds VS_SkyDome_NoClouds(APP2VS_NoClouds Input)
 
 	float4 ScaledPos = float4(Input.Pos.xyz, 10.0); // plo: fix for artifacts on BFO.
 	Output.HPos = mul(ScaledPos, _ViewProjMatrix);
+
 	Output.Pos = Input.Pos;
 
 	Output.Tex0 = Input.Tex0;
@@ -204,6 +247,12 @@ PS2FB PS_SkyDome_NoClouds(VS2PS_NoClouds Input)
 
 	Output.Color = tex2D(SampleTex0, Input.Tex0);
 
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
+
 	return Output;
 }
 
@@ -215,6 +264,12 @@ PS2FB PS_SkyDome_NoClouds_Lit(VS2PS_NoClouds Input)
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = SkyDome;
+
+	// If thermals make it dark
+	if (IsTisActive())
+	{
+		Output.Color = ApplyTis(Output.Color);
+	}
 
 	return Output;
 }

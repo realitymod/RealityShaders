@@ -1,17 +1,31 @@
-// Global variables we use to hold the view matrix,	projection matrix,
-// ambient material, diffuse material, and the light vector that 
-// describes the direction to the light source.	 These variables are 
-// initialized from the application.
-#include "shaders/RaCommon.fx"
 
-bool AlphaBlendEnable = false;
+/*
+	Include header files
+*/
 
-float4x4 Bones[26];
-float4x4 world;
-vector textureFactor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/RaCommon.fxh"
+#include "shaders/shared/RealityDepth.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "RaCommon.fxh"
+	#include "shared/RealityDepth.fxh"
+#endif
 
-texture DiffuseMap;
-sampler DiffuseMapSampler = sampler_state
+/*
+	Description: Renders object's diffuse map
+
+	Global variables we use to hold the view matrix, projection matrix,
+	ambient material, diffuse material, and the light vector that
+	describes the direction to the light source. These variables are
+	initialized from the application.
+*/
+
+uniform float4x4 Bones[26];
+uniform bool AlphaBlendEnable = false;
+
+uniform texture DiffuseMap;
+sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
 	MipFilter = LINEAR;
@@ -19,77 +33,101 @@ sampler DiffuseMapSampler = sampler_state
 	MagFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
-	MipMapLodBias = 0;
 };
 
-//-----------VS/PS----
-
-struct VS_OUTPUT
-{
-	float4 Pos : POSITION0;
-	float2 Tex : TEXCOORD0;
-	float Fog : FOG;
-};
-
-string reqVertexElement[] = 
-{
- 	"Position",
- 	"TBase2D",
- 	"Bone4Idcs"
-};
-
-VS_OUTPUT basicVertexShader
-(
-float3 inPos: POSITION0,
-float2 tex0 : TEXCOORD0,
-float4 blendIndices : BLENDINDICES
-)
-{
-	VS_OUTPUT Out = (VS_OUTPUT)0.0;
-
-	// Compensate for lack of UBYTE4 on Geforce3
-	int4 indexVector = D3DCOLORtoUBYTE4(blendIndices);
-	int indexArray[4] = (int[4])indexVector;
-
-	Out.Pos = mul(float4(inPos, 1), mul(Bones[indexArray[0]], ViewProjection));
-	Out.Fog = calcFog(Out.Pos.w);
-	Out.Tex = tex0;
-
-	return Out;
-}
-
-float4 PixelShader(VS_OUTPUT VsOut) : COLOR
-{
-	return tex2D(DiffuseMapSampler, VsOut.Tex) * float4(1,0,1,1);
-};
-
-string TemplateParameters[] = 
+string TemplateParameters[] =
 {
 	"DiffuseMap",
 	"ViewProjection"
 };
 
-string InstanceParameters[] = 
+string InstanceParameters[] =
 {
 	"Bones",
-	"AlphaBlendEnable"
+	"AlphaBlendEnable",
+};
+
+string reqVertexElement[] =
+{
+	"Position",
+	"TBase2D",
+	"Bone4Idcs"
+};
+
+struct APP2VS
+{
+	float3 Pos : POSITION0;
+	float2 Tex0 : TEXCOORD0;
+	float4 BlendIndices : BLENDINDICES;
+};
+
+struct VS2PS
+{
+	float4 HPos : POSITION;
+	float3 Tex0 : TEXCOORD0;
+};
+
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
+VS2PS VS_DiffuseBone(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0.0;
+
+	// Compensate for lack of UBYTE4 on Geforce3
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
+	int IndexArray[4] = (int[4])IndexVector;
+
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(Bones[IndexArray[0]], ViewProjection));
+	Output.Tex0.xy = Input.Tex0;
+
+	// Output Depth
+	#if defined(LOG_DEPTH)
+		Output.Tex0.z = Output.HPos.w + 1.0;
+	#endif
+
+	return Output;
+}
+
+PS2FB PS_DiffuseBone(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0.0;
+
+	float4 ColorTex = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+
+	Output.Color = ColorTex * float4(1.0, 0.0, 1.0, 1.0);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+	#endif
+
+	return Output;
 };
 
 technique defaultTechnique
 {
-	pass P0
+	pass p0
 	{
-		vertexShader = compile vs_1_1 basicVertexShader();
-		pixelShader = compile ps_1_3 PixelShader();
+		#if defined(ENABLE_WIREFRAME)
+			FillMode = WireFrame;
+		#endif
 
-#ifdef ENABLE_WIREFRAME
-		FillMode = WireFrame;
-#endif
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
-		AlphaTestEnable = < AlphaTest >;
-		AlphaBlendEnable= < AlphaBlendEnable >;
-		AlphaRef = < alphaRef >;
-		SrcBlend = < srcBlend >;
-		DestBlend = < destBlend >;
+		AlphaTestEnable = (AlphaTest);
+		AlphaRef = (alphaRef);
+
+		AlphaBlendEnable = (AlphaBlendEnable);
+		SrcBlend = (srcBlend);
+		DestBlend = (destBlend);
+
+		VertexShader = compile vs_3_0 VS_DiffuseBone();
+		PixelShader = compile ps_3_0 PS_DiffuseBone();
 	}
 }

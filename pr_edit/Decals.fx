@@ -99,8 +99,10 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 
 	Output.HPos = mul(float4(WorldPos, 1.0), _WorldViewProjection);
 	Output.Pos = Output.HPos;
+
+	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Normal = normalize(mul(Input.Normal.xyz, (float3x3)WorldMat));
@@ -157,7 +159,7 @@ PS2FB PS_Decals(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = GetPixelDecals(Input, false);
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos.xyz, 0.0));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -169,6 +171,7 @@ PS2FB PS_Decals(VS2PS Input)
 #define GET_RENDERSTATES_DECAL \
 	CullMode = CW; \
 	ZEnable = TRUE; \
+	ZFunc = LESSEQUAL; \
 	ZWriteEnable = FALSE; \
 	AlphaTestEnable = TRUE; \
 	AlphaRef = 0; \

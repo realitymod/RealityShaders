@@ -174,7 +174,7 @@
 		float2 C = GetGradient2(I, F, float2(0.0, 1.0), Bias);
 		float2 D = GetGradient2(I, F, float2(1.0, 1.0), Bias);
 		float2 UV = GetQuintic(F);
-		float2 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
+		float Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
 		Noise = (NormalizeOutput) ? saturate((Noise * 0.5) + 0.5) : Noise;
 		return Noise;
 	}
@@ -279,7 +279,7 @@
 
 	float2 GetParallaxTex(sampler HeightMap, float2 Tex, float3 ViewDir, float2 Scale, float2 Bias)
 	{
-		float2 Height = tex2D(HeightMap, Tex).aa;
+		float Height = tex2D(HeightMap, Tex).a;
 		Height = (Height * 2.0) - 1.0;
 		Height = (Height * Scale) + Bias;
 		ViewDir = ViewDir * float3(1.0, -1.0, 1.0);

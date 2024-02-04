@@ -24,7 +24,7 @@ struct VS2PS
 
 VS2PS VS_Quad(APP2VS Input)
 {
-	VS2PS Output = (VS2PS)0.0;
+	VS2PS Output = (VS2PS)0;
 
 	Output.Pos = float4(Input.Pos.xy, 0.0, 1.0);
  	Output.Tex0.x = 0.5 * (Input.Pos.x + 1.0);

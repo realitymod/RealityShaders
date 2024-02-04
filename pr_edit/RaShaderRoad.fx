@@ -1,157 +1,217 @@
-#include "shaders/RaCommon.fx"
- 
+
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "RaCommon.fxh"
+#endif
+
+/*
+	Description: Renders road for game
+*/
+
 #define LIGHT_MUL float3(0.8, 0.8, 0.4)
 #define LIGHT_ADD float3(0.4, 0.4, 0.4)
 
-float3 TerrainSunColor;
-float2 RoadFadeOut;
-float4 WorldSpaceCamPos;
-// float RoadDepthBias;
-// float RoadSlopeScaleDepthBias;
+uniform float3 TerrainSunColor;
+uniform float2 RoadFadeOut;
+uniform float4 WorldSpaceCamPos;
+// uniform float RoadDepthBias;
+// uniform float RoadSlopeScaleDepthBias;
 
-float4 PosUnpack;
-float TexUnpack;
+uniform float4 PosUnpack;
+uniform float TexUnpack;
 
-vector textureFactor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = FILTER_STM_DIFF_MIN; \
+		MagFilter = FILTER_STM_DIFF_MAG; \
+		MipFilter = LINEAR; \
+		MaxAnisotropy = PR_MAX_ANISOTROPY; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+	}; \
 
-//-----------VS/PS----
+uniform texture DiffuseMap;
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, WRAP)
 
-struct VS_OUTPUT
-{
-	float4 Pos : POSITION0;
-// float2 Tex0 : TEXCOORD0;
-	float3 Tex0AndZFade : TEXCOORD0;
-	float4 lightTex : TEXCOORD2;
-	float Fog : Fog;
-};
-
-texture LightMap;
-sampler LightMapSampler = sampler_state
-{
-	Texture = (LightMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
-
-texture DiffuseMap;
-sampler DiffuseMapSampler = sampler_state
-{
-	Texture = (DiffuseMap);
-	MipFilter = LINEAR;
-	MinFilter = FILTER_STM_DIFF_MIN;
-	MagFilter = FILTER_STM_DIFF_MAG;
-#ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
-	MaxAnisotropy = FILTER_STM_DIFF_MAX_ANISOTROPY;
+#if defined(USE_DETAIL)
+	uniform texture DetailMap;
+	CREATE_SAMPLER(SampleDetailMap, DetailMap, WRAP)
 #endif
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
 
+uniform texture LightMap;
+CREATE_SAMPLER(SampleLightMap, LightMap, WRAP)
 
-// INPUTS TO THE VERTEX SHADER FROM THE APP
-string reqVertexElement[] = 
+string GlobalParameters[] =
 {
- 	"PositionPacked",
- 	"TBasePacked2D",
-};
-
-VS_OUTPUT basicVertexShader
-(
-float4 inPos: POSITION0,
-float2 tex0 : TEXCOORD0
-)
-{
-	VS_OUTPUT Out = (VS_OUTPUT)0.0;
-
-	float4 wPos = mul(inPos * PosUnpack, World);
-	wPos.y += .01;
-		
-	
- 	Out.Pos = mul(wPos, ViewProjection);
-	Out.Tex0AndZFade.xy = tex0 * TexUnpack;
-
-	Out.lightTex.xy = Out.Pos.xy/Out.Pos.w;
- 	Out.lightTex.xy = (Out.lightTex.xy + 1) / 2;
- 	Out.lightTex.y = 1-Out.lightTex.y;
- 	Out.lightTex.xy = Out.lightTex.xy * Out.Pos.w;
-	Out.lightTex.zw = Out.Pos.zw;
-
-	float cameraDist = length(WorldSpaceCamPos - wPos);
-	Out.Tex0AndZFade.z = 1 - saturate((cameraDist * RoadFadeOut.x) - RoadFadeOut.y);
-
-	Out.Fog = calcFog(Out.Pos.w);
-	
-	return Out;
-}
-
-string GlobalParameters[] = {
-	"FogRange", 
-	"FogColor", 
+	"FogRange",
+	"FogColor",
 	"ViewProjection",
 	"TerrainSunColor",
 	"RoadFadeOut",
 	"WorldSpaceCamPos",
-// "RoadDepthBias",
-// "RoadSlopeScaleDepthBias"
+	// "RoadDepthBias",
+	// "RoadSlopeScaleDepthBias"
 };
 
-string TemplateParameters[] = {
+string TemplateParameters[] =
+{
 	"DiffuseMap",
-// "DetailMap",
+	#if defined(USE_DETAIL)
+		"DetailMap",
+	#endif
 };
 
-string InstanceParameters[] = {
+string InstanceParameters[] =
+{
 	"World",
 	"Transparency",
-	"LightMap",	
+	"LightMap",
 	"PosUnpack",
 	"TexUnpack",
 };
 
-float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
+// INPUTS TO THE VERTEX SHADER FROM THE APP
+string reqVertexElement[] =
 {
-// return float4(1,0,0,1);
-	float4 color = tex2D(DiffuseMapSampler, VsOut.Tex0AndZFade.xy);
-#ifdef DIFFUSE_CHANNEL
-	return float4(color.xyz, 1);
-#else 
-	float4 accumlights = tex2Dproj(LightMapSampler, VsOut.lightTex);
-	float4 light = ((accumlights.w * float4(TerrainSunColor,1)*2) + accumlights)*2;
-	
-	color.rgb *= light.xyz;
-	color.a *= VsOut.Tex0AndZFade.z;
-	
-	return color;
-#endif 
+	"PositionPacked",
+	"TBasePacked2D",
+	#if defined(USE_DETAIL)
+		"TDetailPacked2D",
+	#endif
+};
+
+struct APP2VS
+{
+	float4 Pos : POSITION0;
+	float2 Tex0 : TEXCOORD0;
+	#if defined(USE_DETAIL)
+		float2 Tex1 : TEXCOORD1;
+	#endif
+};
+
+struct VS2PS
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+
+	float4 Tex0 : TEXCOORD1; // .xy = Tex0; .zw = Tex1;
+	float4 LightTex : TEXCOORD2;
+};
+
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
+VS2PS VS_Road(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0.0;
+
+	float4 WorldPos = mul(Input.Pos * PosUnpack, World);
+	WorldPos.y += 0.01;
+
+	Output.HPos = mul(WorldPos, ViewProjection);
+
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
+
+	// Output Depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0;
+	#endif
+
+	Output.Tex0.xy = Input.Tex0 * TexUnpack;
+	#if defined(USE_DETAIL)
+		Output.Tex0.zw = Input.Tex1 * TexUnpack;
+	#endif
+
+	Output.LightTex.xy = Output.HPos.xy / Output.HPos.w;
+	Output.LightTex.xy = (Output.LightTex.xy * 0.5) + 0.5;
+	Output.LightTex.y = 1.0 - Output.LightTex.y;
+	Output.LightTex.xy = Output.LightTex.xy * Output.HPos.w;
+	Output.LightTex.zw = Output.HPos.zw;
+
+	return Output;
+}
+
+PS2FB PS_Road(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0.0;
+
+	float4 WorldPos = Input.Pos;
+	float ZFade = GetRoadZFade(WorldPos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
+
+	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
+	float3 Light = ((TerrainSunColor * (AccumLights.a * 2.0)) + AccumLights.rgb) * 2.0;
+
+	float4 Diffuse = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	#if defined(USE_DETAIL)
+		float4 Detail = tex2D(SampleDetailMap, Input.Tex0.zw);
+		Diffuse *= Detail;
+	#endif
+
+	// On thermals no shadows
+	if (IsTisActive())
+	{
+		Light = (TerrainSunColor + AccumLights.rgb) * 2.0;
+		Diffuse.rgb *= Light;
+		Diffuse.g = clamp(Diffuse.g, 0.0, 0.5);
+	}
+	else
+	{
+		Diffuse.rgb *= Light;
+	}
+
+	#if defined(NO_BLEND)
+		Diffuse.a = (Diffuse.a <= 0.95) ? 1.0 : ZFade;
+	#else
+		Diffuse.a *= ZFade;
+	#endif
+
+	Output.Color = Diffuse;
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 };
 
 technique defaultTechnique
 {
-	pass P0
+	pass p0
 	{
-		vertexShader = compile vs_1_1 basicVertexShader();
-		pixelShader = compile ps_1_4 basicPixelShader();
-
-#ifdef ENABLE_WIREFRAME
-		FillMode = WireFrame;
-#endif
+		#if defined(ENABLE_WIREFRAME)
+			FillMode = WireFrame;
+		#endif
 
 		CullMode = CCW;
-		AlphaBlendEnable = true;
-		AlphaTestEnable = false;
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
+		ZWriteEnable = FALSE;
 
+		AlphaTestEnable = FALSE;
+		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		ZEnable = true;
-		ZWriteEnable = false;
-		
-		fogenable = true;
-		
-// DepthBias = < RoadDepthBias >;
-// SlopeScaleDepthBias = < RoadSlopeScaleDepthBias >;
+		// DepthBias = (RoadDepthBias);
+		// SlopeScaleDepthBias = (RoadSlopeScaleDepthBias);
+
+		VertexShader = compile vs_3_0 VS_Road();
+		PixelShader = compile ps_3_0 PS_Road();
 	}
 }

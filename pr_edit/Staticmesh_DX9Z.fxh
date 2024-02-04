@@ -170,7 +170,7 @@ struct VS2PS_ZAndDiffusebasedetaildirtcrackparallax
 
 VS2PS_ZAndDiffusebase VS_ZAndDiffusebase(APP2VS_ZAndDiffusebase Input)
 {
-	VS2PS_ZAndDiffusebase Output = (VS2PS_ZAndDiffusebase)0.0;
+	VS2PS_ZAndDiffusebase Output;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
@@ -181,7 +181,7 @@ VS2PS_ZAndDiffusebase VS_ZAndDiffusebase(APP2VS_ZAndDiffusebase Input)
 
 VS2PS_ZAndDiffusebasedetail VS_ZAndDiffusebasedetail(APP2VS_ZAndDiffusebasedetail Input)
 {
-	VS2PS_ZAndDiffusebasedetail Output = (VS2PS_ZAndDiffusebasedetail)0.0;
+	VS2PS_ZAndDiffusebasedetail Output;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
@@ -193,7 +193,7 @@ VS2PS_ZAndDiffusebasedetail VS_ZAndDiffusebasedetail(APP2VS_ZAndDiffusebasedetai
 
 VS2PS_ZAndDiffusebasedetailparallax VS_ZAndDiffusebasedetailparallax(APP2VS_ZAndDiffusebasedetailparallax Input)
 {
-	VS2PS_ZAndDiffusebasedetailparallax Output = (VS2PS_ZAndDiffusebasedetailparallax)0.0;
+	VS2PS_ZAndDiffusebasedetailparallax Output;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
@@ -207,7 +207,7 @@ VS2PS_ZAndDiffusebasedetailparallax VS_ZAndDiffusebasedetailparallax(APP2VS_ZAnd
 
 VS2PS_ZAndDiffusebasedetaildirt VS_ZAndDiffusebasedetaildirt(APP2VS_ZAndDiffusebasedetaildirt Input)
 {
-	VS2PS_ZAndDiffusebasedetaildirt Output = (VS2PS_ZAndDiffusebasedetaildirt)0.0;
+	VS2PS_ZAndDiffusebasedetaildirt Output;
 
  	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
@@ -220,7 +220,7 @@ VS2PS_ZAndDiffusebasedetaildirt VS_ZAndDiffusebasedetaildirt(APP2VS_ZAndDiffuseb
 
 VS2PS_ZAndDiffusebasedetaildirtparallax VS_ZAndDiffusebasedetaildirtparallax(APP2VS_ZAndDiffusebasedetaildirtparallax Input)
 {
-	VS2PS_ZAndDiffusebasedetaildirtparallax Output = (VS2PS_ZAndDiffusebasedetaildirtparallax)0.0;
+	VS2PS_ZAndDiffusebasedetaildirtparallax Output;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
@@ -236,7 +236,7 @@ VS2PS_ZAndDiffusebasedetaildirtparallax VS_ZAndDiffusebasedetaildirtparallax(APP
 
 VS2PS_ZAndDiffusebasedetailcrack VS_ZAndDiffusebasedetailcrack(APP2VS_ZAndDiffusebasedetailcrack Input)
 {
-	VS2PS_ZAndDiffusebasedetailcrack Output = (VS2PS_ZAndDiffusebasedetailcrack)0.0;
+	VS2PS_ZAndDiffusebasedetailcrack Output;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
@@ -249,7 +249,7 @@ VS2PS_ZAndDiffusebasedetailcrack VS_ZAndDiffusebasedetailcrack(APP2VS_ZAndDiffus
 
 VS2PS_ZAndDiffusebasedetailcrackparallax VS_ZAndDiffusebasedetailcrackparallax(APP2VS_ZAndDiffusebasedetailcrackparallax Input)
 {
-	VS2PS_ZAndDiffusebasedetailcrackparallax Output = (VS2PS_ZAndDiffusebasedetailcrackparallax)0.0;
+	VS2PS_ZAndDiffusebasedetailcrackparallax Output;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
@@ -265,7 +265,7 @@ VS2PS_ZAndDiffusebasedetailcrackparallax VS_ZAndDiffusebasedetailcrackparallax(A
 
 VS2PS_ZAndDiffusebasedetaildirtcrack VS_ZAndDiffusebasedetaildirtcrack(APP2VS_ZAndDiffusebasedetaildirtcrack Input)
 {
-	VS2PS_ZAndDiffusebasedetaildirtcrack Output = (VS2PS_ZAndDiffusebasedetaildirtcrack)0.0;
+	VS2PS_ZAndDiffusebasedetaildirtcrack Output;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
@@ -279,7 +279,7 @@ VS2PS_ZAndDiffusebasedetaildirtcrack VS_ZAndDiffusebasedetaildirtcrack(APP2VS_ZA
 
 VS2PS_ZAndDiffusebasedetaildirtcrackparallax VS_ZAndDiffusebasedetaildirtcrackparallax(APP2VS_ZAndDiffusebasedetaildirtcrackparallax Input)
 {
-	VS2PS_ZAndDiffusebasedetaildirtcrackparallax Output = (VS2PS_ZAndDiffusebasedetaildirtcrackparallax)0.0;
+	VS2PS_ZAndDiffusebasedetaildirtcrackparallax Output;
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 

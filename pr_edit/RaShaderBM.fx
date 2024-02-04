@@ -1,55 +1,64 @@
-#include "shaders/RaCommon.fx"
+
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/shared/RealityVertex.fxh"
+#include "shaders/shared/RealityPixel.fxh"
+#include "shaders/RaCommon.fxh"
 #include "shaders/RaDefines.fx"
-#include "shaders/RaShaderBMCommon.fx"
+#include "shaders/RaShaderBM.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+	#include "shared/RealityVertex.fxh"
+	#include "shared/RealityPixel.fxh"
+	#include "RaCommon.fxh"
+	#include "RaDefines.fx"
+	#include "RaShaderBM.fxh"
+#endif
+
+/*
+	Description:
+	- Renders lighting for bundledmesh (objects that are dynamic, nonhuman)
+	- Calculates world-space lighting
+*/
 
 // Dependencies and sanity checks
-// Tmp
-#ifndef _HASUVANIMATION_
-#define _HASUVANIMATION_ 0
+
+// Temp
+#if !defined(_HASUVANIMATION_)
+	#define _HASUVANIMATION_ 0
 #endif
-#ifndef _HASNORMALMAP_
-#define _HASNORMALMAP_ 0
+#if !defined(_HASNORMALMAP_)
+	#define _HASNORMALMAP_ 0
 #endif
-#ifndef _HASGIMAP_
-#define _HASGIMAP_ 0
+#if !defined(_HASGIMAP_)
+	#define _HASGIMAP_ 0
 #endif
-#ifndef _HASENVMAP_
-#define _HASENVMAP_ 0
+#if !defined(_HASENVMAP_)
+	#define _HASENVMAP_ 0
 #endif
-#if _HASENVMAP_
-	#define _FRESNELVALUES_ 1
-#else
-	#define _FRESNELVALUES_ 0
+#if !defined(_USEHEMIMAP_)
+	#define _USEHEMIMAP_ 0
 #endif
-#ifndef _USEHEMIMAP_
-#define _USEHEMIMAP_ 0
+#if !defined(_HASSHADOW_)
+	#define _HASSHADOW_ 0
 #endif
-#ifndef _HASSHADOW_
-#define _HASSHADOW_ 0
+#if !defined(_HASCOLORMAPGLOSS_)
+	#define _HASCOLORMAPGLOSS_ 0
 #endif
-#ifndef _HASCOLORMAPGLOSS_
-#define _HASCOLORMAPGLOSS_ 0
-#endif
-#ifndef _HASDOT3ALPHATEST_
-#define _HASDOT3ALPHATEST_ 0
+#if !defined(_HASDOT3ALPHATEST_)
+	#define _HASDOT3ALPHATEST_ 0
 #endif
 
-// Lighting stuff
-// tl: turn this off for lower rapath settings
-#if RAPATH >= 2
-	#define _USEPERPIXELNORMALIZE_ 0
-	#define _USERENORMALIZEDTEXTURES_ 0
-#else
-	#define _USEPERPIXELNORMALIZE_ 1
-	#define _USERENORMALIZEDTEXTURES_ 1
-#endif
-
-#if _HASNORMALMAP_ || _HASCOLORMAPGLOSS_
-	// Need to do perpixel light for bumped material
-	// and it's reasonable to have it for per-pixel glossing as well
-	#define _HASPERPIXELLIGHTING_ 1
-#else
-	#define _HASPERPIXELLIGHTING_ 0
+// resolve illegal combo GI + ENVMAP
+#if _HASGIMAP_ && _HASENVMAP_
+	#define _HASENVMAP_ 0
 #endif
 
 #if _POINTLIGHT_
@@ -58,420 +67,376 @@
 	#define _HASENVMAP_ 0
 	#define _USEHEMIMAP_ 0
 	#define _HASSHADOW_ 0
-	// Do per-pixel, and do not per-vertex normalize
-	#define _HASPERPIXELLIGHTING_ 1
-	#define _USEPERPIXELNORMALIZE_ 1
-	#define _USERENORMALIZEDTEXTURES_ 0
-	// We'd still like fresnel, though
-	#define _FRESNELVALUES_ 1
 #endif
 
-// tl: We now allocate color interpolators for vertex lighting to avoid redundant texture ops
-
-// Setup interpolater mappings
-#if _USEHEMIMAP_
-	#define __HEMINTERPIDX 0
-#endif
-#if _HASSHADOW_
-	#define __SHADOWINTERPIDX _USEHEMIMAP_
-#endif
-#if _FRESNELVALUES_
-	#define __ENVMAPINTERPIDX _USEHEMIMAP_+_HASSHADOW_
-#endif
-#if _HASPERPIXELLIGHTING_
-	#define __LVECINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_
-	#define __HVECINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+1
-	#if !_HASNORMALMAP_
-		#define __WNORMALINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+2
-	#endif
-#else
-// #define __DIFFUSEINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_
-// #define __SPECULARINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+1
+#undef _DEBUG_
+// #define _DEBUG_
+#if defined(_DEBUG_)
+	#define _HASUVANIMATION_ 1
+	#define _USEHEMIMAP_ 1
+	#define _HASSHADOW_ 1
+	#define _HASSHADOWOCCLUSION_ 1
+	#define _HASNORMALMAP_ 1
+	#define _HASGIMAP_ 1
 #endif
 
-//#define MAX_INTERPS (_USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+2 + (_HASPERPIXELLIGHTING_&&!_HASNORMALMAP_))
-#define MAX_INTERPS (_USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+ (2*_HASPERPIXELLIGHTING_) + (_HASPERPIXELLIGHTING_&&!_HASNORMALMAP_))
-
-// Rod's magic numbers ;-)
-#define refractionIndexRatio 0.15
-#define R0 (pow(1.0 - refractionIndexRatio, 2.0) / pow(1.0 + refractionIndexRatio, 4.0))
-
-
-struct BMVariableVSInput
+struct APP2VS
 {
-   	float4 Pos : POSITION;    
+	float4 Pos : POSITION;
 	float3 Normal : NORMAL;
-	float4 BlendIndices : BLENDINDICES;  
+	float4 BlendIndices : BLENDINDICES;
 	float2 TexDiffuse : TEXCOORD0;
 	float2 TexUVRotCenter : TEXCOORD1;
 	float3 Tan : TANGENT;
 };
 
-struct BMVariableVSOutput
+struct VS2PS
 {
 	float4 HPos : POSITION;
-#if _POINTLIGHT_ || !_HASPERPIXELLIGHTING_
-	float4 SpecularLightOrPointFog : COLOR1;
-#endif
-#if !_HASPERPIXELLIGHTING_
-	float4 DiffuseLight : COLOR0;
-#endif
-	float2 TexDiffuse : TEXCOORD0;
-#if MAX_INTERPS
-	float4 Interpolated[MAX_INTERPS] : TEXCOORD1;
-#endif
-	float Fog : FOG;
+	float4 Pos : TEXCOORD0;
+
+	float3 WorldTangent : TEXCOORD1;
+	float3 WorldBinormal : TEXCOORD2;
+	float3 WorldNormal : TEXCOORD3;
+
+	float2 Tex0 : TEXCOORD4;
+	float4 ShadowTex : TEXCOORD5;
+	float4 ShadowOccTex : TEXCOORD6;
+
+	float3 SkinLightDir : TEXCOORD7;
 };
 
-float4x3 getSkinnedWorldMatrix(BMVariableVSInput input)
+struct PS2FB
 {
-	int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
+float4x3 GetSkinnedWorldMatrix(APP2VS Input)
+{
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
 	return GeomBones[IndexArray[0]];
 }
 
-float3x3 getSkinnedUVMatrix(BMVariableVSInput input)
+float3x3 GetSkinnedUVMatrix(APP2VS Input)
 {
-	int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
 	return (float3x3)UserData.uvMatrix[IndexArray[3]];
 }
 
-float getBinormalFlipping(BMVariableVSInput input)
+float GetBinormalFlipping(APP2VS Input)
 {
-	int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
-	return 1.f + IndexArray[2] * -2.f;
+	return 1.0 + IndexArray[2] * -2.0;
 }
 
-float4 getWorldPos(BMVariableVSInput input)
-{
-	float4 unpackedPos = input.Pos * PosUnpack;
-	return float4(mul(unpackedPos, getSkinnedWorldMatrix(input)), 1);
-}
-
-
-float3 getWorldNormal(BMVariableVSInput input)
-{
-	float3 unpackedNormal = input.Normal * NormalUnpack.x + NormalUnpack.y;
-	return mul(unpackedNormal, getSkinnedWorldMatrix(input)); // tl: We don't scale/shear objects
-}
-
-float4 calcGroundUVAndLerp(BMVariableVSInput input)
-{
-	// HemiMapConstants: offset x/y heightmapsize z / hemilerpbias w
-
-	float4 GroundUVAndLerp = 0;
-	GroundUVAndLerp.xy = ((getWorldPos(input) + (HemiMapConstants.z/2) + getWorldNormal(input) * 1).xz - HemiMapConstants.xy) / HemiMapConstants.z;
-	GroundUVAndLerp.y = 1 - GroundUVAndLerp.y;
-	
-	// localHeight scale, 1 for top and 0 for bottom
-	float localHeight = (getWorldPos(input).y - GeomBones[0][3][1]) * InvHemiHeightScale;
-	
-	float offset = (localHeight * 2 - 1) + HeightOverTerrain;
-	offset = clamp(offset, -2 * (1 - HeightOverTerrain), 0.8); // For TL: seems like taking this like away doesn't change much, take it out?
-	GroundUVAndLerp.z = clamp((getWorldNormal(input).y + offset) * 0.5 + 0.5, 0, 0.9);
-
-	return GroundUVAndLerp;
-}
-
-float4 calcUVRotation(BMVariableVSInput input)
+float4 GetUVRotation(APP2VS Input)
 {
 	// TODO: (ROD) Gotta rotate the tangent space as well as the uv
-	float2 uv = mul(float3(input.TexUVRotCenter * TexUnpack, 1.0), getSkinnedUVMatrix(input)).xy + input.TexDiffuse * TexUnpack;
-	return float4(uv.x, uv.y, 0, 1);
+	float2 UV = mul(float3(Input.TexUVRotCenter * TexUnpack, 1.0), GetSkinnedUVMatrix(Input)).xy;
+	return float4(UV.xy + (Input.TexDiffuse * TexUnpack), 0.0, 1.0);
 }
 
-float3x3 createWorld2TanMat(BMVariableVSInput input)
+float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 {
-	// Cross product * flip to create BiNormal
-	float flip = getBinormalFlipping(input);
-	float3 unpackedNormal = input.Normal * NormalUnpack.x + NormalUnpack.y;
-	float3 unpackedTan = input.Tan * NormalUnpack.x + NormalUnpack.y;
-	float3 binormal = normalize(cross(unpackedTan, unpackedNormal)) * flip;
+	// LocalHeight scale, 1 for top and 0 for bottom
+	float LocalHeight = (WorldPos.y - GeomBones[0][3][1]) * InvHemiHeightScale;
+	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
+	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
+	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
+}
 
-	// Need to calculate the WorldI based on each matBone skinning world matrix
-	float3x3 TanBasis = float3x3(unpackedTan, binormal, unpackedNormal);
+VS2PS VS_BundledMesh(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0.0;
 
-	// Calculate WorldTangent directly... inverse is the transpose for affine rotations
-	float3x3 worldI = transpose(mul(TanBasis, getSkinnedWorldMatrix(input)));
+	// Get object-space data
+	float4 ObjectPos = Input.Pos * PosUnpack; // Unpack object-space position
+	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
+	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
+	float3x3 ObjectTBN = GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
 
-	return worldI;
+	// Get world-space data
+	float4x3 SkinnedWorldMatrix = GetSkinnedWorldMatrix(Input);
+	float4 WorldPos = float4(mul(ObjectPos, SkinnedWorldMatrix), 1.0);
+	float3x3 WorldTBN = mul(ObjectTBN, (float3x3)SkinnedWorldMatrix);
+
+	// Output HPos
+	Output.HPos = mul(WorldPos, ViewProjection);
+
+	// Output world-space data
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
+
+	// Output Depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0;
+	#endif
+
+	#if _HASNORMALMAP_
+		Output.WorldTangent = WorldTBN[0];
+		Output.WorldBinormal = WorldTBN[1];
+		Output.WorldNormal = WorldTBN[2];
+	#else
+		Output.WorldNormal = WorldTBN[2];
+	#endif
+
+	// Texture-space data
+	#if _HASUVANIMATION_
+		Output.Tex0 = GetUVRotation(Input); // pass-through rotate coords
+	#else
+		Output.Tex0 = Input.TexDiffuse * TexUnpack; // pass-through texcoord
+	#endif
+	#if _HASSHADOW_
+		Output.ShadowTex = GetShadowProjection(WorldPos);
+	#endif
+	#if _HASSHADOWOCCLUSION_
+		Output.ShadowOccTex = GetShadowProjection(WorldPos, true);
+	#endif
+
+	// Special data
+	#if _HASCOCKPIT_
+		Output.SkinLightDir = mul(-Lights[0].dir.xyz, SkinnedWorldMatrix);
+	#endif
+
+	return Output;
 }
 
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
-float3 getLightVec(BMVariableVSInput input)
+float3 GetWorldLightVec(VS2PS Input, float3 WorldPos)
 {
-#if _POINTLIGHT_
-	return (Lights[0].pos - getWorldPos(input).xyz);
-#else
-	float3 lvec = -Lights[0].dir;
-	#if _HASCOCKPIT_
-		// tl: Skin lighting vector to part to create static cockpit lighting
-		lvec = mul(lvec, getSkinnedWorldMatrix(input));
-	#endif
-	return lvec;
-#endif
-}
-
-BMVariableVSOutput vs(BMVariableVSInput input)
-{
-	BMVariableVSOutput Out = (BMVariableVSOutput)0.0;
-
-	Out.HPos = mul(getWorldPos(input), ViewProjection);	// output HPOS
-
-#if _HASUVANIMATION_
-	Out.TexDiffuse = calcUVRotation(input);				// pass-through rotate coords
-#else
-	Out.TexDiffuse = input.TexDiffuse * TexUnpack; 		// pass-through texcoord
-#endif
-
-#if _USEHEMIMAP_
-	Out.Interpolated[__HEMINTERPIDX] = calcGroundUVAndLerp(input);
-#endif
-
-#if _HASSHADOW_
-	Out.Interpolated[__SHADOWINTERPIDX] = calcShadowProjection(getWorldPos(input));
-#endif
-
-	
-	float3 worldEyeVec = normalize(WorldSpaceCamPos.xyz - getWorldPos(input).xyz);
-	
-#if _HASPERPIXELLIGHTING_ && _HASNORMALMAP_ // Do tangent space bumped pixel lighting
-	float3x3 world2TanMat = createWorld2TanMat(input);
-	float3 tanEyeVec = mul(worldEyeVec, world2TanMat);
-	float3 tanLightVec = mul(getLightVec(input), world2TanMat);
-	Out.Interpolated[__LVECINTERPIDX].xyz = tanLightVec;
-	Out.Interpolated[__HVECINTERPIDX].xyz = normalize(tanLightVec) + normalize(tanEyeVec);	
-	#if !_USEPERPIXELNORMALIZE_ // normalize HVec as well because pixel shader won't
-		Out.Interpolated[__LVECINTERPIDX].xyz = normalize(tanLightVec);
-		Out.Interpolated[__HVECINTERPIDX].xyz = normalize(Out.Interpolated[__HVECINTERPIDX].xyz);
-	#endif 
-#elif _HASPERPIXELLIGHTING_ // Do world space non-bumped pixel lighting
-	// tl: Object space would be cheaper, but more cumbersome
-	Out.Interpolated[__LVECINTERPIDX].xyz = getLightVec(input);
-	Out.Interpolated[__HVECINTERPIDX].xyz = getLightVec(input) + normalize(WorldSpaceCamPos-getWorldPos(input));
-	Out.Interpolated[__WNORMALINTERPIDX].xyz = getWorldNormal(input);
-	#if !_USEPERPIXELNORMALIZE_ // normalize HVec as well because pixel shader won't
-		Out.Interpolated[__HVECINTERPIDX].xyz = normalize(Out.Interpolated[__HVECINTERPIDX].xyz);
-		Out.Interpolated[__WNORMALINTERPIDX].xyz = normalize(Out.Interpolated[__WNORMALINTERPIDX].xyz);
-	#endif
-#else // Do vertex lighting
-	float ndotl = dot(getLightVec(input), getWorldNormal(input));
-	// float ndoth = dot(normalize(getLightVec(input)+worldEyeVec), getWorldNormal(input));
-	float vdotr = dot(reflect(-getLightVec(input), getWorldNormal(input)), worldEyeVec);
-	float4 lighting = lit(ndotl, vdotr, SpecularPower);
 	#if _POINTLIGHT_
-		float attenuation = length(Lights[0].pos - getWorldPos(input)) * Lights[0].attenuation;
-		lighting.yz *= attenuation;
+		return Lights[0].pos - WorldPos;
+	#else
+		#if _HASCOCKPIT_
+			// Use skinned lighting vector to part to create static cockpit lighting
+			float3 LightVec = Input.SkinLightDir;
+		#else 
+			float3 LightVec = -Lights[0].dir;
+		#endif
+		return LightVec;
 	#endif
-	Out.DiffuseLight.xyz = lighting.y * DiffuseColorAndAmbient;
-#if !_USEHEMIMAP_
-	Out.DiffuseLight.xyz += DiffuseColorAndAmbient.w;
-#endif
-	Out.DiffuseLight.w = lighting.y;
-	Out.DiffuseLight *= 0.5;
-	Out.SpecularLightOrPointFog = lighting.z * SpecularColor;
-	#if _HASSTATICGLOSS_
-		Out.SpecularLightOrPointFog = clamp(Out.SpecularLightOrPointFog, 0, StaticGloss);
-	#endif
-	Out.SpecularLightOrPointFog *= 0.5;	
-#endif
-
-#if _FRESNELVALUES_
-	Out.Interpolated[__ENVMAPINTERPIDX].xyz = -reflect(worldEyeVec, getWorldNormal(input));
-	Out.Interpolated[__ENVMAPINTERPIDX].w = pow((R0 + (1.0 - R0) * (1.0 - dot(worldEyeVec, getWorldNormal(input)))), 2);
-#endif
-
-#if _POINTLIGHT_
-	Out.SpecularLightOrPointFog = calcFog(Out.HPos.w);
-#else
-	Out.Fog = calcFog(Out.HPos.w); 		// always fog
-#endif
-	
-	return Out;
 }
 
-float4 ps(BMVariableVSOutput input) : COLOR
+PS2FB PS_BundledMesh(VS2PS Input)
 {
-#if _FINDSHADER_
-	return 1;
-#endif
-	float4 outColor = (float4)1;
+	PS2FB Output = (PS2FB)0.0;
 
-	float4 texDiffuse = tex2D(DiffuseMapSampler, input.TexDiffuse);
-#ifdef DIFFUSE_CHANNEL
-	return texDiffuse;
-#endif
+	/*
+		World-space data
+	*/
 
-#if _HASPERPIXELLIGHTING_
-	float3 normal = 0;
+	float4 WorldPos = Input.Pos;
+	float3 WorldLightVec = GetWorldLightVec(Input, WorldPos.xyz);
+	float3 WorldLightDir = normalize(WorldLightVec);
+	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 	#if _HASNORMALMAP_
-		float4 tanNormal = tex2D(NormalMapSampler, input.TexDiffuse);
-		tanNormal.xyz = tanNormal.xyz * 2 - 1;
-		#if _USERENORMALIZEDTEXTURES_
-			tanNormal.xyz = normalize(tanNormal.xyz);
-		#endif
-		normal = tanNormal;
+		// Transform from tangent-space to world-space
+		float3x3 WorldTBN =
+		{
+			normalize(Input.WorldTangent),
+			normalize(Input.WorldBinormal),
+			normalize(Input.WorldNormal)
+		};
+		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
+		float3 WorldNormal = normalize((NormalMap.xyz * 2.0) - 1.0);
+		WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 	#else
-		normal = input.Interpolated[__WNORMALINTERPIDX];
-		#if _USEPERPIXELNORMALIZE_
-			normal = fastNormalize(normal, NRMCUBE);
-		#endif
+		float3 WorldNormal = normalize(Input.WorldNormal);
 	#endif
 
-	#ifdef NORMAL_CHANNEL
-		return float4(normal*0.5+0.5, 1);
+	/*
+		Texture data
+	*/
+
+	// Get color texture data
+	// We copy ColorMap to ColorTex to preserve original alpha data
+	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
+	float4 ColorTex = ColorMap;
+
+	// Get shadow texture data
+	#if _HASSHADOW_
+		float Shadow = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+	#else
+		float Shadow = 1.0;
+	#endif
+	#if _HASSHADOWOCCLUSION_
+		float ShadowOcc = GetShadowFactor(SampleShadowOccluderMap, Input.ShadowOccTex);
+	#else
+		float ShadowOcc = 1.0;
 	#endif
 
-	float3 lightVec = input.Interpolated[__LVECINTERPIDX];
-	#if _POINTLIGHT_
-		float attenuation = 1 - saturate(dot(lightVec,lightVec) * Lights[0].attenuation);
-	#endif
-	// tl: don't normalize if lvec is world space sun direction
-	#if _USEPERPIXELNORMALIZE_ && (_HASNORMALMAP_ || _POINTLIGHT_)
-		lightVec = fastNormalize(lightVec);
-	#endif
-	
-	float4 dot3Light = saturate(dot(lightVec, normal));
+	/*
+		Calculate diffuse + specular lighting
+	*/
 
-	float3 halfVec = input.Interpolated[__HVECINTERPIDX];
-	#if _USEPERPIXELNORMALIZE_
-		halfVec = fastNormalize(halfVec, (NVIDIA || RAPATH < 1) ? NRMMATH : NRMCUBE);
-	#endif
-
-	float3 specular = tex2D(SpecLUT64Sampler, dot(halfVec, normal));
-
+	// Prevents non-detailed bundledmesh from looking shiny
 	#if _HASCOLORMAPGLOSS_
-		float gloss = texDiffuse.a;
+		float Gloss = ColorTex.a;
 	#elif !_HASSTATICGLOSS_ && _HASNORMALMAP_
-		float gloss = tanNormal.a;		
+		float Gloss = NormalMap.a;
 	#else
-		float gloss = StaticGloss;
+		float Gloss = 0.0;
 	#endif
-
-	#if !_POINTLIGHT_
-		dot3Light *= DiffuseColorAndAmbient;
-	#endif
-
-	specular *= gloss;
-
-	#ifdef SHADOW_CHANNEL
-		return float4(dot3Light+specular, 1);
-	#endif
-
-#else
-	float3 dot3Light = input.DiffuseLight.rgb * 2;
-	float3 specular = input.SpecularLightOrPointFog.rgb * 2;
-
-	#if _HASCOLORMAPGLOSS_
-		float3 gloss = texDiffuse.a;
-	#else
-		float3 gloss = StaticGloss;
-	#endif
-	specular *= gloss;
-#endif // perpixlight
-
-#if _HASSHADOW_
-	float dirShadow = getShadowFactor(ShadowMapSampler, input.Interpolated[__SHADOWINTERPIDX]);
-
-	// killing both spec and dot3 if we are in shadows
-	dot3Light *= dirShadow;
-	specular *= dirShadow;
-#endif
-
-#if _USEHEMIMAP_
-	float4 groundcolor = tex2D(HemiMapSampler, input.Interpolated[__HEMINTERPIDX].xy);
- 	float3 hemicolor = lerp(groundcolor, HemiMapSkyColor, input.Interpolated[__HEMINTERPIDX].z);
-#elif _HASPERPIXELLIGHTING_
-	float hemicolor = DiffuseColorAndAmbient.w;
-#else
-	// tl: by setting this to 0, hlsl will remove it from the compiled code (in an addition).
-	// for non-hemi'ed materials, a static ambient will be added to sun color in vertex shader
-	const float3 hemicolor = 0.0;
-#endif
-
-#if _HASGIMAP_
-	float4 GI = tex2D(GIMapSampler, input.TexDiffuse);
-#else
-	const float4 GI = 1;
-#endif
-
-#if _POINTLIGHT_
-	outColor.rgb = dot3Light;
-#else
-	outColor.rgb = hemicolor + dot3Light;
-#endif
-
-	float4 diffuseCol = texDiffuse;
-	
-#if _FRESNELVALUES_
-	// tl: Will hlsl auto-distribute these into pre/vs/ps, or leave them as they are?
-	float fres = input.Interpolated[__ENVMAPINTERPIDX].w;
 
 	#if _HASENVMAP_
-		// NOTE: eyePos.w is just a reflection scaling value. Why do we have this besides the reflectivity (gloss map)data?
-		float3 envmapColor = texCUBE(CubeMapSampler, input.Interpolated[__ENVMAPINTERPIDX].xyz);
-		diffuseCol.rgb = lerp(diffuseCol, envmapColor, gloss / 4);
+		float3 Reflection = -reflect(WorldViewDir, WorldNormal);
+		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
+		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
 	#endif
 
-	diffuseCol.a = lerp(diffuseCol.a, 1, fres);
-#endif
-
-	outColor.rgb *= diffuseCol * GI;
-	outColor.rgb += specular * GI;
-
-#if _HASDOT3ALPHATEST_
-	outColor.a = dot(texDiffuse.rgb, 1);
-#else
-	#if _HASCOLORMAPGLOSS_
-		outColor.a = 1.f;
+	float HemiLight = 1.0;
+	#if _POINTLIGHT_
+		float3 Ambient = 0.0;
 	#else
-		outColor.a = diffuseCol.a;
+		#if _USEHEMIMAP_
+			// GoundColor.a has an occlusion factor that we can use for static shadowing
+			float2 HemiTex = GetHemiTex(WorldPos.xyz, 0.0, HemiMapConstants.rgb, true);
+			float4 HemiMap = tex2D(SampleHemiMap, HemiTex);
+			float HemiLerp = GetHemiLerp(WorldPos.xyz, WorldNormal);
+			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
+			// HemiLight = lerp(HemiMap.a, 1.0, saturate(HeightOverTerrain - 1.0));
+		#else
+			float3 Ambient = DiffuseColorAndAmbient.a;
+		#endif
 	#endif
-#endif
 
-#if _POINTLIGHT_
-	outColor.rgb *= attenuation * input.SpecularLightOrPointFog;
-	outColor.a *= attenuation;
-#endif
+	#if _HASGIMAP_
+		float4 GI = tex2D(SampleGIMap, Input.Tex0);
+		float4 GI_TIS = GI; // M
+		if (GI_TIS.a < 0.01)
+		{
+			GI = 1.0;
+		}
+	#else
+		const float4 GI = 1.0;
+	#endif
 
-	outColor.rgb = float3(0.0, 1.0, 0.0);
+	#if _POINTLIGHT_
+		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
+	#else
+		const float Attenuation = 1.0;
+	#endif
 
-	outColor.a *= Transparency.a;
-	return outColor;
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
+	float3 DiffuseRGB = (Light.Diffuse * DiffuseColorAndAmbient.rgb)* TotalLights;
+	float3 SpecularRGB = ((Light.Specular * Gloss) * SpecularColor.rgb) * TotalLights;
+
+	#if _HASSTATICGLOSS_
+		SpecularRGB = clamp(SpecularRGB, 0.0, StaticGloss);
+	#endif
+
+	// There is no Gloss map, so alpha means transparency
+	#if _POINTLIGHT_ && !_HASCOLORMAPGLOSS_
+		DiffuseRGB *= ColorTex.a;
+	#endif
+
+	float4 OutputColor = 1.0;
+	OutputColor.rgb = CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB) * GI.rgb;
+
+	/*
+		Calculate fogging and other occluders
+	*/
+
+	#if _POINTLIGHT_
+		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos) * Attenuation;
+	#endif
+
+	// Thermals
+	if (IsTisActive())
+	{
+		#if _HASGIMAP_
+			if (GI_TIS.a < 0.01)
+			{
+				if (GI_TIS.g < 0.01)
+				{
+					OutputColor.rgb = float3(lerp(0.43, 0.17, ColorTex.b), 1.0, 0.0);
+				}
+				else
+				{
+					OutputColor.rgb = float3(GI_TIS.g, 1.0, 0.0);
+				}
+			}
+			else
+			{
+				// Normal Wrecks also cold
+				OutputColor.rgb = float3(lerp(0.43, 0.17, ColorTex.b), 1.0, 0.0);
+			}
+		#else
+			OutputColor.rgb = float3(lerp(0.64, 0.3, ColorTex.b), 1.0, 0.0); // M // 0.61, 0.25
+		#endif
+	}
+
+	/*
+		Calculate alpha transparency
+	*/
+
+	#if _HASENVMAP_
+		float FresnelFactor = ComputeFresnelFactor(WorldNormal, WorldViewDir, 1.0);
+		ColorMap.a = lerp(ColorMap.a, 1.0, FresnelFactor);
+	#endif
+
+	// Unaltered alpha should be 1.0 for debug reasons
+	Output.Color.a = 1.0;
+
+	#if _HASDOT3ALPHATEST_
+		Output.Color.a = dot(ColorTex.rgb, 1.0);
+	#else
+		#if _HASCOLORMAPGLOSS_
+			Output.Color.a = 1.0;
+		#else
+			Output.Color.a = ColorMap.a;
+		#endif
+	#endif
+
+	#if _POINTLIGHT_
+		Output.Color.a *= Attenuation;
+	#endif
+
+	Output.Color.rgb = OutputColor.rgb;
+	Output.Color.a *= Transparency.a;
+	#if !_POINTLIGHT_
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	#endif
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 }
-
 
 technique Variable
 {
 	pass p0
 	{
-		VertexShader = compile VSMODEL vs();
-		PixelShader = compile PSMODEL ps();
+		#if defined(ENABLE_WIREFRAME)
+			FillMode = WireFrame;
+		#endif
 
-//#if NVIDIA && defined(PSVERSION) && PSVERSION <= 14
-// TextureTransformFlags[0] = PROJECTED;
-//#endif
-
-#ifdef ENABLE_WIREFRAME
-		FillMode = WireFrame;
-#endif
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (AlphaTestRef);
-#if _POINTLIGHT_
-		AlphaBlendEnable = true;
-		SrcBlend = SRCALPHA;
-		DestBlend = ONE;
-		Fogenable = false;		
-#else
-		AlphaBlendEnable = (AlphaBlendEnable);
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-		ZWriteEnable = (DepthWrite);
-		Fogenable = true;
-#endif
-		
+
+		#if _POINTLIGHT_
+			AlphaBlendEnable = TRUE;
+			SrcBlend = SRCALPHA;
+			DestBlend = ONE;
+		#else
+			AlphaBlendEnable = (AlphaBlendEnable);
+			SrcBlend = SRCALPHA;
+			DestBlend = INVSRCALPHA;
+			ZWriteEnable = (DepthWrite);
+		#endif
+
+		VertexShader = compile vs_3_0 VS_BundledMesh();
+		PixelShader = compile ps_3_0 PS_BundledMesh();
 	}
 }

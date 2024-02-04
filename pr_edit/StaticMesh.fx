@@ -29,7 +29,7 @@ struct VS2PS_SimpleShader
 
 VS2PS_SimpleShader VS_SimpleShader(APP2VS Input)
 {
-	VS2PS_SimpleShader Output = (VS2PS_SimpleShader)0.0;
+	VS2PS_SimpleShader Output = (VS2PS_SimpleShader)0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
 	Output.Tex0 = Input.TexCoord;
@@ -78,7 +78,7 @@ struct VS2PS_ShadowMap
 
 VS2PS_ShadowMap VS_ShadowMap(APPDATA_ShadowMap Input)
 {
-	VS2PS_ShadowMap Output = (VS2PS_ShadowMap)0.0;
+	VS2PS_ShadowMap Output;
 
  	float4 WorldPos = mul(Input.Pos, _WorldMatrix);
  	Output.Pos = mul(Input.Pos, _ViewProjMatrix);
@@ -96,7 +96,7 @@ float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR
 
 VS2PS_ShadowMap VS_ShadowMapPoint(APPDATA_ShadowMap Input)
 {
-	VS2PS_ShadowMap Output = (VS2PS_ShadowMap)0.0;
+	VS2PS_ShadowMap Output;
 
   	float4 oPos = Input.Pos;
  	Output.Pos = mul(oPos, _ViewProjMatrix);

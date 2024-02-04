@@ -1,27 +1,27 @@
 
-float4x4 World;
-float4x4 ViewProjection;
-int textureFactor = 0xffAFFFaF;
-bool alphaBlendEnable = false;
-//-----------VS/PS----
+/*
+	Include header files
+*/
 
-string reqVertexElement[] = 
-{
- 	"Position"
-};
-float4 vertexShader(float3 inPos: POSITION0) : POSITION0
-{
-	return mul(float4(inPos, 1), mul(World, ViewProjection));
-}
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+#endif
 
-float4 shader() : COLOR
-{
-	return float4(0.9,0.4,0.8,1);
-};
+/*
+	Description: Basic shader that outputs a color
+*/
 
-struct VS_OUTPUT
+uniform float4x4 World;
+uniform float4x4 ViewProjection;
+uniform int textureFactor = 0xffAFFFaF;
+uniform bool alphaBlendEnable = false;
+
+string reqVertexElement[] =
 {
-	float4 Pos : POSITION0;
+	"Position"
 };
 
 string InstanceParameters[] =
@@ -30,31 +30,72 @@ string InstanceParameters[] =
 	"ViewProjection"
 };
 
+struct APP2VS
+{
+	float3 Pos : POSITION0;
+};
+
+struct VS2PS
+{
+	float4 HPos : POSITION0;
+	float4 Pos : TEXCOORD0;
+};
+
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
+VS2PS VS_Default(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0.0;
+	
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
+	Output.Pos = Output.HPos;
+
+	// Output Depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0;
+	#endif
+
+	return Output;
+}
+
+PS2FB PS_Default(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0.0;
+
+	Output.Color = float4(0.9, 0.4, 0.8, 1.0);
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+};
+
 technique defaultShader
 {
-	pass P0
+	pass p0
 	{
-		pixelshader = compile ps_1_1 shader();
-		vertexShader= compile vs_1_1 vertexShader();
-#ifdef ENABLE_WIREFRAME
-		FillMode = WireFrame;
-#endif
-		SrcBlend = srcalpha;
-		DestBlend = invsrcalpha;
-		fogenable = false;
+		#if defined(ENABLE_WIREFRAME)
+			FillMode = WireFrame;
+		#endif
+
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
+
 		CullMode = NONE;
-		AlphaBlendEnable= <alphaBlendEnable>;
-		AlphaTestEnable = false;
+		AlphaTestEnable = FALSE;
 
-// TextureFactor = < textureFactor >;
-// ColorOp[0] = selectArg1;
-// ColorArg1[0] = TFACTOR;
+		AlphaBlendEnable = (alphaBlendEnable);
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
 
-// AlphaOp[0] = selectArg1;
-// AlphaArg1[0] = TFACTOR;
-
-// ColorOp[1] = Disable;
-// AlphaOp[1] = Disable;
-		
+		VertexShader = compile vs_3_0 VS_Default();
+		PixelShader = compile ps_3_0 PS_Default();
 	}
 }

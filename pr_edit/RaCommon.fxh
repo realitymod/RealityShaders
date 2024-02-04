@@ -33,8 +33,7 @@
 	{
 		float3 pos;
 		float3 dir;
-		float4 color;
-		float4 specularColor;
+		float3 color;
 		float attenuation;
 	};
 
@@ -96,13 +95,22 @@
 		Shared fogging and fading functions
 	*/
 
-	float GetFogValue(float3 ObjectPos, float3 CameraPos)
+	float GetFogValue(float4 ObjectPos, float4 CameraPos)
 	{
-		float FogDistance = distance(ObjectPos, CameraPos);
-		float2 FogValues = FogDistance * FogRange.xy + FogRange.zw;
-		float Close = max(FogValues.y, FogColor.w);
+		#if defined(IS_EDITOR)
+			#if defined(LOG_DEPTH)
+				float FogDistance = ObjectPos.w - 1.0;
+			#else
+				float FogDistance = ObjectPos.w;
+			#endif
+		#else
+			float FogDistance = length(ObjectPos.xyz - CameraPos.xyz);
+		#endif
+
+		float2 FogValues = (FogDistance * FogRange.xy) + FogRange.zw;
+		float Close = max(FogValues.y, FogColor.a);
 		float Far = pow(FogValues.x, 3.0);
-		return saturate(Close - Far);
+		return smoothstep(0.0, 1.0, Close - Far);
 	}
 
 	void ApplyFog(inout float3 Color, in float FogValue)

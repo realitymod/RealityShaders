@@ -134,7 +134,7 @@ VS_OUTPUT bumpSpecularVertexShaderBlinn1
 	uniform float4 EyePos
 )
 {
-	VS_OUTPUT Out = (VS_OUTPUT)0.0;
+	VS_OUTPUT Out = (VS_OUTPUT)0;
    	
  	Out.HPos = mul(input.Pos, WorldViewProj);
 	
@@ -194,7 +194,7 @@ VS_OUTPUT2 spriteVertexShader
 	uniform float4 LightColor
 )
 {
-	VS_OUTPUT2 Out = (VS_OUTPUT2)0.0;
+	VS_OUTPUT2 Out = (VS_OUTPUT2)0;
 	float4 pos =  mul(input.Pos, WorldView);
 	float4 scaledPos = float4(float2(input.Width_height.xy * SpriteScale.xy), 0, 0) + (pos);
  	Out.HPos = mul(scaledPos, Proj);

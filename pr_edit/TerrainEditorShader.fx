@@ -206,7 +206,7 @@ struct FullDetail
 
 FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
 {
-	FullDetail Output = (FullDetail)0.0;
+	FullDetail Output = (FullDetail)0;
 
 	// Calculate triplanar texcoords
 	float3 WorldTex = 0.0;
@@ -229,14 +229,16 @@ FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
 
 VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
 {
-	VS2PS_EditorDetail Output = (VS2PS_EditorDetail)0.0;
+	VS2PS_EditorDetail Output = (VS2PS_EditorDetail)0;
 	float4 MorphedWorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 
 	// tl: output HPos as early as possible.
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
-	Output.Pos = MorphedWorldPos;
+	Output.Pos = float4(MorphedWorldPos.xyz, Output.HPos.w);
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	// tl: uncompress normal
@@ -261,7 +263,7 @@ float GetLerpValue(float3 WorldPos)
 
 PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bool UseEnvMap, bool ColorOnly)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	float4 WorldPos = Input.Pos;
 	float3 WorldNormal = normalize(Input.Normal);
@@ -326,7 +328,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 
 	Output.Color = OutputColor;
 	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos.xyz));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 	Output.Color.a = 1.0;
 	Output.Color *= ChartContribution;
 
@@ -386,14 +388,16 @@ technique EditorDetailTextured
 
 VS2PS VS_Basic(APP2VS Input)
 {
-	VS2PS Output = (VS2PS)0.0;
+	VS2PS Output = (VS2PS)0;
 
 	float4 WorldPos = float4(GetWorldPos(Input.Pos0.xy, Input.Pos1.xw).xyz, 1.0);
 	Output.HPos = mul(WorldPos, _ViewProj);
 
-	Output.Pos = WorldPos;
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0.xy = Input.Tex0;
@@ -404,9 +408,9 @@ VS2PS VS_Basic(APP2VS Input)
 
 PS2FB PS_Basic(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
-	float3 WorldPos = Input.Pos.xyz;
+	float4 WorldPos = Input.Pos;
 	float4 Color = _PointColor * saturate(WorldPos.y - _WaterHeight - POINT_WATER_BIAS);
 
 	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.xy);
@@ -414,7 +418,7 @@ PS2FB PS_Basic(VS2PS Input)
 	float4 OutputColor = float4(ColorMap.rgb * Light.rgb, 1.0);
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos.xyz));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -425,7 +429,7 @@ PS2FB PS_Basic(VS2PS Input)
 
 PS2FB PS_Basic_LightOnly(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	float4 Light = GetTerrainLights(SampleTex1, Input.Tex0.zw, _PointColor * 2.0);
 	Light.a = 1.0;
@@ -441,7 +445,7 @@ PS2FB PS_Basic_LightOnly(VS2PS Input)
 
 PS2FB PS_Basic_HemimapLightOnly(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	float4 LightMap = tex2D(SampleTex1, Input.Tex0.zw);
 	LightMap.a = 1.0;
@@ -457,7 +461,7 @@ PS2FB PS_Basic_HemimapLightOnly(VS2PS Input)
 
 PS2FB PS_Basic_ColorOnly(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.xy);
 	ColorMap.a = 1.0;
@@ -473,7 +477,7 @@ PS2FB PS_Basic_ColorOnly(VS2PS Input)
 
 PS2FB PS_Basic_ColorOnlyPointFilter(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	float4 ColorMap = tex2D(SampleTex0Point, Input.Tex0.xy);
 	ColorMap.a = 1.0;
@@ -554,13 +558,15 @@ technique t0 <
 
 VS2PS_EditorGrid VS_EditorGrid(APP2VS Input)
 {
-	VS2PS_EditorGrid Output = (VS2PS_EditorGrid)0.0;
+	VS2PS_EditorGrid Output = (VS2PS_EditorGrid)0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = WorldPos;
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0.xy = Input.Tex0;
@@ -571,13 +577,15 @@ VS2PS_EditorGrid VS_EditorGrid(APP2VS Input)
 
 VS2PS_EditorTopoGrid VS_EditorTopoGrid(APP2VS Input)
 {
-	VS2PS_EditorTopoGrid Output = (VS2PS_EditorTopoGrid)0.0;
+	VS2PS_EditorTopoGrid Output = (VS2PS_EditorTopoGrid)0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = WorldPos;
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0.xy = Input.Tex0 * 128.0;
@@ -588,7 +596,7 @@ VS2PS_EditorTopoGrid VS_EditorTopoGrid(APP2VS Input)
 
 PS2FB PS_EditorGrid(VS2PS_EditorGrid Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.xy);
 	float4 Grid = tex2Dbias(SampleTex1Wrap, float4(Input.Tex0.zw, 0.0, -1.5));
@@ -604,7 +612,7 @@ PS2FB PS_EditorGrid(VS2PS_EditorGrid Input)
 
 PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	float4 Grid = tex2Dbias(SampleTex1Wrap, float4(Input.Tex0.xy, 0.0, -0.5));
 	float4 Color = Input.Tex0.z;
@@ -646,13 +654,15 @@ CREATE_TECHNIQUE(EditorTopoGrid, VS_EditorTopoGrid(), PS_EditorTopoGrid())
 
 VS2PS_ZFill VS_EditorZFill(APP2VS_VS_EditorZFill Input)
 {
-	VS2PS_ZFill Output = (VS2PS_ZFill)0.0;
+	VS2PS_ZFill Output = (VS2PS_ZFill)0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = WorldPos;
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
  	return Output;
@@ -660,7 +670,7 @@ VS2PS_ZFill VS_EditorZFill(APP2VS_VS_EditorZFill Input)
 
 PS2FB PS_EditorZFill(VS2PS_ZFill Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = 0.0;
 
@@ -692,13 +702,15 @@ technique EditorDetailBasePass
 
 VS2PS_EditorFoliage VS_EditorUndergrowth(APP2VS Input)
 {
-	VS2PS_EditorFoliage Output = (VS2PS_EditorFoliage)0.0;
+	VS2PS_EditorFoliage Output = (VS2PS_EditorFoliage)0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = WorldPos;
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0 = Input.Tex0;
@@ -708,7 +720,7 @@ VS2PS_EditorFoliage VS_EditorUndergrowth(APP2VS Input)
 
 PS2FB PS_EditorUndergrowth(VS2PS_EditorFoliage Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	Output.Color = tex2D(SampleTex0, Input.Tex0);
 
@@ -747,13 +759,15 @@ CREATE_TECHNIQUE(EditorMaterialmap, VS_EditorUndergrowth(), PS_EditorUndergrowth
 
 VS2PS_EditorFoliage VS_EditorHemimap(APP2VS Input)
 {
-	VS2PS_EditorFoliage Output = (VS2PS_EditorFoliage)0.0;
+	VS2PS_EditorFoliage Output = (VS2PS_EditorFoliage)0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = WorldPos;
+	
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0 = (Input.Tex0 * _TexOffset.zz) + _TexOffset.xy;
@@ -764,7 +778,7 @@ VS2PS_EditorFoliage VS_EditorHemimap(APP2VS Input)
 
 PS2FB PS_EditorHemimap(VS2PS_EditorFoliage Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	float4 HemiMap = tex2D(SampleTex0, Input.Tex0);
 
@@ -779,7 +793,7 @@ PS2FB PS_EditorHemimap(VS2PS_EditorFoliage Input)
 
 PS2FB PS_EditorHemimapAlpha(VS2PS_EditorFoliage Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	float4 HemiMap = tex2D(SampleTex0, Input.Tex0);
 
@@ -825,13 +839,15 @@ technique EditorHemimap
 
 VS2PS_LightmapGeneration VS_LightmapGeneration_QP(APP2VS Input)
 {
-	VS2PS_LightmapGeneration Output = (VS2PS_LightmapGeneration)0.0;
+	VS2PS_LightmapGeneration Output = (VS2PS_LightmapGeneration)0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = WorldPos;
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0 = Input.Tex0;
@@ -841,15 +857,17 @@ VS2PS_LightmapGeneration VS_LightmapGeneration_QP(APP2VS Input)
 
 VS2PS_LightmapGeneration VS_LightmapGeneration_SP(APP2VS Input)
 {
-	VS2PS_LightmapGeneration Output = (VS2PS_LightmapGeneration)0.0;
+	VS2PS_LightmapGeneration Output = (VS2PS_LightmapGeneration)0;
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = mul(float4(Input.Pos0.xy, 0.0, 1.0), _SETTransXZ).xy;
 	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy) + _ScaleTransY.zw;
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = WorldPos;
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Tex0 = Input.Tex0;
@@ -859,7 +877,7 @@ VS2PS_LightmapGeneration VS_LightmapGeneration_SP(APP2VS Input)
 
 PS2FB PS_LightmapGeneration(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
 	// Output pure black.
 	Output.Color = float4(0.0, 0.0, 0.0, 1.0);
@@ -907,16 +925,18 @@ technique lightmapGeneration <
 
 VS2PS_SET VS_SET(APP2VS_SET Input)
 {
-	VS2PS_SET Output = (VS2PS_SET)0.0;
+	VS2PS_SET Output = (VS2PS_SET)0;
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = mul(float4(Input.Pos0.xy, 0.0, 1.0), _SETTransXZ).xy;
 	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy) + _ScaleTransY.zw;
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos = WorldPos;
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.Normal = Input.Normal;
@@ -929,16 +949,18 @@ VS2PS_SET VS_SET(APP2VS_SET Input)
 
 VS2PS_SET_ColorLightingOnly VS_SET_ColorLightingOnly(APP2VS_SET Input)
 {
-	VS2PS_SET_ColorLightingOnly Output = (VS2PS_SET_ColorLightingOnly)0.0;
+	VS2PS_SET_ColorLightingOnly Output = (VS2PS_SET_ColorLightingOnly)0;
 
 	float4 WorldPos = 0.0;
 	WorldPos.xz = mul(float4(Input.Pos0.xy, 0.0, 1.0), _SETTransXZ).xy;
 	WorldPos.yw = (Input.Pos1.xw * _ScaleTransY.xy) + _ScaleTransY.zw;
 
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos = WorldPos;
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
+
+	// Output depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0; // Output depth
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	Output.BiTex.xy = (Input.Tex0.xy * _SETBiFixTex.x) + _SETBiFixTex.y;
@@ -956,7 +978,7 @@ struct SurroundingTerrain
 
 SurroundingTerrain GetSurroundingTerrain(float3 WorldPos, float3 Tex)
 {
-	SurroundingTerrain Output = (SurroundingTerrain)0.0;
+	SurroundingTerrain Output = (SurroundingTerrain)0;
 
 	float3 WorldTex = 0.0;
 	WorldTex.x = WorldPos.x * _TexScale.x;
@@ -975,15 +997,15 @@ SurroundingTerrain GetSurroundingTerrain(float3 WorldPos, float3 Tex)
 
 PS2FB PS_SET(VS2PS_SET Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
-	float3 WorldPos = Input.Pos.xyz;
+	float4 WorldPos = Input.Pos;
 	float3 WorldNormal = normalize(Input.Normal);
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
-	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos, Input.Tex0);
+	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos.xyz, Input.Tex0);
 	float4 ColorMap = tex2D(SampleTex0, Input.BiTex.zw);
 	float4 LowComponent = tex2D(SampleTex4, Input.BiTex.zw);
 	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, ST.YPlane) * 2.0;
@@ -1002,7 +1024,7 @@ PS2FB PS_SET(VS2PS_SET Input)
 
 	Output.Color = OutputColor;
 	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -1013,9 +1035,9 @@ PS2FB PS_SET(VS2PS_SET Input)
 
 PS2FB PS_SET_ColorLightingOnly(VS2PS_SET_ColorLightingOnly Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB Output = (PS2FB)0;
 
-	float3 WorldPos = Input.Pos.xyz;
+	float4 WorldPos = Input.Pos;
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
 	float4 ColorMap = tex2D(SampleTex0, Input.BiTex.zw);
@@ -1024,7 +1046,7 @@ PS2FB PS_SET_ColorLightingOnly(VS2PS_SET_ColorLightingOnly Input)
 	float4 OutputColor = ColorMap * Lights;
 	Output.Color = OutputColor;
 	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

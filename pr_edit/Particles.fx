@@ -51,7 +51,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float3 WorldPos : TEXCOORD0;
-	float3 ViewPos : TEXCOORD1;
+	float4 ViewPos : TEXCOORD1;
 	float3 Color : TEXCOORD2;
 
 	float4 Maps : TEXCOORD3; // [LightMapBlend, Alpha, IntensityBlend, LightMapOffset]
@@ -106,7 +106,7 @@ VS2PS VS_Particle(APP2VS Input)
 
 	Output.HPos = mul(Pos, _ProjMat);
 	Output.WorldPos = Input.Pos.xyz;
-	Output.ViewPos = Pos.xyz;
+	Output.ViewPos = float4(Pos.xyz, Output.HPos.w);
 
 	// Compute texcoords
 	// Rotate and scale to correct u,v space and zoom in.
@@ -122,7 +122,7 @@ VS2PS VS_Particle(APP2VS Input)
 	// Offset texcoords
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
-	// Output depth (VS)
+	// Output Depth
 	#if defined(LOG_DEPTH)
 		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 	#endif
