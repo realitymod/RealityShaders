@@ -1,472 +1,284 @@
-#include "shaders/raCommon.fx"
-
-//#undef VS_NORMALIZE
 
 /*
-
-#define USE_FRESNEL
-#define USE_SPECULAR
-#define USE_SHADOWS
-#define PIXEL_CAMSPACE
-#define USE_3DTEXTURE
-
-#define PS_20
-
+	Include header files
 */
 
-#define ASM14
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+	#include "RaCommon.fxh"
+#endif
+
+/*
+	Description: Renders water
+*/
 
 // Affects how transparency is claculated depending on camera height.
 // Try increasing/decreasing ADD_ALPHA slighty for different results
 #define MAX_HEIGHT 20
 #define ADD_ALPHA 0.75
 
-
 // Darkness of water shadows - Lower means darker
 #define SHADOW_FACTOR 0.75
 
-// Higher value means less transparent water
-#define BASE_TRANSPARENCY 1.5F
-
-// Like specular - higher values gives smaller, more distinct area of transparency
-#define POW_TRANSPARENCY 30.F
+// Like Specular - higher values gives smaller, more distinct area of transparency
+#define POW_TRANSPARENCY 30.0
 
 // How much of the texture color to use (vs envmap color)
-#define COLOR_ENVMAP_RATIO 0.4F
+#define COLOR_ENVMAP_RATIO 0.4
 
 // Modifies heightalpha (for tweaking transparancy depending on depth)
 #define APOW 1.3
 
-// Wether to use normalmap for transparency calculation or not
-//#define FRESNEL_NORMALMAP
-
-
-//////////////////////////////////////////////////////////////////////////////////
-
-/*float uvLevelAddX;
-float uvLevelMulX;
-float uvLevelAddY;
-float uvLevelMulY;*/
-
-float4 LightMapOffset;
-
-float4 MiscConstants;
-
-float WaterHeight;
-
+uniform float4 LightMapOffset;
 Light Lights[1];
 
-float4 WorldSpaceCamPos;
-float4 WaterScroll;
+uniform float WaterHeight;
+uniform float4 WaterScroll;
+uniform float WaterCycleTime;
+uniform float4 WaterColor;
 
-float WaterCycleTime;
+uniform float4 WorldSpaceCamPos;
 
-float4 SpecularColor;
-float SpecularPower;
-float4 WaterColor;
+uniform float4 SpecularColor;
+uniform float SpecularPower;
+uniform float4 PointColor;
 
-#ifdef DEBUG
-#define _WaterColor float4(1,0,0,1)
+#if defined(DEBUG)
+	#define _WaterColor float4(1.0, 0.0, 0.0, 1.0)
 #else
-#define _WaterColor WaterColor
+	#define _WaterColor WaterColor
 #endif
 
-float StaticGloss;
+#define CREATE_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, ADDRESS) \
+	SAMPLER_TYPE SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		AddressW = ADDRESS; \
+	}; \
 
-texture CubeMap;
-sampler CubeMapSampler = sampler_state
-{
-	Texture = (CubeMap);
-	MipFilter = LINEAR; // Rasterizing speedup
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-	AddressW = WRAP;
-	MipMapLodBias = 0;
-};
+uniform texture CubeMap;
+CREATE_SAMPLER(samplerCUBE, SampleCubeMap, CubeMap, WRAP)
 
-#ifdef USE_3DTEXTURE
-
-texture WaterMap;
-sampler WaterMapSampler = sampler_state
-{
-	Texture = (WaterMap);
-	MipFilter = LINEAR; // Rasterizing speedup
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-	AddressW = WRAP;
-	MipMapLodBias = 0;
-};
-
+#if defined(USE_3DTEXTURE)
+	uniform texture WaterMap;
+	CREATE_SAMPLER(sampler, SampleWaterMap, WaterMap, WRAP)
 #else
+	uniform texture WaterMapFrame0;
+	CREATE_SAMPLER(sampler, SampleWaterMap0, WaterMapFrame0, WRAP)
 
-texture WaterMapFrame0;
-sampler WaterMapSampler0 = sampler_state
+	uniform texture WaterMapFrame1;
+	CREATE_SAMPLER(sampler, SampleWaterMap1, WaterMapFrame1, WRAP)
+#endif
+
+uniform texture LightMap;
+CREATE_SAMPLER(sampler, SampleLightMap, LightMap, CLAMP)
+
+string GlobalParameters[] =
 {
-	Texture = (WaterMapFrame0);
-	MipFilter = LINEAR; // Rasterizing speedup
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MipMapLodBias = 0;
+	"WorldSpaceCamPos",
+	"FogRange",
+	"FogColor",
+	"WaterCycleTime",
+	"WaterScroll",
+	#if defined(USE_3DTEXTURE)
+		"WaterMap",
+	#else
+		"WaterMapFrame0",
+		"WaterMapFrame1",
+	#endif
+	"WaterHeight",
+	"WaterColor",
+	// "ShadowMap"
 };
 
-texture WaterMapFrame1;
-sampler WaterMapSampler1 = sampler_state
+string InstanceParameters[] =
 {
-	Texture = (WaterMapFrame1);
-	MipFilter = LINEAR; // Rasterizing speedup
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MipMapLodBias = 0;
+	"ViewProjection",
+	"CubeMap",
+	"LightMap",
+	"LightMapOffset",
+	"SpecularColor",
+	"SpecularPower",
+	#if defined(USE_SHADOWS)
+		"ShadowProjMat",
+		"ShadowTrapMat",
+		"ShadowMap",
+	#endif
+	"PointColor",
+	"Lights",
+	"World"
 };
 
-#endif
-
-texture LightMap;
-sampler LightMapSampler = sampler_state
-{
-	Texture = (LightMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MipMapLodBias = 0;
-};
-
-struct VS_OUTPUT_WATER
-{
-	float4 Pos : POSITION;
-// float4 Color : COLOR;
-	float Fog : FOG;
-#ifdef USE_3DTEXTURE
-	float3 Tex : TEXCOORD0;
-#else
-#ifdef PS13
-	float2 Tex0 : TEXCOORD0;
-	float2 Tex1 : TEXCOORD3;
-#else
-	float2 Tex : TEXCOORD0;
-#endif
-#endif
-#ifndef NO_LIGHTMAP
-	float2 lmtex : TEXCOORD1;
-#endif
-	float3 Position : TEXCOORD2;
-#ifdef USE_SHADOWS
-	float4 TexShadow : TEXCOORD3;
-#endif
-
-};
-
-string reqVertexElement[] = 
+string reqVertexElement[] =
 {
 	"Position",
 	"TLightMap2D"
 };
 
-
-string GlobalParameters[] =
+struct APP2VS
 {
- 	"WorldSpaceCamPos",
-	"FogRange", 
-	"FogColor", 
-	"WaterCycleTime",	
-	"WaterScroll",		
-#ifdef USE_3DTEXTURE
- 	"WaterMap",
-#else
-	"WaterMapFrame0",
-	"WaterMapFrame1",
-#endif
-	"WaterHeight",
- 	"WaterColor",
-// "ShadowMap"
-
+	float4 Pos : POSITION0;
+	float2 LightMap : TEXCOORD1;
 };
 
-string InstanceParameters[] =
+struct VS2PS
 {
- 	"ViewProjection",
-	"CubeMap",
- 	"LightMap",
- 	"LightMapOffset",
-#ifdef USE_SPECULAR
- 	"SpecularColor",
- 	"SpecularPower",
-#endif
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
 
-#ifdef USE_SHADOWS
-	"ShadowProjMat",
-	"ShadowTrapMat",
-	"ShadowMap",
-#endif
-	"StaticGloss",
-	"Lights",
-	"World"
+	float2 LightMapTex : TEXCOORD1;
+	#if defined(USE_SHADOWS)
+		float4 ShadowTex : TEXCOORD2;
+	#endif
 };
 
-
-VS_OUTPUT_WATER waterVertexShader
-(
-float4 inPos : POSITION0,
-float2 lmtex : TEXCOORD1
-)
+struct PS2FB
 {
-	VS_OUTPUT_WATER Out;// = (VS_OUTPUT_WATER)0;
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
 
-	float4 wPos = mul(inPos, World);
-	
-	float h = (WorldSpaceCamPos.y - WaterHeight);
-	wPos.y += h/500;
-	
-	Out.Pos = mul(wPos, ViewProjection);
+VS2PS VS_Water(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0.0;
 
-	// Out.Pos = mul(inPos, mul(World, ViewProjection));
+	// World-space data
+	float4 WorldPos = mul(Input.Pos, World);
+	Output.HPos = mul(WorldPos, ViewProjection);
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
-#ifdef PIXEL_CAMSPACE
-	Out.Position = wPos;
-#else
+	// Output Depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0;
+	#endif
 
-//#ifdef VS_NORMALIZE
-// Out.Position = normalize(-(WorldSpaceCamPos - wPos));
-	// Out.Position = normalize(Out.Position + float3(0,-10000,0));
-//#else
-	Out.Position = -(WorldSpaceCamPos - wPos);
-//#endif
+	// Get texture surface data
+	#if defined(USE_LIGHTMAP)
+		Output.LightMapTex = (Input.LightMap * LightMapOffset.xy) + LightMapOffset.zw;
+	#endif
+	#if defined(USE_SHADOWS)
+		Output.ShadowTex = GetShadowProjection(WorldPos);
+	#endif
 
-#endif
-
-#ifdef USE_3DTEXTURE
-	float3 tex;
-	tex.xy = (wPos.xz / float2(29.13, 31.81));//+ frameTime*1;	
-	tex.xy += (WaterScroll.xy * WaterCycleTime);
-	tex.z = WaterCycleTime*10 + (tex.x*0.7 + tex.y*1.13); //(inPos.x + inPos.y) / 100;
-#else
-	float2 tex;
-	tex.xy = (wPos.xz / float2(99.13, 71.81));//+ frameTime*1;	
-	// tex.xy += WaterCycleTime;
-#endif
-
-#ifdef PS13
-	Out.Tex0 = tex;
-	Out.Tex1 = tex;
-#else
-	Out.Tex = tex;
-#endif
-
-#ifndef NO_LIGHTMAP
-	Out.lmtex.xy = lmtex.xy * LightMapOffset.xy + LightMapOffset.zw;
-#endif
-	Out.Fog = calcFog(Out.Pos.w);
-
-#ifdef USE_SHADOWS
-	Out.TexShadow = calcShadowProjection(wPos);
-#endif
-
-	return Out;
+	return Output;
 }
 
-#define INV_LIGHTDIR float3(0.4,0.5,0.6)
+#define INV_LIGHTDIR float3(0.4, 0.5, 0.6)
 
-float4 Water
-(
-in VS_OUTPUT_WATER VsData
-) : COLOR
+float3 GetWaterTex(float3 WorldPos)
 {
-	float4 finalColor;
-	
-#ifdef NO_LIGHTMAP // F85BD0
-	float4 lightmap = float4(1, StaticGloss, 0.8, 1);
-#else
-	float4 lightmap = tex2D(LightMapSampler, VsData.lmtex);
-#endif
-
-#ifdef USE_3DTEXTURE
-	float3 TN = tex3D(WaterMapSampler, VsData.Tex);
-#else
-
-#ifdef PS13
-	float3 TN = tex2D(WaterMapSampler0, VsData.Tex0);//, tex2D(WaterMapSampler1, VsData.Tex1), WaterCycleTime);
-#else
-	float3 TN = lerp(tex2D(WaterMapSampler0, VsData.Tex), tex2D(WaterMapSampler1, VsData.Tex), WaterCycleTime);
-#endif
-
-#endif
-
-#ifdef TANGENTSPACE_NORMALS
-	TN.rbg = normalize((TN.rgb * 2) - 1);
-#else
-	TN.rgb = (TN.rgb * 2)-1;
-#endif
-
-#ifdef USE_FRESNEL
-#ifdef FRESNEL_NORMALMAP
-	float4 TN2 = float4(TN, 1);
-#else
-	float4 TN2 = float4(0,1,0,0);
-#endif
-#endif
-
-#ifdef PIXEL_CAMSPACE
-	float3 lookup = -(WorldSpaceCamPos - VsData.Position);
-#else
-	float3 lookup = VsData.Position;
-#endif
-
-	float3 reflection = reflect(lookup, TN);
-	float3 envcol = texCUBE(CubeMapSampler, reflection);
-
-#ifdef USE_SPECULAR
-	float specular = saturate(dot(-Lights[0].dir, normalize(reflection)));
-	specular = pow(specular, SpecularPower) * SpecularColor.a;
-#endif
-
-#ifdef USE_FRESNEL
-	float fresnel = BASE_TRANSPARENCY - pow(dot(normalize(lookup), TN2), POW_TRANSPARENCY);
-#endif
-
-	float shadFac = lightmap.g;
-#ifdef USE_SHADOWS
-	shadFac *= getShadowFactor(ShadowMapSampler, VsData.TexShadow);
-#endif
-	float lerpMod = -(1 - saturate(shadFac+SHADOW_FACTOR));
-
-
-#ifdef USE_SPECULAR
-	finalColor.rgb = (specular * SpecularColor * shadFac) + lerp(_WaterColor, envcol, COLOR_ENVMAP_RATIO + lerpMod);
-	// finalColor.rgb = (specular * SpecularColor * shadFac) + lerp(_WaterColor, envcol, saturate(lightmap.g * 0.5 + 0.1));
-#else
-	finalColor.rgb = lerp(_WaterColor, envcol, COLOR_ENVMAP_RATIO + lerpMod);
-#endif
-
-#ifdef USE_FRESNEL
-	finalColor.a =  lightmap.r * fresnel + _WaterColor.w;// - 0.15;// pow(lightmap.r, 1.0);// * 0.5;
-#else
-	finalColor.a = lightmap.r + _WaterColor.w;// * 0.9; // fresnel * pow(lightmap.r, APOW);
-#endif
-
-	return finalColor;
+	float3 WaterTex = 0.0;
+	#if defined(USE_3DTEXTURE)
+		WaterTex.xy = (WorldPos.xz / float2(29.13, 31.81)) + (WaterScroll.xy * WaterCycleTime);
+		WaterTex.z = WaterCycleTime * 10.0 + dot(WaterTex.xy, float2(0.7, 1.13));
+	#else
+		WaterTex.xy = (WorldPos.xz / float2(99.13, 71.81));
+	#endif
+	return WaterTex;
 }
 
-
-
-#ifndef ASM14
-
-float4 Water14
-(
-in VS_OUTPUT_WATER VsData
-) : COLOR
+PS2FB PS_Water(in VS2PS Input)
 {
-	float4 finalColor;
+	PS2FB Output = (PS2FB)0.0;
 
-#ifdef NO_LIGHTMAP // F85BD0
-	float4 lightmap = float4(1, StaticGloss, 0.8, 1);
-#else
-	float4 lightmap = tex2D(LightMapSampler, VsData.lmtex);
-#endif
+	float4 WorldPos = Input.Pos;
+	float3 WorldLightDir = normalize(-Lights[0].dir);
+	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
+	float3 WaterTex = GetWaterTex(WorldPos.xyz);
 
-	float4 t0 = tex2D(WaterMapSampler0, VsData.Tex);
-	float4 t1 = tex2D(WaterMapSampler1, VsData.Tex);
-	float4 TN = lerp(t0, t1, WaterCycleTime);
-	
-	TN.rgb = (TN.rgb * 2)-1;
-	
-	float3 lookup = VsData.Position;
+	#if defined(USE_LIGHTMAP)
+		float4 LightMap = tex2D(SampleLightMap, Input.LightMapTex);
+	#else
+		float4 LightMap = PointColor;
+	#endif
 
-	float3 reflection = reflect(lookup, TN);
-	float3 envcol = texCUBE(CubeMapSampler, reflection);
+	float Shadow = LightMap.g;
+	#if defined(USE_SHADOWS)
+		Shadow *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+	#endif
 
-	// return float4(envcol, 1);
+	#if defined(USE_3DTEXTURE)
+		float3 TangentNormal = tex3D(SampleWaterMap, WaterTex);
+	#else
+		float3 Normal0 = tex2D(SampleWaterMap0, WaterTex.xy).xyz;
+		float3 Normal1 = tex2D(SampleWaterMap1, WaterTex.xy).xyz;
+		float3 TangentNormal = lerp(Normal0, Normal1, WaterCycleTime);
+	#endif
 
-	float shadFac = lightmap.g;//
-	float lerpMod = -(1 - saturate(shadFac+SHADOW_FACTOR));
+	#if defined(TANGENTSPACE_NORMALS)
+		// We flip the Y and Z components because the water-plane faces at the Y direction in world-space
+		TangentNormal.xzy = normalize((TangentNormal.xyz * 2.0) - 1.0);
+	#else
+		TangentNormal.xyz = normalize((TangentNormal.xyz * 2.0) - 1.0);
+	#endif
 
+	// Initialize output factor
+	float4 OutputColor = 0.0;
 
-	finalColor.rgb = lerp(WaterColor, envcol, COLOR_ENVMAP_RATIO + lerpMod);
-	// finalColor.rgb = lerp(WaterColor, envcol, lightmap.g * 0.5);
+	// Generate water color
+	float3 Reflection = normalize(reflect(-WorldViewDir, TangentNormal));
+	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
+	float LerpMod = -(1.0 - saturate(Shadow + SHADOW_FACTOR));
+	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 
-	float a = 2;
+	// Composite light on water color
+	float3 LightColors = SpecularColor.rgb * (SpecularColor.a * Shadow);
+	ColorPair Light = ComputeLights(TangentNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	OutputColor.rgb = WaterLerp + (Light.Specular * LightColors.rgb);
 
-	finalColor.a = lightmap.r * a;// * 0.9; // fresnel * pow(lightmap.r, APOW);
+	// Thermals
+	if (IsTisActive())
+	{
+		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
+	}
 
-	return finalColor;
+	// Compute Fresnel 
+	float Fresnel = ComputeFresnelFactor(TangentNormal, WorldViewDir, POW_TRANSPARENCY);
+	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.a);
+
+	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 }
-
-#endif
-
-
 
 technique defaultShader
 {
-	pass P0
+	pass p0
 	{
-		vertexshader = compile vs_1_1 waterVertexShader();
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
-#ifdef PS_20
-		pixelshader = compile PSMODEL Water();
-#else
+		#if defined(ENABLE_WIREFRAME)
+			FillMode = WireFrame;
+		#endif
 
-#ifdef ASM14
-		Sampler[0] = (WaterMapSampler0);
-		Sampler[1] = (WaterMapSampler1);
-		Sampler[2] = (CubeMapSampler);
-		Sampler[3] = (LightMapSampler);
-		PixelShaderConstantF[0] = (WaterCycleTime);
-		PixelShaderConstantF[1] = (WaterColor);
-		PixelShaderConstantF[2] = (WaterScroll);
-		
-		PixelShader = asm
-		{
-			ps_1_4
-
-			texld r0, t0
-			texld r1, t0 
-			texcrd r2.xyz, t2
-			
-			lrp r3.rgb, c0.x, r1, r0 // r3 = lerp() between the 2 water normal maps
-			dp3 r1.w, r2, r3_bx2
-			mad r0.xyz, r3_bx2, -r1_x2.w, r2
-
-			phase
-
-			texld r2, r0
-			texld r3, t1
-			
-			add_d2 r1.g, r3.g, c2.z
-			
-			// mov r1.g,r3.g
-			
-			lrp r0.rgb, r1.g, r2, c1
-			//+mov r0.w,r3.r
-			+add r0.w, r3.r, c1.w
-		};
-#else
-		pixelshader = compile ps_1_4 Water14();
-
-#endif
-
-#endif
-
-		fogenable = true;
-
-#ifdef ENABLE_WIREFRAME
-		FillMode = WireFrame;
-#endif
 		CullMode = NONE;
-		AlphaBlendEnable= true;
-		AlphaTestEnable = true;
-		alpharef = 1;
-		// depthfunct = always;
+		AlphaTestEnable = TRUE;
+		AlphaRef = 1;
 
+		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
+		VertexShader = compile vs_3_0 VS_Water();
+		PixelShader = compile ps_3_0 PS_Water();
 	}
 }

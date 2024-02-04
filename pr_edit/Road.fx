@@ -11,7 +11,7 @@ uniform float4 _DiffuseColor : DiffuseColor;
 uniform float _BlendFactor : BlendFactor;
 uniform float _Material : Material;
 
-uniform float4 _FogColor : FogColor;
+uniform float4 _RoadFogColor : FogColor;
 
 uniform texture DetailTex0 : TEXLAYER0;
 uniform texture DetailTex1 : TEXLAYER1;
@@ -88,6 +88,7 @@ void PS_RoadEditable(in VS2PS Input, out PS2FB Output)
 	OutputColor.a = ColorMap0.a * Input.Alpha;
 
 	Output.Color = OutputColor;
+	Output.Color = lerp(_RoadFogColor, Output.Color, GetFogValue(Input.Pos, 0.0));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -123,6 +124,7 @@ void VS_RoadEditable_DrawMaterial(in APP2VS_DrawMaterial Input, out VS2PS_DrawMa
 void PS_RoadEditable_DrawMaterial(in VS2PS_DrawMaterial Input, out PS2FB Output)
 {
 	Output.Color = float4((float3)_Material, 1.0);
+	Output.Color = lerp(_RoadFogColor, Output.Color, GetFogValue(Input.Pos, 0.0));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

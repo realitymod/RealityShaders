@@ -191,7 +191,7 @@ float4 GetWorldPos(float2 Pos0, float2 Pos1)
 }
 
 /*
-	[TERRAIN SHADERS]
+	Terrain: Detail Texture Mode
 */
 
 struct FullDetail
@@ -435,6 +435,7 @@ PS2FB PS_Basic_LightOnly(VS2PS Input)
 	Light.a = 1.0;
 
 	Output.Color = Light * 0.5;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -451,6 +452,7 @@ PS2FB PS_Basic_HemimapLightOnly(VS2PS Input)
 	LightMap.a = 1.0;
 
 	Output.Color = pow(LightMap.g * 2.0, 2.0);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -467,6 +469,7 @@ PS2FB PS_Basic_ColorOnly(VS2PS Input)
 	ColorMap.a = 1.0;
 
 	Output.Color = ColorMap;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -483,6 +486,7 @@ PS2FB PS_Basic_ColorOnlyPointFilter(VS2PS Input)
 	ColorMap.a = 1.0;
 
 	Output.Color = ColorMap;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -553,7 +557,7 @@ technique t0 <
 }
 
 /*
-	[GRID-MODE SHADERS]
+	Terrain: Grid (With) Texture Mode
 */
 
 VS2PS_EditorGrid VS_EditorGrid(APP2VS Input)
@@ -562,7 +566,7 @@ VS2PS_EditorGrid VS_EditorGrid(APP2VS Input)
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos = WorldPos;
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
 	#if defined(LOG_DEPTH)
@@ -602,6 +606,7 @@ PS2FB PS_EditorGrid(VS2PS_EditorGrid Input)
 	float4 Grid = tex2Dbias(SampleTex1Wrap, float4(Input.Tex0.zw, 0.0, -1.5));
 
 	Output.Color = ColorMap * Grid;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -621,6 +626,7 @@ PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 	Color *= (Grid);
 
 	Output.Color = Color;
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -697,7 +703,7 @@ technique EditorDetailBasePass
 }
 
 /*
-	[UNDERGROWTH/OVERGROWTH SHADERS]
+	Terrain: Overgrowth/Undergrowth/Materialmap Mode
 */
 
 VS2PS_EditorFoliage VS_EditorUndergrowth(APP2VS Input)
@@ -706,7 +712,7 @@ VS2PS_EditorFoliage VS_EditorUndergrowth(APP2VS Input)
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos = WorldPos;
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
 	#if defined(LOG_DEPTH)
@@ -723,6 +729,7 @@ PS2FB PS_EditorUndergrowth(VS2PS_EditorFoliage Input)
 	PS2FB Output = (PS2FB)0;
 
 	Output.Color = tex2D(SampleTex0, Input.Tex0);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -754,7 +761,7 @@ CREATE_TECHNIQUE(EditorMaterialmap, VS_EditorUndergrowth(), PS_EditorUndergrowth
 #undef CREATE_TECHNIQUE
 
 /*
-	[HEMIMAP SHADERS]
+	Terrain: Hemimap Mode
 */
 
 VS2PS_EditorFoliage VS_EditorHemimap(APP2VS Input)
@@ -763,7 +770,7 @@ VS2PS_EditorFoliage VS_EditorHemimap(APP2VS Input)
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos = WorldPos;
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 	
 	// Output depth
 	#if defined(LOG_DEPTH)
@@ -783,6 +790,7 @@ PS2FB PS_EditorHemimap(VS2PS_EditorFoliage Input)
 	float4 HemiMap = tex2D(SampleTex0, Input.Tex0);
 
 	Output.Color = float4(HemiMap.rgb, 1.0);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -798,6 +806,7 @@ PS2FB PS_EditorHemimapAlpha(VS2PS_EditorFoliage Input)
 	float4 HemiMap = tex2D(SampleTex0, Input.Tex0);
 
 	Output.Color = float4(HemiMap.aaa, 1.0);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

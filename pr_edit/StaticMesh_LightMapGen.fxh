@@ -60,9 +60,9 @@ VS2PS_LightMapGen VS_LightMapBase2(APP2VS_LightMapGen2 Input)
 	return Output;
 }
 
-float4 PS_LightMapGenTest(VS2PS_LightMapGen indata) : COLOR0
+float4 PS_LightMapGenTest(VS2PS_LightMapGen Input) : COLOR0
 {
-	float4 Color = tex2D(SamplerWrap0, indata.DiffuseTex);
+	float4 Color = tex2D(SamplerWrap0, Input.DiffuseTex);
 	Color.rgb = 0.0;
 	return Color;
 }

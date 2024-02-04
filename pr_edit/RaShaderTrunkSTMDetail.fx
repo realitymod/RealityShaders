@@ -1,183 +1,216 @@
-#include "shaders/RaCommon.fx"
 
-#ifndef _HASSHADOW_
-#define _HASSHADOW_ 0
+/*
+	Include header files
+*/
+
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/RaCommon.fxh"
+#if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+	#include "RaCommon.fxh"
 #endif
- 
-// float3 TreeSkyColor;
-float4 OverGrowthAmbient;
+
+/*
+	Description: Renders lighting for objects with characteristics of tree-trunks (poles)
+*/
+
+#if !defined(_HASSHADOW_)
+	#define _HASSHADOW_ 0
+#endif
+
+// uniform float3 TreeSkyColor;
+uniform float4 OverGrowthAmbient;
+uniform float4 PosUnpack;
+uniform float2 NormalUnpack;
+uniform float TexUnpack;
+uniform float4 WorldSpaceCamPos;
 Light Lights[1];
-float4 PosUnpack;
-float2 NormalUnpack;
-float TexUnpack;
 
-struct VS_OUTPUT
-{
-	float4 Pos : POSITION0;
-	float2 Tex0 : TEXCOORD0;
-	float2 Tex1 : TEXCOORD1;
-#if _HASSHADOW_
-	float4 TexShadow : TEXCOORD2;
-#endif
-	float4 Color : COLOR0;
-	float Fog : FOG;
-};
+#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = WRAP; \
+		AddressV = WRAP; \
+	}; \
 
-texture DetailMap;
-sampler DetailMapSampler = sampler_state
-{
-	Texture = (DetailMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MipMapLodBias = 0;
-};
+uniform texture DetailMap;
+CREATE_SAMPLER(SampleDetailMap, DetailMap)
 
-
-texture DiffuseMap;
-sampler DiffuseMapSampler = sampler_state
-{
-	Texture = (DiffuseMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-	MipMapLodBias = 0;
-};
-
-// INPUTS TO THE VERTEX SHADER FROM THE APP
-string reqVertexElement[] = 
-{
- 	"PositionPacked",
- 	"NormalPacked8",
-	"TBasePacked2D"
-#ifndef BASEDIFFUSEONLY
-	,"TDetailPacked2D"
-#endif
-};
-
-VS_OUTPUT basicVertexShader
-(
-	float4 inPos: POSITION0,
-	float3 normal: NORMAL,
-	float2 tex0 : TEXCOORD0
-#ifndef BASEDIFFUSEONLY
-	,float2 tex1 : TEXCOORD1
-#endif
-)
-{
-	VS_OUTPUT Out = (VS_OUTPUT)0;
-
-	inPos *= PosUnpack;
-	Out.Pos = mul(float4(inPos.xyz, 1), WorldViewProjection);
-
-	Out.Fog = calcFog(Out.Pos.w);
-	Out.Tex0 = tex0 * TexUnpack;
-#ifndef BASEDIFFUSEONLY
-	Out.Tex1 = tex1 * TexUnpack;
-#endif
-
-  	normal = normal * NormalUnpack.x + NormalUnpack.y;
-
-	// float LdotN = saturate((dot(normal, -Lights[0].dir) + 0.6) / 1.4);
-	float LdotN = saturate(dot(normal, -Lights[0].dir));
-	Out.Color.rgb = Lights[0].color * LdotN;
-	Out.Color.a = Transparency;
-
-#if _HASSHADOW_
-	Out.TexShadow = calcShadowProjection(float4(inPos.xyz, 1));
-#else
-	Out.Color.rgb += OverGrowthAmbient * 1 / CEXP(1);
-#endif
-
-	Out.Color = Out.Color * 0.5;
-
-	return Out;
-}
-
-float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
-{
-	float3 vertexColor = CEXP(VsOut.Color);
-#ifdef BASEDIFFUSEONLY
-	float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
-#else
-	float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0) * tex2D(DetailMapSampler, VsOut.Tex1);
-#endif
-
-#if _HASSHADOW_
-	vertexColor.rgb *= getShadowFactor(ShadowMapSampler, VsOut.TexShadow, 1, PSVERSION);
-	vertexColor.rgb += OverGrowthAmbient/2;
-#endif
-
-	// tl: use compressed color register to avoid this being compiled as a 2.0 shader.
-	return float4(vertexColor.rgb * diffuseMap * 4, VsOut.Color.a * 2);
-};
+uniform texture DiffuseMap;
+CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap)
 
 string GlobalParameters[] =
 {
-#if _HASSHADOW_
-	"ShadowMap",
-#endif
+	#if _HASSHADOW_
+		"ShadowMap",
+	#endif
 	"FogRange",
-	"FogColor"
+	"FogColor",
+	"WorldSpaceCamPos"
 };
 
-string TemplateParameters[] = 
+string TemplateParameters[] =
 {
 	"PosUnpack",
 	"NormalUnpack",
 	"TexUnpack",
-	"DiffuseMap"
-#ifndef BASEDIFFUSEONLY
-	,"DetailMap"
-#endif
+	"DiffuseMap",
+	#if !defined(BASEDIFFUSEONLY)
+		"DetailMap",
+	#endif
 };
 
 string InstanceParameters[] =
 {
-#if _HASSHADOW_
-	"ShadowProjMat",
-	"ShadowTrapMat",
-#endif
+	#if _HASSHADOW_
+		"ShadowProjMat",
+		"ShadowTrapMat",
+	#endif
 	"WorldViewProjection",
 	"Transparency",
 	"Lights",
-	"OverGrowthAmbient"
+	"OverGrowthAmbient",
+	"World"
+};
+
+// INPUTS TO THE VERTEX SHADER FROM THE APP
+string reqVertexElement[] =
+{
+	"PositionPacked",
+	"NormalPacked8",
+	"TBasePacked2D",
+	#if !defined(BASEDIFFUSEONLY)
+		"TDetailPacked2D",
+	#endif
+};
+
+struct APP2VS
+{
+	float4 Pos : POSITION0;
+	float3 Normal : NORMAL;
+	float2 Tex0 : TEXCOORD0;
+	#if !defined(BASEDIFFUSEONLY)
+		float2 Tex1 : TEXCOORD1;
+	#endif
+};
+
+struct VS2PS
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+
+	float3 WorldNormal : TEXCOORD1;
+	float4 Tex0 : TEXCOORD2; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
+	#if _HASSHADOW_
+		float4 TexShadow : TEXCOORD3;
+	#endif
+};
+
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
+VS2PS VS_TrunkSTMDetail(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0.0;
+
+	// Object-space data
+	float4 ObjectPos = Input.Pos * PosUnpack;
+	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
+
+	// Output HPos
+	Output.HPos = mul(float4(ObjectPos.xyz, 1.0), WorldViewProjection);
+
+	// World-space data
+	Output.Pos = float4(GetWorldPos(ObjectPos.xyz), Output.HPos.w);
+
+	// Output Depth
+	#if defined(LOG_DEPTH)
+		Output.Pos.w = Output.HPos.w + 1.0;
+	#endif
+
+	Output.WorldNormal.xyz = GetWorldNormal(ObjectNormal);
+
+	// Get surface-space data
+	Output.Tex0.xy = Input.Tex0 * TexUnpack;
+	#if !defined(BASEDIFFUSEONLY)
+		Output.Tex0.zw = Input.Tex1 * TexUnpack;
+	#endif
+
+	#if _HASSHADOW_
+		Output.TexShadow = GetShadowProjection(float4(ObjectPos.xyz, 1.0));
+	#endif
+
+	return Output;
+}
+
+PS2FB PS_TrunkSTMDetail(VS2PS Input)
+{
+	PS2FB Output = (PS2FB)0.0;
+
+	// World-space data
+	float4 WorldPos = Input.Pos;
+	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
+	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
+
+	// Texture data
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	#if !defined(BASEDIFFUSEONLY)
+		DiffuseMap *= tex2D(SampleDetailMap, Input.Tex0.zw);
+	#endif
+
+	// Get diffuse lighting
+	#if _HASSHADOW_
+		float Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
+	#else
+		float Shadow = 1.0;
+	#endif
+
+	float3 LightColor = Lights[0].color.rgb * Shadow;
+	float3 Ambient = OverGrowthAmbient.rgb;
+	float3 Diffuse = GetHalfNL(WorldNormal, WorldLightDir) * LightColor;
+
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb * 2.0, Ambient, Diffuse, 0.0);
+	OutputColor.a = Transparency.a * 2.0;
+
+	Output.Color = OutputColor;
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
 };
 
 technique defaultTechnique
 {
-	pass P0
+	pass p0
 	{
-		vertexShader = compile VSMODEL basicVertexShader();
-#if 1
-		TextureTransFormFlags[2] = PROJECTED;
-		pixelShader = compile PSMODEL basicPixelShader();
-#else
-		Sampler[0] = (DiffuseMapSampler);
-		Sampler[1] = (DetailMapSampler);
-		pixelShader = asm 
-		{
-				ps_1_3
-                def c0, 4, 4, 4, 2
-                tex t0
-                tex t1
-                mul_x2 r0.xyz, t0, t1
-                add r1.xyz, v0, v0
-                mul_x2 r0.xyz, r0, r1
-              + mov_x2 r0.w, v0.w
-                // mul r0, r0, c0
-         };
-#endif
+		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 
-#ifdef ENABLE_WIREFRAME
-		FillMode = WireFrame;
-#endif
-		AlphaTestEnable = < AlphaTest >;
+		#if defined(ENABLE_WIREFRAME)
+			FillMode = WireFrame;
+		#endif
+
+		AlphaTestEnable = (AlphaTest);
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
-		fogenable = true;
+
+		VertexShader = compile vs_3_0 VS_TrunkSTMDetail();
+		PixelShader = compile ps_3_0 PS_TrunkSTMDetail();
 	}
 }
