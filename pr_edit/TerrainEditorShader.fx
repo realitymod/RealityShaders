@@ -66,6 +66,7 @@ uniform texture Tex7 : TEXLAYER7;
 		MipFilter = FILTER; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
+		MaxAnisotropy = PR_MAX_ANISOTROPY; \
 	};
 
 CREATE_SAMPLER(sampler, SampleTex0, Tex0, LINEAR, CLAMP)
