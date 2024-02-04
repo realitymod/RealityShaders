@@ -67,7 +67,7 @@ Support for 16x anisotropic filtering.
 - **Snake_Case**
     - Data subcategory
 - **PREFIX_Data**
-    - `Struct`
+    - `struct` datatype
 
         `APP2VS_`
 
@@ -77,11 +77,11 @@ Support for 16x anisotropic filtering.
 
         `PS2MRT_`
 
-    - `VertexShader` method
+    - `VertexShader` methods
 
         `VS_`
 
-    - `PixelShader` method
+    - `PixelShader` methods
 
         `PS_`
 
