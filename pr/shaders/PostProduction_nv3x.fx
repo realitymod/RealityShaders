@@ -5,7 +5,7 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityPixel.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif

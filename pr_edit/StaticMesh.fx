@@ -1,14 +1,14 @@
 
 #include "Shaders/StaticMesh_Data.fxh"
-#include "Shaders/Staticmesh_dx9z.fxh"
-#include "Shaders/StaticMesh_dx9gbuff.fxh"
-#include "Shaders/StaticMesh_debug.fxh"
+#include "Shaders/Staticmesh_DX9Z.fxh"
+#include "Shaders/StaticMesh_DX9GBuff.fxh"
+#include "Shaders/StaticMesh_Debug.fxh"
 #include "Shaders/StaticMesh_LightMapGen.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "StaticMesh_Data.fxh"
-	#include "Staticmesh_dx9z.fxh"
-	#include "StaticMesh_dx9gbuff.fxh"
-	#include "StaticMesh_debug.fxh"
+	#include "Staticmesh_DX9Z.fxh"
+	#include "StaticMesh_DX9GBuff.fxh"
+	#include "StaticMesh_Debug.fxh"
 	#include "StaticMesh_LightMapGen.fxh"
 #endif
 

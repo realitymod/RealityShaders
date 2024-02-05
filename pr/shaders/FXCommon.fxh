@@ -5,8 +5,8 @@
 
 #if !defined(FXCOMMON_FXH)
 	#define FXCOMMON_FXH
-	#undef INCLUDED_HEADERS
-	#define INCLUDED_HEADERS
+	#undef _HEADERS_
+	#define _HEADERS_
 
 	// Common parameters
 	uniform float4x4 _ViewMat : ViewMat;

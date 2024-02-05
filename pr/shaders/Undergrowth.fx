@@ -7,7 +7,7 @@
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityPixel.fxh"

@@ -5,7 +5,7 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityPixel.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
@@ -77,7 +77,7 @@ float GetFadeOut(float3 Pos)
 
 bool IsTisActive()
 {
-	#if defined(IS_EDITOR)
+	#if defined(_EDITOR_)
 		return false;
 	#else
 		return _UnderwaterFog.r == 0.0;

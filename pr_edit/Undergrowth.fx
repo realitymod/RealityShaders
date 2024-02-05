@@ -7,7 +7,7 @@
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityPixel.fxh"
@@ -162,7 +162,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight;
 
-	#if defined(IS_EDITOR)
+	#if defined(_EDITOR_)
 		OutputColor.a = Base.a * 2.0;
 	#else
 		OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
@@ -296,7 +296,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
 
-	#if defined(IS_EDITOR)
+	#if defined(_EDITOR_)
 		OutputColor.a = Base.a * 2.0;
 	#else
 		OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);

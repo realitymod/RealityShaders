@@ -5,7 +5,7 @@
 
 #include "shaders/RaDefines.fx"
 #include "shaders/RealityGraphics.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "RaDefines.fx"
 	#include "RealityGraphics.fxh"
 #endif
@@ -16,8 +16,8 @@
 
 #if !defined(RACOMMON_FXH)
 	#define RACOMMON_FXH
-	#undef INCLUDED_HEADERS
-	#define INCLUDED_HEADERS
+	#undef _HEADERS_
+	#define _HEADERS_
 
 	/*
 		Cached shader variables

@@ -1,6 +1,6 @@
 
 #include "Shaders/StaticMesh_Data.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "StaticMesh_Data.fxh"
 #endif
 

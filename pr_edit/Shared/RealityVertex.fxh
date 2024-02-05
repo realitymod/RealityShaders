@@ -5,8 +5,8 @@
 
 #if !defined(REALITY_VERTEX)
 	#define REALITY_VERTEX
-	#undef INCLUDED_HEADERS
-	#define INCLUDED_HEADERS
+	#undef _HEADERS_
+	#define _HEADERS_
 
 	/*
 		HLSL implementation of LearnOpenGL's Gram-Schmidt Process
