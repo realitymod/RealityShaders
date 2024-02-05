@@ -3,8 +3,12 @@
 	Include header files
 */
 
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityPixel.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
 
@@ -284,7 +288,6 @@ VS2PS_NoClouds VS_SkyDome_SunFlare(APP2VS_NoClouds Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
 	Output.Pos = Input.Pos;
-
 	Output.Tex0 = Input.Tex0;
 
 	return Output;

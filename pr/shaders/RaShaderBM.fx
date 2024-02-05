@@ -11,7 +11,7 @@
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaDefines.fx"
 #include "shaders/RaShaderBM.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
@@ -301,7 +301,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 			// HemiLight = lerp(HemiMap.a, 1.0, saturate(HeightOverTerrain - 1.0));
 		#else
-			float3 Ambient = DiffuseColorAndAmbient.a;
+			float3 Ambient = Lights[0].color.a;
 		#endif
 	#endif
 
@@ -324,8 +324,8 @@ PS2FB PS_BundledMesh(VS2PS Input)
 
 	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
-	float3 DiffuseRGB = (Light.Diffuse * DiffuseColorAndAmbient.rgb)* TotalLights;
-	float3 SpecularRGB = ((Light.Specular * Gloss) * SpecularColor.rgb) * TotalLights;
+	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb)* TotalLights;
+	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].specularColor.rgb) * TotalLights;
 
 	#if _HASSTATICGLOSS_
 		SpecularRGB = clamp(SpecularRGB, 0.0, StaticGloss);

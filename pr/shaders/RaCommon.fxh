@@ -5,7 +5,7 @@
 
 #include "shaders/RaDefines.fx"
 #include "shaders/RealityGraphics.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "RaDefines.fx"
 	#include "RealityGraphics.fxh"
 #endif
@@ -16,8 +16,8 @@
 
 #if !defined(RACOMMON_FXH)
 	#define RACOMMON_FXH
-	#undef INCLUDED_HEADERS
-	#define INCLUDED_HEADERS
+	#undef _HEADERS_
+	#define _HEADERS_
 
 	/*
 		Cached shader variables
@@ -33,7 +33,8 @@
 	{
 		float3 pos;
 		float3 dir;
-		float3 color;
+		float4 color;
+		float4 specularColor;
 		float attenuation;
 	};
 
@@ -101,7 +102,7 @@
 		float2 FogValues = FogDistance * FogRange.xy + FogRange.zw;
 		float Close = max(FogValues.y, FogColor.w);
 		float Far = pow(FogValues.x, 3.0);
-		return smoothstep(0.0, 1.0, Close - Far);
+		return saturate(Close - Far);
 	}
 
 	void ApplyFog(inout float3 Color, in float FogValue)

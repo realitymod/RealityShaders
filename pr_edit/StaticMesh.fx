@@ -4,7 +4,7 @@
 #include "Shaders/StaticMesh_dx9gbuff.fxh"
 #include "Shaders/StaticMesh_debug.fxh"
 #include "Shaders/StaticMesh_LightMapGen.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "StaticMesh_Data.fxh"
 	#include "Staticmesh_dx9z.fxh"
 	#include "StaticMesh_dx9gbuff.fxh"

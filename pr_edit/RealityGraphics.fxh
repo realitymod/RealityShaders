@@ -7,8 +7,8 @@
 
 #if !defined(REALITY_DEFINES)
 	#define REALITY_DEFINES
-	#undef INCLUDED_HEADERS
-	#define INCLUDED_HEADERS
+	#undef _HEADERS_
+	#define _HEADERS_
 
 	// 16x is more or less the modern GPU standard
 	#define PR_MAX_ANISOTROPY 16
@@ -17,5 +17,5 @@
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
 	#define PR_ALPHA_REF 127
 
-	#define IS_EDITOR
+	#define _EDITOR_
 #endif

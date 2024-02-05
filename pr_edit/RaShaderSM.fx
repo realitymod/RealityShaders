@@ -10,7 +10,7 @@
 #include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaShaderSM.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
@@ -127,7 +127,7 @@ LightColors GetLightColors()
 		Output.Diffuse = Lights[0].color.rgb;
 		Output.Specular = Lights[0].color.rgb;
 	#else
-		#if defined(IS_EDITOR)
+		#if defined(_EDITOR_)
 			Output.Diffuse = DiffuseColor.rgb;
 			Output.Specular = SpecularColor.rgb;
 		#else
@@ -290,7 +290,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 			// HemiLight = HemiMap.a;
 		#else
-			#if defined(IS_EDITOR)
+			#if defined(_EDITOR_)
 				float Ambient = 1.0;
 			#else
 				float Ambient = Lights[0].color.a;

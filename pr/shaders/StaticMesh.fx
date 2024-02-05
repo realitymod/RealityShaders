@@ -4,7 +4,7 @@
 */
 
 #include "shaders/shared/RealityDepth.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "shared/RealityDepth.fxh"
 #endif
 

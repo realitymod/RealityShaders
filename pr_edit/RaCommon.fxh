@@ -5,7 +5,7 @@
 
 #include "shaders/RaDefines.fx"
 #include "shaders/RealityGraphics.fxh"
-#if !defined(INCLUDED_HEADERS)
+#if !defined(_HEADERS_)
 	#include "RaDefines.fx"
 	#include "RealityGraphics.fxh"
 #endif
@@ -16,8 +16,8 @@
 
 #if !defined(RACOMMON_FXH)
 	#define RACOMMON_FXH
-	#undef INCLUDED_HEADERS
-	#define INCLUDED_HEADERS
+	#undef _HEADERS_
+	#define _HEADERS_
 
 	/*
 		Cached shader variables
@@ -29,7 +29,7 @@
 		RaShaderSM: Object-Space
 		RaShaderSTM: Object-Space
 	*/
-	#if defined(IS_EDITOR)
+	#if defined(_EDITOR_)
 		struct Light
 		{
 			float3 pos;
@@ -99,7 +99,7 @@
 
 	bool IsTisActive()
 	{
-		#if defined(IS_EDITOR)
+		#if defined(_EDITOR_)
 			return false;
 		#else
 			return FogColor.r == 0.0;
@@ -112,7 +112,7 @@
 
 	float GetFogValue(float4 ObjectPos, float4 CameraPos)
 	{
-		#if defined(IS_EDITOR)
+		#if defined(_EDITOR_)
 			#if defined(LOG_DEPTH)
 				float FogDistance = ObjectPos.w - 1.0;
 			#else
