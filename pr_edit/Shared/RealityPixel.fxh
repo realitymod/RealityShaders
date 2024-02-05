@@ -5,8 +5,8 @@
 
 #if !defined(REALITY_PIXEL)
 	#define REALITY_PIXEL
-	#undef _HEADERS_
-	#define _HEADERS_
+	#undef INCLUDED_HEADERS
+	#define INCLUDED_HEADERS
 
 	float GetMax3(float3 Input)
 	{

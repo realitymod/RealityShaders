@@ -11,7 +11,7 @@
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaDefines.fx"
 #include "shaders/RaShaderBM.fxh"
-#if !defined(_HEADERS_)
+#if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
@@ -124,7 +124,7 @@ LightColors GetLightColors()
 {
 	LightColors Output = (LightColors)0.0;
 
-	#if defined(_EDITOR_)
+	#if defined(IS_EDITOR)
 		Output.Diffuse = DiffuseColorAndAmbient;
 		Output.Specular = SpecularColor;
 	#else

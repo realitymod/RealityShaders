@@ -4,7 +4,7 @@
 */
 
 #include "shaders/RaCommon.fxh"
-#if !defined(_HEADERS_)
+#if !defined(INCLUDED_HEADERS)
 	#include "RaCommon.fxh"
 #endif
 

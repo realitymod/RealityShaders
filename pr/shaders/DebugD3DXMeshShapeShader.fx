@@ -6,7 +6,7 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityDepth.fxh"
-#if !defined(_HEADERS_)
+#if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityDepth.fxh"

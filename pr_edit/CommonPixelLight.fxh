@@ -5,8 +5,8 @@
 
 #if !defined(COMMONPIXELLIGHT_FXH)
 	#define COMMONPIXELLIGHT_FXH
-	#undef _HEADERS_
-	#define _HEADERS_
+	#undef INCLUDED_HEADERS
+	#define INCLUDED_HEADERS
 
 	struct PointLightData
 	{

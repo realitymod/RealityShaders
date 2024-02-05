@@ -27,8 +27,8 @@
 // Functions from DirectXTK
 #if !defined(DIRECTXTK)
 	#define DIRECTXTK
-	#undef _HEADERS_
-	#define _HEADERS_
+	#undef INCLUDED_HEADERS
+	#define INCLUDED_HEADERS
 
 	static const float PI = acos(-1.0);
 

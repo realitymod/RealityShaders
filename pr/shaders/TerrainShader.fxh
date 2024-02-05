@@ -9,7 +9,7 @@
 #include "shaders/shared/RealityPixel.fxh"
 #include "shaders/CommonPixelLight.fxh"
 #include "shaders/RaCommon.fxh"
-#if !defined(_HEADERS_)
+#if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityDepth.fxh"
@@ -20,8 +20,8 @@
 
 #if !defined(TERRAINSHADER_FXH)
 	#define TERRAINSHADER_FXH
-	#undef _HEADERS_
-	#define _HEADERS_
+	#undef INCLUDED_HEADERS
+	#define INCLUDED_HEADERS
 
 	/*
 		Description: Renders lighting for ground terrain

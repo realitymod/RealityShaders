@@ -1,6 +1,6 @@
 
 #include "shaders/RealityGraphics.fxh"
-#if !defined(_HEADERS_)
+#if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
 #endif
 

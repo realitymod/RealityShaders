@@ -4,7 +4,7 @@
 */
 
 #include "shaders/TerrainShader.fxh"
-#if !defined(_HEADERS_)
+#if !defined(INCLUDED_HEADERS)
 	#include "TerrainShader.fxh"
 #endif
 

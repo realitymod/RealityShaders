@@ -7,8 +7,8 @@
 
 #if !defined(REALITY_DEFINES)
 	#define REALITY_DEFINES
-	#undef _HEADERS_
-	#define _HEADERS_
+	#undef INCLUDED_HEADERS
+	#define INCLUDED_HEADERS
 
 	// 16x is more or less the modern GPU standard
 	#define PR_MAX_ANISOTROPY 16

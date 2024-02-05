@@ -8,7 +8,7 @@
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaDefines.fx"
 #include "shaders/RaShaderBM.fxh"
-#if !defined(_HEADERS_)
+#if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "RaCommon.fxh"

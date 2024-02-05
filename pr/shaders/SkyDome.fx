@@ -4,7 +4,7 @@
 */
 
 #include "shaders/shared/RealityPixel.fxh"
-#if !defined(_HEADERS_)
+#if !defined(INCLUDED_HEADERS)
 	#include "shared/RealityPixel.fxh"
 #endif
 

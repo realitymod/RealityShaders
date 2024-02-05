@@ -1,8 +1,8 @@
 
 #if !defined(STATICMESH_DATA_FXH)
 	#define STATICMESH_DATA_FXH
-	#undef _HEADERS_
-	#define _HEADERS_
+	#undef INCLUDED_HEADERS
+	#define INCLUDED_HEADERS
 
 	// UNIFORM INPUTS
 	uniform float4x4 _WorldMatrix : World; // : register(vs_3_0, c0);

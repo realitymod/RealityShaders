@@ -3,7 +3,7 @@
 #include "shaders/RaCommon.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
-#if !defined(_HEADERS_)
+#if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
 	#include "RaCommon.fxh"
 	#include "shared/RealityDepth.fxh"
