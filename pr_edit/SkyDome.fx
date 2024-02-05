@@ -3,8 +3,10 @@
 	Include header files
 */
 
+#include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #if !defined(INCLUDED_HEADERS)
+	#include "RealityGraphics.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
 
@@ -75,10 +77,14 @@ float GetFadeOut(float3 Pos)
 
 bool IsTisActive()
 {
-	return _UnderwaterFog.r == 0;
+	#if defined(IS_EDITOR)
+		return false;
+	#else
+		return _UnderwaterFog.r == 0.0;
+	#endif
 }
 
-float4 ApplyTis(in out float4 Color)
+float4 ApplyTis(inout float4 Color)
 {
 	// TIS uses Green + Red channel to determine heat
 	Color.r = 0.0;
@@ -119,7 +125,7 @@ PS2FB PS_SkyDome_UnderWater(VS2PS_SkyDome Input)
 
 	if (IsTisActive())
 	{
-		Output.Color = 0;
+		Output.Color = 0.0;
 	}
 	else
 	{

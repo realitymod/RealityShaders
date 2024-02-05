@@ -155,7 +155,7 @@ struct VS2PS_EditorFoliage
 struct VS2PS_LightmapGeneration
 {
 	float4 HPos : POSITION;
-	float3 Pos : TEXCOORD0;
+	float4 Pos : TEXCOORD0;
 	float2 Tex0 : TEXCOORD1;
 };
 
@@ -586,7 +586,7 @@ VS2PS_EditorTopoGrid VS_EditorTopoGrid(APP2VS Input)
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos = WorldPos;
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
 	#if defined(LOG_DEPTH)
@@ -665,7 +665,7 @@ VS2PS_ZFill VS_EditorZFill(APP2VS_VS_EditorZFill Input)
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos = WorldPos;
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
 	#if defined(LOG_DEPTH)
@@ -853,7 +853,7 @@ VS2PS_LightmapGeneration VS_LightmapGeneration_QP(APP2VS Input)
 
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
-	Output.Pos = WorldPos;
+	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
 	#if defined(LOG_DEPTH)
