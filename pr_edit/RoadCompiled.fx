@@ -86,9 +86,9 @@ float4 ProjToLighting(float4 HPos)
 	return HPos * _TexProjScale + (_TexProjOffset * HPos.w);
 }
 
-void VS_RoadCompiled(in APP2VS Input, out VS2PS Output)
+VS2PS VS_RoadCompiled(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	float4 WorldPos = Input.Pos;
 	WorldPos.y += 0.01;
@@ -96,7 +96,7 @@ void VS_RoadCompiled(in APP2VS Input, out VS2PS Output)
 	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos = float4(Input.Pos.xyz, Output.HPos.w);
 
-	// Output depth
+	// Output Depth
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
@@ -105,10 +105,14 @@ void VS_RoadCompiled(in APP2VS Input, out VS2PS Output)
 	Output.LightTex = ProjToLighting(Output.HPos);
 
 	Output.Alpha = Input.Alpha;
+
+	return Output;
 }
 
-void PS_RoadCompiled(in VS2PS Input, out PS2FB Output)
+PS2FB PS_RoadCompiled(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	float4 LocalPos = Input.Pos;
 	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 
@@ -119,26 +123,30 @@ void PS_RoadCompiled(in VS2PS Input, out PS2FB Output)
 	float4 Detail0 = tex2D(SampleDetailMap0, Input.Tex0.xy);
 	float4 Detail1 = tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1);
 
-	Output.Color.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
-	Output.Color.a = Detail0.a * saturate(ZFade * Input.Alpha);
+	float4 OutputColor = 0.0;
+	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
+	OutputColor.a = Detail0.a * saturate(ZFade * Input.Alpha);
 
 	// On thermals no shadows
 	if (IsTisActive())
 	{
 		TerrainLights = (TerrainSunColor + AccumLights.rgb) * 2.0;
-		Output.Color.rgb *= TerrainLights;
-		Output.Color.g = clamp(Output.Color.g, 0.0, 0.5);
+		OutputColor.rgb *= TerrainLights;
+		OutputColor.g = clamp(OutputColor.g, 0.0, 0.5);
 	}
 	else
 	{
-		Output.Color.rgb *= TerrainLights;
+		OutputColor.rgb *= TerrainLights;
 	}
 
+	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
+
+	return Output;
 }
 
 technique roadcompiledFull
@@ -161,6 +169,7 @@ technique roadcompiledFull
 	pass NV3X
 	{
 		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
@@ -174,6 +183,8 @@ technique roadcompiledFull
 	pass DirectX9
 	{
 		ZEnable = FALSE;
+		ZFunc = LESSEQUAL;
+
 		DepthBias = -0.0001f;
 		SlopeScaleDepthBias = -0.00001f;
 

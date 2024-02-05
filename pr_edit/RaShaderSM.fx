@@ -82,6 +82,12 @@ struct PS2FB
 	#endif
 };
 
+struct Bone
+{
+	float4x3 Mat[2];
+	float Weight[2];
+};
+
 float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 {
 	// Compensate for lack of UBYTE4 on Geforce3
@@ -97,12 +103,6 @@ float GetBinormalFlipping(APP2VS Input)
 	return 1.0 + IndexArray[2] * -2.0;
 }
 
-struct Bone
-{
-	float4x3 Mat[2];
-	float Weight[2];
-};
-
 Bone GetBoneData(APP2VS Input)
 {
 	Bone Output = (Bone)0.0;
@@ -110,6 +110,32 @@ Bone GetBoneData(APP2VS Input)
 	Output.Mat[1] = GetBoneMatrix(Input, 1);
 	Output.Weight[0] = Input.BlendWeights;
 	Output.Weight[1] = 1.0 - Input.BlendWeights;
+	return Output;
+}
+
+struct LightColors
+{
+	float3 Diffuse;
+	float3 Specular;
+};
+
+LightColors GetLightColors()
+{
+	LightColors Output = (LightColors)0.0;
+
+	#if _POINTLIGHT_
+		Output.Diffuse = Lights[0].color.rgb;
+		Output.Specular = Lights[0].color.rgb;
+	#else
+		#if defined(IS_EDITOR)
+			Output.Diffuse = DiffuseColor.rgb;
+			Output.Specular = SpecularColor.rgb;
+		#else
+			Output.DiffuseColor = Lights[0].color.rgb;
+			Output.SpecularColor = Lights[0].specularColor;
+		#endif
+	#endif
+
 	return Output;
 }
 
@@ -213,15 +239,6 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	return Output;
 }
 
-float3 GetSpecularColor()
-{
-	#if _POINTLIGHT_
-		return Lights[0].color.rgb;
-	#else
-		return SpecularColor.rgb;
-	#endif
-}
-
 PS2FB PS_SkinnedMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
@@ -273,7 +290,11 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 			// HemiLight = HemiMap.a;
 		#else
-			float Ambient = 1.0;
+			#if defined(IS_EDITOR)
+				float Ambient = 1.0;
+			#else
+				float Ambient = Lights[0].color.a;
+			#endif
 		#endif
 	#endif
 
@@ -287,10 +308,11 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	float4 OutputColor = 1.0;
 
 	// Calculate lighting
-	ColorPair Light = ComputeLights(NormalMap.xyz, LightDir, ViewDir, SpecularPower);
+	LightColors LC = GetLightColors();
+	ColorPair Lighting = ComputeLights(NormalMap.xyz, LightDir, ViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
-	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * TotalLights;
-	float3 SpecularRGB = ((Light.Specular * NormalMap.a) * GetSpecularColor()) * TotalLights;
+	float3 DiffuseRGB = (Lighting.Diffuse * LC.Diffuse) * TotalLights;
+	float3 SpecularRGB = ((Lighting.Specular * NormalMap.a) * LC.Specular) * TotalLights;
 	OutputColor.rgb = CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB);
 	OutputColor.a = ColorMap.a * Transparency.a;
 

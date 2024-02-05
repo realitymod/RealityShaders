@@ -114,10 +114,12 @@ struct VS2PS_Quad
 	float2 Tex0 : TEXCOORD0;
 };
 
-void VS_Quad(in APP2VS_Quad Input, out VS2PS_Quad Output)
+VS2PS_Quad VS_Quad(APP2VS_Quad Input)
 {
+	VS2PS_Quad Output = (VS2PS_Quad)0.0;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.Tex0 = Input.Tex0;
+	return Output;
 }
 
 float4 GetTex(float2 Tex, float4 Offset)
@@ -130,15 +132,17 @@ float4 GetTex(float2 Tex, float4 Offset)
 	https://github.com/ronja-tutorials/ShaderTutorials
 */
 
-void VS_Tinnitus(in APP2VS_Quad Input, out VS2PS_Quad Output)
+VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 {
+	VS2PS_Quad Output = (VS2PS_Quad)0.0;
 	FSTriangle FST;
 	GetFSTriangle(Input.Tex0, FST);
 	Output.HPos = float4(FST.Pos, 0.0, 1.0);
 	Output.Tex0 = FST.Tex;
+	return Output;
 }
 
-void PS_Tinnitus(in VS2PS_Quad Input, out float4 Output : COLOR0)
+float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 {
 	// Modify uniform data
 	float SatLerpBias = saturate(_BackBufferLerpBias);
@@ -165,8 +169,9 @@ void PS_Tinnitus(in VS2PS_Quad Input, out float4 Output : COLOR0)
 	float FocusMask = saturate(smoothstep(0.0, FocusPeak, FocusMain));
 
 	// Composite final product
-	Output.rgb = lerp(Color.rgb, 0.0, FocusMask);
-	Output.a = LerpBias;
+	float3 OutputColor = lerp(Color.rgb, 0.0, FocusMask);
+
+	return float4(OutputColor.rgb, LerpBias);
 }
 
 technique Tinnitus
@@ -189,17 +194,17 @@ technique Tinnitus
 	Glow shaders
 */
 
-void PS_Glow(in VS2PS_Quad Input, out float4 Output : COLOR0)
+float4 PS_Glow(VS2PS_Quad Input) : COLOR0
 {
-	Output = tex2D(SampleTex0, Input.Tex0);
+	return tex2D(SampleTex0, Input.Tex0);
 }
 
-void PS_Glow_Material(in VS2PS_Quad Input, out float4 Output : COLOR0)
+float4 PS_Glow_Material(VS2PS_Quad Input) : COLOR0
 {
 	float4 Diffuse = tex2D(SampleTex0, Input.Tex0);
 	// return (1.0 - Diffuse.a);
 	// temporary test, should be removed
-	Output = _GlowStrength * /* Diffuse + */ float4(Diffuse.rgb * (1.0 - Diffuse.a), 1.0);
+	return _GlowStrength * /* Diffuse + */ float4(Diffuse.rgb * (1.0 - Diffuse.a), 1.0);
 }
 
 technique Glow
@@ -269,8 +274,9 @@ TV GetTV(float2 Tex)
 	return Output;
 }
 
-void VS_ThermalVision(in APP2VS_Quad Input, out VS2PS_Quad Output)
+VS2PS_Quad VS_ThermalVision(APP2VS_Quad Input)
 {
+	VS2PS_Quad Output = (VS2PS_Quad)0.0;
 	if (_Interference < 0) // Use fullscreen triangle for thermals
 	{
 		FSTriangle FST;
@@ -283,6 +289,7 @@ void VS_ThermalVision(in APP2VS_Quad Input, out VS2PS_Quad Output)
 		Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 		Output.Tex0 = Input.Tex0.xy;
 	}
+	return Output;
 }
 
 float2 GetPixelation(float2 Tex)
@@ -290,8 +297,10 @@ float2 GetPixelation(float2 Tex)
 	return floor(Tex * THERMAL_SIZE) / THERMAL_SIZE;
 }
 
-void PS_ThermalVision(in VS2PS_Quad Input, out float4 Output : COLOR0)
+float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 {
+	float4 OutputColor = 0.0;
+
 	// Get texture data
 	float2 ImageTex = Input.Tex0;
 	TV Tex = GetTV(Input.Tex0);
@@ -307,10 +316,10 @@ void PS_ThermalVision(in VS2PS_Quad Input, out float4 Output : COLOR0)
 		// Calculate thermal image
 		float4 Image = tex2Dlod(SampleTex0_Point, float4(GetPixelation(Input.Tex0), 0.0, 0.0));
 
-		// Output.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
-		Output.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
-		Output.r = saturate(Output.r - (_Interference * Random)); // Add -_Interference
-		Output = float4(QuantizeRGB(_TVColor * Output.r, 32.0), Image.a);
+		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
+		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
+		OutputColor.r = saturate(OutputColor.r - (_Interference * Random)); // Add -_Interference
+		OutputColor = float4(QuantizeRGB(_TVColor * OutputColor.r, 32.0), Image.a);
 	}
 	else if (_Interference > 0 && _Interference <= 1) // BF2 TV
 	{
@@ -322,12 +331,14 @@ void PS_ThermalVision(in VS2PS_Quad Input, out float4 Output : COLOR0)
 
 		// Fetch image
 		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
-		Output = float4(QuantizeRGB(_TVColor, 32.0), 1.0) * TVFactor;
+		OutputColor = float4(QuantizeRGB(_TVColor, 32.0), 1.0) * TVFactor;
 	}
 	else // Passthrough
 	{
-		Output = Color;
+		OutputColor = Color;
 	}
+
+	return OutputColor;
 }
 
 technique TVEffect
@@ -347,8 +358,10 @@ technique TVEffect
 	TV Effect with usage of gradient texture
 */
 
-void PS_ThermalVision_Gradient(in VS2PS_Quad Input, out float4 Output : COLOR0)
+float4 PS_ThermalVision_Gradient(VS2PS_Quad Input) : COLOR0
 {
+	float4 OutputColor = 0.0;
+
 	if (_Interference >= 0 && _Interference <= 1)
 	{
 		// Get texture data
@@ -371,12 +384,14 @@ void PS_ThermalVision_Gradient(in VS2PS_Quad Input, out float4 Output : COLOR0)
 
 		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
 		float4 GradientColor = tex2D(SampleTex3, float2(TVFactor, 0.0));
-		Output = float4(QuantizeRGB(GradientColor.rgb, 32.0), TVFactor);
+		OutputColor = float4(QuantizeRGB(GradientColor.rgb, 32.0), TVFactor);
 	}
 	else
 	{
-		Output = tex2D(SampleTex0, Input.Tex0);
+		OutputColor = tex2D(SampleTex0, Input.Tex0);
 	}
+
+	return OutputColor;
 }
 
 technique TVEffect_Gradient_Tex
@@ -402,15 +417,17 @@ struct VS2PS_Distortion
 	float2 Tex0 : TEXCOORD0;
 };
 
-void VS_WaveDistortion(in APP2VS_Quad Input, out VS2PS_Distortion Output)
+VS2PS_Distortion VS_WaveDistortion(APP2VS_Quad Input)
 {
+	VS2PS_Distortion Output = (VS2PS_Distortion)0.0;
 	Output.HPos = float4(Input.Pos.xy, 0.0, 1.0);
 	Output.Tex0 = Input.Tex0.xy;
+	return Output;
 }
 
-void PS_WaveDistortion(in VS2PS_Distortion Input, out float4 Output : COLOR0)
+float4 PS_WaveDistortion(VS2PS_Distortion Input) : COLOR0
 {
-	Output = 0.0;
+	return 0.0;
 }
 
 technique WaveDistortion
@@ -443,19 +460,18 @@ technique WaveDistortion
 	Theory is that the texture getting temporally blended or sampled has been rewritten before the blendop
 */
 
-void PS_Flashbang(in VS2PS_Quad Input, out float4 Output : COLOR0)
+float4 PS_Flashbang(VS2PS_Quad Input) : COLOR0
 {
 	float4 Sample0 = tex2D(SampleTex0, Input.Tex0);
 	float4 Sample1 = tex2D(SampleTex1, Input.Tex0);
 	float4 Sample2 = tex2D(SampleTex2, Input.Tex0);
 	float4 Sample3 = tex2D(SampleTex3, Input.Tex0);
 
-	Output = 0.0;
-	Output += Sample0 * 0.5;
-	Output += Sample1 * 0.25;
-	Output += Sample2 * 0.15;
-	Output += Sample3 * 0.10;
-	Output.a = _BackBufferLerpBias;
+	float4 OutputColor = Sample0 * 0.5;
+	OutputColor += Sample1 * 0.25;
+	OutputColor += Sample2 * 0.15;
+	OutputColor += Sample3 * 0.10;
+	return float4(OutputColor.rgb, _BackBufferLerpBias);
 }
 
 technique Flashbang

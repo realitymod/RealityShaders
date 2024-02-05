@@ -4,8 +4,10 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
 #if !defined(INCLUDED_HEADERS)
 	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
 #endif
 
 /*
@@ -51,27 +53,33 @@ struct PS2FB
 	#endif
 };
 
-void VS_Shader(in APP2VS Input, out VS2PS Output)
+VS2PS VS_Shader(APP2VS Input)
 {
-	Output = (VS2PS)0;
+	VS2PS Output = (VS2PS)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 
 	Output.Tex0.xy = Input.Tex0;
 
-	// Output depth
+	// Output Depth
 	#if defined(LOG_DEPTH)
 		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
+
+	return Output;
 }
 
-void PS_Shader(in VS2PS Input, out PS2FB Output)
+PS2FB PS_Shader(VS2PS Input)
 {
+	PS2FB Output = (PS2FB)0.0;
+
 	Output.Color = tex2D(SampleBaseTex, Input.Tex0.xy);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
+
+	return Output;
 }
 
 technique t0_States <bool Restore = true;>
@@ -79,6 +87,7 @@ technique t0_States <bool Restore = true;>
 	pass BeginStates
 	{
 		ZEnable = TRUE;
+		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE; // MatsD 030903: Due to transparent isn't sorted yet. Write Z values
 
 		CullMode = NONE;

@@ -161,7 +161,12 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight;
-	OutputColor.a = Base.a * 2.0;
+
+	#if defined(IS_EDITOR)
+		OutputColor.a = Base.a * 2.0;
+	#else
+		OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
+	#endif
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
@@ -290,7 +295,12 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
-	OutputColor.a = Base.a * 2.0;
+
+	#if defined(IS_EDITOR)
+		OutputColor.a = Base.a * 2.0;
+	#else
+		OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
+	#endif
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, float4(_CameraPos, 0.0)));

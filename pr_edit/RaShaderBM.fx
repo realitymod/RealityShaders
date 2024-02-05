@@ -114,6 +114,27 @@ struct PS2FB
 	#endif
 };
 
+struct LightColors
+{
+	float4 Diffuse;
+	float4 Specular;
+};
+
+LightColors GetLightColors()
+{
+	LightColors Output = (LightColors)0.0;
+
+	#if defined(IS_EDITOR)
+		Output.Diffuse = DiffuseColorAndAmbient;
+		Output.Specular = SpecularColor;
+	#else
+		Output.Diffuse = Lights[0].color;
+		Output.Specular = Lights[0].specularColor;
+	#endif
+
+	return Output;
+}
+
 float4x3 GetSkinnedWorldMatrix(APP2VS Input)
 {
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
@@ -226,6 +247,8 @@ PS2FB PS_BundledMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
+	LightColors LC = GetLightColors();
+
 	/*
 		World-space data
 	*/
@@ -301,7 +324,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 			// HemiLight = lerp(HemiMap.a, 1.0, saturate(HeightOverTerrain - 1.0));
 		#else
-			float3 Ambient = DiffuseColorAndAmbient.a;
+			float3 Ambient = LC.Diffuse.a;
 		#endif
 	#endif
 
@@ -324,8 +347,8 @@ PS2FB PS_BundledMesh(VS2PS Input)
 
 	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
-	float3 DiffuseRGB = (Light.Diffuse * DiffuseColorAndAmbient.rgb)* TotalLights;
-	float3 SpecularRGB = ((Light.Specular * Gloss) * SpecularColor.rgb) * TotalLights;
+	float3 DiffuseRGB = (Light.Diffuse * LC.Diffuse.rgb)* TotalLights;
+	float3 SpecularRGB = ((Light.Specular * Gloss) * LC.Specular.rgb) * TotalLights;
 
 	#if _HASSTATICGLOSS_
 		SpecularRGB = clamp(SpecularRGB, 0.0, StaticGloss);

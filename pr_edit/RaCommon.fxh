@@ -29,13 +29,24 @@
 		RaShaderSM: Object-Space
 		RaShaderSTM: Object-Space
 	*/
-	struct Light
-	{
-		float3 pos;
-		float3 dir;
-		float3 color;
-		float attenuation;
-	};
+	#if defined(IS_EDITOR)
+		struct Light
+		{
+			float3 pos;
+			float3 dir;
+			float3 color;
+			float attenuation;
+		};
+	#else
+		struct Light
+		{
+			float3 pos;
+			float3 dir;
+			float4 color;
+			float4 specularColor;
+			float attenuation;
+		};
+	#endif
 
 	uniform bool alphaBlendEnable = true;
 	uniform int srcBlend = 5;
