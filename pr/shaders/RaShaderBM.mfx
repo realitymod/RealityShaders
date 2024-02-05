@@ -133,6 +133,7 @@ const dword _hasshadowocclusion_ : LITERAL
 	{
 		"ShadowOccluderMap"
 	};
+
 	string InstanceParameters[] =
 	{
 		"ShadowOccProjMat",

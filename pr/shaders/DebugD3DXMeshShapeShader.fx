@@ -30,6 +30,7 @@ sampler SampleTex0 = sampler_state
 	MipFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
+	MaxAnisotropy = PR_MAX_ANISOTROPY;
 };
 
 float _TextureScale : TEXTURESCALE;
