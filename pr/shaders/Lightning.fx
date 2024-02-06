@@ -5,9 +5,11 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 #endif
 
 /*
@@ -80,10 +82,11 @@ PS2FB PS_Lightning(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 ColorTex = tex2D(SampleLightning, Input.Tex0.xy);
+	float4 ColorTex = SRGBToLinearEst(tex2D(SampleLightning, Input.Tex0.xy));
 
 	Output.Color = ColorTex * _LightningColor;
 	Output.Color.a *= Input.Color.a;
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);

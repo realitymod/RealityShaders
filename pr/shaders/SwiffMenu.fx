@@ -2,6 +2,12 @@
 /*
 	Description: Shaders for main menu
 */
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#if !defined(_HEADERS_)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+#endif
 
 uniform float4x4 WorldView : TRANSFORM;
 uniform float4 DiffuseColor : DIFFUSE;
@@ -78,18 +84,24 @@ VS2PS_ShapeTexture VS_ShapeTexture(float3 Position : POSITION)
 float4 PS_RegularWrap(VS2PS_ShapeTexture Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
-	float4 Tex = tex2D(SampleTexMap_Wrap, Input.TexCoord);
+	float4 Tex = SRGBToLinearEst(tex2D(SampleTexMap_Wrap, Input.TexCoord));
+
 	OutputColor.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
 	OutputColor.a = Tex.a * Input.Diffuse.a;
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_RegularClamp(VS2PS_ShapeTexture Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
-	float4 Tex = tex2D(SampleTexMap_Clamp, Input.TexCoord);
+	float4 Tex = SRGBToLinearEst(tex2D(SampleTexMap_Clamp, Input.TexCoord));
+
 	OutputColor.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
 	OutputColor.a = Tex.a * Input.Diffuse.a;
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 

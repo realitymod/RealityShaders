@@ -5,11 +5,13 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/RaCommon.fxh"
 #include "shaders/RaShaderBM.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 	#include "RaShaderBM.fxh"
 #endif
@@ -98,10 +100,11 @@ PS2FB PS_BM_Additive(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 OutputColor = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 OutputColor = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	OutputColor.rgb *= Transparency;
 
 	Output.Color = OutputColor;
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

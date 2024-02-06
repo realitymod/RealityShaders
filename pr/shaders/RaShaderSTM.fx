@@ -156,12 +156,12 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 	DiffuseGloss = StaticGloss;
 
 	#if _BASE_
-		Diffuse = tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy);
+		Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy));
 	#endif
 
 	// TODO: Fix parallax mapping
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
-		float4 Detail = tex2D(SampleDetailMap, ParallaxTex);
+		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, ParallaxTex));
 	#endif
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
@@ -178,12 +178,12 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 	#endif
 
 	#if _DIRT_
-		float4 DirtMap = tex2D(SampleDirtMap, Input.DirtAndCrack.xy);
+		float4 DirtMap = SRGBToLinearEst(tex2D(SampleDirtMap, Input.DirtAndCrack.xy));
 		Diffuse.rgb *= DirtMap.rgb;
 	#endif
 
 	#if _CRACK_
-		float4 Crack = tex2D(SampleCrackMap, Input.DirtAndCrack.zw);
+		float4 Crack = SRGBToLinearEst(tex2D(SampleCrackMap, Input.DirtAndCrack.zw));
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
 
@@ -218,10 +218,10 @@ float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 	#endif
 }
 
-float3 GetLightmap(VS2PS Input)
+float4 GetLightmap(VS2PS Input)
 {
 	#if _LIGHTMAP_
-		return tex2D(SampleLightMap, Input.LightMapTex.xy).rgb;
+		return tex2D(SampleLightMap, Input.LightMapTex.xy);
 	#else
 		return 1.0;
 	#endif
@@ -283,7 +283,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
-		float3 Lightmap = GetLightmap(Input);
+		float4 Lightmap = GetLightmap(Input);
 		#if _LIGHTMAP_ && _SHADOW_
 			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
@@ -307,6 +307,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

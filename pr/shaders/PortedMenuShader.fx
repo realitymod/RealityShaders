@@ -3,6 +3,13 @@
 	Description: Shader that handles BF2's UI elements
 */
 
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#if !defined(_HEADERS_)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+#endif
+
 /*
 	[Attributes from app]
 */
@@ -93,10 +100,14 @@ float4 PS_Quad_WTex_Tex(VS2PS Input) : COLOR0
 
 float4 PS_Quad_WTex_Tex_Masked(VS2PS Input) : COLOR0
 {
-	float4 Color = tex2D(SampleTex0, Input.TexCoord0) * Input.Color;
-	// Color *= tex2D(SampleTex1, Input.TexCoord1);
-	Color.a *= tex2D(SampleTex1, Input.TexCoord1).a;
-	return Color;
+	float4 ColorTex = SRGBToLinearEst(tex2D(SampleTex0, Input.TexCoord0));
+	float AlphaTex = tex2D(SampleTex1, Input.TexCoord1).a;
+
+	float4 OutputColor = ColorTex * Input.Color;
+	OutputColor.a *= AlphaTex;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 // Macro for app render-state settings from [1]
@@ -151,8 +162,11 @@ technique QuadWithTexture
 
 float4 PS_Quad_Cache(VS2PS Input) : COLOR0
 {
-	float4 InputTexture = tex2D(SampleTex0, Input.TexCoord0);
-	return (InputTexture + 1.0) * Input.Color;
+	float4 InputTexture = SRGBToLinearEst(tex2D(SampleTex0, Input.TexCoord0));
+	float4 OutputColor = (InputTexture + 1.0) * Input.Color;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 technique QuadCache

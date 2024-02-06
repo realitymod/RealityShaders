@@ -4,12 +4,14 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
-	#include "RaCommon.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+	#include "RaCommon.fxh"
 #endif
 
 /*

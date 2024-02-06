@@ -5,10 +5,12 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -148,9 +150,9 @@ PS2FB PS_Editor_Road(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 Diffuse = tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy);
+	float4 Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy));
 	#if defined(USE_DETAIL)
-		float4 Detail = tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw);
+		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw));
 		float4 OutputColor = Diffuse * Detail;
 	#else
 		float4 OutputColor = Diffuse;
@@ -159,6 +161,7 @@ PS2FB PS_Editor_Road(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos.xyz, WorldSpaceCamPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

@@ -3,6 +3,13 @@
 	Description: Renders icons and in-game nametags above players
 */
 
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#if !defined(_HEADERS_)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+#endif
+
 /*
 	[Attributes from app]
 */
@@ -110,8 +117,11 @@ VS2PS VS_Nametag(APP2VS Input)
 
 float4 PS_Nametag(VS2PS Input) : COLOR0
 {
-	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
-	return Tex0 * Input.Color0;
+	float4 Tex0 = SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
+	float4 OutputColor = Tex0 * Input.Color0;
+	
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 technique nametag
@@ -168,8 +178,11 @@ VS2PS VS_Nametag_Arrow(APP2VS Input)
 
 float4 PS_Nametag_Arrow(VS2PS Input) : COLOR0
 {
-	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
-	return Tex0 * Input.Color0;
+	float4 Tex0 = SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
+	float4 OutputColor = Tex0 * Input.Color0;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 technique nametag_arrow
@@ -227,9 +240,12 @@ VS2PS_2TEX VS_Nametag_Healthbar(APP2VS Input)
 
 float4 PS_Nametag_Healthbar(VS2PS_2TEX Input) : COLOR0
 {
-	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
-	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
-	return lerp(Tex0, Tex1, _HealthValue < Input.Color0.b) * Input.Color0.a * Input.Color1;
+	float4 Tex0 = SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
+	float4 Tex1 = SRGBToLinearEst(tex2D(SampleDetail1, Input.TexCoord1));
+	float4 OutputColor = lerp(Tex0, Tex1, _HealthValue < Input.Color0.b) * Input.Color0.a * Input.Color1;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 technique nametag_healthbar
@@ -308,9 +324,12 @@ VS2PS VS_Nametag_Vehicle_Icons(APP2VS Input)
 
 float4 PS_Nametag_Vehicle_Icons(VS2PS Input) : COLOR0
 {
-	float4 Tex0 = tex2D(SampleDetail0, Input.TexCoord0);
-	float4 Tex1 = tex2D(SampleDetail1, Input.TexCoord1);
-	return lerp(Tex0, Tex1, _CrossFadeValue) * Input.Color0;
+	float4 Tex0 = SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
+	float4 Tex1 = SRGBToLinearEst(tex2D(SampleDetail1, Input.TexCoord1));
+	float4 OutputColor = lerp(Tex0, Tex1, _CrossFadeValue) * Input.Color0;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 technique nametag_vehicleIcons

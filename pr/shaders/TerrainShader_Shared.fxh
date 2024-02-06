@@ -40,20 +40,28 @@ PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
+
 	Output.Color = saturate(float4(_GIColor.rgb * LightMap.bbb, LightMap.g));
+	TonemapAndLinearToSRGBEst(Output.Color);
+
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
+
 	return Output;
 }
 
 PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output = (PS2FB)0.0;
+
 	Output.Color = saturate(ZFillLightMapColor);
+	TonemapAndLinearToSRGBEst(Output.Color);
+
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
+
 	return Output;
 }
 
@@ -105,7 +113,9 @@ PS2FB PS_Shared_PointLight_PerVertex(VS2PS_Shared_PointLight_PerVertex Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float DotNL = Input.Tex0.x;
+
 	Output.Color = float4(_PointLight.col * DotNL, 0.0);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.y);
@@ -145,7 +155,9 @@ PS2FB PS_Shared_PointLight_PerPixel(VS2PS_Shared_PointLight_PerPixel Input)
 
 	float3 WorldPos = Input.Pos.xyz;
 	float Lighting = GetLighting(WorldPos, Input.Normal);
+
 	Output.Color = float4(Lighting * _PointLight.col, 0.0);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -226,12 +238,12 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	LowDetail LD = GetLowDetail(WorldPos, Input.Tex0);
-	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
-	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex1.xy);
+	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleTex1_Clamp, Input.LightTex));
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex1.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex1.zw);
-	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.YPlane);
-	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.XPlane);
-	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, LD.ZPlane);
+	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.YPlane));
+	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.XPlane));
+	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.ZPlane));
 
 	float4 TerrainLights = (_SunColor * (AccumLights.a * 2.0)) + AccumLights;
 
@@ -265,6 +277,7 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -360,7 +373,9 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 
 	float4 Light = saturate((LightMap.z * _GIColor) * 2.0) * 0.5;
 	Light.w = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
+
 	Output.Color = Light;
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -405,6 +420,7 @@ PS2FB PS_Shared_UnderWater(VS2PS_Shared_UnderWater Input)
 
 	Output.Color = float4(OutputColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -494,11 +510,11 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos, Input.Tex0);
-	float4 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex1.xy);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex1.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex1.zw);
-	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, ST.YPlane) * 2.0;
-	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, ST.XPlane) * 2.0;
-	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, ST.ZPlane) * 2.0;
+	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, ST.YPlane) * 2.0);
+	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, ST.XPlane) * 2.0);
+	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, ST.ZPlane) * 2.0);
 
 	// If thermals assume gray color
 	if (IsTisActive())
@@ -522,6 +538,7 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

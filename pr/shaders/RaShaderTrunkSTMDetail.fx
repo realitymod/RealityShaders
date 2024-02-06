@@ -166,9 +166,10 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
 
 	// Texture data
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if !defined(BASEDIFFUSEONLY)
-		DiffuseMap *= tex2D(SampleDetailMap, Input.Tex0.zw);
+		float4 DetailMap = SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
+		DiffuseMap *= DetailMap;
 	#endif
 
 	// Get diffuse lighting
@@ -188,6 +189,7 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

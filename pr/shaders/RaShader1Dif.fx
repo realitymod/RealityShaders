@@ -5,10 +5,12 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -102,8 +104,9 @@ PS2FB PS_Diffuse(VS2PS Input)
 
 	float3 WorldPos = Input.Pos.xyz;
 
-	Output.Color = tex2D(SampleDiffuseMap, Input.Tex0);
+	Output.Color = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

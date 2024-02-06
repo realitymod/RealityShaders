@@ -115,7 +115,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 	FullDetail FD = GetFullDetail(WorldPos.xyz, Input.Tex0.xy);
 
-	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
+	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleTex1_Clamp, Input.LightTex));
 	float4 Component = tex2D(SampleTex2_Clamp, Input.Tex1.zw);
 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
@@ -126,14 +126,14 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#if defined(LIGHTONLY)
 		float3 OutputColor = TerrainLights;
 	#else
-		float3 ColorMap = tex2D(SampleTex0_Clamp, Input.Tex1.xy);
+		float3 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex1.xy));
 		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex1.zw);
-		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, FD.NearYPlane);
-		float4 XPlaneDetailmap = GetProceduralTiles(SampleTex6_Wrap, FD.NearXPlane);
-		float4 ZPlaneDetailmap = GetProceduralTiles(SampleTex6_Wrap, FD.NearZPlane);
-		float3 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, FD.FarYPlane);
-		float3 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, FD.FarXPlane);
-		float3 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, FD.FarZPlane);
+		float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex3_Wrap, FD.NearYPlane) * float4(2.0, 2.0, 2.0, 1.0));
+		float4 XPlaneDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex6_Wrap, FD.NearXPlane) * 2.0);
+		float4 ZPlaneDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex6_Wrap, FD.NearZPlane) * 2.0);
+		float3 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, FD.FarYPlane) * 2.0);
+		float3 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, FD.FarXPlane) * 2.0);
+		float3 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, FD.FarZPlane) * 2.0);
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color
@@ -149,8 +149,8 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
 
 		float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
-		float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
-		LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
+		float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b, LowDetailMapBlend);
+		LowDetailMap *= lerp(1.0, Blue, LowComponent.b);
 
 		float4 DetailMap = 0.0;
 		if(UseMounten)
@@ -164,20 +164,21 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 			DetailMap = YPlaneDetailmap;
 		}
 
-		float4 BothDetailMap = (DetailMap * LowDetailMap) * 2.0;
+		float4 BothDetailMap = DetailMap * LowDetailMap;
 		float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
 		float3 OutputColor = ColorMap.rgb * OutputDetail.rgb * TerrainLights * 2.0;
 
 		if (UseEnvMap)
 		{
 			float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
-			float3 EnvMapColor = texCUBE(SamplerTex6_Cube, Reflection);
+			float3 EnvMapColor = SRGBToLinearEst(texCUBE(SamplerTex6_Cube, Reflection)).rgb;
 			OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue));
 		}
 	#endif
 
 	Output.Color = float4(OutputColor, ChartContribution);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 	Output.Color.rgb *= ChartContribution;
 
 	#if defined(LOG_DEPTH)

@@ -5,9 +5,11 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 #endif
 
 /*
@@ -62,6 +64,7 @@ PS2FB PS_Debug_Circle(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = Input.Diffuse;
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)

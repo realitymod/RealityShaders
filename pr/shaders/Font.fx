@@ -3,6 +3,13 @@
 	Description: Renders game font
 */
 
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#if !defined(_HEADERS_)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+#endif
+
 /*
 	[Attributes from app]
 */
@@ -55,12 +62,22 @@ VS2PS_REGULAR VS_Regular(APP2VS Input)
 
 float4 PS_Regular(VS2PS_REGULAR Input) : COLOR0
 {
-	return tex2D(SampleTexMap, Input.TexCoord) * Input.Diffuse;
+	float4 OutputColor = 0.0;
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTexMap, Input.TexCoord));
+	OutputColor = ColorMap * Input.Diffuse;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 float4 PS_Regular_Scaled(VS2PS_REGULAR Input) : COLOR0
 {
-	return tex2D(SampleTexMap_Linear, Input.TexCoord) * Input.Diffuse;
+	float4 OutputColor = 0.0;
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTexMap_Linear, Input.TexCoord));
+	OutputColor = ColorMap * Input.Diffuse;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 float4 VS_SelectionQuad(float3 Pos : POSITION) : POSITION

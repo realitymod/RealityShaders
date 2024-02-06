@@ -148,7 +148,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float3 Lights = 0.0;
 	for (int i = 0; i < LightCount; i++)
 	{
-		float3 LightVec = LocalPos - _PointLightPosAtten[i].xyz;
+		float3 LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
 		float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
 		Lights += (Attenuation * _PointLightColor[i]);
 	}
@@ -282,7 +282,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	float3 Lights = 0.0;
 	for (int i = 0; i < LightCount; i++)
 	{
-		float3 LightVec = LocalPos - _PointLightPosAtten[i].xyz;
+		float3 LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
 		float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
 		Lights += (Attenuation * _PointLightColor[i]);
 	}

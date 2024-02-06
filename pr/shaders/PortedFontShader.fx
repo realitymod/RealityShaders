@@ -3,6 +3,13 @@
 	Description: Renders command-line font
 */
 
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#if !defined(_HEADERS_)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+#endif
+
 /*
 	[Attributes from app]
 */
@@ -53,10 +60,13 @@ VS2PS VS_HPos(APP2VS Input)
 
 float4 PS_HPos(VS2PS Input) : COLOR0
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord);
+	float4 OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord));
+
 	float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
 	OutputColor = dot(OutputColor, NoAlpha);
 	OutputColor.rgb = OutputColor.rgb * Input.Color;
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 

@@ -2,6 +2,12 @@
 /*
 	Description: Renders debug linegraph
 */
+#include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#if !defined(_HEADERS_)
+	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+#endif
 
 float2 _GraphPos : GRAPHSIZE;
 float2 _ViewportSize : VIEWPORTSIZE;
@@ -34,7 +40,10 @@ VS2PS VS_Debug_Linegraph(APP2VS Input)
 
 float4 PS_Debug_Linegraph(VS2PS Input) : COLOR0
 {
-	return Input.Color;
+	float4 OutputColor = Input.Color;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 technique Graph <

@@ -5,11 +5,13 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 #endif
@@ -134,9 +136,9 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float3 LocalPos = Input.Pos.xyz;
 	float3 TerrainSunColor = _SunColor * 2.0;
 
-	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
-	float4 TerrainColor = tex2D(SampleTerrainColorMap, Input.Tex0.zw);
-	float4 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
+	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
+	float4 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw));
+	float4 TerrainLightMap = SRGBToLinearEst(tex2D(SampleTerrainLightMap, Input.Tex0.zw));
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
@@ -165,6 +167,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -265,7 +268,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	float3 TerrainLightMap = Input.TerrainLightMap;
 	float3 TerrainSunColor = _SunColor * 2.0;
 
-	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
+	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
@@ -294,6 +297,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

@@ -238,7 +238,7 @@ PS2FB PS_Leaf(VS2PS Input)
 	float HalfNL = Input.Tex0.w;
 	float3 WorldPos = Input.Pos.xyz;
 
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if _HASSHADOW_
 		float4 Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#else
@@ -265,6 +265,7 @@ PS2FB PS_Leaf(VS2PS Input)
 	#else
 		ApplyFog(Output.Color.rgb, FogValue);
 	#endif
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
