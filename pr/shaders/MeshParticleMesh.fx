@@ -134,10 +134,10 @@ PS2FB PS_Additive(VS2PS Input)
 
 	// Mask with alpha since were doing an add
 	float3 AlphaMask = DiffuseMap.aaa * Input.Color.aaa;
-	float4 OutputColor = DiffuseMap * float4(AlphaMask, 1.0);
 
-	Output.Color = OutputColor;
+	Output.Color = DiffuseMap;
 	TonemapAndLinearToSRGBEst(Output.Color);
+	Output.Color *= float4(AlphaMask, 1.0);
 
 	return Output;
 }
