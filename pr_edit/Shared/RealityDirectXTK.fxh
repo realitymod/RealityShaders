@@ -47,12 +47,6 @@
 		Color.rgb = pow(abs(Color.rgb), 1.0 / 2.2);
 	}
 
-	// https://gpuopen.com/learn/optimized-reversible-tonemapper-for-resolve/
-	float3 Tonemap(float3 C)
-	{
-		return C / (max(max(C.r, C.g), C.b) + 1.0);
-	}
-
 	// ACES Filmic tonemap operator
 	// https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 	float3 ToneMapACESFilmic(float3 x)
