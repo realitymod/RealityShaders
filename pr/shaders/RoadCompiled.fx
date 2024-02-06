@@ -48,8 +48,9 @@ CREATE_SAMPLER(SampleDetailMap0, DetailMap0, CLAMP, WRAP)
 uniform texture DetailMap1 : TEXLAYER4;
 CREATE_SAMPLER(SampleDetailMap1, DetailMap1, WRAP, WRAP)
 
+// .rgb = Colors; .a = Lighting;
 uniform texture LightMap : TEXLAYER2;
-CREATE_SAMPLER(SampleLightMap, LightMap, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleAccumLightMap, LightMap, CLAMP, CLAMP)
 
 struct APP2VS
 {
@@ -118,7 +119,7 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	float3 LocalPos = Input.Pos.xyz;
 	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 
-	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleLightMap, Input.LightTex));
+	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleAccumLightMap, Input.LightTex));
 	float3 TerrainSunColor = _SunColor.rgb * 2.0;
 	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
