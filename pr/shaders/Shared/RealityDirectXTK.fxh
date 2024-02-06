@@ -67,8 +67,13 @@
 	// Apply the (approximate) sRGB curve to linear values
 	void TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
-		Color.rgb = ToneMapACESFilmic(Color.rgb);
-		LinearToSRGBEst(Color);
+		#if defined(_USELINEARLIGHTING_)
+			Color.rgb = ToneMapACESFilmic(Color.rgb);
+		#endif
+
+		#if defined(_USETONEMAP_)
+			LinearToSRGBEst(Color);
+		#endif
 	}
  
 	struct ColorPair
