@@ -69,7 +69,7 @@
 	void TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
 		Color.rgb = ToneMapACESFilmic(Color.rgb);
-		Color.rgb = pow(abs(Color.rgb), 1.0 / 2.2);
+		LinearToSRGBEst(Color);
 	}
  
 	struct ColorPair
