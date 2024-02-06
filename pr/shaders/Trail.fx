@@ -92,7 +92,7 @@ VS2PS VS_Trail(APP2VS Input)
 	// Displace vertex
 	float4 Pos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
-	Output.WorldPos = float4(Input.Pos, 0.0);
+	Output.WorldPos = float4(Input.Pos, Output.HPos.w);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -154,7 +154,7 @@ VFactors GetVFactors(VS2PS Input)
 	VFactors Output = (VFactors)0.0;
 	Output.AlphaBlend = Input.Maps[0];
 	Output.AnimationBlend = Input.Maps[1];
-	Output.LightMapOffset = GetAltitude(Input.WorldPos.xyz, Input.Maps[2]);
+	Output.LightMapOffset = GetAltitude(Input.WorldPos, Input.Maps[2]);
 	return Output;
 }
 
@@ -181,7 +181,7 @@ PS2FB PS_Trail_Low(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
 	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -209,7 +209,7 @@ PS2FB PS_Trail_Medium(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
 	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -232,7 +232,7 @@ PS2FB PS_Trail_High(VS2PS Input)
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.AnimationBlend);
 
 	// Get hemi map
-	float2 HemiTex = GetHemiTex(Input.WorldPos.xyz, 0.0, _HemiMapInfo.xyz, true);
+	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo.xyz, true);
 	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, HemiTex));
 
 	// Apply lighting
@@ -241,7 +241,7 @@ PS2FB PS_Trail_High(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos.xyz, _EyePos));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
 	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
