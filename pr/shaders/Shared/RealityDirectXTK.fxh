@@ -40,9 +40,12 @@
 	// (Approximate) sRGB to linear
 	float4 SRGBToLinearEst(float4 ColorMap)
 	{
-		float4 Color = 0.0;
-		Color.rgb = pow(abs(ColorMap.rgb), 2.2);
-		Color.a = ColorMap.a;
+		float4 Color = ColorMap;
+
+		#if defined(_USELINEARLIGHTING_)
+			Color.rgb = pow(abs(ColorMap.rgb), 2.2);
+		#endif
+
 		return Color;
 	}
 
