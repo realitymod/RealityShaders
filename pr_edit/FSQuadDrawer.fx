@@ -4,9 +4,11 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
 
@@ -256,31 +258,39 @@ float4 PS_ScaleUp4x4(VS2PS_Blit Input) : COLOR0
 float4 PS_ScaleDown2x2(VS2PS_Blit Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
-	OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[0].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[1].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[2].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[3].xy);
-	return OutputColor * 0.25;
+	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[0].xy)) * 0.25;
+	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[1].xy)) * 0.25;
+	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[2].xy)) * 0.25;
+	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[3].xy)) * 0.25;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 float4 PS_ScaleDown4x4(in VS2PS_Blit Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
+
 	for(int i = 0; i < 16; i++)
 	{
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown4x4SampleOffsets[i].xy) * 0.0625;
+		float2 Offset = _ScaleDown4x4SampleOffsets[i].xy;
+		OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * 0.0625;
 	}
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_ScaleDown4x4Linear(VS2PS_4Tap Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
-	OutputColor += tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.FilterCoords[2].xy);
-	OutputColor += tex2D(SampleTex0_Clamp, Input.FilterCoords[3].xy);
-	return OutputColor * 0.25;
+	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy)) * 0.25;
+	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy)) * 0.25;
+	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[2].xy)) * 0.25;
+	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[3].xy)) * 0.25;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 float4 PS_CheapGaussianBlur5x5(in VS2PS_Blit Input) : COLOR0
@@ -288,39 +298,59 @@ float4 PS_CheapGaussianBlur5x5(in VS2PS_Blit Input) : COLOR0
 	float4 OutputColor = 0.0;
 	for(int i = 0; i < 13; i++)
 	{
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy) * _GaussianBlur5x5CheapSampleWeights[i];
+		float2 Offset = _GaussianBlur5x5CheapSampleOffsets[i].xy;
+		float Weight = _GaussianBlur5x5CheapSampleWeights[i];
+		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset) * Weight;
 	}
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_Gaussian_Blur_5x5_Cheap_Filter_Blend(VS2PS_Blit Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
+
 	for(int i = 0; i < 13; i++)
 	{
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy) * _GaussianBlur5x5CheapSampleWeights[i];
+		float2 Offset = _GaussianBlur5x5CheapSampleOffsets[i].xy;
+		float Weight = _GaussianBlur5x5CheapSampleWeights[i];
+		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset) * Weight;
 	}
+
 	OutputColor.a = _BlurStrength;
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_GaussianBlur15x15H(VS2PS_Blit Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
+
 	for(int i = 0; i < 15; i++)
 	{
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur15x15HorizontalSampleOffsets[i].xy) * _GaussianBlur15x15HorizontalSampleWeights[i];
+		float2 Offset = _GaussianBlur15x15HorizontalSampleOffsets[i].xy;
+		float Weight = _GaussianBlur15x15HorizontalSampleWeights[i];
+		OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * Weight;
 	}
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_GaussianBlur15x15V(VS2PS_Blit Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
+
 	for(int i = 0; i < 15; i++)
 	{
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GaussianBlur15x15VerticalSampleOffsets[i].xy) * _GaussianBlur15x15VerticalSampleWeights[i];
+		float2 Offset = _GaussianBlur15x15VerticalSampleOffsets[i].xy;
+		float Weight = _GaussianBlur15x15VerticalSampleWeights[i];
+		OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * Weight; 
 	}
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -329,39 +359,41 @@ float4 PS_Poisson13Blur(VS2PS_Blit Input) : COLOR0
 	float4 OutputColor = 0.0;
 	float Samples = 1.0;
 
-	OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 
 	for(int i = 0; i < 11; i++)
 	{
 		// float4 V = tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GrowablePoisson13SampleOffsets[i]);
-		float4 V = tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GrowablePoisson13SampleOffsets[i].xy * 0.1 * OutputColor.a);
+		float2 TexOffset = _GrowablePoisson13SampleOffsets[i].xy * 0.1 * OutputColor.a;
+		float4 V = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + TexOffset));
+
 		if(V.a > 0)
 		{
-			OutputColor.rgb += V;
+			OutputColor.rgb += V.rgb;
 			Samples += 1.0;
 		}
 	}
 
-	return OutputColor / Samples;
+	OutputColor /= Samples;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 float4 PS_Poisson13AndDilation(VS2PS_Blit Input) : COLOR0
 {
-	float4 Center = tex2D(SampleTex0_Clamp, Input.TexCoord0);
-
 	float4 OutputColor = 0.0;
+
+	float4 Center = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 	OutputColor = (Center.a > 0) ? float4(Center.rgb, 1.0) : OutputColor;
 
 	for(int i = 0; i < 11; i++)
 	{
 		float Scale = Center.a * 3.0;
+		Scale = (Scale == 0) ? 1.5 : Scale;
 
-		if(Scale == 0)
-		{
-			Scale = 1.5;
-		}
-
-		float4 V = tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GrowablePoisson13SampleOffsets[i].xy*Scale);
+		float2 TexOffset = _GrowablePoisson13SampleOffsets[i].xy * Scale;
+		float4 V = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + TexOffset));
 
 		if(V.a > 0)
 		{
@@ -370,31 +402,41 @@ float4 PS_Poisson13AndDilation(VS2PS_Blit Input) : COLOR0
 		}
 	}
 
-	return OutputColor / OutputColor.a;
+	OutputColor /= OutputColor.a;
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 float4 PS_GlowFilter(VS2PS_5Tap Input, uniform float Weights[5], uniform bool Horizontal) : COLOR0
 {
-	float4 OutputColor = Weights[0] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy);
-	OutputColor += Weights[1] * tex2D(SampleTex0_Clamp, Input.FilterCoords[0].zw);
-	OutputColor += Weights[2] * tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy);
-	OutputColor += Weights[3] * tex2D(SampleTex0_Clamp, Input.FilterCoords[1].zw);
-	OutputColor += Weights[4] * tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	float4 OutputColor = Weights[0] * SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy));
+	OutputColor += Weights[1] * SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[0].zw));
+	OutputColor += Weights[2] * SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy));
+	OutputColor += Weights[3] * SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[1].zw));
+	OutputColor += Weights[4] * SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_HighPassFilter(VS2PS_Blit Input) : COLOR0
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	float4 OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 	OutputColor -= _HighPassGate;
-	return max(OutputColor, 0.0);
+	OutputColor = max(0.0, OutputColor);
+
+	LinearToSRGBEst(OutputColor);
+	return OutputColor;
 }
 
 float4 PS_HighPassFilterFade(VS2PS_Blit Input) : COLOR0
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	float4 OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 	OutputColor.rgb = saturate(OutputColor.rgb - _HighPassGate);
 	OutputColor.a = _BlurStrength;
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -413,16 +455,21 @@ float4 PS_ExtractGlowFilter(VS2PS_Blit Input) : COLOR0
 
 float4 PS_ExtractHDRFilterFade(VS2PS_Blit Input) : COLOR0
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0);
+	float4 OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 	OutputColor.rgb = saturate(OutputColor.a - _HighPassGate);
 	OutputColor.a = _BlurStrength;
+
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_LumaAndBrightPass(VS2PS_Blit Input) : COLOR0
 {
-	float4 OutputColor = tex2D(SampleTex0_Clamp, Input.TexCoord0) * _HighPassGate;
+	float4 OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
+	OutputColor *= _HighPassGate;
 	// float luminance = dot(OutputColor, float3(0.299f, 0.587f, 0.114f));
+	
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -431,15 +478,17 @@ float4 PS_BloomFilter(VS2PS_5Tap Input, uniform bool Is_Blur) : COLOR0
 	float4 OutputColor = 0.0;
 	OutputColor.a = (Is_Blur) ? _BlurStrength : OutputColor.a;
 
-	OutputColor.rgb += tex2D(SampleTex0_Clamp, Input.TexCoord0.xy);
+	OutputColor.rgb += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0.xy));
 
 	for(int i = 0; i < 2; i++)
 	{
-		OutputColor.rgb += tex2D(SampleTex0_Clamp, Input.FilterCoords[i].xy);
-		OutputColor.rgb += tex2D(SampleTex0_Clamp, Input.FilterCoords[i].zw);
+		OutputColor.rgb += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[i].xy));
+		OutputColor.rgb += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[i].zw));
 	}
 
 	OutputColor.rgb /= 5.0;
+	LinearToSRGBEst(OutputColor);
+
 	return OutputColor;
 }
 

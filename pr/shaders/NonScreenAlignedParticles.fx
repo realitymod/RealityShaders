@@ -102,7 +102,7 @@ VS2PS VS_Particle(APP2VS Input)
 	float4 Pos = mul(float4(ScaledPos, 1.0), _ViewMat);
 	Output.HPos = mul(Pos, _ProjMat);
 	Output.WorldPos = Input.Pos.xyz;
-	Output.ViewPos = Pos;
+	Output.ViewPos = float4(Pos.xyz, Output.HPos.w);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -177,7 +177,7 @@ PS2FB PS_Particle_Low(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos.xyz, 0.0));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
 	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -205,7 +205,7 @@ PS2FB PS_Particle_Medium(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos.xyz, 0.0));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
 	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -237,7 +237,7 @@ PS2FB PS_Particle_High(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos.xyz, 0.0));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
 	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)

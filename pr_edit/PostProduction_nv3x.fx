@@ -4,9 +4,11 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
 
@@ -309,20 +311,24 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 	float4 Color = tex2D(SampleTex0, ImageTex);
 	float Random = tex2D(SampleTex2_Wrap, Tex.Random) - 0.2;
 	float Noise = tex2D(SampleTex1_Wrap, Tex.Random) - 0.5;
-	float Gray = Desaturate(Color.rgb);
 
 	if (_Interference < 0) // Thermals
 	{
 		// Calculate thermal image
-		float4 Image = tex2Dlod(SampleTex0_Point, float4(GetPixelation(Input.Tex0), 0.0, 0.0));
+		float4 Image = SRGBToLinearEst(tex2Dlod(SampleTex0_Point, float4(GetPixelation(Input.Tex0), 0.0, 0.0)));
 
 		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
 		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
 		OutputColor.r = saturate(OutputColor.r - (_Interference * Random)); // Add -_Interference
 		OutputColor = float4(QuantizeRGB(_TVColor * OutputColor.r, 32.0), Image.a);
+
+		LinearToSRGBEst(OutputColor);
 	}
 	else if (_Interference > 0 && _Interference <= 1) // BF2 TV
 	{
+		Color = SRGBToLinearEst(Color);
+		float Gray = Desaturate(Color.rgb);
+
 		// Distort texture coordinates
 		float Distort = frac(Tex.Random.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
 		Distort *= (1.0 - Distort);
@@ -332,6 +338,8 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 		// Fetch image
 		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
 		OutputColor = float4(QuantizeRGB(_TVColor, 32.0), 1.0) * TVFactor;
+
+		LinearToSRGBEst(OutputColor);
 	}
 	else // Passthrough
 	{
@@ -379,12 +387,13 @@ float4 PS_ThermalVision_Gradient(VS2PS_Quad Input) : COLOR0
 		ImageTex.x += _DistortionScale * Noise * Distort;
 
 		// Fetch image
-		float4 Color = tex2D(SampleTex0, ImageTex);
+		float4 Color = SRGBToLinearEst(tex2D(SampleTex0, ImageTex));
 		float Gray = Desaturate(Color.rgb);
 
 		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
 		float4 GradientColor = tex2D(SampleTex3, float2(TVFactor, 0.0));
 		OutputColor = float4(QuantizeRGB(GradientColor.rgb, 32.0), TVFactor);
+		LinearToSRGBEst(OutputColor);
 	}
 	else
 	{
@@ -462,15 +471,17 @@ technique WaveDistortion
 
 float4 PS_Flashbang(VS2PS_Quad Input) : COLOR0
 {
-	float4 Sample0 = tex2D(SampleTex0, Input.Tex0);
-	float4 Sample1 = tex2D(SampleTex1, Input.Tex0);
-	float4 Sample2 = tex2D(SampleTex2, Input.Tex0);
-	float4 Sample3 = tex2D(SampleTex3, Input.Tex0);
+	float4 Sample0 = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	float4 Sample1 = SRGBToLinearEst(tex2D(SampleTex1, Input.Tex0));
+	float4 Sample2 = SRGBToLinearEst(tex2D(SampleTex2, Input.Tex0));
+	float4 Sample3 = SRGBToLinearEst(tex2D(SampleTex3, Input.Tex0));
 
 	float4 OutputColor = Sample0 * 0.5;
 	OutputColor += Sample1 * 0.25;
 	OutputColor += Sample2 * 0.15;
 	OutputColor += Sample3 * 0.10;
+
+	LinearToSRGBEst(OutputColor);
 	return float4(OutputColor.rgb, _BackBufferLerpBias);
 }
 

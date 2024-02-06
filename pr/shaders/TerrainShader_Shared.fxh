@@ -239,9 +239,9 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleTex1_Clamp, Input.LightTex));
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex1.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex1.zw);
-	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.YPlane));
-	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.XPlane));
-	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.ZPlane));
+	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.YPlane) * 2.0);
+	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.XPlane) * 2.0);
+	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.ZPlane) * 2.0);
 
 	float4 TerrainLights = (_SunColor * (AccumLights.a * 2.0)) + AccumLights;
 
@@ -258,8 +258,8 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
 
 	float LowDetailMapBlend = LowComponent.r;
-	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
-	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b, LowDetailMapBlend);
+	LowDetailMap *= lerp(1.0, Blue, LowComponent.b);
 
 	float4 OutputColor = ColorMap * LowDetailMap * TerrainLights * 2.0;
 

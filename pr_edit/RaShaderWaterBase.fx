@@ -230,7 +230,7 @@ PS2FB PS_Water(in VS2PS Input)
 
 	// Generate water color
 	float3 Reflection = normalize(reflect(-WorldViewDir, TangentNormal));
-	float3 EnvColor = texCUBE(SampleCubeMap, Reflection);
+	float3 EnvColor = SRGBToLinearEst(texCUBE(SampleCubeMap, Reflection));
 	float LerpMod = -(1.0 - saturate(Shadow + SHADOW_FACTOR));
 	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 
@@ -251,6 +251,7 @@ PS2FB PS_Water(in VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

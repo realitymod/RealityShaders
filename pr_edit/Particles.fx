@@ -5,12 +5,14 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #include "shaders/FXCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 	#include "FXCommon.fxh"
@@ -167,7 +169,7 @@ PS2FB PS_Particle_Low(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Get diffuse map
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 
 	// Apply lighting
 	float4 LightColor = float4(Input.Color.rgb * _EffectSunColor.rgb, VF.AlphaBlend);
@@ -175,6 +177,7 @@ PS2FB PS_Particle_Low(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }
@@ -187,8 +190,8 @@ PS2FB PS_Particle_Medium(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Get diffuse map
-	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
+	float4 TDiffuse1 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.IntensityBlend);
 
 	// Apply lighting
@@ -198,6 +201,7 @@ PS2FB PS_Particle_Medium(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }
@@ -210,13 +214,13 @@ PS2FB PS_Particle_High(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Get diffuse map
-	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
+	float4 TDiffuse1 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.IntensityBlend);
 
 	// Get hemi map
 	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo.xyz, true);
-	float4 HemiMap = tex2D(SampleLUT, HemiTex);
+	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, HemiTex));
 
 	// Apply lighting
 	float3 Lighting = GetParticleLighting(HemiMap.a, VF.LightMapOffset, VF.LightMapBlend);
@@ -225,6 +229,7 @@ PS2FB PS_Particle_High(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }
@@ -237,7 +242,7 @@ PS2FB PS_Particle_Low_Additive(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Textures
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 
 	// Lighting
 	// Mask with alpha since were doing an add
@@ -247,6 +252,7 @@ PS2FB PS_Particle_Low_Additive(VS2PS Input)
 
 	Output.Color = OutputColor;
 	Output.Color.rgb *= GetFogValue(Input.ViewPos, 0.0);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }
@@ -259,8 +265,8 @@ PS2FB PS_Particle_High_Additive(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Textures
-	float4 TDiffuse1 = tex2D(SampleDiffuseMap, Input.Tex0.xy);
-	float4 TDiffuse2 = tex2D(SampleDiffuseMap, Input.Tex0.zw);
+	float4 TDiffuse1 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.IntensityBlend);
 
 	// Lighting
@@ -271,6 +277,7 @@ PS2FB PS_Particle_High_Additive(VS2PS Input)
 
 	Output.Color = OutputColor;
 	Output.Color.rgb *= GetFogValue(Input.ViewPos, 0.0);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }

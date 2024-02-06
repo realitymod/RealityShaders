@@ -249,7 +249,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	float3 ViewDir = normalize(Input.ViewDir);
 
 	// Texture-space data
-	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
 	#if _HASNORMALMAP_
 		float3x3 WorldTBN =
 		{
@@ -285,7 +285,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
 			float2 HemiTex = GetHemiTex(WorldPos, 0.0, HemiMapConstants, true);
-			float4 HemiMap = tex2D(SampleHemiMap, HemiTex);
+			float4 HemiMap = SRGBToLinearEst(tex2D(SampleHemiMap, HemiTex));
 			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 			// HemiLight = HemiMap.a;
@@ -330,6 +330,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

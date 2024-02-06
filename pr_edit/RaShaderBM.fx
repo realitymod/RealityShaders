@@ -278,7 +278,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 
 	// Get color texture data
 	// We copy ColorMap to ColorTex to preserve original alpha data
-	float4 ColorMap = tex2D(SampleDiffuseMap, Input.Tex0);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
 	float4 ColorTex = ColorMap;
 
 	// Get shadow texture data
@@ -308,7 +308,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 
 	#if _HASENVMAP_
 		float3 Reflection = -reflect(WorldViewDir, WorldNormal);
-		float3 EnvMapColor = texCUBE(SampleCubeMap, Reflection);
+		float3 EnvMapColor = SRGBToLinearEst(texCUBE(SampleCubeMap, Reflection));
 		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
 	#endif
 
@@ -319,7 +319,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
 			float2 HemiTex = GetHemiTex(WorldPos.xyz, 0.0, HemiMapConstants.rgb, true);
-			float4 HemiMap = tex2D(SampleHemiMap, HemiTex);
+			float4 HemiMap = SRGBToLinearEst(tex2D(SampleHemiMap, HemiTex));
 			float HemiLerp = GetHemiLerp(WorldPos.xyz, WorldNormal);
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 			// HemiLight = lerp(HemiMap.a, 1.0, saturate(HeightOverTerrain - 1.0));
@@ -329,7 +329,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#endif
 
 	#if _HASGIMAP_
-		float4 GI = tex2D(SampleGIMap, Input.Tex0);
+		float4 GI = SRGBToLinearEst(tex2D(SampleGIMap, Input.Tex0));
 		float4 GI_TIS = GI; // M
 		if (GI_TIS.a < 0.01)
 		{
@@ -426,6 +426,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

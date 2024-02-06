@@ -279,14 +279,14 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 	float ChartContribution = dot(Component.xyz, _ComponentSelector.xyz);
 
-	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.zw);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.zw));
 	float4 LowComponent = tex2D(SampleTex5, Input.Tex0.zw);
-	float4 YPlaneDetailmap = tex2D(SampleTex1Wrap, FD.NearYPlane);
-	float4 XPlaneDetailmap = GetProceduralTiles(SampleTex1Wrap, FD.NearXPlane);
-	float4 ZPlaneDetailmap = GetProceduralTiles(SampleTex1Wrap, FD.NearZPlane);
-	float3 YPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, FD.FarYPlane);
-	float3 XPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, FD.FarXPlane);
-	float3 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, FD.FarZPlane);
+	float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, FD.NearYPlane) * float4(2.0, 2.0, 2.0, 1.0));
+	float4 XPlaneDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex1Wrap, FD.NearXPlane) * 2.0);
+	float4 ZPlaneDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex1Wrap, FD.NearZPlane) * 2.0);
+	float3 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, FD.FarYPlane) * 2.0);
+	float3 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, FD.FarXPlane) * 2.0);
+	float3 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, FD.FarZPlane) * 2.0);
 	float EnvMapScale = YPlaneDetailmap.a;
 
 	float Blue = 0.0;
@@ -295,8 +295,8 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 	Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
 
 	float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
-	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
-	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b, LowDetailMapBlend);
+	LowDetailMap *= lerp(1.0, Blue, LowComponent.b);
 
 	float4 DetailMap = 1.0;
 	if(UsePlaneMapping)
@@ -316,20 +316,22 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 		Lights = GetTerrainLights(SampleTex4, Input.Tex0.zw, _PointColor);
 	}
 
-	float4 BothDetailMap = (DetailMap * LowDetailMap) * 2.0;
+	float4 BothDetailMap = DetailMap * LowDetailMap;
 	float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
 	float4 OutputColor = ColorMap * OutputDetail * Lights;
 
 	if (UseEnvMap)
 	{
 		float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
-		float4 EnvMapColor = texCUBE(SampleTex7Cube, Reflection);
+		float4 EnvMapColor = SRGBToLinearEst(texCUBE(SampleTex7Cube, Reflection));
 		OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue));
 	}
 
 	Output.Color = OutputColor;
 	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
+
 	Output.Color.a = 1.0;
 	Output.Color *= ChartContribution;
 
@@ -414,12 +416,13 @@ PS2FB PS_Basic(VS2PS Input)
 	float4 WorldPos = Input.Pos;
 	float4 Color = _PointColor * saturate(WorldPos.y - _WaterHeight - POINT_WATER_BIAS);
 
-	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.xy);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
 	float4 Light = GetTerrainLights(SampleTex1, Input.Tex0.zw, Color * 2.0);
 	float4 OutputColor = float4(ColorMap.rgb * Light.rgb, 1.0);
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -454,6 +457,7 @@ PS2FB PS_Basic_HemimapLightOnly(VS2PS Input)
 
 	Output.Color = pow(LightMap.g * 2.0, 2.0);
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -466,11 +470,12 @@ PS2FB PS_Basic_ColorOnly(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.xy);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
 	ColorMap.a = 1.0;
 
 	Output.Color = ColorMap;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -483,11 +488,12 @@ PS2FB PS_Basic_ColorOnlyPointFilter(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 ColorMap = tex2D(SampleTex0Point, Input.Tex0.xy);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0Point, Input.Tex0.xy));
 	ColorMap.a = 1.0;
 
 	Output.Color = ColorMap;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -603,11 +609,12 @@ PS2FB PS_EditorGrid(VS2PS_EditorGrid Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 ColorMap = tex2D(SampleTex0, Input.Tex0.xy);
-	float4 Grid = tex2Dbias(SampleTex1Wrap, float4(Input.Tex0.zw, 0.0, -1.5));
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
+	float4 Grid = SRGBToLinearEst(tex2Dbias(SampleTex1Wrap, float4(Input.Tex0.zw, 0.0, -1.5)));
 
 	Output.Color = ColorMap * Grid;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -620,7 +627,7 @@ PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 Grid = tex2Dbias(SampleTex1Wrap, float4(Input.Tex0.xy, 0.0, -0.5));
+	float4 Grid = SRGBToLinearEst(tex2Dbias(SampleTex1Wrap, float4(Input.Tex0.xy, 0.0, -0.5)));
 	float4 Color = Input.Tex0.z;
 
 	Color += float4(0.0, 0.0, 0.3, 1.0);
@@ -628,6 +635,7 @@ PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 
 	Output.Color = Color;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -729,8 +737,9 @@ PS2FB PS_EditorUndergrowth(VS2PS_EditorFoliage Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	Output.Color = tex2D(SampleTex0, Input.Tex0);
+	Output.Color = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -788,10 +797,11 @@ PS2FB PS_EditorHemimap(VS2PS_EditorFoliage Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 HemiMap = tex2D(SampleTex0, Input.Tex0);
+	float4 HemiMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 
 	Output.Color = float4(HemiMap.rgb, 1.0);
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -804,10 +814,11 @@ PS2FB PS_EditorHemimapAlpha(VS2PS_EditorFoliage Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 HemiMap = tex2D(SampleTex0, Input.Tex0);
+	float4 HemiMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 
 	Output.Color = float4(HemiMap.aaa, 1.0);
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -1018,9 +1029,9 @@ PS2FB PS_SET(VS2PS_SET Input)
 	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos.xyz, Input.Tex0);
 	float4 ColorMap = tex2D(SampleTex0, Input.BiTex.zw);
 	float4 LowComponent = tex2D(SampleTex4, Input.BiTex.zw);
-	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, ST.YPlane) * 2.0;
-	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, ST.XPlane) * 2.0;
-	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, ST.ZPlane) * 2.0;
+	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, ST.YPlane) * 2.0);
+	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, ST.XPlane) * 2.0);
+	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, ST.ZPlane) * 2.0);
 
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.z, saturate(dot(LowComponent.xy, 1.0)));
 	float Blue = 0.0;
@@ -1035,6 +1046,7 @@ PS2FB PS_SET(VS2PS_SET Input)
 	Output.Color = OutputColor;
 	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -1050,13 +1062,14 @@ PS2FB PS_SET_ColorLightingOnly(VS2PS_SET_ColorLightingOnly Input)
 	float4 WorldPos = Input.Pos;
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
-	float4 ColorMap = tex2D(SampleTex0, Input.BiTex.zw);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.BiTex.zw));
 	float4 Lights = GetTerrainLights(SampleTex1, Input.BiTex.xy, _PointColor);
 
 	float4 OutputColor = ColorMap * Lights;
 	Output.Color = OutputColor;
 	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

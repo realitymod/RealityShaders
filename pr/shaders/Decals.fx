@@ -159,7 +159,7 @@ PS2FB PS_Decals(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = GetPixelDecals(Input, false);
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos.xyz, 0.0));
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
 	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)

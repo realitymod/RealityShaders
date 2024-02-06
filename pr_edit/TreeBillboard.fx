@@ -1,7 +1,9 @@
 
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 #endif
 
 uniform float4x4 _ViewProj : matVIEWPROJ;
@@ -91,10 +93,11 @@ PS2FB PS_Quad(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	float4 Tex0 = tex2D(SampleTex0, Input.Tex.xy);
-	float4 Tex1 = tex2D(SampleTex1, Input.Tex.zw);
+	float4 Tex0 = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex.xy));
+	float4 Tex1 = SRGBToLinearEst(tex2D(SampleTex1, Input.Tex.zw));
 
 	Output.Color = lerp(Tex1, Tex0, Input.Color2.a);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

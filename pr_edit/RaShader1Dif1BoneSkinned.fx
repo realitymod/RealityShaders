@@ -4,12 +4,14 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
-#include "shaders/RaCommon.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
-	#include "RaCommon.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
+	#include "RaCommon.fxh"
 #endif
 
 /*
@@ -98,9 +100,10 @@ PS2FB PS_DiffuseBone(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 ColorTex = tex2D(SampleDiffuseMap, Input.Tex0.xy);
+	float4 ColorTex = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 
 	Output.Color = ColorTex * float4(1.0, 0.0, 1.0, 1.0);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);

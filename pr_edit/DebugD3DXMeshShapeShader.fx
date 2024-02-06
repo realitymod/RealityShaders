@@ -122,6 +122,7 @@ PS2FB PS_Debug_Basic_1(VS2PS_Basic Input)
 	float3 OutputColor = Ambient.rgb + (HalfNL * _MaterialDiffuse.rgb);
 
 	Output.Color = float4(OutputColor, Ambient.a);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -135,6 +136,7 @@ PS2FB PS_Debug_Basic_2(VS2PS_Basic Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = float4(_MaterialAmbient.rgb, 0.3);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -148,6 +150,7 @@ PS2FB PS_Debug_Object(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = _MaterialAmbient;
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -205,6 +208,7 @@ PS2FB PS_Debug_Occluder(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = float4(1.0, 0.5, 0.5, 0.5);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -250,6 +254,7 @@ PS2FB PS_Debug_Editor(VS2PS Input, uniform float AmbientColorFactor = 1.0)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = float4(_MaterialAmbient.rgb * AmbientColorFactor, _MaterialAmbient.a);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -336,6 +341,7 @@ PS2FB PS_Debug_CollisionMesh(VS2PS_CollisionMesh Input, uniform float MaterialFa
 	float3 Diffuse = HalfNL * (_MaterialDiffuse.rgb * MaterialFactor);
 
 	Output.Color = float4(Ambient + Diffuse, 0.8);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -514,11 +520,12 @@ PS2FB PS_Debug_Grid(VS2PS_Grid Input)
 	float HalfNL = GetHalfNL(Normal, _LightDir.xyz);
 	float3 Lighting = _MaterialAmbient.rgb + (HalfNL * _MaterialDiffuse.rgb);
 
-	float4 Tex = tex2D(SampleTex0, Input.Tex0.xy);
+	float4 Tex = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
 	// float4 OutputColor = float4(Tex.rgb * Lighting, _MaterialDiffuse.a);
 	float4 OutputColor = float4(Tex.rgb * Lighting, 1.0 - Tex.b);
 
 	Output.Color = OutputColor;
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
@@ -759,6 +766,7 @@ PS2FB PS_Debug_Frustum(VS2PS_Frustum Input, uniform float AlphaValue)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = float4(Input.Color.rgb, Input.Color.a * AlphaValue);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

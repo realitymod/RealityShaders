@@ -315,11 +315,10 @@ PS2FB PS_SkyDome_Flare_Occlude(VS2PS_NoClouds Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 Value = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	float4 Value = tex2D(SampleTex0, Input.Tex0);
 
 	Output.Color = float4(0.0, 1.0, 0.0, Value.a);
 
-	TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 

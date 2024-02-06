@@ -3,10 +3,16 @@
 	Shared functions that process/generate data in the pixel shader
 */
 
+#include "shaders/shared/RealityDirectXTK.fxh"
+#if !defined(_HEADERS_)
+	#include "RealityDirectXTK.fxh"
+#endif
+
 #if !defined(REALITY_PIXEL)
 	#define REALITY_PIXEL
 	#undef _HEADERS_
 	#define _HEADERS_
+
 
 	float GetMax3(float3 Input)
 	{
@@ -254,12 +260,15 @@
 				float2 Offset = (UseHash) ? mul(AngleShift, RotationMatrix) : AngleShift;
 				Offset.x *= AspectRatio;
 				Offset *= Bias;
-				OutputColor += tex2D(Source, Tex + (Offset * 0.01));
+				OutputColor += SRGBToLinearEst(tex2D(Source, Tex + (Offset * 0.01)));
 				Weight++;
 			}
 		}
 
-		return OutputColor / Weight;
+		OutputColor /= Weight;
+
+		LinearToSRGBEst(OutputColor);
+		return OutputColor;
 	}
 
 	float2 GetHemiTex(float3 WorldPos, float3 WorldNormal, float3 HemiInfo, bool InvertY)

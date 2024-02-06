@@ -5,12 +5,14 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #include "shaders/FXCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 	#include "FXCommon.fxh"
@@ -55,7 +57,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float3 WorldPos : TEXCOORD0;
-	float4 ViewPos : TEXCOORD1;
+	float3 ViewPos : TEXCOORD1;
 	float4 Color : TEXCOORD2;
 
 	float2 Tex0 : TEXCOORD3;
@@ -77,7 +79,7 @@ VS2PS VS_Diffuse(APP2VS Input)
 	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.WorldPos = Pos.xyz;
-	Output.ViewPos = Output.HPos;
+	Output.ViewPos = Output.HPos.xyz;
 
 	// Compute Cubic polynomial factors.
 	float Age = _AgeAndAlphaArray[IndexArray[0]][0];
@@ -105,8 +107,8 @@ PS2FB PS_Diffuse(VS2PS Input)
 
 	// Textures
 	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo.xyz, false);
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
-	float4 HemiMap = tex2D(SampleLUT, HemiTex);
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
+	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, HemiTex));
 
 	// Lighting
 	float LightMapOffset = GetAltitude(Input.WorldPos, _LightmapIntensityOffset);
@@ -116,6 +118,7 @@ PS2FB PS_Diffuse(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }
@@ -134,6 +137,7 @@ PS2FB PS_Additive(VS2PS Input)
 	float4 OutputColor = DiffuseMap * float4(AlphaMask, 1.0);
 
 	Output.Color = OutputColor;
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }

@@ -1,7 +1,9 @@
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -80,8 +82,8 @@ void VS_RoadEditable(in APP2VS Input, out VS2PS Output)
 
 void PS_RoadEditable(in VS2PS Input, out PS2FB Output)
 {
-	float4 ColorMap0 = tex2D(SampleDetailTex0, Input.Tex0.xy);
-	float4 ColorMap1 = tex2D(SampleDetailTex1, Input.Tex0.zw);
+	float4 ColorMap0 = SRGBToLinearEst(tex2D(SampleDetailTex0, Input.Tex0.xy));
+	float4 ColorMap1 = SRGBToLinearEst(tex2D(SampleDetailTex1, Input.Tex0.zw));
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = lerp(ColorMap1.rgb, ColorMap0.rgb, saturate(_BlendFactor));
@@ -89,6 +91,7 @@ void PS_RoadEditable(in VS2PS Input, out PS2FB Output)
 
 	Output.Color = OutputColor;
 	Output.Color = lerp(_RoadFogColor, Output.Color, GetFogValue(Input.Pos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

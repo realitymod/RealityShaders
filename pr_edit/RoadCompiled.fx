@@ -5,10 +5,12 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
+#include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
+	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -116,12 +118,12 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	float4 LocalPos = Input.Pos;
 	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 
-	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
+	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleLightMap, Input.LightTex));
 	float3 TerrainSunColor = _SunColor.rgb * 2.0;
 	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
-	float4 Detail0 = tex2D(SampleDetailMap0, Input.Tex0.xy);
-	float4 Detail1 = tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1);
+	float4 Detail0 = SRGBToLinearEst(tex2D(SampleDetailMap0, Input.Tex0.xy));
+	float4 Detail1 = SRGBToLinearEst(tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1));
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
@@ -141,6 +143,7 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

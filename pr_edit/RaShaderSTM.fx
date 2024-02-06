@@ -156,12 +156,13 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 	DiffuseGloss = StaticGloss;
 
 	#if _BASE_
-		Diffuse = tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy);
+		Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy));
 	#endif
 
 	// TODO: Fix parallax mapping
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
-		float4 Detail = tex2D(SampleDetailMap, ParallaxTex);
+		// float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, ParallaxTex)); 
+		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.BaseAndDetail.zw));
 	#endif
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
@@ -178,12 +179,12 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 	#endif
 
 	#if _DIRT_
-		float4 DirtMap = tex2D(SampleDirtMap, Input.DirtAndCrack.xy);
+		float4 DirtMap = SRGBToLinearEst(tex2D(SampleDirtMap, Input.DirtAndCrack.xy));
 		Diffuse.rgb *= DirtMap.rgb;
 	#endif
 
 	#if _CRACK_
-		float4 Crack = tex2D(SampleCrackMap, Input.DirtAndCrack.zw);
+		float4 Crack = SRGBToLinearEst(tex2D(SampleCrackMap, Input.DirtAndCrack.zw));
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
 
@@ -307,6 +308,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
