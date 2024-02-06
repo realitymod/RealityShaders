@@ -137,7 +137,8 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float3 TerrainSunColor = _SunColor;
 
 	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
-	float4 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw) * 2.0);
+	float4 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw));
+	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale);
 	float4 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
@@ -156,13 +157,12 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	}
 	Lights = saturate(Lights);
 
-	TerrainColor = lerp(TerrainColor, 2.0, Input.Scale);
-	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
-	TerrainLight += (TerrainSunColor * (TerrainShadow * TerrainLightMap.y));
-	TerrainLight += Lights;
+	float3 TerrainLight = _SunColor * (TerrainShadow * TerrainLightMap.y);
+	TerrainLight = (TerrainLight + Lights) * 2.0;
+	TerrainLight += (_GIColor.rgb * TerrainLightMap.z);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight;
+	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight * 2.0;
 
 	#if defined(_EDITOR_)
 		OutputColor.a = (Base.a * 2.0);
@@ -269,9 +269,9 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	PS2FB Output = (PS2FB)0.0;
 
 	float4 LocalPos = Input.Pos;
-	float3 TerrainColor = SRGBToLinearEst(Input.TerrainColorMap * 2.0);
+	float3 TerrainColor = SRGBToLinearEst(Input.TerrainColorMap);
+	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z);
 	float3 TerrainLightMap = Input.TerrainLightMap;
-	float3 TerrainSunColor = _SunColor;
 
 	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
@@ -291,13 +291,12 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	}
 	Lights = saturate(Lights);
 
-	TerrainColor = lerp(TerrainColor, 2.0, Input.Tex0.z);
-	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
-	TerrainLight += (TerrainSunColor * (TerrainShadow * TerrainLightMap.y));
-	TerrainLight += Lights;
+	float3 TerrainLight = _SunColor * (TerrainShadow * TerrainLightMap.y);
+	TerrainLight = (TerrainLight + Lights) * 2.0;
+	TerrainLight += (_GIColor.rgb * TerrainLightMap.z);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
+	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight * 2.0;
 
 	#if defined(_EDITOR_)
 		OutputColor.a = (Base.a * 2.0);
