@@ -110,18 +110,9 @@
 		Shared fogging and fading functions
 	*/
 
-	float GetFogValue(float4 ObjectPos, float4 CameraPos)
+	float GetFogValue(float3 ObjectPos, float3 CameraPos)
 	{
-		#if defined(_EDITOR_)
-			#if defined(LOG_DEPTH)
-				float FogDistance = ObjectPos.w - 1.0;
-			#else
-				float FogDistance = ObjectPos.w;
-			#endif
-		#else
-			float FogDistance = length(ObjectPos.xyz - CameraPos.xyz);
-		#endif
-
+		float FogDistance = length(ObjectPos.xyz - CameraPos.xyz);
 		float2 FogValues = (FogDistance * FogRange.xy) + FogRange.zw;
 		float Close = max(FogValues.y, FogColor.a);
 		float Far = pow(FogValues.x, 3.0);
