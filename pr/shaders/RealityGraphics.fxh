@@ -17,4 +17,6 @@
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
 	#define PR_ALPHA_REF 127
 
+	#define _USELINEARLIGHTING_
+	#define _USETONEMAP_
 #endif

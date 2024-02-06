@@ -1,4 +1,9 @@
 
+#include "shaders/RealityGraphics.fxh"
+#if !defined(_HEADERS_)
+	#include "../RealityGraphics.fxh"
+#endif
+
 /*
 	https://github.com/microsoft/DirectXTK
 
@@ -69,7 +74,7 @@
 	void TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
 		Color.rgb = ToneMapACESFilmic(Color.rgb);
-		Color.rgb = pow(abs(Color.rgb), 1.0 / 2.2);
+		Color.rgb = LinearToSRGBEst(Color);
 	}
  
 	struct ColorPair

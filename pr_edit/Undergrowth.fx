@@ -136,9 +136,9 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float4 LocalPos = Input.Pos;
 	float3 TerrainSunColor = _SunColor;
 
-	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy) * 2.0);
-	float4 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw));
-	float4 TerrainLightMap = SRGBToLinearEst(tex2D(SampleTerrainLightMap, Input.Tex0.zw));
+	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
+	float4 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw) * 2.0);
+	float4 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
@@ -156,7 +156,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	}
 	Lights = saturate(Lights);
 
-	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale) * 2.0;
+	TerrainColor = lerp(TerrainColor, 2.0, Input.Scale);
 	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
 	TerrainLight += (TerrainSunColor * (TerrainShadow * TerrainLightMap.y));
 	TerrainLight += Lights;
@@ -165,9 +165,9 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight;
 
 	#if defined(_EDITOR_)
-		OutputColor.a = Base.a;
+		OutputColor.a = (Base.a * 2.0);
 	#else
-		OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
+		OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
 	#endif
 
 	Output.Color = OutputColor;
@@ -269,11 +269,11 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	PS2FB Output = (PS2FB)0.0;
 
 	float4 LocalPos = Input.Pos;
-	float3 TerrainColor = Input.TerrainColorMap;
+	float3 TerrainColor = SRGBToLinearEst(Input.TerrainColorMap * 2.0);
 	float3 TerrainLightMap = Input.TerrainLightMap;
 	float3 TerrainSunColor = _SunColor;
 
-	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy) * 2.0);
+	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
@@ -291,7 +291,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	}
 	Lights = saturate(Lights);
 
-	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z) * 2.0;
+	TerrainColor = lerp(TerrainColor, 2.0, Input.Tex0.z);
 	float3 TerrainLight = _GIColor.rgb * TerrainLightMap.z;
 	TerrainLight += (TerrainSunColor * (TerrainShadow * TerrainLightMap.y));
 	TerrainLight += Lights;
@@ -300,9 +300,9 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
 
 	#if defined(_EDITOR_)
-		OutputColor.a = Base.a;
+		OutputColor.a = (Base.a * 2.0);
 	#else
-		OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
+		OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
 	#endif
 
 	Output.Color = OutputColor;
