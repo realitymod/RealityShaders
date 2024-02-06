@@ -70,11 +70,11 @@
 	// Apply the (approximate) sRGB curve to linear values
 	void TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
-		#if defined(_USELINEARLIGHTING_)
+		#if defined(_USETONEMAP_)
 			Color.rgb = ToneMapACESFilmic(Color.rgb);
 		#endif
 
-		#if defined(_USETONEMAP_)
+		#if defined(_USELINEARLIGHTING_)
 			LinearToSRGBEst(Color);
 		#endif
 	}
