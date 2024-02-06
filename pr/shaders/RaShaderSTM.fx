@@ -161,7 +161,8 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 
 	// TODO: Fix parallax mapping
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
-		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, ParallaxTex));
+		// float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, ParallaxTex));
+		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.BaseAndDetail.zw));
 	#endif
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
@@ -199,7 +200,8 @@ float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
 		#endif
 		#if _PARALLAXDETAIL_
-			TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
+			// TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
+			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 		#elif _NDETAIL_
 			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 		#endif
