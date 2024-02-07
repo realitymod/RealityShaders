@@ -1,9 +1,7 @@
 
 #include "shaders/RealityGraphics.fxh"
-#include "shaders/shared/RealityPixel.fxh"
 #if !defined(_HEADERS_)
 	#include "../RealityGraphics.fxh"
-	#include "RealityPixel.fxh"
 #endif
 
 /*
@@ -75,7 +73,7 @@
 	void TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
 		#if defined(_USETONEMAP_)
-			float Peak = GetMax3(Color.rgb);
+			float Peak = max(max(Color.r, Color.g), Color.b);
 			float3 Ratio = Color.rgb / Peak;
 			Color.rgb = ToneMapACESFilmic(Peak) * Ratio;
 		#endif
