@@ -1,7 +1,9 @@
 
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/RealityPixel.fxh"
 #if !defined(_HEADERS_)
 	#include "../RealityGraphics.fxh"
+	#include "RealityPixel.fxh"
 #endif
 
 /*
@@ -68,10 +70,14 @@
 	}
 
 	// Apply the (approximate) sRGB curve to linear values
+	// Tonemapping through seperation of Max and RGB Ratio
+	// https://gpuopen.com/wp-content/uploads/2016/03/GdcVdrLottes.pdf
 	void TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
 		#if defined(_USETONEMAP_)
-			Color.rgb = ToneMapACESFilmic(Color.rgb);
+			float Peak = GetMax3(Color.rgb);
+			float3 Ratio = Color.rgb / Peak;
+			Color.rgb = ToneMapACESFilmic(Peak) * Ratio;
 		#endif
 
 		#if defined(_USELINEARLIGHTING_)
