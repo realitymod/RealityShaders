@@ -43,7 +43,7 @@
 		float4 Color = ColorMap;
 
 		#if defined(_USELINEARLIGHTING_)
-			Color.rgb = pow(abs(ColorMap.rgb), 2.2);
+			Color.rgb = pow(abs(Color.rgb), 2.2);
 		#endif
 
 		return Color;
