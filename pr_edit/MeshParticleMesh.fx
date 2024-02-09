@@ -57,7 +57,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float3 WorldPos : TEXCOORD0;
-	float3 ViewPos : TEXCOORD1;
+	float4 ViewPos : TEXCOORD1;
 	float4 Color : TEXCOORD2;
 
 	float2 Tex0 : TEXCOORD3;
@@ -79,7 +79,7 @@ VS2PS VS_Diffuse(APP2VS Input)
 	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
 	Output.WorldPos = Pos.xyz;
-	Output.ViewPos = Output.HPos.xyz;
+	Output.ViewPos = Output.HPos;
 
 	// Compute Cubic polynomial factors.
 	float Age = _AgeAndAlphaArray[IndexArray[0]][0];
@@ -134,10 +134,11 @@ PS2FB PS_Additive(VS2PS Input)
 
 	// Mask with alpha since were doing an add
 	float3 AlphaMask = DiffuseMap.aaa * Input.Color.aaa;
-	float4 OutputColor = DiffuseMap * float4(AlphaMask, 1.0);
+	float4 OutputColor = DiffuseMap;
 
 	Output.Color = OutputColor;
 	TonemapAndLinearToSRGBEst(Output.Color);
+	Output.Color *= float4(AlphaMask, 1.0);
 
 	return Output;
 }
