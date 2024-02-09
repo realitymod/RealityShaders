@@ -63,7 +63,7 @@ float4 PS_Screen(VS2PS Input) : COLOR0
 	OutputColor.rgb = InputTexture0.rgb * Input.Color.rgb;
 	OutputColor.a = Input.Color.a;
 
-	SRGBToLinearEst(OutputColor);
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 

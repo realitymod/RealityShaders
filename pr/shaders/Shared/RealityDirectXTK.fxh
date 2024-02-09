@@ -40,19 +40,18 @@
 	// (Approximate) sRGB to linear
 	float4 SRGBToLinearEst(float4 ColorMap)
 	{
-		float4 Color = ColorMap;
-
 		#if defined(_USELINEARLIGHTING_)
-			Color.rgb = pow(abs(ColorMap.rgb), 2.2);
+			ColorMap.rgb = pow(abs(ColorMap.rgb), 2.2);
 		#endif
-
-		return Color;
+		return ColorMap;
 	}
 
 	// Apply the (approximate) sRGB curve to linear values
 	void LinearToSRGBEst(inout float4 Color)
 	{
-		Color.rgb = pow(abs(Color.rgb), 1.0 / 2.2);
+		#if defined(_USELINEARLIGHTING_)
+			Color.rgb = pow(abs(Color.rgb), 1.0 / 2.2);
+		#endif
 	}
 
 	// ACES Filmic tonemap operator
