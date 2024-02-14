@@ -89,8 +89,7 @@ VS2PS VS_Basic(APP2VS Input)
 	Input.Pos *= PosUnpack;
 
 	// Warp geometry
-	WindSpeed += 5.0;
-	Input.Pos += sin(GlobalTime * Input.Pos.y * WindSpeed / 4.0) * LEAF_MOVEMENT * clamp(abs(Input.Pos.z * Input.Pos.x), 0.0, WindSpeed / 10.0);
+	Input.Pos += sin(GlobalTime * Input.Pos.y * (WindSpeed + 5.0) / 4.0) * LEAF_MOVEMENT * clamp(abs(Input.Pos.z * Input.Pos.x), 0.0, WindSpeed / 10.0);
 
 	Output.HPos = mul(float4(Input.Pos, 1.0), WorldViewProjection);
 	Output.Tex0 = float3(Input.Tex0 * TexUnpack, Output.HPos.w);
