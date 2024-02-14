@@ -35,19 +35,19 @@
 // Modifies heightalpha (for tweaking transparancy depending on depth)
 #define APOW 1.3
 
-uniform float4 LightMapOffset;
+float4 LightMapOffset;
 Light Lights[1];
 
-uniform float WaterHeight;
-uniform float4 WaterScroll;
-uniform float WaterCycleTime;
-uniform float4 WaterColor;
+float WaterHeight;
+float4 WaterScroll;
+float WaterCycleTime;
+float4 WaterColor;
 
-uniform float4 WorldSpaceCamPos;
+float4 WorldSpaceCamPos;
 
-uniform float4 SpecularColor;
-uniform float SpecularPower;
-uniform float4 PointColor;
+float4 SpecularColor;
+float SpecularPower;
+float4 PointColor;
 
 #if defined(DEBUG)
 	#define _WaterColor float4(1.0, 0.0, 0.0, 1.0)
@@ -67,21 +67,21 @@ uniform float4 PointColor;
 		AddressW = ADDRESS; \
 	}; \
 
-uniform texture CubeMap;
+texture CubeMap;
 CREATE_SAMPLER(samplerCUBE, SampleCubeMap, CubeMap, WRAP)
 
 #if defined(USE_3DTEXTURE)
-	uniform texture WaterMap;
+	texture WaterMap;
 	CREATE_SAMPLER(sampler, SampleWaterMap, WaterMap, WRAP)
 #else
-	uniform texture WaterMapFrame0;
+	texture WaterMapFrame0;
 	CREATE_SAMPLER(sampler, SampleWaterMap0, WaterMapFrame0, WRAP)
 
-	uniform texture WaterMapFrame1;
+	texture WaterMapFrame1;
 	CREATE_SAMPLER(sampler, SampleWaterMap1, WaterMapFrame1, WRAP)
 #endif
 
-uniform texture LightMap;
+texture LightMap;
 CREATE_SAMPLER(sampler, SampleLightMap, LightMap, CLAMP)
 
 string GlobalParameters[] =

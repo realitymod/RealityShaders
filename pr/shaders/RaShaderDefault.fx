@@ -14,10 +14,10 @@
 	Description: Basic shader that outputs a color
 */
 
-uniform float4x4 World;
-uniform float4x4 ViewProjection;
-uniform int textureFactor = 0xffAFFFaF;
-uniform bool alphaBlendEnable = false;
+float4x4 World;
+float4x4 ViewProjection;
+int textureFactor = 0xffAFFFaF;
+bool alphaBlendEnable = false;
 
 string reqVertexElement[] =
 {

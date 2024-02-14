@@ -16,46 +16,46 @@
 
 #define POINT_WATER_BIAS 2
 
-uniform float4x4 _ViewProj: matVIEWPROJ;
-uniform float4 _ScaleTransXZ : SCALETRANSXZ;
-uniform float4 _ScaleTransY : SCALETRANSY;
-uniform float4x4 _SETTransXZ : SETTRANSXZ;
+float4x4 _ViewProj: matVIEWPROJ;
+float4 _ScaleTransXZ : SCALETRANSXZ;
+float4 _ScaleTransY : SCALETRANSY;
+float4x4 _SETTransXZ : SETTRANSXZ;
 
-uniform float4 _SunColor : SUNCOLOR;
-uniform float4 _GIColor : GICOLOR;
-uniform float4 _PointColor: POINTCOLOR;
-uniform float _DetailFadeMod : DETAILFADEMOD;
-uniform float4 _TexOffset : TEXOFFSET;
-uniform float2 _SETBiFixTex : SETBIFIXTEX;
-uniform float2 _SETBiFixTex2 : SETBIFIXTEX2;
-uniform float2 _BiFixTex : BIFIXTEX;
+float4 _SunColor : SUNCOLOR;
+float4 _GIColor : GICOLOR;
+float4 _PointColor: POINTCOLOR;
+float _DetailFadeMod : DETAILFADEMOD;
+float4 _TexOffset : TEXOFFSET;
+float2 _SETBiFixTex : SETBIFIXTEX;
+float2 _SETBiFixTex2 : SETBIFIXTEX2;
+float2 _BiFixTex : BIFIXTEX;
 
-uniform float3 _BlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
-uniform float _WaterHeight : WaterHeight;
-uniform float4 _TerrainWaterColor : TerrainWaterColor;
+float3 _BlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
+float _WaterHeight : WaterHeight;
+float4 _TerrainWaterColor : TerrainWaterColor;
 
 // #define WaterLevel 22.5
 // #define _PointColor float4(1.0, 0.5, 0.5, 1.0)
 
-uniform float4 _CameraPos : CAMERAPOS;
-uniform float3 _ComponentSelector : COMPONENTSELECTOR;
-uniform float2 _NearFarMorphLimits : NEARFARMORPHLIMITS;
+float4 _CameraPos : CAMERAPOS;
+float3 _ComponentSelector : COMPONENTSELECTOR;
+float2 _NearFarMorphLimits : NEARFARMORPHLIMITS;
 
-uniform float4 _TexScale : TEXSCALE;
-uniform float4 _NearTexTiling : NEARTEXTILING;
-uniform float4 _FarTexTiling : FARTEXTILING;
+float4 _TexScale : TEXSCALE;
+float4 _NearTexTiling : NEARTEXTILING;
+float4 _FarTexTiling : FARTEXTILING;
 
-uniform float _RefractionIndexRatio = 0.15;
+float _RefractionIndexRatio = 0.15;
 static float R0 = pow(1.0 - _RefractionIndexRatio, 2.0) / pow(1.0 + _RefractionIndexRatio, 2.0);
 
-uniform texture Tex0 : TEXLAYER0;
-uniform texture Tex1 : TEXLAYER1;
-uniform texture Tex2 : TEXLAYER2;
-uniform texture Tex3 : TEXLAYER3;
-uniform texture Tex4 : TEXLAYER4;
-uniform texture Tex5 : TEXLAYER5;
-uniform texture Tex6 : TEXLAYER6;
-uniform texture Tex7 : TEXLAYER7;
+texture Tex0 : TEXLAYER0;
+texture Tex1 : TEXLAYER1;
+texture Tex2 : TEXLAYER2;
+texture Tex3 : TEXLAYER3;
+texture Tex4 : TEXLAYER4;
+texture Tex5 : TEXLAYER5;
+texture Tex6 : TEXLAYER6;
+texture Tex7 : TEXLAYER7;
 
 #define CREATE_SAMPLER(SAMPLER_TYPE, SAMPLER_NAME, TEXTURE, FILTER, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \

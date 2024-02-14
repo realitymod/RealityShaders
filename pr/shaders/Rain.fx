@@ -27,7 +27,7 @@ float3 _PointScale : POINTSCALE;
 float _ParticleSize : PARTICLESIZE;
 float _MaxParticleSize : PARTICLEMAXSIZE;
 
-uniform texture Tex0 : TEXTURE;
+texture Tex0 : TEXTURE;
 sampler SampleTex0 = sampler_state
 {
 	Texture = (Tex0);

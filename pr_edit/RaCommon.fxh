@@ -48,26 +48,26 @@
 		};
 	#endif
 
-	uniform bool alphaBlendEnable = true;
-	uniform int srcBlend = 5;
-	uniform int destBlend = 6;
+	bool alphaBlendEnable = true;
+	int srcBlend = 5;
+	int destBlend = 6;
 
-	uniform bool AlphaTest = false;
-	uniform int alphaRef = 20;
-	uniform int CullMode = 3; // D3DCULL_CCW
+	bool AlphaTest = false;
+	int alphaRef = 20;
+	int CullMode = 3; // D3DCULL_CCW
 
-	uniform float GlobalTime;
-	uniform float WindSpeed = 0;
+	float GlobalTime;
+	float WindSpeed = 0;
 
-	uniform float4 HemiMapConstants;
-	uniform float4 Transparency = 1.0;
+	float4 HemiMapConstants;
+	float4 Transparency = 1.0;
 
-	uniform float4x4 World;
-	uniform float4x4 ViewProjection;
-	uniform float4x4 WorldViewProjection;
+	float4x4 World;
+	float4x4 ViewProjection;
+	float4x4 WorldViewProjection;
 
-	uniform float4 FogRange : fogRange;
-	uniform float4 FogColor : fogColor;
+	float4 FogRange : fogRange;
+	float4 FogColor : fogColor;
 
 	/*
 		Shared transformation code
@@ -155,9 +155,9 @@
 	*/
 
 	// Common dynamic shadow stuff
-	uniform float4x4 ShadowProjMat : ShadowProjMatrix;
-	uniform float4x4 ShadowOccProjMat : ShadowOccProjMatrix;
-	uniform float4x4 ShadowTrapMat : ShadowTrapMatrix;
+	float4x4 ShadowProjMat : ShadowProjMatrix;
+	float4x4 ShadowOccProjMat : ShadowOccProjMatrix;
+	float4x4 ShadowTrapMat : ShadowTrapMatrix;
 
 	#define CREATE_SHADOW_SAMPLER(SAMPLER_NAME, TEXTURE) \
 		sampler SAMPLER_NAME = sampler_state \
@@ -171,14 +171,14 @@
 			AddressW = CLAMP; \
 		}; \
 
-	uniform texture ShadowMap : SHADOWMAP;
+	texture ShadowMap : SHADOWMAP;
 	#if defined(_CUSTOMSHADOWSAMPLER_)
 		CREATE_SHADOW_SAMPLER(SampleShadowMap : register(_CUSTOMSHADOWSAMPLER_), ShadowMap)
 	#else
 		CREATE_SHADOW_SAMPLER(SampleShadowMap, ShadowMap)
 	#endif
 
-	uniform texture ShadowOccluderMap : SHADOWOCCLUDERMAP;
+	texture ShadowOccluderMap : SHADOWOCCLUDERMAP;
 	CREATE_SHADOW_SAMPLER(SampleShadowOccluderMap, ShadowOccluderMap)
 
 	// Description: Transforms the vertex position's depth from World/Object space to light space

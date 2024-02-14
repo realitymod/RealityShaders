@@ -21,25 +21,25 @@ string DeprecationList[] =
 	{ "hascolormapgloss", "" },
 };
 
-uniform float4 ObjectSpaceCamPos;
-uniform float4 WorldSpaceCamPos;
+float4 ObjectSpaceCamPos;
+float4 WorldSpaceCamPos;
 
-uniform int AlphaTestRef = 0;
-uniform bool DepthWrite = 1;
-uniform bool DoubleSided = 2;
+int AlphaTestRef = 0;
+bool DepthWrite = 1;
+bool DoubleSided = 2;
 
-uniform float4 DiffuseColor;
-uniform float4 SpecularColor;
-uniform float SpecularPower;
-uniform float StaticGloss;
-uniform float4 Ambient;
+float4 DiffuseColor;
+float4 SpecularColor;
+float SpecularPower;
+float StaticGloss;
+float4 Ambient;
 
-uniform float4 HemiMapSkyColor;
-uniform float HeightOverTerrain = 0;
+float4 HemiMapSkyColor;
+float HeightOverTerrain = 0;
 
-uniform float Reflectivity;
+float Reflectivity;
 
-uniform float4x3 MatBones[26];
+float4x3 MatBones[26];
 
 Light Lights[1];
 
@@ -57,14 +57,14 @@ Light Lights[1];
 		AddressW = ADDRESS; \
 	}; \
 
-uniform texture HemiMap;
+texture HemiMap;
 CREATE_SAMPLER(SampleHemiMap, HemiMap, CLAMP)
 
-uniform texture CubeMap;
+texture CubeMap;
 CREATE_SAMPLER(SampleCubeMap, CubeMap, WRAP)
 
-uniform texture DiffuseMap;
+texture DiffuseMap;
 CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, CLAMP)
 
-uniform texture NormalMap;
+texture NormalMap;
 CREATE_SAMPLER(SampleNormalMap, NormalMap, CLAMP)

@@ -18,17 +18,17 @@
 	Description: Renders lighting for road
 */
 
-uniform float4x4 _WorldViewProj : WorldViewProjection;
-uniform float _TexBlendFactor : TexBlendFactor;
-uniform float2 _FadeoutValues : FadeOut;
-uniform float4 _LocalEyePos : LocalEye;
-uniform float4 _CameraPos : CAMERAPOS;
-uniform float _ScaleY : SCALEY;
-uniform float4 _SunColor : SUNCOLOR;
-uniform float4 _GIColor : GICOLOR;
+float4x4 _WorldViewProj : WorldViewProjection;
+float _TexBlendFactor : TexBlendFactor;
+float2 _FadeoutValues : FadeOut;
+float4 _LocalEyePos : LocalEye;
+float4 _CameraPos : CAMERAPOS;
+float _ScaleY : SCALEY;
+float4 _SunColor : SUNCOLOR;
+float4 _GIColor : GICOLOR;
 
-uniform float4 _TexProjOffset : TEXPROJOFFSET;
-uniform float4 _TexProjScale : TEXPROJSCALE;
+float4 _TexProjOffset : TEXPROJOFFSET;
+float4 _TexProjScale : TEXPROJSCALE;
 
 #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS_U, ADDRESS_V) \
 	sampler SAMPLER_NAME = sampler_state \
@@ -42,13 +42,13 @@ uniform float4 _TexProjScale : TEXPROJSCALE;
 		AddressV = ADDRESS_V; \
 	}; \
 
-uniform texture DetailMap0 : TEXLAYER3;
+texture DetailMap0 : TEXLAYER3;
 CREATE_SAMPLER(SampleDetailMap0, DetailMap0, CLAMP, WRAP)
 
-uniform texture DetailMap1 : TEXLAYER4;
+texture DetailMap1 : TEXLAYER4;
 CREATE_SAMPLER(SampleDetailMap1, DetailMap1, WRAP, WRAP)
 
-uniform texture LightMap : TEXLAYER2;
+texture LightMap : TEXLAYER2;
 CREATE_SAMPLER(SampleLightMap, LightMap, CLAMP, CLAMP)
 
 struct APP2VS

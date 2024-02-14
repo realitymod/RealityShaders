@@ -14,7 +14,7 @@
 	[Attributes from app]
 */
 
-uniform float4 _Alpha : BLENDALPHA;
+float4 _Alpha : BLENDALPHA;
 
 /*
 	[Textures and samplers]
@@ -31,7 +31,7 @@ uniform float4 _Alpha : BLENDALPHA;
 		AddressV = ADDRESS; \
 	}; \
 
-uniform texture Tex0: TEXLAYER0;
+texture Tex0: TEXLAYER0;
 CREATE_SAMPLER(SampleTex0_Clamp, Tex0, CLAMP)
 CREATE_SAMPLER(SampleTex0_Wrap, Tex0, WRAP)
 

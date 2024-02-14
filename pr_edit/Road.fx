@@ -7,16 +7,16 @@
 	#include "RaCommon.fxh"
 #endif
 
-uniform float4x4 _WorldViewProj : WorldViewProjection;
-uniform float4 _ViewPos : ViewPos;
-uniform float4 _DiffuseColor : DiffuseColor;
-uniform float _BlendFactor : BlendFactor;
-uniform float _Material : Material;
+float4x4 _WorldViewProj : WorldViewProjection;
+float4 _ViewPos : ViewPos;
+float4 _DiffuseColor : DiffuseColor;
+float _BlendFactor : BlendFactor;
+float _Material : Material;
 
-uniform float4 _RoadFogColor : FogColor;
+float4 _RoadFogColor : FogColor;
 
-uniform texture DetailTex0 : TEXLAYER0;
-uniform texture DetailTex1 : TEXLAYER1;
+texture DetailTex0 : TEXLAYER0;
+texture DetailTex1 : TEXLAYER1;
 
 sampler SampleDetailTex0 = sampler_state
 {

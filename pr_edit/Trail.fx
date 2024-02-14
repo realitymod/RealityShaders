@@ -24,8 +24,8 @@
 
 // UNIFORM INPUTS
 
-uniform float3 _EyePos : EyePos;
-uniform float _FresnelOffset : FresnelOffset = 0;
+float3 _EyePos : EyePos;
+float _FresnelOffset : FresnelOffset = 0;
 
 // constant array
 struct TemplateParameters

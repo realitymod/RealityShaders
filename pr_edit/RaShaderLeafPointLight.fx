@@ -13,10 +13,10 @@
 	#include "RaCommon.fxh"
 #endif
 
-uniform float4 Ambient;
+float4 Ambient;
 Light Lights[1];
-uniform float4 PosUnpack;
-uniform float TexUnpack;
+float4 PosUnpack;
+float TexUnpack;
 
 string GlobalParameters[] =
 {
@@ -47,7 +47,7 @@ string reqVertexElement[] =
 	"TBasePacked2D"
 };
 
-uniform texture DiffuseMap;
+texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);

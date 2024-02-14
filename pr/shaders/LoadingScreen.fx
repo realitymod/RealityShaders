@@ -14,13 +14,13 @@
 	[Attributes from app]
 */
 
-uniform float4x4 _WorldViewProj : TRANSFORM;
+float4x4 _WorldViewProj : TRANSFORM;
 
 /*
 	[Textures and samplers]
 */
 
-uniform texture TexMap : TEXTURE;
+texture TexMap : TEXTURE;
 
 sampler SampleTexMap = sampler_state
 {

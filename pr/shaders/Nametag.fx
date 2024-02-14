@@ -14,41 +14,41 @@
 	[Attributes from app]
 */
 
-uniform float4x4 _WorldViewProj : WorldViewProjection;
-uniform float _TexBlendFactor : TexBlendFactor;
-uniform float2 _FadeoutValues : FadeOut;
-uniform float4 _LocalEyePos : LocalEye;
-uniform float4 _Transformations[64] : TransformationArray;
+float4x4 _WorldViewProj : WorldViewProjection;
+float _TexBlendFactor : TexBlendFactor;
+float2 _FadeoutValues : FadeOut;
+float4 _LocalEyePos : LocalEye;
+float4 _Transformations[64] : TransformationArray;
 
 // dep: this is a suboptimal Camp EA hack; rewrite this
-uniform float _Alphas[64] : AlphaArray;
-uniform float4 _Colors[9] : ColorArray;
-uniform float4 _AspectMul : AspectMul;
+float _Alphas[64] : AlphaArray;
+float4 _Colors[9] : ColorArray;
+float4 _AspectMul : AspectMul;
 
-uniform float4 _ArrowMult = float4(1.05, 1.05, 1.0, 1.0);
-uniform float4 _ArrowTrans : ArrowTransformation;
-uniform float4 _ArrowRot : ArrowRotation; // this is a 2x2 rotation matrix [X Y] [Z W]
+float4 _ArrowMult = float4(1.05, 1.05, 1.0, 1.0);
+float4 _ArrowTrans : ArrowTransformation;
+float4 _ArrowRot : ArrowRotation; // this is a 2x2 rotation matrix [X Y] [Z W]
 
-uniform float4 _IconRot : IconRotation;
-// uniform float4 _FIconRot : FIconRotation;
-uniform float2 _IconTexOffset : IconTexOffset;
-uniform float4 _IconFlashTexScaleOffset : IconFlashTexScaleOffset;
+float4 _IconRot : IconRotation;
+// float4 _FIconRot : FIconRotation;
+float2 _IconTexOffset : IconTexOffset;
+float4 _IconFlashTexScaleOffset : IconFlashTexScaleOffset;
 
-uniform int _ColorIndex1 : ColorIndex1;
-uniform int _ColorIndex2 : ColorIndex2;
+int _ColorIndex1 : ColorIndex1;
+int _ColorIndex2 : ColorIndex2;
 
-uniform float4 _HealthBarTrans : HealthBarTrans;
-uniform float _HealthValue : HealthValue;
+float4 _HealthBarTrans : HealthBarTrans;
+float _HealthValue : HealthValue;
 
-uniform float _CrossFadeValue : CrossFadeValue;
-uniform float _AspectComp = 4.0 / 3.0;
+float _CrossFadeValue : CrossFadeValue;
+float _AspectComp = 4.0 / 3.0;
 
 /*
 	[Textures and samplers]
 */
 
-uniform texture Detail0 : TEXLAYER0;
-uniform texture Detail1 : TEXLAYER1;
+texture Detail0 : TEXLAYER0;
+texture Detail1 : TEXLAYER1;
 
 sampler SampleDetail0 = sampler_state
 {

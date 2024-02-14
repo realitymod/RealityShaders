@@ -15,19 +15,19 @@
 */
 
 // [1] Render-state settings from app
-uniform bool _AlphaBlend : ALPHABLEND = false;
-uniform dword _SrcBlend : SRCBLEND = D3DBLEND_INVSRCALPHA;
-uniform dword _DestBlend : DESTBLEND = D3DBLEND_SRCALPHA;
-uniform bool _AlphaTest : ALPHATEST = false;
-uniform dword _AlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
-uniform dword _AlphaRef : ALPHAREF = 0;
-uniform dword _ZEnable : ZMODE = D3DZB_TRUE;
-uniform dword _ZFunc : ZFUNC = D3DCMP_LESSEQUAL;
-uniform bool _ZWriteEnable : ZWRITEENABLE = true;
+bool _AlphaBlend : ALPHABLEND = false;
+dword _SrcBlend : SRCBLEND = D3DBLEND_INVSRCALPHA;
+dword _DestBlend : DESTBLEND = D3DBLEND_SRCALPHA;
+bool _AlphaTest : ALPHATEST = false;
+dword _AlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
+dword _AlphaRef : ALPHAREF = 0;
+dword _ZEnable : ZMODE = D3DZB_TRUE;
+dword _ZFunc : ZFUNC = D3DCMP_LESSEQUAL;
+bool _ZWriteEnable : ZWRITEENABLE = true;
 
-uniform float4x4 _WorldMatrix : matWORLD;
-uniform float4x4 _ViewMatrix : matVIEW;
-uniform float4x4 _ProjMatrix : matPROJ;
+float4x4 _WorldMatrix : matWORLD;
+float4x4 _ViewMatrix : matVIEW;
+float4x4 _ProjMatrix : matPROJ;
 
 /*
 	[Textures and samplers]
@@ -44,10 +44,10 @@ uniform float4x4 _ProjMatrix : matPROJ;
 		AddressV = CLAMP; \
 	}; \
 
-uniform texture Tex0: TEXLAYER0;
+texture Tex0: TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0)
 
-uniform texture Tex1: TEXLAYER1;
+texture Tex1: TEXLAYER1;
 CREATE_SAMPLER(SampleTex1, Tex1)
 
 struct APP2VS

@@ -24,39 +24,39 @@
 	[Attributes from app]
 */
 
-uniform dword _dwordStencilRef : STENCILREF = 0;
-uniform dword _dwordStencilPass : STENCILPASS = 1; // KEEP
+dword _dwordStencilRef : STENCILREF = 0;
+dword _dwordStencilPass : STENCILPASS = 1; // KEEP
 
-uniform float4x4 _ConvertPosTo8BitMat : CONVERTPOSTO8BITMAT;
-uniform float4x4 _CustomMtx : CUSTOMMTX;
+float4x4 _ConvertPosTo8BitMat : CONVERTPOSTO8BITMAT;
+float4x4 _CustomMtx : CUSTOMMTX;
 
 // Convolution attributes passed from the app
-uniform float4 _ScaleDown2x2SampleOffsets[4] : SCALEDOWN2X2SAMPLEOFFSETS;
-uniform float4 _ScaleDown4x4SampleOffsets[16] : SCALEDOWN4X4SAMPLEOFFSETS;
-uniform float4 _ScaleDown4x4LinearSampleOffsets[4] : SCALEDOWN4X4LINEARSAMPLEOFFSETS;
-uniform float4 _GaussianBlur5x5CheapSampleOffsets[13] : GAUSSIANBLUR5X5CHEAPSAMPLEOFFSETS;
-uniform float _GaussianBlur5x5CheapSampleWeights[13] : GAUSSIANBLUR5X5CHEAPSAMPLEWEIGHTS;
-uniform float4 _GaussianBlur15x15HorizontalSampleOffsets[15] : GAUSSIANBLUR15X15HORIZONTALSAMPLEOFFSETS;
-uniform float _GaussianBlur15x15HorizontalSampleWeights[15] : GAUSSIANBLUR15X15HORIZONTALSAMPLEWEIGHTS;
-uniform float4 _GaussianBlur15x15VerticalSampleOffsets[15] : GAUSSIANBLUR15X15VERTICALSAMPLEOFFSETS;
-uniform float _GaussianBlur15x15VerticalSampleWeights[15] : GAUSSIANBLUR15X15VERTICALSAMPLEWEIGHTS;
-uniform float4 _GrowablePoisson13SampleOffsets[12] : GROWABLEPOISSON13SAMPLEOFFSETS;
+float4 _ScaleDown2x2SampleOffsets[4] : SCALEDOWN2X2SAMPLEOFFSETS;
+float4 _ScaleDown4x4SampleOffsets[16] : SCALEDOWN4X4SAMPLEOFFSETS;
+float4 _ScaleDown4x4LinearSampleOffsets[4] : SCALEDOWN4X4LINEARSAMPLEOFFSETS;
+float4 _GaussianBlur5x5CheapSampleOffsets[13] : GAUSSIANBLUR5X5CHEAPSAMPLEOFFSETS;
+float _GaussianBlur5x5CheapSampleWeights[13] : GAUSSIANBLUR5X5CHEAPSAMPLEWEIGHTS;
+float4 _GaussianBlur15x15HorizontalSampleOffsets[15] : GAUSSIANBLUR15X15HORIZONTALSAMPLEOFFSETS;
+float _GaussianBlur15x15HorizontalSampleWeights[15] : GAUSSIANBLUR15X15HORIZONTALSAMPLEWEIGHTS;
+float4 _GaussianBlur15x15VerticalSampleOffsets[15] : GAUSSIANBLUR15X15VERTICALSAMPLEOFFSETS;
+float _GaussianBlur15x15VerticalSampleWeights[15] : GAUSSIANBLUR15X15VERTICALSAMPLEWEIGHTS;
+float4 _GrowablePoisson13SampleOffsets[12] : GROWABLEPOISSON13SAMPLEOFFSETS;
 
 // Glow attributes passed from the app
-uniform float _GlowHorizOffsets[5] : GLOWHORIZOFFSETS;
-uniform float _GlowHorizWeights[5] : GLOWHORIZWEIGHTS;
-uniform float _GlowVertOffsets[5] : GLOWVERTOFFSETS;
-uniform float _GlowVertWeights[5] : GLOWVERTWEIGHTS;
+float _GlowHorizOffsets[5] : GLOWHORIZOFFSETS;
+float _GlowHorizWeights[5] : GLOWHORIZWEIGHTS;
+float _GlowVertOffsets[5] : GLOWVERTOFFSETS;
+float _GlowVertWeights[5] : GLOWVERTWEIGHTS;
 
 // Glow attributes passed from the app
-uniform float _BloomHorizOffsets[5] : BLOOMHORIZOFFSETS;
-uniform float _BloomVertOffsets[5] : BLOOMVERTOFFSETS;
+float _BloomHorizOffsets[5] : BLOOMHORIZOFFSETS;
+float _BloomVertOffsets[5] : BLOOMVERTOFFSETS;
 
 // Other attributes passed from the app (render.)
-uniform float _HighPassGate : HIGHPASSGATE;
-uniform float _BlurStrength : BLURSTRENGTH; // 3d optics blur; xxxx.yyyy; x - inner radius, y - outer radius
+float _HighPassGate : HIGHPASSGATE;
+float _BlurStrength : BLURSTRENGTH; // 3d optics blur; xxxx.yyyy; x - inner radius, y - outer radius
 
-uniform float2 _TexelSize : TEXELSIZE;
+float2 _TexelSize : TEXELSIZE;
 
 /*
 	[Textures and samplers]
@@ -74,18 +74,18 @@ sampler SAMPLER_NAME = sampler_state \
 	AddressV = ADDRESS; \
 }; \
 
-uniform texture Tex0 : TEXLAYER0;
+texture Tex0 : TEXLAYER0;
 CREATE_SAMPLER(SampleTex0_Clamp, Tex0, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleTex0_Mirror, Tex0, LINEAR, MIRROR)
 CREATE_SAMPLER(SampleTex0_Aniso, Tex0, ANISOTROPIC, CLAMP)
 
-uniform texture Tex1 : TEXLAYER1;
+texture Tex1 : TEXLAYER1;
 CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
 
-// uniform texture Tex2 : TEXLAYER2;
+// texture Tex2 : TEXLAYER2;
 // CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, CLAMP)
 
-// uniform texture Tex3 : TEXLAYER3;
+// texture Tex3 : TEXLAYER3;
 // CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, CLAMP)
 
 struct APP2VS_Blit

@@ -18,43 +18,43 @@
 	[Uniform data from app]
 */
 
-uniform float4x4 _WorldViewProj : WorldViewProjection;
-uniform float4x4 _WorldViewMat : WorldView;
-uniform float4x4 _WorldViewITMat : WorldViewIT;
-uniform float4x4 _ViewInverseMat : ViewI;
-uniform float4x4 _WorldMat : World;
+float4x4 _WorldViewProj : WorldViewProjection;
+float4x4 _WorldViewMat : WorldView;
+float4x4 _WorldViewITMat : WorldViewIT;
+float4x4 _ViewInverseMat : ViewI;
+float4x4 _WorldMat : World;
 
-uniform float4 _AmbientColor : Ambient = { 0.0, 0.0, 0.0, 1.0 };
-uniform float4 _DiffColor : Diffuse = { 1.0, 1.0, 1.0, 1.0 };
-uniform float4 _SpecColor : Specular = { 0.0, 0.0, 0.0, 1.0 };
+float4 _AmbientColor : Ambient = { 0.0, 0.0, 0.0, 1.0 };
+float4 _DiffColor : Diffuse = { 1.0, 1.0, 1.0, 1.0 };
+float4 _SpecColor : Specular = { 0.0, 0.0, 0.0, 1.0 };
 
-uniform float4 _FuzzyLightScaleValue : FuzzyLightScaleValue = { 1.75, 1.75, 1.75, 1.0 };
-uniform float4 _LightmapOffset : LightmapOffset;
-uniform float _DropShadowClipheight : DROPSHADOWCLIPHEIGHT;
-uniform float4 _ParallaxScaleBias : PARALLAXSCALEBIAS;
+float4 _FuzzyLightScaleValue : FuzzyLightScaleValue = { 1.75, 1.75, 1.75, 1.0 };
+float4 _LightmapOffset : LightmapOffset;
+float _DropShadowClipheight : DROPSHADOWCLIPHEIGHT;
+float4 _ParallaxScaleBias : PARALLAXSCALEBIAS;
 
-uniform float4x4 _vpLightMat : vpLightMat;
-uniform float4x4 _vpLightTrapezMat : vpLightTrapezMat;
-uniform float4 _PosUnpack : POSUNPACK;
-uniform float _TexUnpack : TEXUNPACK;
+float4x4 _vpLightMat : vpLightMat;
+float4x4 _vpLightTrapezMat : vpLightTrapezMat;
+float4 _PosUnpack : POSUNPACK;
+float _TexUnpack : TEXUNPACK;
 
-uniform bool _AlphaTest : AlphaTest = false;
+bool _AlphaTest : AlphaTest = false;
 
-uniform float4 _ParaboloidValues : ParaboloidValues;
-uniform float4 _ParaboloidZValues : ParaboloidZValues;
+float4 _ParaboloidValues : ParaboloidValues;
+float4 _ParaboloidZValues : ParaboloidZValues;
 
-uniform float4 _Attenuation : Attenuation; // SHADOW
+float4 _Attenuation : Attenuation; // SHADOW
 
-uniform float4 _LightPos : LightPosition : register(vs_3_0, c12)
+float4 _LightPos : LightPosition : register(vs_3_0, c12)
 <
 	string Object = "PointLight";
 	string Space = "World";
 > = { 0.0, 0.0, 1.0, 1.0 };
 
-uniform float4 _LightDir : LightDirection;
-uniform float4 _SunColor : SunColor;
-uniform float4 _EyePos : EyePos;
-uniform float4 _EyePosObjectSpace : EyePosObjectSpace;
+float4 _LightDir : LightDirection;
+float4 _SunColor : SunColor;
+float4 _EyePos : EyePos;
+float4 _EyePosObjectSpace : EyePosObjectSpace;
 
 /*
 	[Textures and Samplers]
@@ -71,14 +71,14 @@ uniform float4 _EyePosObjectSpace : EyePosObjectSpace;
 		AddressV = ADDRESS; \
 	}; \
 
-uniform texture Tex0: TEXLAYER0;
-uniform texture Tex1: TEXLAYER1;
-uniform texture Tex2: TEXLAYER2;
-uniform texture Tex3: TEXLAYER3;
-uniform texture Tex4: TEXLAYER4;
-uniform texture Tex5: TEXLAYER5;
-uniform texture Tex6: TEXLAYER6;
-uniform texture Tex7: TEXLAYER7;
+texture Tex0: TEXLAYER0;
+texture Tex1: TEXLAYER1;
+texture Tex2: TEXLAYER2;
+texture Tex3: TEXLAYER3;
+texture Tex4: TEXLAYER4;
+texture Tex5: TEXLAYER5;
+texture Tex6: TEXLAYER6;
+texture Tex7: TEXLAYER7;
 
 CREATE_SAMPLER(SampleShadowAlpha, Tex0, WRAP)
 CREATE_SAMPLER(SampleTex0_Wrap, Tex0, WRAP)

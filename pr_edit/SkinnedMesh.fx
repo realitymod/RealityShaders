@@ -21,46 +21,46 @@
 */
 
 // Note: obj space light vectors
-uniform float4 _SunLightDirection : SunLightDirection;
-uniform float4 _LightDirection : LightDirection;
-uniform float _NormalOffsetScale : NormalOffsetScale;
+float4 _SunLightDirection : SunLightDirection;
+float4 _LightDirection : LightDirection;
+float _NormalOffsetScale : NormalOffsetScale;
 
 // Offset x/y _HemiMapInfo.z z / _HemiMapInfo.w w
-uniform float4 _HemiMapInfo : HemiMapInfo;
+float4 _HemiMapInfo : HemiMapInfo;
 
-uniform float4 _AmbientColor : AmbientColor;
-uniform float4 _LightColor : LightColor;
-uniform float4 _SkyColor : SkyColor;
-uniform float4 _SunColor : SunColor;
+float4 _AmbientColor : AmbientColor;
+float4 _LightColor : LightColor;
+float4 _SkyColor : SkyColor;
+float4 _SunColor : SunColor;
 
-uniform float4 _LightPosition : LightPosition;
-uniform float _AttenuationSqrInv : AttenuationSqrInv;
+float4 _LightPosition : LightPosition;
+float _AttenuationSqrInv : AttenuationSqrInv;
 
-uniform float _ShadowAlphaThreshold : SHADOWALPHATHRESHOLD;
+float _ShadowAlphaThreshold : SHADOWALPHATHRESHOLD;
 
-uniform float _ConeAngle : ConeAngle;
-uniform float4 _WorldEyePos : WorldEyePos;
-uniform float4 _ObjectEyePos : ObjectEyePos;
+float _ConeAngle : ConeAngle;
+float4 _WorldEyePos : WorldEyePos;
+float4 _ObjectEyePos : ObjectEyePos;
 
-uniform float4x4 _LightViewProj : LIGHTVIEWPROJ;
-uniform float4x4 _LightViewProj2 : LIGHTVIEWPROJ2;
-uniform float4x4 _LightViewProj3 : LIGHTVIEWPROJ3;
-uniform float4 _ViewportMap : VIEWPORTMAP;
+float4x4 _LightViewProj : LIGHTVIEWPROJ;
+float4x4 _LightViewProj2 : LIGHTVIEWPROJ2;
+float4x4 _LightViewProj3 : LIGHTVIEWPROJ3;
+float4 _ViewportMap : VIEWPORTMAP;
 
-uniform dword _StencilRef : STENCILREF = 0;
+dword _StencilRef : STENCILREF = 0;
 
-uniform float4x4 _World : World;
-uniform float4x4 _WorldT : WorldT;
-uniform float4x4 _WorldView : WorldView;
-uniform float4x4 _WorldViewI : WorldViewI; // (WorldViewIT)T = WorldViewI
-uniform float4x4 _WorldViewProjection : WorldViewProjection;
-uniform float4x3 _BoneArray[26] : BoneArray; // : register(c15) < bool sparseArray = true; int arrayStart = 15; >;
+float4x4 _World : World;
+float4x4 _WorldT : WorldT;
+float4x4 _WorldView : WorldView;
+float4x4 _WorldViewI : WorldViewI; // (WorldViewIT)T = WorldViewI
+float4x4 _WorldViewProjection : WorldViewProjection;
+float4x3 _BoneArray[26] : BoneArray; // : register(c15) < bool sparseArray = true; int arrayStart = 15; >;
 
-uniform float4x4 _vpLightMat : vpLightMat;
-uniform float4x4 _vpLightTrapezMat : vpLightTrapezMat;
+float4x4 _vpLightMat : vpLightMat;
+float4x4 _vpLightTrapezMat : vpLightTrapezMat;
 
-uniform float4 _ParaboloidValues : ParaboloidValues;
-uniform float4 _ParaboloidZValues : ParaboloidZValues;
+float4 _ParaboloidValues : ParaboloidValues;
+float4 _ParaboloidZValues : ParaboloidZValues;
 
 /*
 	[Textures and Samplers]
@@ -75,19 +75,19 @@ uniform float4 _ParaboloidZValues : ParaboloidZValues;
 		MipFilter = FILTER; \
 	}; \
 
-uniform texture Tex0 : TEXLAYER0;
+texture Tex0 : TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0, LINEAR)
 
-uniform texture Tex1 : TEXLAYER1;
+texture Tex1 : TEXLAYER1;
 CREATE_SAMPLER(SampleTex1, Tex1, LINEAR)
 
-uniform texture Tex2 : TEXLAYER2;
+texture Tex2 : TEXLAYER2;
 CREATE_SAMPLER(SampleTex2, Tex2, LINEAR)
 
-uniform texture Tex3 : TEXLAYER3;
+texture Tex3 : TEXLAYER3;
 CREATE_SAMPLER(SampleTex3, Tex3, LINEAR)
 
-uniform texture Tex4 : TEXLAYER4;
+texture Tex4 : TEXLAYER4;
 
 struct APP2VS
 {

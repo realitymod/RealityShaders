@@ -24,58 +24,58 @@
 	[Attributes from app]
 */
 
-uniform float4 _AmbientColor : Ambient = { 0.0, 0.0, 0.0, 1.0 };
-uniform float4 _DiffuseColor : Diffuse = { 1.0, 1.0, 1.0, 1.0 };
-uniform float4 _SpecularColor : Specular = { 0.0, 0.0, 0.0, 1.0 };
+float4 _AmbientColor : Ambient = { 0.0, 0.0, 0.0, 1.0 };
+float4 _DiffuseColor : Diffuse = { 1.0, 1.0, 1.0, 1.0 };
+float4 _SpecularColor : Specular = { 0.0, 0.0, 0.0, 1.0 };
 
-uniform float4 _SkyColor : SkyColor;
-uniform float4 _AmbientColor2 : AmbientColor;
-uniform float4 _SunColor : SunColor;
+float4 _SkyColor : SkyColor;
+float4 _AmbientColor2 : AmbientColor;
+float4 _SunColor : SunColor;
 
-uniform float _AttenuationSqrInv : AttenuationSqrInv;
-uniform float4 _LightColor : LightColor;
-uniform float _ConeAngle : ConeAngle;
+float _AttenuationSqrInv : AttenuationSqrInv;
+float4 _LightColor : LightColor;
+float _ConeAngle : ConeAngle;
 
-uniform float4x3 _MatOneBoneSkinning[26]: matONEBONESKINNING; // : register(c15) < bool sparseArray = true; int arrayStart = 15; >;
-uniform float4x4 _ViewProjMatrix : WorldViewProjection; // : register(vs_1_1, c0);
-uniform float4x4 _ViewInverseMatrix : ViewI; //: register(vs_1_1, c8);
-uniform float4x4 _ViewMatrix : ViewMatrix;
-uniform float4x4 _ViewITMatrix : ViewITMatrix;
-uniform float4 _EyePos : EYEPOS = { 0.0, 0.0, 1.0, 0.25 };
+float4x3 _MatOneBoneSkinning[26]: matONEBONESKINNING; // : register(c15) < bool sparseArray = true; int arrayStart = 15; >;
+float4x4 _ViewProjMatrix : WorldViewProjection; // : register(vs_1_1, c0);
+float4x4 _ViewInverseMatrix : ViewI; //: register(vs_1_1, c8);
+float4x4 _ViewMatrix : ViewMatrix;
+float4x4 _ViewITMatrix : ViewITMatrix;
+float4 _EyePos : EYEPOS = { 0.0, 0.0, 1.0, 0.25 };
 
-uniform float4 _PosUnpack : POSUNPACK;
-uniform float2 _TexProjOffset : TEXPROJOFFSET;
+float4 _PosUnpack : POSUNPACK;
+float2 _TexProjOffset : TEXPROJOFFSET;
 
-uniform float2 _ZLimitsInv : ZLIMITSINV;
+float2 _ZLimitsInv : ZLIMITSINV;
 
-uniform float4x4 _vpLightMat : vpLightMat;
-uniform float4x4 _vpLightTrapezMat : vpLightTrapezMat;
-uniform float _ShadowAlphaThreshold : SHADOWALPHATHRESHOLD;
-uniform float4x4 _LightViewProj : LIGHTVIEWPROJ;
+float4x4 _vpLightMat : vpLightMat;
+float4x4 _vpLightTrapezMat : vpLightTrapezMat;
+float _ShadowAlphaThreshold : SHADOWALPHATHRESHOLD;
+float4x4 _LightViewProj : LIGHTVIEWPROJ;
 
-uniform dword _DwordStencilRef : STENCILREF = 0;
-uniform bool _AlphaBlendEnable: AlphaBlendEnable;
-uniform float _AltitudeFactor : ALTITUDEFACTOR = 0.7;
+dword _DwordStencilRef : STENCILREF = 0;
+bool _AlphaBlendEnable: AlphaBlendEnable;
+float _AltitudeFactor : ALTITUDEFACTOR = 0.7;
 
-uniform float4 _ViewportMap : VIEWPORTMAP;
-uniform float4x4 _ViewPortMatrix: _ViewPortMatrix;
-uniform float4 _ViewportMap2: ViewportMap;
+float4 _ViewportMap : VIEWPORTMAP;
+float4x4 _ViewPortMatrix: _ViewPortMatrix;
+float4 _ViewportMap2: ViewportMap;
 
-uniform float4 _Attenuation : Attenuation;
-uniform float4 _LightPosition : LightPosition;
-uniform float4 _LightDirection : LightDirection;
+float4 _Attenuation : Attenuation;
+float4 _LightPosition : LightPosition;
+float4 _LightDirection : LightDirection;
 
 // offset x/y HeightmapSize z / HemiLerpBias w
-uniform float4 _HemiMapInfo : HemiMapInfo;
+float4 _HemiMapInfo : HemiMapInfo;
 // float _HeightmapSize : HeightmapSize;
 // float _HemiLerpBias : HemiLerpBias;
 
-uniform float _NormalOffsetScale : NormalOffsetScale;
+float _NormalOffsetScale : NormalOffsetScale;
 
-uniform float4 _ParaboloidValues : ParaboloidValues;
-uniform float4 _ParaboloidZValues : ParaboloidZValues;
+float4 _ParaboloidValues : ParaboloidValues;
+float4 _ParaboloidZValues : ParaboloidZValues;
 
-uniform float4x3 _UVMatrix[8]: UVMatrix;
+float4x3 _UVMatrix[8]: UVMatrix;
 
 /*
 	[Textures and Samplers]
@@ -92,28 +92,28 @@ uniform float4x3 _UVMatrix[8]: UVMatrix;
 		AddressV = ADDRESS; \
 	};
 
-uniform texture Tex0: TEXLAYER0;
+texture Tex0: TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleDiffuseMap, Tex0, LINEAR, WRAP)
 
-uniform texture Tex1: TEXLAYER1;
+texture Tex1: TEXLAYER1;
 CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleNormalMap, Tex1, LINEAR, WRAP)
 
-uniform texture Tex2: TEXLAYER2;
+texture Tex2: TEXLAYER2;
 CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleColorLUT, Tex2, LINEAR, CLAMP)
 
-uniform texture Tex3: TEXLAYER3;
+texture Tex3: TEXLAYER3;
 CREATE_SAMPLER(SampleCubeTex3, Tex3, LINEAR, WRAP)
 
-uniform texture Tex4: TEXLAYER4;
+texture Tex4: TEXLAYER4;
 
 /*
 	SHADOW BUFFER DATA
 
-	uniform texture ShadowMap: ShadowMapTex;
-	uniform texture ShadowMapOccluder : ShadowMapOccluderTex;
+	texture ShadowMap: ShadowMapTex;
+	texture ShadowMapOccluder : ShadowMapOccluderTex;
 
 	CREATE_SAMPLER(SampleShadowMap, ShadowMap, LINEAR, CLAMP,  FALSE)
 	CREATE_SAMPLER(SampleShadowMapOccluder, ShadowMapOccluder, LINEAR, CLAMP,  FALSE)

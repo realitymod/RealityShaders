@@ -29,19 +29,19 @@
 	[Attributes from app]
 */
 
-uniform float4x4 _WorldViewProj : WorldViewProjection;
-uniform float4 _GlobalScale : GlobalScale;
+float4x4 _WorldViewProj : WorldViewProjection;
+float4 _GlobalScale : GlobalScale;
 
 // Once per system instance
 // TemplateParameters
-uniform float4 m_color1AndLightFactor : COLOR1;
-uniform float4 m_color2 : COLOR2;
-uniform float4 m_colorBlendGraph : COLORBLENDGRAPH;
-uniform float4 m_transparencyGraph : TRANSPARENCYGRAPH;
+float4 m_color1AndLightFactor : COLOR1;
+float4 m_color2 : COLOR2;
+float4 m_colorBlendGraph : COLORBLENDGRAPH;
+float4 m_transparencyGraph : TRANSPARENCYGRAPH;
 
-uniform float4 _AgeAndAlphaArray[26] : AgeAndAlphaArray;
-uniform float _LightmapIntensityOffset : LightmapIntensityOffset;
-uniform float4x3 _MatOneBoneSkinning[26]: matONEBONESKINNING; /* : register(c50) < bool sparseArray = true; int arrayStart = 50; >; */
+float4 _AgeAndAlphaArray[26] : AgeAndAlphaArray;
+float _LightmapIntensityOffset : LightmapIntensityOffset;
+float4x3 _MatOneBoneSkinning[26]: matONEBONESKINNING; /* : register(c50) < bool sparseArray = true; int arrayStart = 50; >; */
 
 struct APP2VS
 {

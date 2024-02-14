@@ -14,8 +14,8 @@
 	[Attributes from app]
 */
 
-uniform float4x4 _WorldView : TRANSFORM;
-uniform float4 _DiffuseColor : DIFFUSE;
+float4x4 _WorldView : TRANSFORM;
+float4 _DiffuseColor : DIFFUSE;
 
 /*
 	[Textures and samplers]
@@ -32,7 +32,7 @@ uniform float4 _DiffuseColor : DIFFUSE;
 		AddressV = CLAMP; \
 	}; \
 
-uniform texture TexMap : TEXTURE;
+texture TexMap : TEXTURE;
 CREATE_SAMPLER(SampleTexMap, TexMap, POINT)
 CREATE_SAMPLER(SampleTexMap_Linear, TexMap, LINEAR)
 

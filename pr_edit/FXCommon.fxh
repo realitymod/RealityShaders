@@ -9,13 +9,13 @@
 	#define _HEADERS_
 
 	// Common parameters
-	uniform float4x4 _ViewMat : ViewMat;
-	uniform float4x4 _ProjMat : ProjMat;
+	float4x4 _ViewMat : ViewMat;
+	float4x4 _ProjMat : ProjMat;
 
-	uniform float _UVScale = rsqrt(2.0);
-	uniform float4 _HemiMapInfo : HemiMapInfo;
-	uniform float _HemiShadowAltitude : HemiShadowAltitude;
-	uniform float _AlphaPixelTestRef : AlphaPixelTestRef = 0;
+	float _UVScale = rsqrt(2.0);
+	float4 _HemiMapInfo : HemiMapInfo;
+	float _HemiShadowAltitude : HemiShadowAltitude;
+	float _AlphaPixelTestRef : AlphaPixelTestRef = 0;
 
 	const float _OneOverShort = 1.0 / 32767.0;
 
@@ -31,15 +31,15 @@
 		}; \
 
 	// Particle Texture
-	uniform texture Tex0: Texture0;
+	texture Tex0: Texture0;
 	CREATE_SAMPLER(SampleDiffuseMap, Tex0)
 
 	// Groundhemi Texture
-	uniform texture Tex1: Texture1;
+	texture Tex1: Texture1;
 	CREATE_SAMPLER(SampleLUT, Tex1)
 
-	uniform float3 _EffectSunColor : EffectSunColor;
-	uniform float3 _EffectShadowColor : EffectShadowColor;
+	float3 _EffectSunColor : EffectSunColor;
+	float3 _EffectShadowColor : EffectShadowColor;
 
 	float3 GetParticleLighting(float LightMap, float LightMapOffset, float LightFactor)
 	{
