@@ -18,6 +18,6 @@
 	#define PR_ALPHA_REF 127
 
 	#define _EDITOR_
-	#define _USELINEARLIGHTING_
-	#define _USETONEMAP_
+	// #define _USELINEARLIGHTING_
+	// #define _USETONEMAP_
 #endif
