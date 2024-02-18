@@ -1,12 +1,16 @@
-#line 2 "SplineShader.fx"
 
 float4x4 _WorldViewProj : WorldViewProjection;
 float4 _Diffuse : DiffuseColor;
 
-struct APP2VS
+struct APP2VS_Spline
 {
 	float4 Pos : POSITION;
 	float3 Normal : NORMAL;
+};
+
+struct APP2VS_ControlPoint
+{
+	float4 Pos : POSITION;
 };
 
 struct VS2PS
@@ -14,25 +18,29 @@ struct VS2PS
 	float4 HPos : POSITION;
 };
 
-void VS_Spline(in APP2VS Input, out float4 HPos : POSITION)
+VS2PS VS_Spline(APP2VS_Spline Input) : POSITION
 {
-	float4 Pos = float4(Input.Pos.xyz * (0.035 * Input.Normal), Input.Pos.w);
-	HPos = mul(Pos, _WorldViewProj);
+	VS2PS Output = (VS2PS)0.0;
+	float4 Pos = float4(Input.Pos.xyz - (0.035 * Input.Normal), Input.Pos.w);
+	Output.HPos = mul(Pos, _WorldViewProj);
+	return Output;
 }
 
-void PS_Spline(out float4 Output : COLOR0)
+float4 PS_Spline() : COLOR0
 {
-	Output = _Diffuse;
+	return _Diffuse;
 }
 
-void VS_ControlPoint(float4 Pos : POSITION, out float4 HPos : POSITION)
+VS2PS VS_ControlPoint(APP2VS_ControlPoint Input)
 {
-	HPos = mul(Pos, _WorldViewProj);
+	VS2PS Output = (VS2PS)0.0;
+	Output.HPos = mul(Input.Pos, _WorldViewProj);
+	return Output;
 }
 
-void PS_ControlPoint(out float4 Output : COLOR0)
+float4 PS_ControlPoint() : COLOR0
 {
-	Output = _Diffuse;
+	return _Diffuse;
 }
 
 technique spline
@@ -55,6 +63,7 @@ technique spline
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+		DepthBias = -0.0003;
 	
 		VertexShader = compile vs_3_0 VS_Spline();
 		PixelShader = compile ps_3_0 PS_Spline();
