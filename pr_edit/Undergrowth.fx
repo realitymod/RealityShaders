@@ -162,7 +162,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	TerrainLight += (_GIColor.rgb * TerrainLightMap.z);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight * 4.0;
+	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight * 2.0;
 
 	#if defined(_EDITOR_)
 		OutputColor.a = (Base.a * 2.0);
@@ -296,7 +296,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	TerrainLight += (_GIColor.rgb * TerrainLightMap.z);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight * 4.0;
+	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight * 2.0;
 
 	#if defined(_EDITOR_)
 		OutputColor.a = (Base.a * 2.0);
