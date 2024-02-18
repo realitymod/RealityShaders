@@ -11,10 +11,10 @@
 #endif
 
 #define LIGHT_ADD float3(0.5, 0.5, 0.5)
-uniform bool AlphaBlendEnable = true;
-uniform Light Lights[1];
+bool AlphaBlendEnable = true;
+Light Lights[1];
 
-uniform texture DiffuseMap;
+texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);
@@ -25,7 +25,7 @@ sampler SampleDiffuseMap = sampler_state
 	AddressV = WRAP;
 };
 
-uniform texture DetailMap;
+texture DetailMap;
 sampler SampleDetailMap = sampler_state
 {
 	Texture = (DetailMap);

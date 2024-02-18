@@ -6,23 +6,23 @@
 	#include "shared/RealityDirectXTK.fxh"
 #endif
 
-uniform float4x4 _ViewProj : matVIEWPROJ;
+float4x4 _ViewProj : matVIEWPROJ;
 
-uniform bool _AlphaBlend : ALPHABLEND = true;
-uniform dword _SrcBlend : SRCBLEND = D3DBLEND_SRCALPHA;
-uniform dword _DestBlend : DESTBLEND = D3DBLEND_INVSRCALPHA;
+bool _AlphaBlend : ALPHABLEND = true;
+dword _SrcBlend : SRCBLEND = D3DBLEND_SRCALPHA;
+dword _DestBlend : DESTBLEND = D3DBLEND_INVSRCALPHA;
 
-uniform bool _AlphaTest : ALPHATEST = true;
-uniform dword _AlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
-uniform dword _AlphaRef : ALPHAREF = 0;
+bool _AlphaTest : ALPHATEST = true;
+dword _AlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
+dword _AlphaRef : ALPHAREF = 0;
 
-uniform dword _ZEnable : ZMODE = D3DZB_TRUE;
-uniform bool _ZWriteEnable : ZWRITEENABLE = false;
+dword _ZEnable : ZMODE = D3DZB_TRUE;
+bool _ZWriteEnable : ZWRITEENABLE = false;
 
-uniform dword _TexFactor : TEXFACTOR = 0;
+dword _TexFactor : TEXFACTOR = 0;
 
-uniform texture Tex0: TEXLAYER0;
-uniform texture Tex1: TEXLAYER1;
+texture Tex0: TEXLAYER0;
+texture Tex1: TEXLAYER1;
 
 sampler SampleTex0 = sampler_state
 {

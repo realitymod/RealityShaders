@@ -40,19 +40,19 @@
 #endif
 
 // float3 TreeSkyColor;
-uniform float4 OverGrowthAmbient;
+float4 OverGrowthAmbient;
 
-uniform float4 PosUnpack;
-uniform float2 NormalUnpack;
-uniform float TexUnpack;
+float4 PosUnpack;
+float2 NormalUnpack;
+float TexUnpack;
 
-uniform float4 ObjectSpaceCamPos;
-uniform float4 WorldSpaceCamPos;
+float4 ObjectSpaceCamPos;
+float4 WorldSpaceCamPos;
 
-uniform float ObjRadius = 2;
+float ObjRadius = 2;
 Light Lights[1];
 
-uniform texture DiffuseMap;
+texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);

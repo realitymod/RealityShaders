@@ -20,14 +20,14 @@
 	[Attributes from app]
 */
 
-uniform float4x4 _WorldViewProj : WORLDVIEWPROJ;
-uniform float4 _LightningColor: LIGHTNINGCOLOR = { 1.0, 1.0, 1.0, 1.0 };
+float4x4 _WorldViewProj : WORLDVIEWPROJ;
+float4 _LightningColor: LIGHTNINGCOLOR = { 1.0, 1.0, 1.0, 1.0 };
 
 /*
 	[Textures and samplers]
 */
 
-uniform texture Tex0 : TEXTURE;
+texture Tex0 : TEXTURE;
 sampler SampleLightning = sampler_state
 {
 	Texture = (Tex0);

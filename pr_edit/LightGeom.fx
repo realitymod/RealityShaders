@@ -18,12 +18,12 @@
 	[Attributes from app]
 */
 
-uniform float4x4 _WorldViewProj : WorldViewProj;
-uniform float4x4 _WorldView : WorldView;
-uniform float4 _LightColor : LightColor;
-uniform float3 _SpotDir : SpotDir;
-uniform float _ConeAngle : ConeAngle;
-// uniform float3 _SpotPosition : SpotPosition;
+float4x4 _WorldViewProj : WorldViewProj;
+float4x4 _WorldView : WorldView;
+float4 _LightColor : LightColor;
+float3 _SpotDir : SpotDir;
+float _ConeAngle : ConeAngle;
+// float3 _SpotPosition : SpotPosition;
 
 struct APP2VS
 {

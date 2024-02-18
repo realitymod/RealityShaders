@@ -22,23 +22,23 @@
 
 string Category = "Effects\\Lighting";
 
-uniform float4x4 _WorldViewProj : WorldViewProjection;
-uniform float4x4 _WorldView : WorldView;
-uniform float4 _PosOffsetAndScale : PosOffsetAndScale;
-uniform float2 _SinCos : SinCos;
-uniform float4 _TerrainTexCoordScaleAndOffset : TerrainTexCoordScaleAndOffset;
-uniform float3 _CameraPos : CameraPos;
-uniform float4 _FadeAndHeightScaleOffset : FadeAndHeightScaleOffset;
-uniform float4 _SwayOffsets[16] : SwayOffset;
-uniform float4 _ShadowTexCoordScaleAndOffset : ShadowTexCoordScaleAndOffset;
-uniform float4 _SunColor : SunColor;
-uniform float4 _GIColor : GIColor;
-uniform float4 _PointLightPosAtten[4] : PointLightPosAtten;
-uniform float4 _PointLightColor[4] : PointLightColor;
-uniform int _AlphaRefValue : AlphaRef;
-uniform float _LightingScale : LightingScale;
+float4x4 _WorldViewProj : WorldViewProjection;
+float4x4 _WorldView : WorldView;
+float4 _PosOffsetAndScale : PosOffsetAndScale;
+float2 _SinCos : SinCos;
+float4 _TerrainTexCoordScaleAndOffset : TerrainTexCoordScaleAndOffset;
+float3 _CameraPos : CameraPos;
+float4 _FadeAndHeightScaleOffset : FadeAndHeightScaleOffset;
+float4 _SwayOffsets[16] : SwayOffset;
+float4 _ShadowTexCoordScaleAndOffset : ShadowTexCoordScaleAndOffset;
+float4 _SunColor : SunColor;
+float4 _GIColor : GIColor;
+float4 _PointLightPosAtten[4] : PointLightPosAtten;
+float4 _PointLightColor[4] : PointLightColor;
+int _AlphaRefValue : AlphaRef;
+float _LightingScale : LightingScale;
 
-uniform float4 _Transparency_x8 : TRANSPARENCY_X8;
+float4 _Transparency_x8 : TRANSPARENCY_X8;
 
 #if NVIDIA
 	#define _CUSTOMSHADOWSAMPLER_ s3
@@ -56,13 +56,13 @@ uniform float4 _Transparency_x8 : TRANSPARENCY_X8;
 		AddressV = CLAMP; \
 	}; \
 
-uniform texture Tex0 : TEXLAYER0;
+texture Tex0 : TEXLAYER0;
 CREATE_SAMPLER(SampleColorMap, Tex0)
 
-uniform texture Tex1 : TEXLAYER1;
+texture Tex1 : TEXLAYER1;
 CREATE_SAMPLER(SampleTerrainColorMap, Tex1)
 
-uniform texture Tex2 : TEXLAYER2;
+texture Tex2 : TEXLAYER2;
 CREATE_SAMPLER(SampleTerrainLightMap, Tex2)
 
 struct APP2VS

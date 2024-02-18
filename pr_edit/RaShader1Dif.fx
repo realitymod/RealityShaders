@@ -18,9 +18,9 @@
 	Description: Renders object's diffuse map
 */
 
-uniform float4 WorldSpaceCamPos;
+float4 WorldSpaceCamPos;
 
-uniform texture DiffuseMap;
+texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);

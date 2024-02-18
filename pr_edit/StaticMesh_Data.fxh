@@ -5,34 +5,34 @@
 	#define _HEADERS_
 
 	// UNIFORM INPUTS
-	uniform float4x4 _WorldMatrix : World; // : register(vs_3_0, c0);
-	uniform float4x4 _WorldViewMatrix : WorldView; //: register(vs_3_0, c8);
-	uniform float4x4 _WorldViewITMatrix : WorldViewIT; //: register(vs_3_0, c8);
-	uniform float4x4 _ViewProjMatrix : WorldViewProjection : register(c0);
-	uniform float4x4 _ViewInverseMatrix : ViewI; //: register(vs_3_0, c8);
+	float4x4 _WorldMatrix : World; // : register(vs_3_0, c0);
+	float4x4 _WorldViewMatrix : WorldView; //: register(vs_3_0, c8);
+	float4x4 _WorldViewITMatrix : WorldViewIT; //: register(vs_3_0, c8);
+	float4x4 _ViewProjMatrix : WorldViewProjection : register(c0);
+	float4x4 _ViewInverseMatrix : ViewI; //: register(vs_3_0, c8);
 	// float4x3 _OneBoneSkinning[26]: matONEBONESKINNING : register(c15) < bool sparseArray = true; int arrayStart = 15; >;
 
-	uniform float4 _AmbientColor : Ambient = { 0.0, 0.0, 0.0, 1.0 };
-	uniform float4 _DiffuseColor : Diffuse = { 1.0, 1.0, 1.0, 1.0 };
-	uniform float4 _SpecularColor : Specular = { 0.0, 0.0, 0.0, 1.0 };
-	uniform float4 _FuzzyLightScaleValue : FuzzyLightScaleValue = { 1.75, 1.75, 1.75, 1.0 };
-	uniform float4 _LightmapOffset : LightmapOffset;
-	uniform float _DropShadowClipHeight : DROPSHADOWCLIPHEIGHT;
-	uniform float4 _ParallaxScaleBias : PARALLAXSCALEBIAS;
+	float4 _AmbientColor : Ambient = { 0.0, 0.0, 0.0, 1.0 };
+	float4 _DiffuseColor : Diffuse = { 1.0, 1.0, 1.0, 1.0 };
+	float4 _SpecularColor : Specular = { 0.0, 0.0, 0.0, 1.0 };
+	float4 _FuzzyLightScaleValue : FuzzyLightScaleValue = { 1.75, 1.75, 1.75, 1.0 };
+	float4 _LightmapOffset : LightmapOffset;
+	float _DropShadowClipHeight : DROPSHADOWCLIPHEIGHT;
+	float4 _ParallaxScaleBias : PARALLAXSCALEBIAS;
 
-	uniform bool _AlphaTest : AlphaTest = false;
+	bool _AlphaTest : AlphaTest = false;
 
-	uniform float4 _ParaboloidValues : ParaboloidValues;
-	uniform float4 _ParaboloidZValues : ParaboloidZValues;
+	float4 _ParaboloidValues : ParaboloidValues;
+	float4 _ParaboloidZValues : ParaboloidZValues;
 
-	uniform texture texture0 : TEXLAYER0;
-	uniform texture texture1 : TEXLAYER1;
-	uniform texture texture2 : TEXLAYER2;
-	uniform texture texture3 : TEXLAYER3;
-	uniform texture texture4 : TEXLAYER4;
-	uniform texture texture5 : TEXLAYER5;
-	uniform texture texture6 : TEXLAYER6;
-	uniform texture texture7 : TEXLAYER7;
+	texture texture0 : TEXLAYER0;
+	texture texture1 : TEXLAYER1;
+	texture texture2 : TEXLAYER2;
+	texture texture3 : TEXLAYER3;
+	texture texture4 : TEXLAYER4;
+	texture texture5 : TEXLAYER5;
+	texture texture6 : TEXLAYER6;
+	texture texture7 : TEXLAYER7;
 
 	#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE_NAME, FILTER, ADDRESS) \
 		sampler SAMPLER_NAME = sampler_state \
@@ -78,10 +78,10 @@
 		string Space = "World";
 	> = {0.0, 0.0, 1.0, 1.0};
 
-	uniform float4 _LightDir : LightDirection;
-	uniform float4 _SunColor : SunColor;
-	uniform float4 _EyePos : EyePos;
-	uniform float4 _EyePosObjectSpace : EyePosObjectSpace;
+	float4 _LightDir : LightDirection;
+	float4 _SunColor : SunColor;
+	float4 _EyePos : EyePos;
+	float4 _EyePosObjectSpace : EyePosObjectSpace;
 
 	float2 GetOffsetsFromAlpha(float2 HeightTex, sampler2D HeightSampler, float4 ScaleBias, float3 ViewVec)
 	{

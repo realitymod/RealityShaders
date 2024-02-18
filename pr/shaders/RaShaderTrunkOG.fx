@@ -18,13 +18,13 @@
 	Description: Renders lighting for tree-trunk overgrowth
 */
 
-uniform float4 OverGrowthAmbient;
-uniform float4 ObjectSpaceCamPos;
-uniform float4 WorldSpaceCamPos;
-uniform float4 PosUnpack;
+float4 OverGrowthAmbient;
+float4 ObjectSpaceCamPos;
+float4 WorldSpaceCamPos;
+float4 PosUnpack;
 Light Lights[1];
 
-uniform texture DiffuseMap;
+texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);

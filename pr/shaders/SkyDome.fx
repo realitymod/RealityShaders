@@ -19,18 +19,18 @@
 	NOTE: We use normal depth calculation for this one because the geometry's far away from the scene
 */
 
-uniform float4x4 _ViewProjMatrix : WorldViewProjection;
-uniform float4 _TexOffset : TEXOFFSET;
-uniform float4 _TexOffset2 : TEXOFFSET2;
+float4x4 _ViewProjMatrix : WorldViewProjection;
+float4 _TexOffset : TEXOFFSET;
+float4 _TexOffset2 : TEXOFFSET2;
 
-uniform float4 _FlareParams : FLAREPARAMS;
-uniform float4 _UnderwaterFog : FogColor;
+float4 _FlareParams : FLAREPARAMS;
+float4 _UnderwaterFog : FogColor;
 
-uniform float2 _FadeOutDist : CLOUDSFADEOUTDIST;
-uniform float2 _CloudLerpFactors : CLOUDLERPFACTORS;
+float2 _FadeOutDist : CLOUDSFADEOUTDIST;
+float2 _CloudLerpFactors : CLOUDLERPFACTORS;
 
-uniform float _LightingBlend : LIGHTINGBLEND;
-uniform float3 _LightingColor : LIGHTINGCOLOR;
+float _LightingBlend : LIGHTINGBLEND;
+float3 _LightingColor : LIGHTINGCOLOR;
 
 #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
@@ -43,13 +43,13 @@ uniform float3 _LightingColor : LIGHTINGCOLOR;
 		AddressV = ADDRESS; \
 	}; \
 
-uniform texture Tex0 : TEXLAYER0;
+texture Tex0 : TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0, CLAMP)
 
-uniform texture Tex1 : TEXLAYER1;
+texture Tex1 : TEXLAYER1;
 CREATE_SAMPLER(SampleTex1, Tex1, WRAP)
 
-uniform texture Tex2 : TEXLAYER2;
+texture Tex2 : TEXLAYER2;
 CREATE_SAMPLER(SampleTex2, Tex2, WRAP)
 
 struct APP2VS

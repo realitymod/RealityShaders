@@ -29,18 +29,18 @@
 	[Attributes from app]
 */
 
-uniform float _BackBufferLerpBias : BACKBUFFERLERPBIAS;
-uniform float2 _SampleOffset : SAMPLEOFFSET;
-uniform float2 _FogStartAndEnd : FOGSTARTANDEND;
-uniform float3 _FogColor : FOGCOLOR;
-uniform float _GlowStrength : GLOWSTRENGTH;
+float _BackBufferLerpBias : BACKBUFFERLERPBIAS;
+float2 _SampleOffset : SAMPLEOFFSET;
+float2 _FogStartAndEnd : FOGSTARTANDEND;
+float3 _FogColor : FOGCOLOR;
+float _GlowStrength : GLOWSTRENGTH;
 
-uniform float _NightFilter_Noise_Strength : NIGHTFILTER_NOISE_STRENGTH;
-uniform float _NightFilter_Noise : NIGHTFILTER_NOISE;
-uniform float _NightFilter_Blur : NIGHTFILTER_BLUR;
-uniform float _NightFilter_Mono : NIGHTFILTER_MONO;
+float _NightFilter_Noise_Strength : NIGHTFILTER_NOISE_STRENGTH;
+float _NightFilter_Noise : NIGHTFILTER_NOISE;
+float _NightFilter_Blur : NIGHTFILTER_BLUR;
+float _NightFilter_Mono : NIGHTFILTER_MONO;
 
-uniform float2 _Displacement : DISPLACEMENT; // Random <x, y> jitter
+float2 _Displacement : DISPLACEMENT; // Random <x, y> jitter
 
 float _NPixels : NPIXLES = 1.0;
 float2 _ScreenSize : VIEWPORTSIZE = { 800, 600 };
@@ -48,8 +48,8 @@ float _Glowness : GLOWNESS = 3.0;
 float _Cutoff : cutoff = 0.8;
 
 // One pixel in screen texture units
-uniform float _DeltaU : DELTAU;
-uniform float _DeltaV : DELTAV;
+float _DeltaU : DELTAU;
+float _DeltaV : DELTAV;
 
 /*
 	[Textures and samplers]
@@ -67,24 +67,24 @@ uniform float _DeltaV : DELTAV;
 	}; \
 
 // Unused?
-uniform texture Texture4 : TEXLAYER4;
-uniform texture Texture5 : TEXLAYER5;
-uniform texture Texture6 : TEXLAYER6;
+texture Texture4 : TEXLAYER4;
+texture Texture5 : TEXLAYER5;
+texture Texture6 : TEXLAYER6;
 
-uniform texture Tex0 : TEXLAYER0;
+texture Tex0 : TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleTex0_Point, Tex0, POINT, CLAMP)
 CREATE_SAMPLER(SampleTex0_Mirror, Tex0, LINEAR, MIRROR)
 
-uniform texture Tex1 : TEXLAYER1;
+texture Tex1 : TEXLAYER1;
 CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleTex1_Wrap, Tex1, LINEAR, WRAP)
 
-uniform texture Tex2 : TEXLAYER2;
+texture Tex2 : TEXLAYER2;
 CREATE_SAMPLER(SampleTex2, Tex2, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleTex2_Wrap, Tex2, LINEAR, WRAP)
 
-uniform texture Tex3 : TEXLAYER3;
+texture Tex3 : TEXLAYER3;
 CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, CLAMP)
 
 /*
@@ -248,17 +248,17 @@ technique GlowMaterial
 }
 
 /* TVEffect specific attributes */
-uniform float _FracTime : FRACTIME;
-uniform float _FracTime256 : FRACTIME256;
-uniform float _SinFracTime : FRACSINE;
+float _FracTime : FRACTIME;
+float _FracTime256 : FRACTIME256;
+float _SinFracTime : FRACSINE;
 
-uniform float _Interference : INTERFERENCE; // = 0.050000 || -0.015;
-uniform float _DistortionRoll : DISTORTIONROLL; // = 0.100000;
-uniform float _DistortionScale : DISTORTIONSCALE; // = 0.500000 || 0.2;
-uniform float _DistortionFreq : DISTORTIONFREQ; //= 0.500000;
-uniform float _Granularity : TVGRANULARITY; // = 3.5;
-uniform float _TVAmbient : TVAMBIENT; // = 0.15
-uniform float3 _TVColor : TVCOLOR;
+float _Interference : INTERFERENCE; // = 0.050000 || -0.015;
+float _DistortionRoll : DISTORTIONROLL; // = 0.100000;
+float _DistortionScale : DISTORTIONSCALE; // = 0.500000 || 0.2;
+float _DistortionFreq : DISTORTIONFREQ; //= 0.500000;
+float _Granularity : TVGRANULARITY; // = 3.5;
+float _TVAmbient : TVAMBIENT; // = 0.15
+float3 _TVColor : TVCOLOR;
 /* TVEffect specific attributes */
 
 struct TV

@@ -4,8 +4,8 @@
 	#include "StaticMesh_Data.fxh"
 #endif
 
-uniform float4 _PosUnpack : POSUNPACK;
-uniform float _TexUnpack : TEXUNPACK;
+float4 _PosUnpack : POSUNPACK;
+float _TexUnpack : TEXUNPACK;
 
 struct APP2VS_LightMapGen
 {

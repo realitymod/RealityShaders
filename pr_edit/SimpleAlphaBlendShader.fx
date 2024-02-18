@@ -14,9 +14,9 @@
 	Description: Renders simple blendop shader
 */
 
-uniform float4x4 _WorldViewProj : WorldViewProjection;
+float4x4 _WorldViewProj : WorldViewProjection;
 
-uniform texture BaseTex: TEXLAYER0
+texture BaseTex: TEXLAYER0
 <
 	string File = "aniso2.dds";
 	string TextureType = "2D";

@@ -22,12 +22,12 @@
 	#define _HASSHADOW_ 0
 #endif
 
-// uniform float3 TreeSkyColor;
-uniform float4 OverGrowthAmbient;
-uniform float4 PosUnpack;
-uniform float2 NormalUnpack;
-uniform float TexUnpack;
-uniform float4 WorldSpaceCamPos;
+// float3 TreeSkyColor;
+float4 OverGrowthAmbient;
+float4 PosUnpack;
+float2 NormalUnpack;
+float TexUnpack;
+float4 WorldSpaceCamPos;
 Light Lights[1];
 
 #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
@@ -41,10 +41,10 @@ Light Lights[1];
 		AddressV = WRAP; \
 	}; \
 
-uniform texture DetailMap;
+texture DetailMap;
 CREATE_SAMPLER(SampleDetailMap, DetailMap)
 
-uniform texture DiffuseMap;
+texture DiffuseMap;
 CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap)
 
 string GlobalParameters[] =

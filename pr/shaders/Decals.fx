@@ -22,18 +22,18 @@
 	[Attributes from app]
 */
 
-uniform float4x4 _WorldViewProjection : WorldViewProjection;
-uniform float4x3 _InstanceTransformations[10]: InstanceTransformations;
-uniform float4x4 _ShadowTransformations[10] : ShadowTransformations;
-uniform float4 _ShadowViewPortMaps[10] : ShadowViewPortMaps;
+float4x4 _WorldViewProjection : WorldViewProjection;
+float4x3 _InstanceTransformations[10]: InstanceTransformations;
+float4x4 _ShadowTransformations[10] : ShadowTransformations;
+float4 _ShadowViewPortMaps[10] : ShadowViewPortMaps;
 
 // offset x/y heightmapsize z / hemilerpbias w
-// uniform float4 _HemiMapInfo : HemiMapInfo;
-// uniform float4 _SkyColor : SkyColor;
-uniform float4 _AmbientColor : AmbientColor;
-uniform float4 _SunColor : SunColor;
-uniform float4 _SunDirection : SunDirection;
-uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = float2(100.0, 30.0);
+// float4 _HemiMapInfo : HemiMapInfo;
+// float4 _SkyColor : SkyColor;
+float4 _AmbientColor : AmbientColor;
+float4 _SunColor : SunColor;
+float4 _SunDirection : SunDirection;
+float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = float2(100.0, 30.0);
 
 /*
 	[Textures and samplers]
@@ -50,15 +50,15 @@ uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = fl
 		AddressV = ADDRESS; \
 	};
 
-uniform texture Tex0: TEXLAYER0;
+texture Tex0: TEXLAYER0;
 CREATE_SAMPLER(SampleTex0, Tex0, CLAMP)
 
-uniform texture Tex1: HemiMapTexture;
+texture Tex1: HemiMapTexture;
 
-uniform texture DecalShadowMap: ShadowMapTex;
+texture DecalShadowMap: ShadowMapTex;
 CREATE_SAMPLER(SampleDecalShadowMap, DecalShadowMap, CLAMP)
 
-uniform texture DecalShadowMapOccluder: ShadowMapOccluderTex;
+texture DecalShadowMapOccluder: ShadowMapOccluderTex;
 CREATE_SAMPLER(SampleDecalShadowMapOccluder, DecalShadowMapOccluder, CLAMP)
 
 struct APP2VS

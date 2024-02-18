@@ -23,10 +23,10 @@
 	initialized from the application.
 */
 
-uniform float4x4 Bones[26];
-uniform bool AlphaBlendEnable = false;
+float4x4 Bones[26];
+bool AlphaBlendEnable = false;
 
-uniform texture DiffuseMap;
+texture DiffuseMap;
 sampler SampleDiffuseMap = sampler_state
 {
 	Texture = (DiffuseMap);

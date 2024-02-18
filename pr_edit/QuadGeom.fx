@@ -1,5 +1,5 @@
 
-uniform texture Tex0: TEXLAYER0;
+texture Tex0: TEXLAYER0;
 
 sampler SampleTex0 = sampler_state
 {

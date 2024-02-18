@@ -9,11 +9,11 @@
 	#include "shared/RealityDirectXTK.fxh"
 #endif
 
-uniform float4x4 WorldView : TRANSFORM;
-uniform float4 DiffuseColor : DIFFUSE;
-uniform float4 TexGenS : TEXGENS;
-uniform float4 TexGenT : TEXGENT;
-uniform float Time : TIME;
+float4x4 WorldView : TRANSFORM;
+float4 DiffuseColor : DIFFUSE;
+float4 TexGenS : TEXGENS;
+float4 TexGenT : TEXGENT;
+float Time : TIME;
 
 #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
@@ -26,7 +26,7 @@ uniform float Time : TIME;
 		AddressV = ADDRESS; \
 	}; \
 
-uniform texture TexMap : TEXTURE;
+texture TexMap : TEXTURE;
 CREATE_SAMPLER(SampleTexMap_Clamp, TexMap, CLAMP)
 CREATE_SAMPLER(SampleTexMap_Wrap, TexMap, WRAP)
 
