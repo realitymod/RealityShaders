@@ -369,8 +369,8 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 		float AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
 	#endif
 
-	float4 Light = saturate((LightMap.z * _GIColor) * 2.0) * 0.5;
-	Light.w = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
+	float4 Light = _GIColor * LightMap.z;
+	Light.a = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
 
 	Output.Color = Light;
 
