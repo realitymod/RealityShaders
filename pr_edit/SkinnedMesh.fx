@@ -72,7 +72,7 @@ float4 _ParaboloidZValues : ParaboloidZValues;
 		Texture = (TEXTURE); \
 		MinFilter = FILTER; \
 		MagFilter = FILTER; \
-		MipFilter = FILTER; \
+		MipFilter = LINEAR; \
 	}; \
 
 texture Tex0 : TEXLAYER0;

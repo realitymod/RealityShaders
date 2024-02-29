@@ -61,7 +61,7 @@ float _DeltaV : DELTAV;
 		Texture = (TEXTURE); \
 		MinFilter = FILTER; \
 		MagFilter = FILTER; \
-		MipFilter = FILTER; \
+		MipFilter = LINEAR; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
 	}; \

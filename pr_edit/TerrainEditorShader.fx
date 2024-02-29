@@ -63,7 +63,7 @@ texture Tex7 : TEXLAYER7;
 		Texture = (TEXTURE); \
 		MinFilter = FILTER; \
 		MagFilter = FILTER; \
-		MipFilter = FILTER; \
+		MipFilter = LINEAR; \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
 		MaxAnisotropy = PR_MAX_ANISOTROPY; \
@@ -715,7 +715,7 @@ technique EditorDetailBasePass
 	Terrain: Overgrowth/Undergrowth/Materialmap Mode
 */
 
-VS2PS_EditorFoliage VS_EditorUndergrowth(APP2VS Input)
+VS2PS_EditorFoliage VS_EditorGrowth(APP2VS Input)
 {
 	VS2PS_EditorFoliage Output = (VS2PS_EditorFoliage)0;
 
@@ -733,11 +733,11 @@ VS2PS_EditorFoliage VS_EditorUndergrowth(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_EditorUndergrowth(VS2PS_EditorFoliage Input)
+PS2FB PS_EditorGrowth(VS2PS_EditorFoliage Input)
 {
 	PS2FB Output = (PS2FB)0;
 
-	Output.Color = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	Output.Color = SRGBToLinearEst(tex2D(SampleTex0Point, Input.Tex0));
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
 
@@ -763,10 +763,10 @@ PS2FB PS_EditorUndergrowth(VS2PS_EditorFoliage Input)
 		} \
 	}
 
-CREATE_TECHNIQUE(EditorUndergrowth, VS_EditorUndergrowth(), PS_EditorUndergrowth())
-CREATE_TECHNIQUE(EditorOvergrowth, VS_EditorUndergrowth(), PS_EditorUndergrowth())
-CREATE_TECHNIQUE(EditorOvergrowthShadow, VS_EditorUndergrowth(), PS_EditorUndergrowth())
-CREATE_TECHNIQUE(EditorMaterialmap, VS_EditorUndergrowth(), PS_EditorUndergrowth())
+CREATE_TECHNIQUE(EditorUndergrowth, VS_EditorGrowth(), PS_EditorGrowth())
+CREATE_TECHNIQUE(EditorOvergrowth, VS_EditorGrowth(), PS_EditorGrowth())
+CREATE_TECHNIQUE(EditorOvergrowthShadow, VS_EditorGrowth(), PS_EditorGrowth())
+CREATE_TECHNIQUE(EditorMaterialmap, VS_EditorGrowth(), PS_EditorGrowth())
 
 #undef CREATE_TECHNIQUE
 

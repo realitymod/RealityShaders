@@ -40,7 +40,7 @@
 			Texture = (TEXTURE_NAME); \
 			MinFilter = FILTER; \
 			MagFilter = FILTER; \
-			MipFilter = FILTER; \
+			MipFilter = LINEAR; \
 			AddressU = ADDRESS; \
 			AddressV = ADDRESS; \
 		}; \
