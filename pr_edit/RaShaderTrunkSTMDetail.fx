@@ -106,9 +106,8 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-
-	float3 WorldNormal : TEXCOORD1;
-	float4 Tex0 : TEXCOORD2; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
+	float4 Tex0 : TEXCOORD1; // .xy = Tex0 (Diffuse); .zw = Tex1 (Detail);
+	float3 Lighting : TEXCOORD2;
 	#if _HASSHADOW_
 		float4 TexShadow : TEXCOORD3;
 	#endif
@@ -134,20 +133,28 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 	Output.HPos = mul(float4(ObjectPos.xyz, 1.0), WorldViewProjection);
 
 	// World-space data
-	Output.Pos = float4(GetWorldPos(ObjectPos.xyz), Output.HPos.w);
+	float3 WorldPos = GetWorldPos(ObjectPos.xyz);
+	Output.Pos = float4(WorldPos, Output.HPos.w);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
-	Output.WorldNormal.xyz = GetWorldNormal(ObjectNormal);
-
 	// Get surface-space data
 	Output.Tex0.xy = Input.Tex0 * TexUnpack;
 	#if !defined(BASEDIFFUSEONLY)
 		Output.Tex0.zw = Input.Tex1 * TexUnpack;
 	#endif
+
+	// Get lighting
+	float3 WorldNormal = GetWorldNormal(ObjectNormal);
+	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
+	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
+
+	// Get lighting
+	float HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
+	Output.Lighting = Lights[0].color.rgb * HalfNL;
 
 	#if _HASSHADOW_
 		Output.TexShadow = GetShadowProjection(float4(ObjectPos.xyz, 1.0));
@@ -161,9 +168,7 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	// World-space data
-	float4 WorldPos = Input.Pos;
-	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
-	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
+	float3 WorldPos = Input.Pos.xyz;
 
 	// Texture data
 	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
@@ -179,12 +184,8 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 		float Shadow = 1.0;
 	#endif
 
-	float3 LightColor = Lights[0].color.rgb * Shadow;
-	float3 Ambient = OverGrowthAmbient.rgb;
-	float3 Diffuse = GetHalfNL(WorldNormal, WorldLightDir) * LightColor;
-
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, Ambient, Diffuse, 0.0) * 2.0;
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, OverGrowthAmbient.rgb, Input.Lighting * Shadow, 0.0) * 2.0;
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;

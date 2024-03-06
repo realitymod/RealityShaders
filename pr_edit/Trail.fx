@@ -55,10 +55,10 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 WorldPos : TEXCOORD0;
-	float3 Color : TEXCOORD1;
-
-	float4 Tex0 : TEXCOORD2; // .xy = Diffuse1; .zw = Diffuse2
-	float3 Maps : TEXCOORD3; // [AlphaBlend, AnimBlend, LMOffset]
+	float4 Tex0 : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
+	float2 HemiTex : TEXCOORD2;
+	float3 Color : TEXCOORD3;
+	float3 Maps : TEXCOORD4; // [AlphaBlend, AnimBlend, LMOffset]
 };
 
 struct PS2FB
@@ -90,9 +90,9 @@ VS2PS VS_Trail(APP2VS Input)
 	float AlphaBlendFactor = min(dot(Template.m_transparencyGraph, CubicPolynomial), 1.0) * Alpha;
 
 	// Displace vertex
-	float4 Pos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
-	Output.HPos = mul(Pos, _ProjMat);
-	Output.WorldPos = float4(Input.Pos, Output.HPos.w);
+	float4 ViewPos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
+	Output.HPos = mul(ViewPos, _ProjMat);
+	Output.WorldPos = float4(Input.Pos.xyz, Output.HPos.w);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -115,10 +115,11 @@ VS2PS VS_Trail(APP2VS Input)
 	FadeFactor += _FresnelOffset;
 	FadeFactor *= FadeIn * FadeOut;
 
+	// Output vertex factors
 	Output.Color = lerp(Template.m_color1AndLightFactor.rgb, Template.m_color2.rgb, ColorBlendFactor);
 	Output.Maps[0] = AlphaBlendFactor * FadeFactor;
 	Output.Maps[1] = AnimBlendFactor;
-	Output.Maps[2] = Template.m_uvRangeLMapIntensiyAndParticleMaxSize.z;
+	Output.Maps[2] = GetAltitude(Input.Pos.xyz, Template.m_uvRangeLMapIntensiyAndParticleMaxSize.z);
 
 	// Compute texcoords for trail
 	float2 RotatedTexCoords = Input.TexCoords;
@@ -134,6 +135,7 @@ VS2PS VS_Trail(APP2VS Input)
 	// Offset texcoords
 	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
+	Output.HemiTex = GetHemiTex(Input.Pos, 0.0, _HemiMapInfo.xyz, true);
 
 	return Output;
 }
@@ -154,7 +156,7 @@ VFactors GetVFactors(VS2PS Input)
 	VFactors Output = (VFactors)0.0;
 	Output.AlphaBlend = Input.Maps[0];
 	Output.AnimationBlend = Input.Maps[1];
-	Output.LightMapOffset = GetAltitude(Input.WorldPos, Input.Maps[2]);
+	Output.LightMapOffset = Input.Maps[2];
 	return Output;
 }
 
@@ -232,8 +234,7 @@ PS2FB PS_Trail_High(VS2PS Input)
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.AnimationBlend);
 
 	// Get hemi map
-	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo.xyz, true);
-	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, HemiTex));
+	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, Input.HemiTex));
 
 	// Apply lighting
 	float3 Lighting = GetParticleLighting(HemiMap.a, VF.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));

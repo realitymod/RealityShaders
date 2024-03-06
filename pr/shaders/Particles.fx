@@ -52,12 +52,11 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float3 WorldPos : TEXCOORD0;
-	float4 ViewPos : TEXCOORD1;
-	float3 Color : TEXCOORD2;
-
-	float4 Maps : TEXCOORD3; // [LightMapBlend, Alpha, IntensityBlend, LightMapOffset]
-	float4 Tex0 : TEXCOORD4; // .xy = Diffuse1; .zw = Diffuse2
+	float4 ViewPos : TEXCOORD0;
+	float4 Tex0 : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
+	float2 HemiTex : TEXCOORD2;
+	float3 Color : TEXCOORD3;
+	float4 Maps : TEXCOORD4; // [LightMapBlend, Alpha, IntensityBlend, LightMapOffset]
 };
 
 struct PS2FB
@@ -95,20 +94,21 @@ VS2PS VS_Particle(APP2VS Input)
 	float3 Color = lerp(Template[ID].m_color1AndLightFactor.rgb, Template[ID].m_color2.rgb, ColorBlendFactor);
 	Output.Color.rgb = (Color * Intensity) + RandomIntensity;
 
+	// Displace vertex
+	float3 WorldPos = Input.Pos.xyz;
+	float4 ViewPos = mul(float4(WorldPos, 1.0), _ViewMat);
+	float Size = (SizeFactor * Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.w) + RandomSize;
+	ViewPos.xy += (Input.DisplaceCoords.xy * Size);
+
+	Output.HPos = mul(ViewPos, _ProjMat);
+	Output.ViewPos = float4(ViewPos.xyz, Output.HPos.w);
+
+	// Output vertex factors
 	Output.Maps[0] = Template[ID].m_color1AndLightFactor.a;
 	Output.Maps[1] = AlphaBlendFactor * Alpha;
 	Output.Maps[2] = IntensityBlendFactor;
-	Output.Maps[3] = Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.z;
+	Output.Maps[3] = GetAltitude(WorldPos, Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.z);
 	Output.Maps = saturate(Output.Maps);
-
-	// Displace vertex
-	float4 Pos = mul(float4(Input.Pos.xyz, 1.0), _ViewMat);
-	float Size = (SizeFactor * Template[ID].m_uvRangeLMapIntensiyAndParticleMaxSize.w) + RandomSize;
-	Pos.xy = (Input.DisplaceCoords.xy * Size) + Pos.xy;
-
-	Output.HPos = mul(Pos, _ProjMat);
-	Output.WorldPos = Input.Pos.xyz;
-	Output.ViewPos = float4(Pos.xyz, Output.HPos.w);
 
 	// Compute texcoords
 	// Rotate and scale to correct u,v space and zoom in.
@@ -123,6 +123,7 @@ VS2PS VS_Particle(APP2VS Input)
 
 	// Offset texcoords
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
+	Output.HemiTex = GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, true);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -150,7 +151,7 @@ VFactors GetVFactors(VS2PS Input)
 	Output.LightMapBlend = Input.Maps[0];
 	Output.AlphaBlend = Input.Maps[1];
 	Output.IntensityBlend = Input.Maps[2];
-	Output.LightMapOffset = GetAltitude(Input.WorldPos, Input.Maps[3]);
+	Output.LightMapOffset = Input.Maps[3];
 	return Output;
 }
 
@@ -219,8 +220,7 @@ PS2FB PS_Particle_High(VS2PS Input)
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.IntensityBlend);
 
 	// Get hemi map
-	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo.xyz, true);
-	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, HemiTex));
+	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, Input.HemiTex));
 
 	// Apply lighting
 	float3 Lighting = GetParticleLighting(HemiMap.a, VF.LightMapOffset, VF.LightMapBlend);

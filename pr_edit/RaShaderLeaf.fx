@@ -213,6 +213,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	// Transform our object-space vertex position and normal into world-space
 	WorldSpace WS = GetWorldSpaceData(Input.Pos.xyz, Input.Normal);
 
+	// Compute and pre-combine other lighting factors
 	Output.Tex0.w = GetHalfNL(WS.Normal, WS.LightDir);
 
 	// Calculate vertex position data
@@ -235,22 +236,22 @@ PS2FB PS_Leaf(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float LodScale = Input.Tex0.z;
-	float HalfNL = Input.Tex0.w;
-	float4 WorldPos = Input.Pos;
+	float3 WorldPos = Input.Pos.xyz;
 
 	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if _HASSHADOW_
-		float4 Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
+		float Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#else
-		float4 Shadow = 1.0;
+		float Shadow = 1.0;
 	#endif
 
-	float3 LightColor = (Lights[0].color * LodScale) * Shadow.rgb;
-	float3 Ambient = OverGrowthAmbient.rgb * LodScale;
-	float3 Diffuse = (HalfNL * LodScale) * LightColor;
+	float HalfNL = Input.Tex0.w * LodScale;
+	float3 LightColor = Lights[0].color * LodScale;
+	float3 AmbientRGB = OverGrowthAmbient.rgb * LodScale;
+	float3 DiffuseRGB = (HalfNL * Shadow) * LightColor;
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, Ambient, Diffuse, 0.0);
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, AmbientRGB, DiffuseRGB, 0.0);
 	OutputColor.a = (DiffuseMap.a * 2.0) * Transparency;
 	#if defined(OVERGROWTH) && HASALPHA2MASK
 		OutputColor.a *= (DiffuseMap.a * 2.0);

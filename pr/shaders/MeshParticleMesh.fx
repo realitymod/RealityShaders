@@ -56,11 +56,10 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float3 WorldPos : TEXCOORD0;
-	float4 ViewPos : TEXCOORD1;
+	float4 ViewPos : TEXCOORD0;
+	float4 Tex0 : TEXCOORD1; // .xy = DiffuseTex; .zw = HemiTex;
 	float4 Color : TEXCOORD2;
-
-	float2 Tex0 : TEXCOORD3;
+	float Altitude : TEXCOORD3;
 };
 
 struct PS2FB
@@ -76,9 +75,8 @@ VS2PS VS_Diffuse(APP2VS Input)
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
 
-	float3 Pos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
-	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
-	Output.WorldPos = Pos.xyz;
+	float3 WorldPos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
+	Output.HPos = mul(float4(WorldPos.xyz, 1.0), _WorldViewProj);
 	Output.ViewPos = Output.HPos;
 
 	// Compute Cubic polynomial factors.
@@ -89,8 +87,12 @@ VS2PS VS_Diffuse(APP2VS Input)
 	Output.Color.a = _AgeAndAlphaArray[IndexArray[0]][1];
 	Output.Color = saturate(Output.Color);
 
+	// Get particle lighting
+	Output.Altitude = GetAltitude(WorldPos, _LightmapIntensityOffset);
+
 	// Pass-through texcoords
-	Output.Tex0 = Input.TexCoord;
+	Output.Tex0.xy = Input.TexCoord;
+	Output.Tex0.zw = GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, false);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -106,13 +108,11 @@ PS2FB PS_Diffuse(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	// Textures
-	float2 HemiTex = GetHemiTex(Input.WorldPos, 0.0, _HemiMapInfo.xyz, false);
-	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
-	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, HemiTex));
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, Input.Tex0.zw));
 
 	// Lighting
-	float LightMapOffset = GetAltitude(Input.WorldPos, _LightmapIntensityOffset);
-	float3 Lighting = GetParticleLighting(HemiMap.a, LightMapOffset, saturate(m_color1AndLightFactor.a));
+	float3 Lighting = GetParticleLighting(HemiMap.a, Input.Altitude, saturate(m_color1AndLightFactor.a));
 	float4 LightColor = (Input.Color.rgb * Lighting, Input.Color.a);
 	float4 OutputColor = DiffuseMap * LightColor;
 
@@ -129,7 +129,7 @@ PS2FB PS_Additive(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	// Textures
-	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0) * Input.Color;
+	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy) * Input.Color;
 	DiffuseMap.rgb = (_EffectSunColor.b < -0.1) ? float3(1.0, 0.0, 0.0) : DiffuseMap.rgb;
 
 	// Mask with alpha since were doing an add

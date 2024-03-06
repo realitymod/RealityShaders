@@ -78,8 +78,8 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float3 WorldNormal : TEXCOORD1;
-	float3 Tex0 : TEXCOORD2; // .xy = Tex0; .z = LodScale;
+	float2 Tex0 : TEXCOORD1;
+	float3 Lighting : TEXCOORD2;
 };
 
 struct PS2FB
@@ -108,9 +108,18 @@ VS2PS VS_TrunkOG(APP2VS Input)
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
-	Output.WorldNormal = GetWorldNormal((Input.Normal * 2.0) - 1.0);
+	// Pass-through tex
+	Output.Tex0 = Input.Tex0;
 
-	Output.Tex0 = float3(Input.Tex0, Input.Pos.w) / 32767.0;
+	// Get lighting
+	float LODScale = Input.Pos.w / 32767.0;
+	float3 WorldNormal = GetWorldNormal((Input.Normal * 2.0) - 1.0);
+	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
+
+	float HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
+	float3 AmbientRGB = OverGrowthAmbient.rgb * LODScale;
+	float3 DiffuseRGB = HalfNL * (Lights[0].color.rgb * LODScale);
+	Output.Lighting = AmbientRGB + DiffuseRGB;
 
 	return Output;
 }
@@ -123,21 +132,13 @@ PS2FB PS_TrunkOG(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	// World-space data
-	float LodScale = Input.Tex0.z;
-	float4 WorldPos = Input.Pos;
-	float3 WorldNormal = normalize(Input.WorldNormal.xyz);
-	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
+	float3 WorldPos = Input.Pos.xyz;
 
 	// Get textures
 	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 
-	// Get diffuse lighting
-	float3 LightColor = Lights[0].color.rgb * LodScale;
-	float3 Ambient = OverGrowthAmbient.rgb * LodScale;
-	float3 Diffuse = GetHalfNL(WorldNormal, WorldLightDir) * LightColor;
-
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, Ambient, Diffuse, 0.0) * 2.0;
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, Input.Lighting, 0.0, 0.0) * 2.0;
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;
