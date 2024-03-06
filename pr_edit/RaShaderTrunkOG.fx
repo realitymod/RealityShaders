@@ -132,7 +132,7 @@ PS2FB PS_TrunkOG(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	// World-space data
-	float3 WorldPos = Input.Pos.xyz;
+	float4 WorldPos = Input.Pos;
 
 	// Get textures
 	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));

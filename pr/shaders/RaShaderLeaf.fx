@@ -217,7 +217,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	Output.Tex0.w = GetHalfNL(WS.Normal, WS.LightDir);
 
 	// Calculate vertex position data
-	Output.Pos.xyz = WS.Pos;
+	Output.Pos = float4(WS.Pos, Output.HPos.w);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -236,7 +236,7 @@ PS2FB PS_Leaf(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float LodScale = Input.Tex0.z;
-	float3 WorldPos = Input.Pos.xyz;
+	float4 WorldPos = Input.Pos;
 
 	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if _HASSHADOW_
@@ -258,9 +258,9 @@ PS2FB PS_Leaf(VS2PS Input)
 	#endif
 
 	Output.Color = OutputColor;
-	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos.xyz);
+	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos);
 	#if _POINTLIGHT_
-		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
+		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos.xyz;
 		Output.Color.rgb *= GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		Output.Color.rgb *= FogValue;
 	#else
