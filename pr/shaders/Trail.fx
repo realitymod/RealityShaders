@@ -90,9 +90,10 @@ VS2PS VS_Trail(APP2VS Input)
 	float AlphaBlendFactor = min(dot(Template.m_transparencyGraph, CubicPolynomial), 1.0) * Alpha;
 
 	// Displace vertex
-	float4 ViewPos = mul(float4(Input.Pos.xyz + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
+	float3 WorldPos = Input.Pos.xyz;
+	float4 ViewPos = mul(float4(WorldPos + Size * (Input.LocalCoords.xyz * Input.TexCoords.y), 1.0), _ViewMat);
 	Output.HPos = mul(ViewPos, _ProjMat);
-	Output.WorldPos = float4(Input.Pos.xyz, Output.HPos.w);
+	Output.WorldPos = float4(WorldPos, Output.HPos.w);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -100,7 +101,7 @@ VS2PS VS_Trail(APP2VS Input)
 	#endif
 
 	// Project eyevec to Tangent vector to get position on axis
-	float3 ViewVec = _EyePos.xyz - Input.Pos.xyz;
+	float3 ViewVec = _EyePos.xyz - WorldPos;
 	float TanPos = dot(ViewVec, Input.Tangent);
 	// Closest point to camera
 	float3 AxisVec = ViewVec - (Input.Tangent * TanPos);
@@ -119,7 +120,7 @@ VS2PS VS_Trail(APP2VS Input)
 	Output.Color = lerp(Template.m_color1AndLightFactor.rgb, Template.m_color2.rgb, ColorBlendFactor);
 	Output.Maps[0] = AlphaBlendFactor * FadeFactor;
 	Output.Maps[1] = AnimBlendFactor;
-	Output.Maps[2] = GetAltitude(Input.Pos.xyz, Template.m_uvRangeLMapIntensiyAndParticleMaxSize.z);
+	Output.Maps[2] = GetAltitude(WorldPos, Template.m_uvRangeLMapIntensiyAndParticleMaxSize.z);
 
 	// Compute texcoords for trail
 	float2 RotatedTexCoords = Input.TexCoords;
@@ -135,7 +136,7 @@ VS2PS VS_Trail(APP2VS Input)
 	// Offset texcoords
 	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
-	Output.HemiTex = GetHemiTex(Input.Pos, 0.0, _HemiMapInfo.xyz, true);
+	Output.HemiTex = GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, true);
 
 	return Output;
 }
