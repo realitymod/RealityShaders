@@ -439,8 +439,7 @@ struct VS2PS_Shared_ST_Normal
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
-	float3 Tex0 : TEXCOORD2; // .xy = Tex0; .z = Input.Pos1.x;
-	float4 Tex1 : TEXCOORD3; // .xy = ColorLight; .zw = LowDetail;
+	float4 Tex0 : TEXCOORD2; // .xy = ColorLight; .zw = LowDetail;
 };
 
 VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
@@ -460,9 +459,8 @@ VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
 	#endif
 
 	Output.Normal = Input.Normal;
-	Output.Tex0 = float3(Input.Tex0, Input.Pos1.x);
-	Output.Tex1.xy = (Output.Tex0.xy * _STColorLightTex.x) + _STColorLightTex.y;
-	Output.Tex1.zw = (Output.Tex0.xy * _STLowDetailTex.x) + _STLowDetailTex.y;
+	Output.Tex0.xy = (Input.Tex0.xy * _STColorLightTex.x) + _STColorLightTex.y;
+	Output.Tex0.zw = (Input.Tex0.xy * _STLowDetailTex.x) + _STLowDetailTex.y;
 
 	return Output;
 }
@@ -474,13 +472,13 @@ struct SurroundingTerrain
 	float2 ZPlane;
 };
 
-SurroundingTerrain GetSurroundingTerrain(float3 WorldPos, float3 Tex)
+SurroundingTerrain GetSurroundingTerrain(float3 WorldPos)
 {
 	SurroundingTerrain Output = (SurroundingTerrain)0.0;
 
 	float3 WorldTex = 0.0;
 	WorldTex.x = WorldPos.x * _STTexScale.x;
-	WorldTex.y = -(Tex.z * _STTexScale.y);
+	WorldTex.y = WorldPos.y * _STTexScale.y;
 	WorldTex.z = WorldPos.z * _STTexScale.z;
 
 	// Get surrounding terrain texcoords
@@ -500,9 +498,9 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos, Input.Tex0);
-	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex1.xy));
-	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex1.zw);
+	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
+	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
 	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, ST.YPlane) * 2.0);
 	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, ST.XPlane) * 2.0);
 	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, ST.ZPlane) * 2.0);
