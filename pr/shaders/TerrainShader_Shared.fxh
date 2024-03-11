@@ -487,12 +487,10 @@ SurroundingTerrain GetSurroundingTerrain(float3 WorldPos, float3 Tex)
 	WorldTex.y = -(Tex.z * _STTexScale.y);
 	WorldTex.z = WorldPos.z * _STTexScale.z;
 
-	float2 YPlaneTex = WorldTex.xz;
-	float2 XPlaneTex = WorldTex.zy;
-	float2 ZPlaneTex = WorldTex.xy;
-	Output.YPlane = (YPlaneTex * _STFarTexTiling.z);
-	Output.XPlane = (XPlaneTex * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
-	Output.ZPlane = (ZPlaneTex * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
+	// Get surrounding terrain texcoords
+	Output.YPlane = (WorldTex.xz * _STFarTexTiling.z);
+	Output.XPlane = (WorldTex.zy * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
+	Output.ZPlane = (WorldTex.xy * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
 
 	return Output;
 }

@@ -86,21 +86,24 @@ FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
 {
 	FullDetail Output = (FullDetail)0.0;
 
-	// Calculate triplanar texcoords
+	// Initialize triplanar texcoords
 	float3 WorldTex = 0.0;
+
+	// Calculate near texcoords
 	WorldTex.x = Tex.x * _TexScale.x;
 	WorldTex.y = WorldPos.y * _TexScale.y;
 	WorldTex.z = Tex.y * _TexScale.z;
+	Output.NearYPlane = (WorldTex.xz * _NearTexTiling.z);
+	Output.NearXPlane = (WorldTex.zy * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
+	Output.NearZPlane = (WorldTex.xy * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
 
-	float2 XPlaneTex = WorldTex.zy;
-	float2 YPlaneTex = WorldTex.xz;
-	float2 ZPlaneTex = WorldTex.xy;
-	Output.NearYPlane = (YPlaneTex * _NearTexTiling.z);
-	Output.NearXPlane = (XPlaneTex * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
-	Output.NearZPlane = (ZPlaneTex * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
-	Output.FarYPlane = (YPlaneTex * _FarTexTiling.z);
-	Output.FarXPlane = (XPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
-	Output.FarZPlane = (ZPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	// Calculate far texcoords
+	WorldTex.x = WorldPos.x * _TexScale.x;
+	WorldTex.y = WorldPos.y * _TexScale.y;
+	WorldTex.z = WorldPos.z * _TexScale.z;
+	Output.FarYPlane = (WorldTex.xz * _FarTexTiling.z);
+	Output.FarXPlane = (WorldTex.zy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	Output.FarZPlane = (WorldTex.xy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
 
 	return Output;
 }
