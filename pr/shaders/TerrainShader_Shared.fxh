@@ -173,9 +173,8 @@ struct VS2PS_Shared_LowDetail
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
-	float2 Tex0 : TEXCOORD2; // .xy = ColorTex; .zw = CompTex;
-	float4 Tex1 : TEXCOORD3; // .xy = ColorLight; .zw = DetailTex;
-	float4 LightTex : TEXCOORD4;
+	float4 Tex0 : TEXCOORD2; // .xy = ColorLight; .zw = DetailTex;
+	float4 LightTex : TEXCOORD3;
 };
 
 VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
@@ -192,9 +191,8 @@ VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 	#endif
 
 	Output.Normal = (Input.Normal * 2.0) - 1.0;
-	Output.Tex0 = Input.Pos0.xy;
-	Output.Tex1.xy = ((Output.Tex0 * _ScaleBaseUV) * _ColorLightTex.x) + _ColorLightTex.y;
-	Output.Tex1.zw = ((Output.Tex0 * _TexScale.xz) * _DetailTex.x) + _DetailTex.y;
+	Output.Tex0.xy = ((Input.Pos0.xy * _ScaleBaseUV) * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Tex0.zw = ((Input.Pos0.xy * _TexScale.xz) * _DetailTex.x) + _DetailTex.y;
 	Output.LightTex = ProjToLighting(Output.HPos);
 
 	return Output;
@@ -207,21 +205,19 @@ struct LowDetail
 	float2 ZPlane;
 };
 
-LowDetail GetLowDetail(float3 WorldPos, float2 Tex)
+LowDetail GetLowDetail(float3 WorldPos)
 {
 	LowDetail Output = (LowDetail)0.0;
 
 	float3 WorldTex = 0.0;
-	WorldTex.x = Tex.x * _TexScale.x;
+	WorldTex.x = WorldPos.x * _TexScale.x;
 	WorldTex.y = WorldPos.y * _TexScale.y;
-	WorldTex.z = Tex.y * _TexScale.z;
+	WorldTex.z = WorldPos.z * _TexScale.z;
 
-	float2 YPlaneTex = WorldTex.xz;
-	float2 XPlaneTex = WorldTex.zy;
-	float2 ZPlaneTex = WorldTex.xy;
-	Output.YPlane = (YPlaneTex * _FarTexTiling.z);
-	Output.XPlane = (XPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
-	Output.ZPlane = (ZPlaneTex * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	// Calculate far texcoords
+	Output.YPlane = (WorldTex.xz * _FarTexTiling.z);
+	Output.XPlane = (WorldTex.zy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	Output.ZPlane = (WorldTex.xy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
 
 	return Output;
 }
@@ -235,10 +231,10 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	LowDetail LD = GetLowDetail(WorldPos, Input.Tex0);
+	LowDetail LD = GetLowDetail(WorldPos);
 	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleTex1_Clamp, Input.LightTex));
-	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex1.xy));
-	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex1.zw);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
+	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
 	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.YPlane) * 2.0);
 	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.XPlane) * 2.0);
 	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.ZPlane) * 2.0);
