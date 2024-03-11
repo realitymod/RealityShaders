@@ -174,8 +174,34 @@ struct VS2PS_Shared_LowDetail
 	float4 Pos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
 	float4 Tex0 : TEXCOORD2; // .xy = ColorLight; .zw = DetailTex;
-	float4 LightTex : TEXCOORD3;
+	float2 YPlaneTex : TEXCOORD3;
+	float4 XZPlaneTex : TEXCOORD4;
+	float4 LightTex : TEXCOORD5;
 };
+
+struct LowDetail
+{
+	float2 YPlaneTex;
+	float2 XPlaneTex;
+	float2 ZPlaneTex;
+};
+
+LowDetail GetLowDetail(float3 MorphedWorldPos, float2 WorldPos)
+{
+	LowDetail Output = (LowDetail)0.0;
+
+	float3 WorldTex = 0.0;
+	WorldTex.x = WorldPos.x * _TexScale.x;
+	WorldTex.y = MorphedWorldPos.y * _TexScale.y;
+	WorldTex.z = WorldPos.y * _TexScale.z;
+
+	// Calculate far texcoords
+	Output.YPlaneTex = (WorldTex.xz * _FarTexTiling.z);
+	Output.XPlaneTex = (WorldTex.zy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	Output.ZPlaneTex = (WorldTex.xy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+
+	return Output;
+}
 
 VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 {
@@ -195,29 +221,9 @@ VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 	Output.Tex0.zw = ((Input.Pos0.xy * _TexScale.xz) * _DetailTex.x) + _DetailTex.y;
 	Output.LightTex = ProjToLighting(Output.HPos);
 
-	return Output;
-}
-
-struct LowDetail
-{
-	float2 YPlane;
-	float2 XPlane;
-	float2 ZPlane;
-};
-
-LowDetail GetLowDetail(float3 WorldPos)
-{
-	LowDetail Output = (LowDetail)0.0;
-
-	float3 WorldTex = 0.0;
-	WorldTex.x = WorldPos.x * _TexScale.x;
-	WorldTex.y = WorldPos.y * _TexScale.y;
-	WorldTex.z = WorldPos.z * _TexScale.z;
-
-	// Calculate far texcoords
-	Output.YPlane = (WorldTex.xz * _FarTexTiling.z);
-	Output.XPlane = (WorldTex.zy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
-	Output.ZPlane = (WorldTex.xy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	LowDetail LD = GetLowDetail(MorphedWorldPos.xyz, Input.Pos0.xy);
+	Output.YPlaneTex = LD.YPlaneTex;
+	Output.XZPlaneTex = float4(LD.XPlaneTex, LD.ZPlaneTex);
 
 	return Output;
 }
@@ -231,13 +237,12 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	LowDetail LD = GetLowDetail(WorldPos);
 	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleTex1_Clamp, Input.LightTex));
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
-	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.YPlane) * 2.0);
-	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.XPlane) * 2.0);
-	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, LD.ZPlane) * 2.0);
+	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.YPlaneTex) * 2.0);
+	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.xy) * 2.0);
+	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.zw) * 2.0);
 
 	float4 TerrainLights = (_SunColor * (AccumLights.a * 2.0)) + AccumLights;
 
@@ -440,7 +445,33 @@ struct VS2PS_Shared_ST_Normal
 	float4 Pos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
 	float4 Tex0 : TEXCOORD2; // .xy = ColorLight; .zw = LowDetail;
+	float2 YPlaneTex : TEXCOORD3;
+	float4 XZPlaneTex : TEXCOORD4; // .xy = XPlane; .zw = ZPlane;
 };
+
+struct SurroundingTerrain
+{
+	float2 YPlaneTex;
+	float2 XPlaneTex;
+	float2 ZPlaneTex;
+};
+
+SurroundingTerrain GetSurroundingTerrain(float3 WorldPos)
+{
+	SurroundingTerrain Output = (SurroundingTerrain)0.0;
+
+	float3 WorldTex = 0.0;
+	WorldTex.x = WorldPos.x * _STTexScale.x;
+	WorldTex.y = WorldPos.y * _STTexScale.y;
+	WorldTex.z = WorldPos.z * _STTexScale.z;
+
+	// Get surrounding terrain texcoords
+	Output.YPlaneTex = (WorldTex.xz * _STFarTexTiling.z);
+	Output.XPlaneTex = (WorldTex.zy * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
+	Output.ZPlaneTex = (WorldTex.xy * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
+
+	return Output;
+}
 
 VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
 {
@@ -462,29 +493,9 @@ VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
 	Output.Tex0.xy = (Input.Tex0.xy * _STColorLightTex.x) + _STColorLightTex.y;
 	Output.Tex0.zw = (Input.Tex0.xy * _STLowDetailTex.x) + _STLowDetailTex.y;
 
-	return Output;
-}
-
-struct SurroundingTerrain
-{
-	float2 YPlane;
-	float2 XPlane;
-	float2 ZPlane;
-};
-
-SurroundingTerrain GetSurroundingTerrain(float3 WorldPos)
-{
-	SurroundingTerrain Output = (SurroundingTerrain)0.0;
-
-	float3 WorldTex = 0.0;
-	WorldTex.x = WorldPos.x * _STTexScale.x;
-	WorldTex.y = WorldPos.y * _STTexScale.y;
-	WorldTex.z = WorldPos.z * _STTexScale.z;
-
-	// Get surrounding terrain texcoords
-	Output.YPlane = (WorldTex.xz * _STFarTexTiling.z);
-	Output.XPlane = (WorldTex.zy * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
-	Output.ZPlane = (WorldTex.xy * _STFarTexTiling.xy) + float2(0.0, _STFarTexTiling.w);
+	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos.xyz);
+	Output.YPlaneTex = ST.YPlaneTex;
+	Output.XZPlaneTex = float4(ST.XPlaneTex, ST.ZPlaneTex);
 
 	return Output;
 }
@@ -498,12 +509,11 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos);
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
-	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, ST.YPlane) * 2.0);
-	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, ST.XPlane) * 2.0);
-	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, ST.ZPlane) * 2.0);
+	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.YPlaneTex) * 2.0);
+	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.xy) * 2.0);
+	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.zw) * 2.0);
 
 	// If thermals assume gray color
 	if (IsTisActive())

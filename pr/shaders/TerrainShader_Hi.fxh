@@ -42,10 +42,43 @@ struct VS2PS_FullDetail_Hi
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 	float3 Normal : TEXCOORD1;
-	float3 Tex0 : TEXCOORD2; // .xy = Input.Pos0.xy; .z = Depth;
-	float4 Tex1 : TEXCOORD3; // .xy = ColorLight; .zw = Detail;
-	float4 LightTex : TEXCOORD4;
+	float4 Tex0 : TEXCOORD2; // .xy = ColorLight; .zw = Detail;
+	float4 YPlaneTex : TEXCOORD3; // .xy = Near; .zw = Far;
+	float4 XPlaneTex : TEXCOORD4; // .xy = Near; .zw = Far;
+	float4 ZPlaneTex : TEXCOORD5; // .xy = Near; .zw = Far;
+	float4 LightTex : TEXCOORD6;
 };
+
+struct FullDetail
+{
+	float2 NearYPlane;
+	float2 NearXPlane;
+	float2 NearZPlane;
+	float2 FarYPlane;
+	float2 FarXPlane;
+	float2 FarZPlane;
+};
+
+FullDetail GetFullDetail(float3 MorphedWorldPos, float2 WorldPos)
+{
+	FullDetail Output = (FullDetail)0.0;
+
+	// Initialize triplanar texcoords
+	float3 WorldTex = 0.0;
+
+	// Calculate near texcoords
+	WorldTex.x = WorldPos.x * _TexScale.x;
+	WorldTex.y = MorphedWorldPos.y * _TexScale.y;
+	WorldTex.z = WorldPos.y * _TexScale.z;
+	Output.NearYPlane = (WorldTex.xz * _NearTexTiling.z);
+	Output.NearXPlane = (WorldTex.zy * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
+	Output.NearZPlane = (WorldTex.xy * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
+	Output.FarYPlane = (WorldTex.xz * _FarTexTiling.z);
+	Output.FarXPlane = (WorldTex.zy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+	Output.FarZPlane = (WorldTex.xy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
+
+	return Output;
+}
 
 VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 {
@@ -59,54 +92,23 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 
 	// tl: uncompress normal
 	Output.Normal.xyz = (Input.Normal * 2.0) - 1.0;
-	Output.Tex0.xy = Input.Pos0.xy;
-	Output.Tex1.xy = (YPlaneTex * _ColorLightTex.x) + _ColorLightTex.y;
-	Output.Tex1.zw = (YPlaneTex * _DetailTex.x) + _DetailTex.y;
+	Output.Tex0.xy = (YPlaneTex * _ColorLightTex.x) + _ColorLightTex.y;
+	Output.Tex0.zw = (YPlaneTex * _DetailTex.x) + _DetailTex.y;
 	Output.LightTex = ProjToLighting(Output.HPos);
+
+	FullDetail FD = GetFullDetail(MorphedWorldPos.xyz, Input.Pos0.xy);
+	Output.YPlaneTex = float4(FD.NearYPlane, FD.FarYPlane);
+	Output.XPlaneTex = float4(FD.NearXPlane, FD.FarXPlane);
+	Output.ZPlaneTex = float4(FD.NearZPlane, FD.FarZPlane);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Tex0.z = Output.HPos.w + 1.0;
+		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
 }
 
-struct FullDetail
-{
-	float2 NearYPlane;
-	float2 NearXPlane;
-	float2 NearZPlane;
-	float2 FarYPlane;
-	float2 FarXPlane;
-	float2 FarZPlane;
-};
-
-FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
-{
-	FullDetail Output = (FullDetail)0.0;
-
-	// Initialize triplanar texcoords
-	float3 WorldTex = 0.0;
-
-	// Calculate near texcoords
-	WorldTex.x = Tex.x * _TexScale.x;
-	WorldTex.y = WorldPos.y * _TexScale.y;
-	WorldTex.z = Tex.y * _TexScale.z;
-	Output.NearYPlane = (WorldTex.xz * _NearTexTiling.z);
-	Output.NearXPlane = (WorldTex.zy * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
-	Output.NearZPlane = (WorldTex.xy * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
-
-	// Calculate far texcoords
-	WorldTex.x = WorldPos.x * _TexScale.x;
-	WorldTex.y = WorldPos.y * _TexScale.y;
-	WorldTex.z = WorldPos.z * _TexScale.z;
-	Output.FarYPlane = (WorldTex.xz * _FarTexTiling.z);
-	Output.FarXPlane = (WorldTex.zy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
-	Output.FarZPlane = (WorldTex.xy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
-
-	return Output;
-}
 
 PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform bool UseEnvMap)
 {
@@ -116,10 +118,9 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float3 WorldNormal = normalize(Input.Normal);
 	float LerpValue = GetLerpValue(WorldPos.xwz, _CameraPos.xwz);
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
-	FullDetail FD = GetFullDetail(WorldPos.xyz, Input.Tex0.xy);
 
 	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleTex1_Clamp, Input.LightTex));
-	float4 Component = tex2D(SampleTex2_Clamp, Input.Tex1.zw);
+	float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.zw);
 
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
@@ -129,14 +130,14 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#if defined(LIGHTONLY)
 		float3 OutputColor = TerrainLights;
 	#else
-		float3 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex1.xy));
-		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex1.zw);
-		float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex3_Wrap, FD.NearYPlane) * float4(2.0, 2.0, 2.0, 1.0));
-		float4 XPlaneDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex6_Wrap, FD.NearXPlane) * 2.0);
-		float4 ZPlaneDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex6_Wrap, FD.NearZPlane) * 2.0);
-		float3 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, FD.FarYPlane) * 2.0);
-		float3 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, FD.FarXPlane) * 2.0);
-		float3 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, FD.FarZPlane) * 2.0);
+		float3 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
+		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
+		float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy) * float4(2.0, 2.0, 2.0, 1.0));
+		float4 XPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy) * 2.0);
+		float4 ZPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex6_Wrap, Input.ZPlaneTex.xy) * 2.0);
+		float3 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.YPlaneTex.zw) * 2.0);
+		float3 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.XPlaneTex.zw) * 2.0);
+		float3 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.ZPlaneTex.zw) * 2.0);
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color
@@ -185,7 +186,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	Output.Color.rgb *= ChartContribution;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

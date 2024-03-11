@@ -122,6 +122,9 @@ struct VS2PS_EditorDetail
 	float4 Pos : TEXCOORD0;
 	float4 Normal : TEXCOORD1;
 	float4 Tex0 : TEXCOORD2; // .xy = Input.Pos0.xy; .zw = BiTex;
+	float4 YPlaneTex : TEXCOORD3; // .xy = near; .zw = far;
+	float4 XPlaneTex : TEXCOORD4; // .xy = near; .zw = far;
+	float4 ZPlaneTex : TEXCOORD5; // .xy = near; .zw = far;
 };
 
 struct VS2PS_EditorGrid
@@ -205,25 +208,22 @@ struct FullDetail
 	float2 FarZPlane;
 };
 
-FullDetail GetFullDetail(float3 WorldPos, float2 Tex)
+FullDetail GetFullDetail(float3 MorphedWorldPos, float2 WorldPos)
 {
 	FullDetail Output = (FullDetail)0;
 
 	// Initialize triplanar texcoords
 	float3 WorldTex = 0.0;
+	WorldTex.x = WorldPos.x * _TexScale.x;
+	WorldTex.y = MorphedWorldPos.y * _TexScale.y;
+	WorldTex.z = WorldPos.y * _TexScale.z;
 
 	// Calculate near texcoords
-	WorldTex.x = Tex.x * _TexScale.x;
-	WorldTex.y = WorldPos.y * _TexScale.y;
-	WorldTex.z = Tex.y * _TexScale.z;
 	Output.NearYPlane = (WorldTex.xz * _NearTexTiling.z);
 	Output.NearXPlane = (WorldTex.zy * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
 	Output.NearZPlane = (WorldTex.xy * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
 
 	// Calculate far texcoords
-	WorldTex.x = WorldPos.x * _TexScale.x;
-	WorldTex.y = WorldPos.y * _TexScale.y;
-	WorldTex.z = WorldPos.z * _TexScale.z;
 	Output.FarYPlane = (WorldTex.xz * _FarTexTiling.z);
 	Output.FarXPlane = (WorldTex.zy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
 	Output.FarZPlane = (WorldTex.xy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
@@ -250,6 +250,11 @@ VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
 	Output.Tex0.xy = Input.Pos0.xy;
 	Output.Tex0.zw = ((Output.Tex0.xy * _TexScale.xz) * _BiFixTex.x) + _BiFixTex.y;
 
+	FullDetail FD = GetFullDetail(Input.Pos0.xyz, Input.Pos0.xy);
+	Output.YPlaneTex = float4(FD.NearYPlane, FD.FarYPlane);
+	Output.XPlaneTex = float4(FD.NearXPlane, FD.FarXPlane);
+	Output.ZPlaneTex = float4(FD.NearZPlane, FD.FarZPlane);
+
 	return Output;
 }
 
@@ -275,8 +280,6 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
-	FullDetail FD = GetFullDetail(WorldPos.xyz, Input.Tex0.xy);
-
 	float4 Component = tex2D(SampleTex2, Input.Tex0.zw);
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
@@ -284,12 +287,12 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.zw));
 	float4 LowComponent = tex2D(SampleTex5, Input.Tex0.zw);
-	float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, FD.NearYPlane) * float4(2.0, 2.0, 2.0, 1.0));
-	float4 XPlaneDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex1Wrap, FD.NearXPlane) * 2.0);
-	float4 ZPlaneDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex1Wrap, FD.NearZPlane) * 2.0);
-	float3 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, FD.FarYPlane) * 2.0);
-	float3 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, FD.FarXPlane) * 2.0);
-	float3 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, FD.FarZPlane) * 2.0);
+	float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.YPlaneTex.xy) * float4(2.0, 2.0, 2.0, 1.0));
+	float4 XPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.XPlaneTex.xy) * 2.0);
+	float4 ZPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.ZPlaneTex.xy) * 2.0);
+	float3 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, Input.YPlaneTex.zw) * 2.0);
+	float3 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, Input.XPlaneTex.zw) * 2.0);
+	float3 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, Input.ZPlaneTex.zw) * 2.0);
 	float EnvMapScale = YPlaneDetailmap.a;
 
 	float Blue = 0.0;
