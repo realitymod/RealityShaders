@@ -290,9 +290,9 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 	float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.YPlaneTex.xy) * float4(2.0, 2.0, 2.0, 1.0));
 	float4 XPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.XPlaneTex.xy) * 2.0);
 	float4 ZPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.ZPlaneTex.xy) * 2.0);
-	float3 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, Input.YPlaneTex.zw) * 2.0);
-	float3 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, Input.XPlaneTex.zw) * 2.0);
-	float3 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, Input.ZPlaneTex.zw) * 2.0);
+	float3 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.YPlaneTex.zw) * 2.0);
+	float3 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.XPlaneTex.zw) * 2.0);
+	float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.ZPlaneTex.zw) * 2.0);
 	float EnvMapScale = YPlaneDetailmap.a;
 
 	float Blue = 0.0;

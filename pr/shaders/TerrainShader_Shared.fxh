@@ -240,9 +240,9 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleTex1_Clamp, Input.LightTex));
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
-	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.YPlaneTex) * 2.0);
-	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.xy) * 2.0);
-	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.zw) * 2.0);
+	float4 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.YPlaneTex) * 2.0);
+	float4 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.XZPlaneTex.xy) * 2.0);
+	float4 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.XZPlaneTex.zw) * 2.0);
 
 	float4 TerrainLights = (_SunColor * (AccumLights.a * 2.0)) + AccumLights;
 

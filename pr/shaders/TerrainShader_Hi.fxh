@@ -135,9 +135,9 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy) * float4(2.0, 2.0, 2.0, 1.0));
 		float4 XPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy) * 2.0);
 		float4 ZPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex6_Wrap, Input.ZPlaneTex.xy) * 2.0);
-		float3 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.YPlaneTex.zw) * 2.0);
-		float3 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.XPlaneTex.zw) * 2.0);
-		float3 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.ZPlaneTex.zw) * 2.0);
+		float3 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw) * 2.0);
+		float3 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw) * 2.0);
+		float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw) * 2.0);
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color
