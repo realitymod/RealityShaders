@@ -109,7 +109,7 @@ VS2PS VS_TrunkOG(APP2VS Input)
 	#endif
 
 	// Pass-through tex
-	Output.Tex0 = Input.Tex0;
+	Output.Tex0 = Input.Tex0 / 32767.0;
 
 	// Get lighting
 	float LODScale = Input.Pos.w / 32767.0;
