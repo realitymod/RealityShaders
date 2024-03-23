@@ -26,7 +26,7 @@
 
 		// Get Tangent and Normal
 		// Cross product and flip to create Binormal
-		float3 Binormal = normalize(cross(Tangent, Normal)) * Flip;
+		float3 Binormal = cross(Tangent, Normal) * Flip;
 		return float3x3(Tangent, Binormal, Normal);
 	}
 #endif
