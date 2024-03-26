@@ -21,6 +21,10 @@ Shader Model 3.0 allows modders to add more grapical updates into the game, such
 - Sharper texture filtering
 - Steep parallax mapping
 
+### Updated BFEditor Shaders
+
+The Shader Model 3.0 update allows BFEditor to support updated dependencies and Large Address Aware.
+
 ### Distance-Based Fog
 
 This fogging method eliminates "corner-peeking".

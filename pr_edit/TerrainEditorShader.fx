@@ -330,7 +330,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 	{
 		float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
 		float4 EnvMapColor = SRGBToLinearEst(texCUBE(SampleTex7Cube, Reflection));
-		OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue));
+		OutputColor = lerp(OutputColor, EnvMapColor, saturate(EnvMapScale * (1.0 - LerpValue)));
 	}
 
 	Output.Color = OutputColor;
