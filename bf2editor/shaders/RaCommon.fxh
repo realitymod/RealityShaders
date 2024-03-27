@@ -73,6 +73,7 @@
 		Data manipulation
 	*/
 
+	// Decodes value from a Short integer to [-1,1]
 	// 32767.0 == ((2^16)/2)-1
 	#define DECODE_SHORT(SHORT) SHORT / 32767.0
 
