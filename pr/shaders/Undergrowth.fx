@@ -94,7 +94,7 @@ float4 GetUndergrowthPos(float4 InputPos, float4 InputPacked)
 	float3 PosOffset = _PosOffsetAndScale.xyz;
 	float PosScale = _PosOffsetAndScale.w;
 
-	float4 UnpackedPos = (InputPos / 32767.0) * PosScale;
+	float4 UnpackedPos = DECODE_SHORT(InputPos) * PosScale;
 	float4 Pos = float4(UnpackedPos.xyz, 1.0);
 	Pos.xz += _SwayOffsets[InputPacked.z * 255].xy * InputPacked.y * 3.0;
 	Pos.xyz += PosOffset.xyz;
@@ -120,7 +120,7 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
-	Output.Tex0.xy = Input.Tex0 / 32767.0;
+	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
 	Output.Tex0.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
@@ -248,7 +248,7 @@ VS2PS_Simple VS_Undergrowth_Simple(APP2VS_Simple Input, uniform bool ShadowMapEn
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
-	Output.Tex0.xy = Input.Tex0 / 32767.0;
+	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
 	Output.Tex0.z = Input.Packed.w * 0.5;
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
@@ -359,7 +359,7 @@ VS2PS_ZOnly VS_Undergrowth_ZOnly(APP2VS Input)
 
 	float4 Pos = GetUndergrowthPos(Input.Pos, Input.Packed);
 	Output.HPos = mul(Pos, _WorldViewProj);
-	Output.Tex0.xy = Input.Tex0 / 32767.0;
+	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)

@@ -70,6 +70,13 @@
 	float4 FogColor : fogColor;
 
 	/*
+		Data manipulation
+	*/
+
+	// 32767.0 == ((2^16)/2)-1
+	#define DECODE_SHORT(SHORT) SHORT / 32767.0
+
+	/*
 		Shared transformation code
 	*/
 

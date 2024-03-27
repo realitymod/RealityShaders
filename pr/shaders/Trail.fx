@@ -134,7 +134,7 @@ VS2PS VS_Trail(APP2VS Input)
 	RotatedTexCoords.y *= 0.5;
 
 	// Offset texcoords
-	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
+	float4 UVOffsets = DECODE_SHORT(Input.UVOffsets);
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 	Output.HemiTex = GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, true);
 

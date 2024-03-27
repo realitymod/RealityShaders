@@ -81,9 +81,9 @@ VS2PS VS_Particle(APP2VS Input)
 	float Alpha = Input.RandomSizeAlphaAndIntensityBlendFactor[1];
 	float IntensityBlendFactor = Input.RandomSizeAlphaAndIntensityBlendFactor[2];
 
-	float2 TexCoords = Input.TexCoords.xy * _OneOverShort;
-	float2 Rotation = Input.Rotation * _OneOverShort;
-	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
+	float2 TexCoords = DECODE_SHORT(Input.TexCoords.xy);
+	float2 Rotation = DECODE_SHORT(Input.Rotation);
+	float4 UVOffsets = DECODE_SHORT(Input.UVOffsets);
 
 	// Compute cubic polynomial factors.
 	float4 CubicPolynomial = float4(pow(AgeFactor, float3(3.0, 2.0, 1.0)), 1.0);

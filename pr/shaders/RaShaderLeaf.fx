@@ -205,7 +205,7 @@ VS2PS VS_Leaf(APP2VS Input)
 
 	// Calculate the LOD scale for far-away leaf objects
 	#if defined(OVERGROWTH)
-		Output.Tex0.z = Input.Pos.w / 32767.0;
+		Output.Tex0.z = DECODE_SHORT(Input.Pos.w);
 	#else
 		Output.Tex0.z = 1.0;
 	#endif

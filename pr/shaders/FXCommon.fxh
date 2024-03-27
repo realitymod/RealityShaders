@@ -17,8 +17,6 @@
 	float _HemiShadowAltitude : HemiShadowAltitude;
 	float _AlphaPixelTestRef : AlphaPixelTestRef = 0;
 
-	const float _OneOverShort = 1.0 / 32767.0;
-
 	#define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE) \
 		sampler SAMPLER_NAME = sampler_state \
 		{ \

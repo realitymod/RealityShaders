@@ -109,10 +109,10 @@ VS2PS VS_TrunkOG(APP2VS Input)
 	#endif
 
 	// Pass-through tex
-	Output.Tex0 = Input.Tex0 / 32767.0;
+	Output.Tex0 = DECODE_SHORT(Input.Tex0);
 
 	// Get lighting
-	float LODScale = Input.Pos.w / 32767.0;
+	float LODScale = DECODE_SHORT(Input.Pos.w);
 	float3 WorldNormal = GetWorldNormal((Input.Normal * 2.0) - 1.0);
 	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
 

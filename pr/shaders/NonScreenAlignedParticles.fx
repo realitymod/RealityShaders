@@ -80,9 +80,9 @@ VS2PS VS_Particle(APP2VS Input)
 	float Alpha = Input.RandomSizeAlphaAndIntensityBlendFactor[1];
 	float IntensityBlendFactor = Input.RandomSizeAlphaAndIntensityBlendFactor[2];
 
-	float4 Rotation = Input.RotationAndWaterSurfaceOffset * _OneOverShort;
-	float2 TexCoords = Input.TexCoords * _OneOverShort;
-	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
+	float4 Rotation = DECODE_SHORT(Input.RotationAndWaterSurfaceOffset);
+	float2 TexCoords = DECODE_SHORT(Input.TexCoords);
+	float4 UVOffsets = DECODE_SHORT(Input.UVOffsets);
 
 	// Compute cubic polynomial factors.
 	float4 CubicPolynomial = float4(pow(Input.AgeFactorAndGraphIndex[0], float3(3.0, 2.0, 1.0)), 1.0);
