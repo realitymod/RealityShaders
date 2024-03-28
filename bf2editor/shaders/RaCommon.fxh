@@ -74,8 +74,7 @@
 	*/
 
 	// Decodes value from a Short integer to [-1,1]
-	// (1 << (16 - 1)) - 1 == (2 ^ (16 - 1)) - 1 == 32767.0
-	#define SHORT_MAX ((1 << (16 - 1)) - 1)
+	// (2 ^ (16 - 1)) - 1 == 32767.0
 	#define DECODE_SHORT(SHORT) (SHORT / 32767.0)
 
 	/*
