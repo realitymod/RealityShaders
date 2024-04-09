@@ -114,7 +114,6 @@ VS2PS VS_StaticMesh(APP2VS Input)
 
 	// Output HPos
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
-
 	// Output world-space data
 	Output.Pos.xyz = GetWorldPos(ObjectPos.xyz);
 
@@ -327,13 +326,13 @@ technique defaultTechnique
 		#endif
 
 		ZEnable = TRUE;
-		ZFunc = LESS;
+		ZFunc = PR_ZFUNC_NOEQUAL;
 
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 
 		#if _POINTLIGHT_
-			ZFunc = LESSEQUAL;
+			ZFunc = PR_ZFUNC_WITHEQUAL;
 			AlphaBlendEnable = TRUE;
 			SrcBlend = ONE;
 			DestBlend = ONE;

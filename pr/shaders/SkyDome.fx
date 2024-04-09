@@ -110,7 +110,6 @@ VS2PS_SkyDome VS_SkyDome(APP2VS Input)
 	VS2PS_SkyDome Output = (VS2PS_SkyDome)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-
 	Output.Pos = Input.Pos;
 
 	Output.Tex0.xy = Input.Tex0; // Sky coords
@@ -193,7 +192,6 @@ VS2PS_DualClouds VS_SkyDome_DualClouds(APP2VS Input)
 	VS2PS_DualClouds Output = (VS2PS_DualClouds)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-
 	Output.Pos = Input.Pos;
 
 	Output.SkyTex = Input.Tex0;
@@ -242,7 +240,6 @@ VS2PS_NoClouds VS_SkyDome_NoClouds(APP2VS_NoClouds Input)
 
 	float4 ScaledPos = float4(Input.Pos.xyz, 10.0); // plo: fix for artifacts on BFO.
 	Output.HPos = mul(ScaledPos, _ViewProjMatrix);
-
 	Output.Pos = Input.Pos;
 
 	Output.Tex0 = Input.Tex0;
@@ -324,7 +321,7 @@ PS2FB PS_SkyDome_Flare_Occlude(VS2PS_NoClouds Input)
 
 #define GET_RENDERSTATES_SKY \
 	ZEnable = TRUE; \
-	ZFunc = LESSEQUAL; \
+	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = TRUE; \
 	AlphaBlendEnable = FALSE; \
 
@@ -437,7 +434,7 @@ technique SkyDomeFlareOcclude
 	pass Sky
 	{
 		ZEnable = TRUE;
-		ZFunc = LESS;
+		ZFunc = PR_ZFUNC_NOEQUAL;
 		ZWriteEnable = FALSE;
 
 		CullMode = NONE;

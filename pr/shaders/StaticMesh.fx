@@ -3,8 +3,10 @@
 	Include header files
 */
 
+#include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #if !defined(_HEADERS_)
+	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 #endif
 
@@ -123,7 +125,7 @@ technique alpha_one
 	pass p0
 	{
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 		CullMode = NONE;
 

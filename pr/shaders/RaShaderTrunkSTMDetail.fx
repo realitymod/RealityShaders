@@ -131,7 +131,6 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 
 	// Output HPos
 	Output.HPos = mul(float4(ObjectPos.xyz, 1.0), WorldViewProjection);
-
 	// World-space data
 	float3 WorldPos = GetWorldPos(ObjectPos.xyz);
 	Output.Pos = float4(WorldPos, Output.HPos.w);
@@ -204,7 +203,7 @@ technique defaultTechnique
 	pass p0
 	{
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;

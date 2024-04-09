@@ -238,7 +238,7 @@ technique occluder
 
 		ZWriteEnable = TRUE;
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		VertexShader = compile vs_3_0 VS_Debug_Occluder();
 		PixelShader = compile ps_3_0 PS_Debug_Occluder();
@@ -281,7 +281,7 @@ technique EditorDebug
 
 		ZWriteEnable = 1;
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		VertexShader = compile vs_3_0 VS_Debug_Cone();
 		PixelShader = compile ps_3_0 PS_Debug_Editor();
@@ -292,7 +292,7 @@ technique EditorDebug
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		FillMode = WIREFRAME;
 
 		VertexShader = compile vs_3_0 VS_Debug_Cone();
@@ -368,7 +368,7 @@ technique collisionMesh
 
 		ZWriteEnable = TRUE;
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		VertexShader = compile vs_3_0 VS_Debug_CollisionMesh();
 		PixelShader = compile ps_3_0 PS_Debug_CollisionMesh();
@@ -384,7 +384,7 @@ technique collisionMesh
 		DestBlend = INVSRCALPHA;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_CollisionMesh();
@@ -416,7 +416,7 @@ technique marked
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		VertexShader = compile vs_3_0 VS_Debug_Basic();
 		PixelShader = compile ps_3_0 PS_Debug_Basic_1();
@@ -443,7 +443,7 @@ technique gamePlayObject
 		DestBlend = INVSRCALPHA;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		VertexShader = compile vs_3_0 VS_Debug_Basic();
 		PixelShader = compile ps_3_0 PS_Debug_Basic_2();
@@ -497,7 +497,6 @@ VS2PS_Grid VS_Debug_Grid(APP2VS Input)
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
-
 	Output.Tex0.xy = (Input.Pos.xz * 0.5) + 0.5;
 	Output.Tex0.xy *= _TextureScale;
 
@@ -553,7 +552,7 @@ technique grid
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		VertexShader = compile vs_3_0 VS_Debug_Grid();
 		PixelShader = compile ps_3_0 PS_Debug_Grid();
@@ -604,7 +603,7 @@ technique spotlight
 
 		AlphaBlendEnable = FALSE;
 
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_SpotLight();
@@ -799,7 +798,7 @@ technique wirefrustum
 		AlphaBlendEnable = FALSE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 
 		CullMode = NONE;
@@ -834,7 +833,7 @@ technique solidfrustum
 		AlphaBlendEnable = FALSE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 
 		CullMode = NONE;
@@ -854,7 +853,7 @@ technique projectorfrustum
 		DestBlend = ONE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_Debug_Frustum();

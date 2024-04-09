@@ -111,7 +111,7 @@ technique Point
 		CullMode = NONE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE; // TRUE;
 
 		AlphaBlendEnable = TRUE;
@@ -177,7 +177,7 @@ technique Line
 		CullMode = NONE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE; // TRUE;
 
 		AlphaBlendEnable = TRUE;
@@ -239,7 +239,7 @@ technique Cells
 		CullMode = NONE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE; // TRUE;
 
 		AlphaBlendEnable = TRUE;

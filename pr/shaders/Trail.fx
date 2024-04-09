@@ -258,7 +258,7 @@ PS2FB PS_Trail_High(VS2PS Input)
 #define GET_RENDERSTATES_TRAIL(SRCBLEND, DESTBLEND) \
 	CullMode = NONE; \
 	ZEnable = TRUE; \
-	ZFunc = LESSEQUAL; \
+	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = FALSE; \
 	StencilEnable = FALSE; \
 	StencilFunc = ALWAYS; \

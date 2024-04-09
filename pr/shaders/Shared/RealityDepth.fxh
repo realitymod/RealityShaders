@@ -61,4 +61,9 @@
 		return dot(CMPBits, 0.25);
 	}
 
+	void ReverseDepth(inout float4 HPos)
+	{
+		// HPos.z = (1.0 - (HPos.z / HPos.w)) * HPos.w;
+	}
+
 #endif

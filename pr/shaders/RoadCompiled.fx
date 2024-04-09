@@ -173,7 +173,7 @@ technique roadcompiledFull
 	pass NV3X
 	{
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 
 		AlphaBlendEnable = TRUE;
@@ -187,7 +187,7 @@ technique roadcompiledFull
 	pass DirectX9
 	{
 		ZEnable = FALSE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		DepthBias = -0.0001f;
 		SlopeScaleDepthBias = -0.00001f;

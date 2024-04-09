@@ -333,7 +333,6 @@ VS2PS_ApplySkin VS_ApplySkin(APP2VS Input)
 
 	// Transform position into view and then projection space
 	Output.HPos = mul(float4(Skin.Pos, 1.0), _WorldViewProjection);
-
 	// Texcoord data
 	Output.Tex0 = Input.TexCoord0;
 
@@ -376,7 +375,7 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR0
 	StencilEnable = FALSE; \
 	ZEnable = FALSE; \
 	ZWriteEnable = FALSE; \
-	ZFunc = LESSEQUAL; \
+	ZFunc = PR_ZFUNC_WITHEQUAL; \
 
 technique humanskin
 {
@@ -428,6 +427,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	float4 BonePos = float4(mul(Input.Pos, BoneMat), 1.0);
 
 	Output.HPos = GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat);
+
 	Output.DepthPos = Output.HPos;
 	Output.Tex0 = Input.TexCoord0;
 

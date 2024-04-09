@@ -273,7 +273,7 @@ technique t1
 	pass p0
 	{
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;
@@ -412,7 +412,7 @@ float4 PS_EnvMap_Alpha(VS2PS_EnvMap_Alpha Input) : COLOR0
 
 #define GET_RENDERSTATES_ALPHA \
 	ZEnable = TRUE; \
-	ZFunc = LESSEQUAL; \
+	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = FALSE; \
 	CullMode = NONE; \
 	AlphaBlendEnable = TRUE; \

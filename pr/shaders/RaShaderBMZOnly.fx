@@ -92,7 +92,7 @@ VS2PS VS_BM_ZOnly(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
-	Output.HPos = mul(GetWorldPos(Input), ViewProjection); // Output HPOS
+	Output.HPos = mul(GetWorldPos(Input), ViewProjection);
 	Output.Pos = Output.HPos;
 
 	// Output Depth
@@ -123,7 +123,7 @@ technique Variable
 		AlphaTestEnable = FALSE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		ColorWriteEnable = 0;

@@ -127,7 +127,6 @@ VS2PS VS_Road(APP2VS Input)
 	WorldPos.y += 0.01;
 
 	Output.HPos = mul(WorldPos, ViewProjection);
-
 	Output.Pos.xyz = WorldPos.xyz;
 
 	// Output Depth
@@ -204,7 +203,7 @@ technique defaultTechnique
 
 		CullMode = CCW;
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 
 		AlphaTestEnable = FALSE;

@@ -554,7 +554,7 @@ technique Shared_SurroundingTerrain
 		CullMode = CW;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = FALSE;

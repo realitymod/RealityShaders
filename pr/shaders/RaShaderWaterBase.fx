@@ -265,7 +265,7 @@ technique defaultShader
 	pass p0
 	{
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		#if defined(ENABLE_WIREFRAME)
 			FillMode = WireFrame;

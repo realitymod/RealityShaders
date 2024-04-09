@@ -86,7 +86,7 @@ technique defaultShader
 		#endif
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		CullMode = NONE;
 		AlphaTestEnable = FALSE;

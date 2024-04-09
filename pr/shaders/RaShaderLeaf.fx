@@ -192,7 +192,6 @@ VS2PS VS_Leaf(APP2VS Input)
 	#endif
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProjection);
-
 	// Calculate texture surface data
 	Output.Tex0.xy = Input.Tex0;
 	#if defined(OVERGROWTH)
@@ -284,7 +283,7 @@ technique defaultTechnique
 		#endif
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		CullMode = NONE;
 		AlphaTestEnable = TRUE;

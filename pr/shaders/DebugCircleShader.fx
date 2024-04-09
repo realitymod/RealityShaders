@@ -98,7 +98,7 @@ technique t0
 		DestBlend = INVSRCALPHA;
 
 		ZEnable = FALSE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_Circle();
@@ -126,7 +126,7 @@ technique t0_usezbuffer
 		AlphaBlendEnable = FALSE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_Circle();

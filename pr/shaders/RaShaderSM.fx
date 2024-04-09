@@ -160,7 +160,6 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 
 	// Output HPos data
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
-
 	// World-space data
 	float4 WorldPos = mul(float4(Input.Pos.xyz, 1.0), World);
 	float4 SkinWorldPos = mul(ObjectPos, World);
@@ -322,7 +321,7 @@ technique VariableTechnique
 	pass p0
 	{
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (AlphaTestRef);

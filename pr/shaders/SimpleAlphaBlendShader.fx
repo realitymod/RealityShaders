@@ -58,7 +58,6 @@ VS2PS VS_Shader(APP2VS Input)
 	VS2PS Output = (VS2PS)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
-
 	Output.Tex0.xy = Input.Tex0;
 
 	// Output Depth
@@ -87,7 +86,7 @@ technique t0_States <bool Restore = true;>
 	pass BeginStates
 	{
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE; // MatsD 030903: Due to transparent isn't sorted yet. Write Z values
 
 		CullMode = NONE;
