@@ -47,7 +47,7 @@ This shader package includes updated thermal and suppression effects.
 
 ### Procedural Sampling
 
-No more visible texture repetition in clouds and far-away terrain.
+No more visible texture repetition off-map terrain.
 
 ### Sharpened Filtering
 
