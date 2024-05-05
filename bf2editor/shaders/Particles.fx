@@ -285,7 +285,7 @@ PS2FB PS_Particle_High_Additive(VS2PS Input)
 #define GET_RENDERSTATES_PARTICLES(SRCBLEND, DESTBLEND) \
 	CullMode = NONE; \
 	ZEnable = TRUE; \
-	ZFunc = LESSEQUAL; \
+	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = FALSE; \
 	StencilEnable = FALSE; \
 	StencilFunc = ALWAYS; \

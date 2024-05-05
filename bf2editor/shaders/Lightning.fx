@@ -65,7 +65,6 @@ VS2PS VS_Lightning(APP2VS Input)
 	VS2PS Output = (VS2PS)0.0;
 
 	Output.HPos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
-
 	Output.Tex0.xy = Input.TexCoords;
 
 	// Output Depth
@@ -102,7 +101,7 @@ technique Lightning
 		CullMode = NONE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		AlphaBlendEnable = TRUE;

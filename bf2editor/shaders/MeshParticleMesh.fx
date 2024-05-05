@@ -147,7 +147,7 @@ PS2FB PS_Additive(VS2PS Input)
 	ColorWriteEnable = RED|GREEN|BLUE; \
 	CullMode = NONE; \
 	ZEnable = TRUE; \
-	ZFunc = LESSEQUAL; \
+	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = ZWRITE; \
 	AlphaTestEnable = TRUE; \
 	AlphaRef = 0; \

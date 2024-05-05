@@ -78,7 +78,6 @@ VS2PS VS_Debug_Basic(APP2VS Input)
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
-
 	Output.Tex0.xy = Input.TexCoord0;
 
 	// Output Depth
@@ -192,7 +191,6 @@ VS2PS VS_Debug_LightSource(APP2VS Input)
 	Pos.xyz = mul(Input.Pos, _World);
 	Pos.w = 1.0;
 	Output.HPos = mul(Pos, _WorldViewProj);
-
 	Output.Tex0 = 0.0;
 
 	// Output Depth
@@ -238,7 +236,7 @@ technique lightsource
 		ColorWriteEnable = 0;
 		AlphaBlendEnable = FALSE;
 
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_LightSource();
@@ -278,7 +276,7 @@ technique editor
 		ColorWriteEnable = 0;
 		AlphaBlendEnable = FALSE;
 
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_LightSource();
@@ -312,7 +310,7 @@ technique EditorDebug
 		DestBlend = INVSRCALPHA;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		ShadeMode = FLAT;

@@ -87,7 +87,7 @@ technique Pointlight
 		CullMode = NONE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		StencilEnable = TRUE;
@@ -111,7 +111,6 @@ VS2PS_Spot VS_SpotLight(APP2VS Input)
 	VS2PS_Spot Output = (VS2PS_Spot)0.0;
 
  	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
-
 	// Transform vertex
 	float3 VertPos = mul(float4(Input.Pos.xyz, 1.0), _WorldView);
 	Output.Pos.xyz = -normalize(VertPos);
@@ -159,7 +158,7 @@ technique Spotlight
 		CullMode = NONE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		StencilEnable = TRUE;
