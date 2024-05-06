@@ -82,12 +82,6 @@ struct PS2FB
 	#endif
 };
 
-struct Bone
-{
-	float4x3 Mat[2];
-	float Weight[2];
-};
-
 float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 {
 	// Compensate for lack of UBYTE4 on Geforce3
@@ -102,6 +96,12 @@ float GetBinormalFlipping(APP2VS Input)
 	int IndexArray[4] = (int[4])IndexVector;
 	return 1.0 + IndexArray[2] * -2.0;
 }
+
+struct Bone
+{
+	float4x3 Mat[2];
+	float Weight[2];
+};
 
 Bone GetBoneData(APP2VS Input)
 {
@@ -186,7 +186,6 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 
 	// Output HPos data
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
-
 	// World-space data
 	float4 WorldPos = mul(float4(Input.Pos.xyz, 1.0), World);
 	float4 SkinWorldPos = mul(ObjectPos, World);
@@ -344,7 +343,7 @@ technique VariableTechnique
 	pass p0
 	{
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (AlphaTestRef);

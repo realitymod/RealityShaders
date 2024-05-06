@@ -308,7 +308,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 
 	#if _HASENVMAP_
 		float3 Reflection = -reflect(WorldViewDir, WorldNormal);
-		float3 EnvMapColor = SRGBToLinearEst(texCUBE(SampleCubeMap, Reflection));
+		float3 EnvMapColor = SRGBToLinearEst(texCUBE(SampleCubeMap, Reflection)).rgb;
 		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
 	#endif
 
@@ -444,7 +444,7 @@ technique Variable
 		#endif
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (AlphaTestRef);

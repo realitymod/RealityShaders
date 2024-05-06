@@ -17,7 +17,11 @@
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
 	#define PR_ALPHA_REF 127
 
-	#define _EDITOR_
+	// Project Reality's default Z-testing
+	// We expose it here so it is easy to port over to reversed depth buffering
+	#define PR_ZFUNC_NOEQUAL LESS
+	#define PR_ZFUNC_WITHEQUAL LESSEQUAL
+
 	// #define _USELINEARLIGHTING_
 	// #define _USETONEMAP_
 #endif

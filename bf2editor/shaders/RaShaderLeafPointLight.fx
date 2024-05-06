@@ -135,6 +135,9 @@ technique defaultTechnique
 			FillMode = WIREFRAME;
 		#endif
 
+		ZEnable = TRUE;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
+
 		CullMode = NONE;
 
 		AlphaTestEnable = TRUE; // (AlphaTest);

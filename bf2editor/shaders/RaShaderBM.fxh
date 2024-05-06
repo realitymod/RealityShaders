@@ -12,7 +12,6 @@
 	Data for RaShaderBM
 */
 
-float4 ObjectSpaceCamPos;
 float4 WorldSpaceCamPos;
 
 bool AlphaBlendEnable = false;

@@ -181,7 +181,7 @@ technique defaultTechnique
 		CullMode = CCW;
 	
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 
 		AlphaTestEnable = FALSE;

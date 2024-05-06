@@ -161,7 +161,7 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 
 	// TODO: Fix parallax mapping
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
-		// float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, ParallaxTex)); 
+		// float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, ParallaxTex));
 		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.BaseAndDetail.zw));
 	#endif
 
@@ -200,7 +200,8 @@ float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
 		#endif
 		#if _PARALLAXDETAIL_
-			TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
+			// TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
+			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 		#elif _NDETAIL_
 			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 		#endif
@@ -261,18 +262,18 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	float2 ParallaxTex = GetParallaxTex(SampleNormalMap, Input.BaseAndDetail.zw, TanViewDir, ParallaxScaleBias.xy * PARALLAX_BIAS, ParallaxScaleBias.wz);
 
 	// Prepare texture data
-	float Gloss;
+	float Gloss = 0.0;
 	float4 ColorMap = GetDiffuseMap(Input, ParallaxTex, Gloss);
 	float3 WorldNormal = GetNormalMap(Input, ParallaxTex, WorldTBN);
 
 	#if defined(_PERPIXEL_)
-		float SpecularExponent = SpecularPower;
+		Gloss = Gloss;
 	#else
-		float SpecularExponent = 1.0;
+		Gloss = 0.0;
 	#endif
 
 	// Prepare lighting data
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularExponent);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb);
 	float3 SpecularRGB = (Light.Specular * Gloss) * StaticSpecularColor.rgb;
 
@@ -326,13 +327,13 @@ technique defaultTechnique
 		#endif
 
 		ZEnable = TRUE;
-		ZFunc = LESS;
+		ZFunc = PR_ZFUNC_NOEQUAL;
 
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 
 		#if _POINTLIGHT_
-			ZFunc = LESSEQUAL;
+			ZFunc = PR_ZFUNC_WITHEQUAL;
 			AlphaBlendEnable = TRUE;
 			SrcBlend = ONE;
 			DestBlend = ONE;

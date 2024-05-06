@@ -123,7 +123,7 @@ technique Variable
 		AlphaTestEnable = FALSE;
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
 		ColorWriteEnable = 0;

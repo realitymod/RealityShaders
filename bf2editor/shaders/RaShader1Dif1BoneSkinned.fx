@@ -121,7 +121,7 @@ technique defaultTechnique
 		#endif
 
 		ZEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		AlphaTestEnable = (AlphaTest);
 		AlphaRef = (alphaRef);
