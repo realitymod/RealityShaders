@@ -78,16 +78,6 @@ struct PS2FB
 	#endif
 };
 
-float4 ProjToLighting(float4 HPos)
-{
-	// tl: This has been rearranged optimally (I believe) into 1 MUL and 1 MAD,
-	//     don't change this without thinking twice.
-	//     ProjOffset now includes screen-> texture bias as well as half-texel offset
-	//     ProjScale is screen-> texture scale/invert operation
-	// Tex = (HPos.x * 0.5 + 0.5 + HTexel, HPos.y * -0.5 + 0.5 + HTexel, HPos.z, HPos.w)
-	return HPos * _TexProjScale + (_TexProjOffset * HPos.w);
-}
-
 VS2PS VS_RoadCompiled(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -104,7 +94,12 @@ VS2PS VS_RoadCompiled(APP2VS Input)
 	#endif
 
 	Output.Tex0 = float4(Input.Tex0, Input.Tex1);
-	Output.LightTex = ProjToLighting(Output.HPos);
+
+	Output.LightTex.xy = Output.HPos.xy / Output.HPos.w;
+	Output.LightTex.xy = (Output.LightTex.xy * 0.5) + 0.5;
+	Output.LightTex.y = 1.0 - Output.LightTex.y;
+	Output.LightTex.xy = Output.LightTex.xy * Output.HPos.w;
+	Output.LightTex.zw = Output.HPos.zw;
 
 	Output.Alpha = Input.Alpha;
 
@@ -188,8 +183,8 @@ technique roadcompiledFull
 		ZEnable = FALSE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 
-		DepthBias = -0.0001f;
-		SlopeScaleDepthBias = -0.00001f;
+		DepthBias = -0.0001;
+		SlopeScaleDepthBias = -0.00001;
 
 		AlphaBlendEnable = FALSE;
 
