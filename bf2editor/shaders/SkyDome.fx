@@ -4,10 +4,12 @@
 */
 
 #include "shaders/RealityGraphics.fxh"
+#include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
+	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
@@ -112,7 +114,6 @@ VS2PS_SkyDome VS_SkyDome(APP2VS Input)
 	VS2PS_SkyDome Output = (VS2PS_SkyDome)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-
 	Output.Pos = Input.Pos;
 
 	Output.Tex0.xy = Input.Tex0; // Sky coords
@@ -127,7 +128,7 @@ PS2FB PS_SkyDome_UnderWater(VS2PS_SkyDome Input)
 
 	if (IsTisActive())
 	{
-		Output.Color = 0.0;
+		Output.Color = 0;
 	}
 	else
 	{
@@ -143,7 +144,7 @@ PS2FB PS_SkyDome(VS2PS_SkyDome Input)
 
 	float FadeOut = GetFadeOut(Input.Pos.xyz);
 	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
-	float4 Cloud1 = GetProceduralTiles(SampleTex1, Input.Tex0.zw) * FadeOut;
+	float4 Cloud1 = SRGBToLinearEst(GetProceduralTiles(SampleTex1, Input.Tex0.zw) * FadeOut);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 
@@ -163,7 +164,7 @@ PS2FB PS_SkyDome_Lit(VS2PS_SkyDome Input)
 
 	float FadeOut = GetFadeOut(Input.Pos.xyz);
 	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
-	float4 Cloud1 = GetProceduralTiles(SampleTex1, Input.Tex0.zw) * FadeOut;
+	float4 Cloud1 = SRGBToLinearEst(GetProceduralTiles(SampleTex1, Input.Tex0.zw)) * FadeOut;
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
@@ -195,7 +196,6 @@ VS2PS_DualClouds VS_SkyDome_DualClouds(APP2VS Input)
 	VS2PS_DualClouds Output = (VS2PS_DualClouds)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
-
 	Output.Pos = Input.Pos;
 
 	Output.SkyTex = Input.Tex0;
@@ -211,8 +211,8 @@ PS2FB PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
 
 	float FadeOut = GetFadeOut(Input.Pos.xyz);
 	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.SkyTex));
-	float4 Cloud1 = SRGBToLinearEst(GetProceduralTiles(SampleTex1, Input.CloudTex.xy) * _CloudLerpFactors.x);
-	float4 Cloud2 = SRGBToLinearEst(GetProceduralTiles(SampleTex2, Input.CloudTex.zw) * _CloudLerpFactors.y);
+	float4 Cloud1 = SRGBToLinearEst(GetProceduralTiles(SampleTex1, Input.CloudTex.xy)) * _CloudLerpFactors.x;
+	float4 Cloud2 = SRGBToLinearEst(GetProceduralTiles(SampleTex2, Input.CloudTex.zw)) * _CloudLerpFactors.y;
 	float4 Temp = (Cloud1 + Cloud2) * FadeOut;
 
 	Output.Color = lerp(SkyDome, Temp, Temp.a);
@@ -244,7 +244,6 @@ VS2PS_NoClouds VS_SkyDome_NoClouds(APP2VS_NoClouds Input)
 
 	float4 ScaledPos = float4(Input.Pos.xyz, 10.0); // plo: fix for artifacts on BFO.
 	Output.HPos = mul(ScaledPos, _ViewProjMatrix);
-
 	Output.Pos = Input.Pos;
 
 	Output.Tex0 = Input.Tex0;
@@ -297,7 +296,6 @@ VS2PS_NoClouds VS_SkyDome_SunFlare(APP2VS_NoClouds Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _ViewProjMatrix);
 	Output.Pos = Input.Pos;
-
 	Output.Tex0 = Input.Tex0;
 
 	return Output;
@@ -327,7 +325,7 @@ PS2FB PS_SkyDome_Flare_Occlude(VS2PS_NoClouds Input)
 
 #define GET_RENDERSTATES_SKY \
 	ZEnable = TRUE; \
-	ZFunc = LESSEQUAL; \
+	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = TRUE; \
 	AlphaBlendEnable = FALSE; \
 
@@ -440,7 +438,7 @@ technique SkyDomeFlareOcclude
 	pass Sky
 	{
 		ZEnable = TRUE;
-		ZFunc = LESS;
+		ZFunc = PR_ZFUNC_NOEQUAL;
 		ZWriteEnable = FALSE;
 
 		CullMode = NONE;
