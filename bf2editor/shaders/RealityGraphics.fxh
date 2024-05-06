@@ -12,6 +12,9 @@
 #if !defined(REALITY_DEFINES)
 	#define REALITY_DEFINES
 
+	// We are using BFEditor
+	#define _EDITOR_
+
 	// 16x is more or less the modern GPU standard
 	#define PR_MAX_ANISOTROPY 16
 
