@@ -8,10 +8,12 @@
 	#include "RealityDirectXTK.fxh"
 #endif
 
+#if !defined(_HEADERS_)
+	#define _HEADERS_
+#endif
+
 #if !defined(REALITY_PIXEL)
 	#define REALITY_PIXEL
-	#undef _HEADERS_
-	#define _HEADERS_
 
 
 	float GetMax3(float3 Input)

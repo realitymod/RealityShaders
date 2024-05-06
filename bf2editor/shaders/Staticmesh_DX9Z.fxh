@@ -1,7 +1,9 @@
 
 #include "Shaders/StaticMesh_Data.fxh"
+#include "Shaders/RealityGraphics.fxh"
 #if !defined(_HEADERS_)
 	#include "StaticMesh_Data.fxh"
+	#include "RealityGraphics.fxh"
 #endif
 
 /*

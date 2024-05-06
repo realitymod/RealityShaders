@@ -3,10 +3,12 @@
 	Depth-based functions
 */
 
+#if !defined(_HEADERS_)
+	#define _HEADERS_
+#endif
+
 #if !defined(REALITY_DEPTH)
 	#define REALITY_DEPTH
-	#undef _HEADERS_
-	#define _HEADERS_
 
 	static const float FarPlane = 10000.0;
 	static const float FCoef = 1.0 / log2(FarPlane + 1.0);
