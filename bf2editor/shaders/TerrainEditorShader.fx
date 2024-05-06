@@ -372,7 +372,7 @@ CREATE_PS(PS_EditorDetailTextured_WithEnvMapColorOnly, false, true, true)
 		DestBlend = ONE; \
 		ZEnable = TRUE; \
 		ZWriteEnable = TRUE; \
-		ZFunc = LESSEQUAL; \
+		ZFunc = PR_ZFUNC_WITHEQUAL; \
 		ColorWriteEnable = RED|BLUE|GREEN|ALPHA; \
 		VertexShader = compile vs_3_0 VERTEX_SHADER; \
 		PixelShader = compile ps_3_0 PIXEL_SHADER; \
@@ -518,7 +518,7 @@ technique t0 <
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		VertexShader = compile vs_3_0 VS_Basic();
 		PixelShader = compile ps_3_0 PS_Basic();
@@ -658,7 +658,7 @@ PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 			CullMode = CW; \
 			ZEnable = TRUE; \
 			ZWriteEnable = TRUE; \
-			ZFunc = LESSEQUAL; \
+			ZFunc = PR_ZFUNC_WITHEQUAL; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \
 			PixelShader = compile ps_3_0 PIXEL_SHADER; \
 		} \
@@ -710,7 +710,7 @@ technique EditorDetailBasePass
 		ColorWriteEnable = 0;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		VertexShader = compile vs_3_0 VS_EditorZFill();
 		PixelShader = compile ps_3_0 PS_EditorZFill();
@@ -762,7 +762,7 @@ PS2FB PS_EditorGrowth(VS2PS_EditorFoliage Input)
 			CullMode = CW; \
 			ZEnable = TRUE; \
 			ZWriteEnable = TRUE; \
-			ZFunc = LESSEQUAL; \
+			ZFunc = PR_ZFUNC_WITHEQUAL; \
 			ColorWriteEnable = RED|BLUE|GREEN|ALPHA; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \
 			PixelShader = compile ps_3_0 PIXEL_SHADER; \
@@ -840,7 +840,7 @@ technique EditorHemimap
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
 		VertexShader = compile vs_3_0 VS_EditorHemimap();
@@ -852,7 +852,7 @@ technique EditorHemimap
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
 		VertexShader = compile vs_3_0 VS_EditorHemimap();
@@ -1092,7 +1092,7 @@ technique SurroundingEditorTerrain <
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_SET();
@@ -1104,7 +1104,7 @@ technique SurroundingEditorTerrain <
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_SET_ColorLightingOnly();

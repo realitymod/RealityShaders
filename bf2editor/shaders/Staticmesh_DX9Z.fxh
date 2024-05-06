@@ -394,7 +394,7 @@ float4 PS_ZAndDiffusebasedetaildirtcrackparallax(VS2PS_ZAndDiffusebasedetaildirt
 		{ \
 			ZEnable = TRUE; \
 			ZWriteEnable = TRUE; \
-			ZFunc = LESSEQUAL; \
+			ZFunc = PR_ZFUNC_WITHEQUAL; \
 			StencilEnable = TRUE; \
 			StencilRef = 0x40; \
 			StencilFunc = ALWAYS; \

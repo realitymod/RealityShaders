@@ -1041,7 +1041,7 @@ PS2FB_MRT PS_GBuffBaseDetailDirtCrackLMParallax(VS2PS_GBuffBaseDetailDirtCrackLM
 		{ \
 			ZEnable = TRUE; \
 			ZWriteEnable = FALSE; \
-			ZFunc = LESSEQUAL; \
+			ZFunc = PR_ZFUNC_WITHEQUAL; \
 			ColorWriteEnable = RED|BLUE|GREEN|ALPHA; \
 			StencilEnable = FALSE; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \

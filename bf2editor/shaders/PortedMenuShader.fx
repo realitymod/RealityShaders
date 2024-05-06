@@ -185,7 +185,7 @@ technique QuadCache
 	pass p0
 	{
 		ZEnable = TRUE;
-		ZFunc = LESS;
+		ZFunc = PR_ZFUNC_NOEQUAL;
 		ZWriteEnable = TRUE;
 
 		AlphaTestEnable = TRUE;
