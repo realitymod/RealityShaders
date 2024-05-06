@@ -129,7 +129,7 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 	return Output;
 }
 
-PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int LightCount, uniform bool ShadowMapEnable)
+PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMapEnable)
 {
 	PS2FB Output = (PS2FB)0.0;
 
@@ -149,11 +149,14 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	}
 
 	float3 Lights = 0.0;
-	for (int i = 0; i < LightCount; i++)
+	if (LightCount > 0)
 	{
-		float3 LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
-		float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
-		Lights += (Attenuation * _PointLightColor[i]);
+		for (int i = 0; i < LightCount; i++)
+		{
+			float3 LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
+			float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
+			Lights += (Attenuation * _PointLightColor[i]);
+		}
 	}
 	Lights = saturate(Lights);
 
@@ -207,16 +210,16 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 		} \
 	}
 
-CREATE_TECHNIQUE_UG(t0_l0, VS_Undergrowth(false), PS_Undergrowth(false, 0, false))
-CREATE_TECHNIQUE_UG(t0_l1, VS_Undergrowth(false), PS_Undergrowth(true, 1, false))
-CREATE_TECHNIQUE_UG(t0_l2, VS_Undergrowth(false), PS_Undergrowth(true, 2, false))
-CREATE_TECHNIQUE_UG(t0_l3, VS_Undergrowth(false), PS_Undergrowth(true, 3, false))
-CREATE_TECHNIQUE_UG(t0_l4, VS_Undergrowth(false), PS_Undergrowth(true, 4, false))
-CREATE_TECHNIQUE_UG(t0_l0_ds, VS_Undergrowth(true), PS_Undergrowth(false, 0, true))
-CREATE_TECHNIQUE_UG(t0_l1_ds, VS_Undergrowth(true), PS_Undergrowth(false, 1, true))
-CREATE_TECHNIQUE_UG(t0_l2_ds, VS_Undergrowth(true), PS_Undergrowth(false, 2, true))
-CREATE_TECHNIQUE_UG(t0_l3_ds, VS_Undergrowth(true), PS_Undergrowth(false, 3, true))
-CREATE_TECHNIQUE_UG(t0_l4_ds, VS_Undergrowth(true), PS_Undergrowth(false, 4, true))
+CREATE_TECHNIQUE_UG(t0_l0, VS_Undergrowth(false), PS_Undergrowth(0, false))
+CREATE_TECHNIQUE_UG(t0_l1, VS_Undergrowth(false), PS_Undergrowth(1, false))
+CREATE_TECHNIQUE_UG(t0_l2, VS_Undergrowth(false), PS_Undergrowth(2, false))
+CREATE_TECHNIQUE_UG(t0_l3, VS_Undergrowth(false), PS_Undergrowth(3, false))
+CREATE_TECHNIQUE_UG(t0_l4, VS_Undergrowth(false), PS_Undergrowth(4, false))
+CREATE_TECHNIQUE_UG(t0_l0_ds, VS_Undergrowth(true), PS_Undergrowth(0, true))
+CREATE_TECHNIQUE_UG(t0_l1_ds, VS_Undergrowth(true), PS_Undergrowth(1, true))
+CREATE_TECHNIQUE_UG(t0_l2_ds, VS_Undergrowth(true), PS_Undergrowth(2, true))
+CREATE_TECHNIQUE_UG(t0_l3_ds, VS_Undergrowth(true), PS_Undergrowth(3, true))
+CREATE_TECHNIQUE_UG(t0_l4_ds, VS_Undergrowth(true), PS_Undergrowth(4, true))
 
 /*
 	Undergrowth simple shaders
@@ -264,7 +267,7 @@ VS2PS_Simple VS_Undergrowth_Simple(APP2VS_Simple Input, uniform bool ShadowMapEn
 	return Output;
 }
 
-PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, uniform int LightCount, uniform bool ShadowMapEnable)
+PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform bool ShadowMapEnable)
 {
 	PS2FB Output = (PS2FB)0.0;
 
@@ -283,11 +286,14 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	}
 
 	float3 Lights = 0.0;
-	for (int i = 0; i < LightCount; i++)
+	if (LightCount > 0)
 	{
-		float3 LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
-		float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
-		Lights += (Attenuation * _PointLightColor[i]);
+		for (int i = 0; i < LightCount; i++)
+		{
+			float3 LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
+			float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
+			Lights += (Attenuation * _PointLightColor[i]);
+		}
 	}
 	Lights = saturate(Lights);
 
@@ -343,16 +349,16 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 		} \
 	}
 
-CREATE_TECHNIQUE_UG_SIMPLE(t0_l0_simple, VS_Undergrowth_Simple(false), PS_Undergrowth_Simple(false, 0, false))
-CREATE_TECHNIQUE_UG_SIMPLE(t0_l1_simple, VS_Undergrowth_Simple(false), PS_Undergrowth_Simple(true, 1, false))
-CREATE_TECHNIQUE_UG_SIMPLE(t0_l2_simple, VS_Undergrowth_Simple(false), PS_Undergrowth_Simple(true, 2, false))
-CREATE_TECHNIQUE_UG_SIMPLE(t0_l3_simple, VS_Undergrowth_Simple(false), PS_Undergrowth_Simple(true, 3, false))
-CREATE_TECHNIQUE_UG_SIMPLE(t0_l4_simple, VS_Undergrowth_Simple(false), PS_Undergrowth_Simple(true, 4, false))
-CREATE_TECHNIQUE_UG_SIMPLE(t0_l0_ds_simple, VS_Undergrowth_Simple(true), PS_Undergrowth_Simple(false, 0, true))
-CREATE_TECHNIQUE_UG_SIMPLE(t0_l1_ds_simple, VS_Undergrowth_Simple(true), PS_Undergrowth_Simple(true, 1, true))
-CREATE_TECHNIQUE_UG_SIMPLE(t0_l2_ds_simple, VS_Undergrowth_Simple(true), PS_Undergrowth_Simple(true, 2, true))
-CREATE_TECHNIQUE_UG_SIMPLE(t0_l3_ds_simple, VS_Undergrowth_Simple(true), PS_Undergrowth_Simple(true, 3, true))
-CREATE_TECHNIQUE_UG_SIMPLE(t0_l4_ds_simple, VS_Undergrowth_Simple(true), PS_Undergrowth_Simple(true, 4, true))
+CREATE_TECHNIQUE_UG_SIMPLE(t0_l0_simple, VS_Undergrowth_Simple(false), PS_Undergrowth_Simple(0, false))
+CREATE_TECHNIQUE_UG_SIMPLE(t0_l1_simple, VS_Undergrowth_Simple(false), PS_Undergrowth_Simple(1, false))
+CREATE_TECHNIQUE_UG_SIMPLE(t0_l2_simple, VS_Undergrowth_Simple(false), PS_Undergrowth_Simple(2, false))
+CREATE_TECHNIQUE_UG_SIMPLE(t0_l3_simple, VS_Undergrowth_Simple(false), PS_Undergrowth_Simple(3, false))
+CREATE_TECHNIQUE_UG_SIMPLE(t0_l4_simple, VS_Undergrowth_Simple(false), PS_Undergrowth_Simple(4, false))
+CREATE_TECHNIQUE_UG_SIMPLE(t0_l0_ds_simple, VS_Undergrowth_Simple(true), PS_Undergrowth_Simple(0, true))
+CREATE_TECHNIQUE_UG_SIMPLE(t0_l1_ds_simple, VS_Undergrowth_Simple(true), PS_Undergrowth_Simple(1, true))
+CREATE_TECHNIQUE_UG_SIMPLE(t0_l2_ds_simple, VS_Undergrowth_Simple(true), PS_Undergrowth_Simple(2, true))
+CREATE_TECHNIQUE_UG_SIMPLE(t0_l3_ds_simple, VS_Undergrowth_Simple(true), PS_Undergrowth_Simple(3, true))
+CREATE_TECHNIQUE_UG_SIMPLE(t0_l4_ds_simple, VS_Undergrowth_Simple(true), PS_Undergrowth_Simple(4, true))
 
 /*
 	Undergrowth ZOnly shaders
