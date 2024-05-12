@@ -37,8 +37,8 @@ float4 _LightColor : LightColor;
 float _ConeAngle : ConeAngle;
 
 float4x3 _MatOneBoneSkinning[26]: matONEBONESKINNING; // : register(c15) < bool sparseArray = true; int arrayStart = 15; >;
-float4x4 _ViewProjMatrix : WorldViewProjection; // : register(vs_1_1, c0);
-float4x4 _ViewInverseMatrix : ViewI; //: register(vs_1_1, c8);
+float4x4 _ViewProjMatrix : WorldViewProjection; // : register(c0);
+float4x4 _ViewInverseMatrix : ViewI; //: register(c8);
 float4x4 _ViewMatrix : ViewMatrix;
 float4x4 _ViewITMatrix : ViewITMatrix;
 float4 _EyePos : EYEPOS = { 0.0, 0.0, 1.0, 0.25 };

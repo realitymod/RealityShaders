@@ -47,7 +47,7 @@ float4 _ParaboloidZValues : ParaboloidZValues;
 
 float4 _Attenuation : Attenuation; // SHADOW
 
-float4 _LightPos : LightPosition : register(vs_3_0, c12)
+float4 _LightPos : LightPosition : register(c12)
 <
 	string Object = "PointLight";
 	string Space = "World";

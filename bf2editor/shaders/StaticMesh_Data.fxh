@@ -7,11 +7,11 @@
 	#define STATICMESH_DATA_FXH
 
 	// UNIFORM INPUTS
-	float4x4 _WorldMatrix : World; // : register(vs_3_0, c0);
-	float4x4 _WorldViewMatrix : WorldView; //: register(vs_3_0, c8);
-	float4x4 _WorldViewITMatrix : WorldViewIT; //: register(vs_3_0, c8);
+	float4x4 _WorldMatrix : World; // : register(c0);
+	float4x4 _WorldViewMatrix : WorldView; //: register(c8);
+	float4x4 _WorldViewITMatrix : WorldViewIT; //: register(c8);
 	float4x4 _ViewProjMatrix : WorldViewProjection : register(c0);
-	float4x4 _ViewInverseMatrix : ViewI; //: register(vs_3_0, c8);
+	float4x4 _ViewInverseMatrix : ViewI; //: register(c8);
 	// float4x3 _OneBoneSkinning[26]: matONEBONESKINNING : register(c15) < bool sparseArray = true; int arrayStart = 15; >;
 
 	float4 _AmbientColor : Ambient = { 0.0, 0.0, 0.0, 1.0 };
@@ -74,7 +74,7 @@
 	CREATE_SAMPLER(SamplerClamp6, texture6, LINEAR, CLAMP)
 	CREATE_SAMPLER(SamplerClamp7, texture7, LINEAR, CLAMP)
 
-	uniform float4 lightPos : LightPosition : register(vs_3_0, c12)
+	uniform float4 lightPos : LightPosition : register(c12)
 	<
 		string Object = "PointLight";
 		string Space = "World";
