@@ -215,7 +215,7 @@ VS2PS_ProjectRoad VS_ProjectRoad(APP2PS_ProjectRoad Input)
 
 	// add r0.xyz, v0.xzw, -c[0].xyz
 	// mul r0.xyz, r0.xyz, c[1].xyw // z = 0, w = 1
-	float3 ProjPos = (Input.Pos.xzw) - Constant0.xyz;
+	float3 ProjPos = Input.Pos.xzw - Constant0.xyz;
 	ProjPos *= Constant1.xyw; // z = 0, w = 1
 
 	// add oPos.x, r0.x, -c[1].w
