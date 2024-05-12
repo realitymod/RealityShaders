@@ -193,10 +193,10 @@ technique roadeditable
 
 // [R-DEV]papadanku: [R-DEV]ason please test this
 
-// Link variables to registers because DICE didn't do so in their ASM code.
-float4 Constant0 : register(c0);
-float4 Constant1 : register(c1);
-float4 Constant2 : register(c2);
+// Declare variables to registers because DICE didn't do so in their ASM.
+float4 Constant0 : register(c0); // c[0]
+float4 Constant1 : register(c1); // c[1]
+float4 Constant2 : register(c2); // c[2]
 
 struct APP2PS_ProjectRoad
 {
