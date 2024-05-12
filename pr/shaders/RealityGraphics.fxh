@@ -5,10 +5,12 @@
 	Author: [R-DEV]papadanku @ 2023
 */
 
+#if !defined(_HEADERS_)
+	#define _HEADERS_
+#endif
+
 #if !defined(REALITY_DEFINES)
 	#define REALITY_DEFINES
-	#undef _HEADERS_
-	#define _HEADERS_
 
 	// 16x is more or less the modern GPU standard
 	#define PR_MAX_ANISOTROPY 16

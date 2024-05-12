@@ -3,10 +3,12 @@
 	Shared functions that process/generate data in the vertex shader
 */
 
+#if !defined(_HEADERS_)
+	#define _HEADERS_
+#endif
+
 #if !defined(REALITY_VERTEX)
 	#define REALITY_VERTEX
-	#undef _HEADERS_
-	#define _HEADERS_
 
 	/*
 		HLSL implementation of LearnOpenGL's Gram-Schmidt Process

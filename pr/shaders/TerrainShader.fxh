@@ -18,10 +18,12 @@
 	#include "RaCommon.fxh"
 #endif
 
+#if !defined(_HEADERS_)
+	#define _HEADERS_
+#endif
+
 #if !defined(TERRAINSHADER_FXH)
 	#define TERRAINSHADER_FXH
-	#undef _HEADERS_
-	#define _HEADERS_
 
 	/*
 		Description: Renders lighting for ground terrain

@@ -29,11 +29,12 @@
 	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-// Functions from DirectXTK
+#if !defined(_HEADERS_)
+	#define _HEADERS_
+#endif
+
 #if !defined(DIRECTXTK)
 	#define DIRECTXTK
-	#undef _HEADERS_
-	#define _HEADERS_
 
 	static const float PI = acos(-1.0);
 

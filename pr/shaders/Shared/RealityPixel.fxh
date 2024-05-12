@@ -1,18 +1,19 @@
 
-/*
-	Shared functions that process/generate data in the pixel shader
-*/
-
 #include "shaders/shared/RealityDirectXTK.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityDirectXTK.fxh"
 #endif
 
+/*
+	Shared functions that process/generate data in the pixel shader
+*/
+
+#if !defined(_HEADERS_)
+	#define _HEADERS_
+#endif
+
 #if !defined(REALITY_PIXEL)
 	#define REALITY_PIXEL
-	#undef _HEADERS_
-	#define _HEADERS_
-
 
 	float GetMax3(float3 Input)
 	{

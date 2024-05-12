@@ -14,10 +14,12 @@
 	Description: Shared functions for BF2's main 3D shaders
 */
 
+#if !defined(_HEADERS_)
+	#define _HEADERS_
+#endif
+
 #if !defined(RACOMMON_FXH)
 	#define RACOMMON_FXH
-	#undef _HEADERS_
-	#define _HEADERS_
 
 	/*
 		Cached shader variables

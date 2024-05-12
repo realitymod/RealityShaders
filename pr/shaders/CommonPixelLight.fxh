@@ -3,10 +3,12 @@
 	Description: Outputs common terrain light for staticmesh and terrain shaders
 */
 
+#if !defined(_HEADERS_)
+	#define _HEADERS_
+#endif
+
 #if !defined(COMMONPIXELLIGHT_FXH)
 	#define COMMONPIXELLIGHT_FXH
-	#undef _HEADERS_
-	#define _HEADERS_
 
 	struct PointLightData
 	{
