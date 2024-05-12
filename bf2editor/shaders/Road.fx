@@ -167,10 +167,9 @@ technique roadeditable
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		FogEnable = FALSE;
 		ZEnable = TRUE;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
-		FogEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_RoadEditable();
 		PixelShader = compile ps_3_0 PS_RoadEditable();
@@ -181,9 +180,10 @@ technique roadeditable
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		DepthBias = -0.0001f;
-		SlopeScaleDepthBias = -0.00001f;
+		DepthBias = -0.0001;
+		SlopeScaleDepthBias = -0.00001;
 		ZEnable = TRUE;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_RoadEditable_DrawMaterial();
@@ -262,7 +262,6 @@ technique projectroad
 		// FillMode = WIREFRAME;
 		ZEnable = FALSE;
 		AlphaBlendEnable = FALSE;
-		FogEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_ProjectRoad();
 		PixelShader = compile ps_3_0 PS_ProjectRoad();

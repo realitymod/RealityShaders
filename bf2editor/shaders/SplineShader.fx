@@ -1,3 +1,7 @@
+#include "shaders/RealityGraphics.fxh"
+#if !defined(_HEADERS_)
+	#include "RealityGraphics.fxh"
+#endif
 
 float4x4 _WorldViewProj : WorldViewProjection;
 float4 _Diffuse : DiffuseColor;
@@ -62,6 +66,10 @@ technique spline
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 		DepthBias = -0.00025;
+
+		ZEnable = TRUE;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
+		ZWriteEnable = FALSE;
 	
 		VertexShader = compile vs_3_0 VS_Spline();
 		PixelShader = compile ps_3_0 PS_Spline();
@@ -85,7 +93,11 @@ technique controlpoint
 		CullMode = NONE;
 		AlphaBlendEnable = FALSE;
 		DepthBias = -0.0003;
-	
+
+		ZEnable = TRUE;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
+		ZWriteEnable = FALSE;
+
 		VertexShader = compile vs_3_0 VS_ControlPoint();
 		PixelShader = compile ps_3_0 PS_ControlPoint();
 	}
