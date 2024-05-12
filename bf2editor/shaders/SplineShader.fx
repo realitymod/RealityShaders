@@ -21,8 +21,7 @@ struct VS2PS
 VS2PS VS_Spline(APP2VS_Spline Input) : POSITION
 {
 	VS2PS Output = (VS2PS)0.0;
-	float4 Pos = float4(Input.Pos.xyz - (0.035 * Input.Normal), Input.Pos.w);
-	Output.HPos = mul(Pos, _WorldViewProj);
+	Output.HPos = mul(Input.Pos, _WorldViewProj);
 	return Output;
 }
 
@@ -63,7 +62,7 @@ technique spline
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		DepthBias = -0.0003;
+		DepthBias = -0.00025;
 	
 		VertexShader = compile vs_3_0 VS_Spline();
 		PixelShader = compile ps_3_0 PS_Spline();
