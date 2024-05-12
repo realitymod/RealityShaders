@@ -238,7 +238,7 @@ VS2PS_ProjectRoad VS_ProjectRoad(APP2PS_ProjectRoad Input)
 	return Output;
 }
 
-float4 PS_ProjectRoad(VS2PS_ProjectRoad Input)
+float4 PS_ProjectRoad(VS2PS_ProjectRoad Input) : COLOR0
 {
 	// mov r0, v0
 	return Input.Color;
