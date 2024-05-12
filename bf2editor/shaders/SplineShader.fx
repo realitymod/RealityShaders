@@ -58,7 +58,6 @@ technique spline
 	pass p0
 	{
 		CullMode = NONE;
-		AlphaBlendEnable = FALSE;
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
