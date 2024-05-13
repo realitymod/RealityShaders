@@ -94,3 +94,7 @@ Support for 16x anisotropic filtering.
 - [The Forgotten Hope Team](http://forgottenhope.warumdarum.de/)
 
     Major knowledge-base and inspiration.
+
+- [Felix Westin](https://github.com/Fewes)
+
+    Consultation and for sharing his [test of features for Battlefield 2 graphics enhancements](https://github.com/Fewes/RealityShaders)
