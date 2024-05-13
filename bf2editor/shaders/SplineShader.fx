@@ -22,10 +22,11 @@ struct VS2PS
 	float4 HPos : POSITION;
 };
 
-VS2PS VS_Spline(APP2VS_Spline Input) : POSITION
+VS2PS VS_Spline(APP2VS_Spline Input)
 {
 	VS2PS Output = (VS2PS)0.0;
-	Output.HPos = mul(Input.Pos, _WorldViewProj);
+	float4 Pos = float4(Input.Pos.xyz - (0.035 * Input.Normal), Input.Pos.w);
+	Output.HPos = mul(Pos, _WorldViewProj);
 	return Output;
 }
 
@@ -65,7 +66,7 @@ technique spline
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		DepthBias = -0.00025;
+		DepthBias = -0.0003;
 
 		ZEnable = TRUE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
