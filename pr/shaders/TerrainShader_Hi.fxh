@@ -41,7 +41,7 @@ struct VS2PS_FullDetail_Hi
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
-	float3 Normal : TEXCOORD1;
+	float4 Normal : TEXCOORD1; // .xyz = Normal; .w = Depth;
 	float4 Tex0 : TEXCOORD2; // .xy = ColorLight; .zw = Detail;
 	float4 YPlaneTex : TEXCOORD3; // .xy = Near; .zw = Far;
 	float4 XPlaneTex : TEXCOORD4; // .xy = Near; .zw = Far;
@@ -103,7 +103,7 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Pos.w = Output.HPos.w + 1.0;
+		Output.Normal.w = Output.HPos.w + 1.0;
 	#endif
 
 	return Output;
@@ -115,14 +115,16 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	PS2FB Output = (PS2FB)0.0;
 
 	float4 WorldPos = Input.Pos;
-	float3 WorldNormal = normalize(Input.Normal);
+	float3 WorldNormal = normalize(Input.Normal.xyz);
+	float Depth = Input.Normal.w;
+
 	float LerpValue = GetLerpValue(WorldPos.xwz, _CameraPos.xwz);
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 
 	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleTex1_Clamp, Input.LightTex));
 	float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.zw);
 
-	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
+	float3 BlendValue = saturate(abs(WorldNormal.xyz) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 	float3 TerrainLights = (_SunColor.rgb * (AccumLights.a * 2.0)) + AccumLights.rgb;
 	float ChartContribution = dot(Component.xyz, _ComponentSelector.xyz);
@@ -186,7 +188,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	Output.Color.rgb *= ChartContribution;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Depth);
 	#endif
 
 	return Output;
