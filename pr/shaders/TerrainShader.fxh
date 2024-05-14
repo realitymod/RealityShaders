@@ -172,13 +172,13 @@
 		// tl: This assumes that input WorldPos.w == 1 to work correctly! (it always is)
 		// tl: This all works out because camera height is set to height+1 so
 		//     CameraVec becomes (cx, cheight+1, cz) - (vx, 1, vz)
-		// tl: YScale is now pre-multiplied into morphselector
 		float3 CameraVec = CameraPos - WorldPos;
 		return dot(CameraVec, CameraVec);
 	}
 
 	float4 MorphPosition(float4 WorldPos, float4 MorphDelta, float MorphDeltaAdderSelector)
 	{
+		// tl: YScale is now pre-multiplied into morphselector
 		float CameraDistance = GetCameraDistance(WorldPos.xwz, _CameraPos.xwz);
 		float LerpValue = saturate(CameraDistance * _NearFarMorphLimits.x - _NearFarMorphLimits.y);
 		float YDelta = dot(_MorphDeltaSelector, MorphDelta) * LerpValue;
