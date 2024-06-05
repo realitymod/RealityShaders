@@ -129,6 +129,7 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 	return Output;
 }
 
+PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int LightCount, uniform bool ShadowMapEnable)
 {
 	PS2FB Output = (PS2FB)0.0;
 
@@ -148,7 +149,7 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 	}
 
 	float3 Lights = 0.0;
-	if (LightCount > 0)
+	for (int i = 0; i < LightCount; i++)
 	{
 		float3 LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
 		float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
@@ -215,6 +216,7 @@ CREATE_TECHNIQUE_UG(t0_l0_ds, VS_Undergrowth(true), PS_Undergrowth(false, 0, tru
 CREATE_TECHNIQUE_UG(t0_l1_ds, VS_Undergrowth(true), PS_Undergrowth(false, 1, true))
 CREATE_TECHNIQUE_UG(t0_l2_ds, VS_Undergrowth(true), PS_Undergrowth(false, 2, true))
 CREATE_TECHNIQUE_UG(t0_l3_ds, VS_Undergrowth(true), PS_Undergrowth(false, 3, true))
+CREATE_TECHNIQUE_UG(t0_l4_ds, VS_Undergrowth(true), PS_Undergrowth(false, 4, true))
 
 /*
 	Undergrowth simple shaders
