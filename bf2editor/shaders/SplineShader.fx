@@ -93,7 +93,7 @@ technique controlpoint
 	{
 		CullMode = NONE;
 		AlphaBlendEnable = FALSE;
-		DepthBias = -0.0003;
+		DepthBias = -0.00025;
 
 		ZEnable = TRUE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
