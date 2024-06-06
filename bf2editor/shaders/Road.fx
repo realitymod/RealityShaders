@@ -168,7 +168,6 @@ technique roadeditable
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 		ZEnable = TRUE;
-		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_RoadEditable();
@@ -183,7 +182,6 @@ technique roadeditable
 		DepthBias = -0.0001;
 		SlopeScaleDepthBias = -0.00001;
 		ZEnable = TRUE;
-		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_RoadEditable_DrawMaterial();
