@@ -198,39 +198,6 @@ float4 GetWorldPos(float2 Pos0, float2 Pos1)
 	Terrain: Detail Texture Mode
 */
 
-struct FullDetail
-{
-	float2 NearYPlane;
-	float2 NearXPlane;
-	float2 NearZPlane;
-	float2 FarYPlane;
-	float2 FarXPlane;
-	float2 FarZPlane;
-};
-
-FullDetail GetFullDetail(float3 MorphedWorldPos, float2 WorldPos)
-{
-	FullDetail Output = (FullDetail)0;
-
-	// Initialize triplanar texcoords
-	float3 WorldTex = 0.0;
-	WorldTex.x = WorldPos.x * _TexScale.x;
-	WorldTex.y = MorphedWorldPos.y * _TexScale.y;
-	WorldTex.z = WorldPos.y * _TexScale.z;
-
-	// Calculate near texcoords
-	Output.NearYPlane = (WorldTex.xz * _NearTexTiling.z);
-	Output.NearXPlane = (WorldTex.zy * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
-	Output.NearZPlane = (WorldTex.xy * _NearTexTiling.xy) + float2(0.0, _NearTexTiling.w);
-
-	// Calculate far texcoords
-	Output.FarYPlane = (WorldTex.xz * _FarTexTiling.z);
-	Output.FarXPlane = (WorldTex.zy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
-	Output.FarZPlane = (WorldTex.xy * _FarTexTiling.xy) + float2(0.0, _FarTexTiling.w);
-
-	return Output;
-}
-
 VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
 {
 	VS2PS_EditorDetail Output = (VS2PS_EditorDetail)0;
@@ -250,10 +217,28 @@ VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
 	Output.Tex0.xy = Input.Pos0.xy;
 	Output.Tex0.zw = ((Output.Tex0.xy * _TexScale.xz) * _BiFixTex.x) + _BiFixTex.y;
 
-	FullDetail FD = GetFullDetail(Input.Pos0.xyz, Input.Pos0.xy);
-	Output.YPlaneTex = float4(FD.NearYPlane, FD.FarYPlane);
-	Output.XPlaneTex = float4(FD.NearXPlane, FD.FarXPlane);
-	Output.ZPlaneTex = float4(FD.NearZPlane, FD.FarZPlane);
+	float3 Tex = float3
+	(
+		Input.Pos0.x * _TexScale.x,
+		-(Input.Pos1.x * _TexScale.y),
+		Input.Pos0.y * _TexScale.z
+	);
+
+	float2 YPlane = Tex.xz;
+	Output.YPlaneTex.xy = YPlane * _NearTexTiling.z;
+	Output.YPlaneTex.zw = YPlane * _FarTexTiling.z;
+
+	float2 XPlane = Tex.zy;
+	Output.XPlaneTex.xy = XPlane * _NearTexTiling.xy;
+	Output.XPlaneTex.y += _NearTexTiling.w;
+	Output.XPlaneTex.zw = XPlane * _FarTexTiling.xy;
+	Output.XPlaneTex.w += _FarTexTiling.w;
+
+	float2 ZPlane = Tex.xy;
+	Output.ZPlaneTex.xy = ZPlane * _NearTexTiling.xy;
+	Output.ZPlaneTex.y += _NearTexTiling.w;
+	Output.ZPlaneTex.zw = ZPlane * _FarTexTiling.xy;
+	Output.ZPlaneTex.w += _FarTexTiling.w;
 
 	return Output;
 }
