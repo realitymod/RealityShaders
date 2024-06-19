@@ -195,9 +195,10 @@ PS2FB PS_Water(in VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float3 WorldPos = Input.Pos.xyz;
-	float3 WorldLightDir = normalize(-Lights[0].dir);
-	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 	float3 WaterTex = GetWaterTex(WorldPos);
+	float3 WorldLightDir = normalize(-Lights[0].dir);
+	float3 WorldViewDir = WorldSpaceCamPos.xyz - WorldPos.xyz;
+	float3 NWorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
 	#if defined(USE_LIGHTMAP)
 		float4 LightMap = tex2D(SampleLightMap, Input.LightMapTex);
@@ -229,14 +230,14 @@ PS2FB PS_Water(in VS2PS Input)
 	float4 OutputColor = 0.0;
 
 	// Generate water color
-	float3 Reflection = normalize(reflect(-WorldViewDir, TangentNormal));
+	float3 Reflection = reflect(-WorldViewDir, TangentNormal);
 	float3 EnvColor = SRGBToLinearEst(texCUBE(SampleCubeMap, Reflection));
 	float LerpMod = -(1.0 - saturate(Shadow + SHADOW_FACTOR));
 	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 
 	// Composite light on water color
 	float3 LightColors = SpecularColor.rgb * (SpecularColor.a * Shadow);
-	ColorPair Light = ComputeLights(TangentNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	ColorPair Light = ComputeLights(TangentNormal, WorldLightDir, NWorldViewDir, SpecularPower);
 	OutputColor.rgb = WaterLerp + (Light.Specular * LightColors.rgb);
 
 	// Thermals
@@ -246,7 +247,7 @@ PS2FB PS_Water(in VS2PS Input)
 	}
 
 	// Compute Fresnel 
-	float Fresnel = ComputeFresnelFactor(TangentNormal, WorldViewDir, POW_TRANSPARENCY);
+	float Fresnel = ComputeFresnelFactor(TangentNormal, NWorldViewDir, POW_TRANSPARENCY);
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.a);
 
 	Output.Color = OutputColor;

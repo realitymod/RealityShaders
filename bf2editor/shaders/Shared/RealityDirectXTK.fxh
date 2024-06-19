@@ -33,7 +33,6 @@
 	#define _HEADERS_
 #endif
 
-// Functions from DirectXTK
 #if !defined(DIRECTXTK)
 	#define DIRECTXTK
 
@@ -134,8 +133,8 @@
 
 	float ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewDir, float Exponent)
 	{
-		float ViewAngle = dot(WorldNormal, WorldViewDir);
-		return saturate(1.0 - pow(abs(ViewAngle), Exponent));
+		float ViewAngle = 1.0 - saturate(dot(WorldNormal, WorldViewDir));
+		return saturate(pow(abs(ViewAngle), Exponent));
 	}
 
 	/*
