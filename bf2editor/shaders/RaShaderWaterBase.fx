@@ -194,8 +194,8 @@ PS2FB PS_Water(in VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float3 WorldPos = Input.Pos.xyz;
-	float3 WaterTex = GetWaterTex(WorldPos);
+	float4 WorldPos = Input.Pos;
+	float3 WaterTex = GetWaterTex(WorldPos.xyz);
 	float3 WorldLightDir = normalize(-Lights[0].dir);
 	float3 WorldViewDir = WorldSpaceCamPos.xyz - WorldPos.xyz;
 	float3 NWorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
