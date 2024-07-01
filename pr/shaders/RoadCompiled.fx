@@ -189,8 +189,13 @@ technique roadcompiledFull
 		ZEnable = FALSE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 
-		DepthBias = -0.0001f;
-		SlopeScaleDepthBias = -0.00001f;
+		#if PR_IS_REVERSED_Z
+			DepthBias = 0.0001;
+			SlopeScaleDepthBias = 0.00001;
+		#else
+			DepthBias = -0.0001;
+			SlopeScaleDepthBias = -0.00001;
+		#endif
 
 		AlphaBlendEnable = FALSE;
 

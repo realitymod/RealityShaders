@@ -19,10 +19,24 @@
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
 	#define PR_ALPHA_REF 127
 
+	/*
+		D3DCMP_NEVER         = 1,
+		D3DCMP_LESS          = 2,
+		D3DCMP_EQUAL         = 3,
+		D3DCMP_LESSEQUAL     = 4,
+		D3DCMP_GREATER       = 5,
+		D3DCMP_NOTEQUAL      = 6,
+		D3DCMP_GREATEREQUAL  = 7,
+		D3DCMP_ALWAYS        = 8,
+	*/
+
 	// Project Reality's default Z-testing
 	// We expose it here so it is easy to port over to reversed depth buffering
-	#define PR_ZFUNC_NOEQUAL LESS
-	#define PR_ZFUNC_WITHEQUAL LESSEQUAL
+	#define PR_ZFUNC_NOEQUAL 2
+	#define PR_ZFUNC_WITHEQUAL 4
+	#if (PR_ZFUNC_NOEQUAL == 5) && (PR_ZFUNC_WITHEQUAL == 7)
+		#define PR_IS_REVERSED_Z 1
+	#else
 
 	// #define _USELINEARLIGHTING_
 	// #define _USETONEMAP_

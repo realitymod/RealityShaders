@@ -18,7 +18,11 @@
 		---
 		Source: https://download.nvidia.com/developer/presentations/2004/GPU_Jackpot/Shadow_Mapping.pdf
 	*/
-	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = -0.00001, uniform float Bias = -0.005)
+	#if PR_IS_REVERSED_Z
+		float GetSlopedBasedBias(float Depth, uniform float SlopeScale = 0.00001, uniform float Bias = 0.005)
+	#else
+		float GetSlopedBasedBias(float Depth, uniform float SlopeScale = -0.00001, uniform float Bias = -0.005)
+	#endif
 	{
 		float M = fwidth(Depth);
 		return Depth + (M * SlopeScale) + Bias;
@@ -59,7 +63,12 @@
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, 0.0, 0.0, 0.0)).r;
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(0.0, Texel.y, 0.0, 0.0)).r;
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel).r;
-		float4 CMPBits = float4(Samples >= saturate(GetSlopedBasedBias(ShadowCoords.z)));
+
+		#if PR_IS_REVERSED_Z
+			float4 CMPBits = float4(Samples <= saturate(GetSlopedBasedBias(ShadowCoords.z)));
+		#else
+			float4 CMPBits = float4(Samples >= saturate(GetSlopedBasedBias(ShadowCoords.z)));
+		#endif
 		return dot(CMPBits, 0.25);
 	}
 

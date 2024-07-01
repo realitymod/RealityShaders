@@ -179,8 +179,15 @@ technique roadeditable
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		DepthBias = -0.0001;
-		SlopeScaleDepthBias = -0.00001;
+
+		#if PR_IS_REVERSED_Z
+			DepthBias = 0.0001;
+			SlopeScaleDepthBias = 0.00001;
+		#else
+			DepthBias = -0.0001;
+			SlopeScaleDepthBias = -0.00001;
+		#endif
+
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 

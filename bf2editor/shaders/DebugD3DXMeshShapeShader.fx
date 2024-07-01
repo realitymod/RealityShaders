@@ -360,7 +360,12 @@ technique collisionMesh
 	{
 		CullMode = NONE;
 		ShadeMode = FLAT;
-		DepthBias = -0.00001;
+
+		#if PR_IS_REVERSED_Z
+			DepthBias = 0.00001;
+		#else
+			DepthBias = -0.00001;
+		#endif
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -376,8 +381,13 @@ technique collisionMesh
 
 	pass p1
 	{
-		DepthBias = -0.000018;
 		FillMode = WIREFRAME;
+
+		#if PR_IS_REVERSED_Z
+			DepthBias = 0.000018;
+		#else
+			DepthBias = -0.000018;
+		#endif
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;

@@ -1,4 +1,9 @@
 
+#include "shaders/RealityGraphics.fxh"
+#if !defined(_HEADERS_)
+	#include "../RealityGraphics.fxh"
+#endif
+
 /*
 	Depth-based functions
 */
@@ -18,7 +23,11 @@
 		---
 		Source: https://download.nvidia.com/developer/presentations/2004/GPU_Jackpot/Shadow_Mapping.pdf
 	*/
-	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = -0.00001, uniform float Bias = -0.005)
+	#if PR_IS_REVERSED_Z
+		float GetSlopedBasedBias(float Depth, uniform float SlopeScale = 0.00001, uniform float Bias = 0.005)
+	#else
+		float GetSlopedBasedBias(float Depth, uniform float SlopeScale = -0.00001, uniform float Bias = -0.005)
+	#endif
 	{
 		float M = fwidth(Depth);
 		return Depth + (M * SlopeScale) + Bias;

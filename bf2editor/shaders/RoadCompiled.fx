@@ -170,6 +170,16 @@ technique roadcompiledFull
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
 
+		/*
+			#if PR_IS_REVERSED_Z
+				DepthBias = 0.0001;
+				SlopeScaleDepthBias = 0.00001;
+			#else
+				DepthBias = -0.0001;
+				SlopeScaleDepthBias = -0.00001;
+			#endif
+		*/
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
@@ -183,12 +193,66 @@ technique roadcompiledFull
 		ZEnable = FALSE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 
-		DepthBias = -0.0001;
-		SlopeScaleDepthBias = -0.00001;
+		/*
+			#if PR_IS_REVERSED_Z
+				DepthBias = 0.0001;
+				SlopeScaleDepthBias = 0.00001;
+			#else
+				DepthBias = -0.0001;
+				SlopeScaleDepthBias = -0.00001;
+			#endif
+		*/
 
 		AlphaBlendEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_RoadCompiled();
 		PixelShader = compile ps_3_0 PS_RoadCompiled();
+	}
+}
+
+float4 PS_RoadCompiled_LightingOnly(VS2PS Input) : COLOR0
+{
+	// float4 t0 = tex2D(sampler0, indata.Tex0AndZFade);
+	// float4 t2 = tex2D(sampler2, indata.PosTex);
+
+	// float4 final;
+	// final.rgb = t2;
+	// final.a = t0.a * indata.Tex0AndZFade.z;
+	// return final;
+	return 0.0;
+}
+
+technique roadcompiledLightingOnly
+<
+	int Declaration[] =
+	{
+		// StreamNo, DataType, Usage, UsageIdx
+		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 1 },
+		{ 0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_POSITION, 1 },
+		DECLARATION_END // End macro
+	};
+>
+{
+	pass p0
+	{
+		AlphaBlendEnable = TRUE;
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
+
+		#if PR_IS_REVERSED_Z
+			DepthBias = 0.000025;
+			// SlopeScaleDepthBias = 0.5;
+		#else
+			DepthBias = -0.000025;
+			// SlopeScaleDepthBias = -0.5;
+		#endif
+
+		ZEnable = FALSE;
+		// CullMode = NONE;
+		// FillMode = WIREFRAME;
+		VertexShader = compile vs_3_0 VS_RoadCompiled();
+		PixelShader = compile ps_3_0 PS_RoadCompiled_LightingOnly();
 	}
 }

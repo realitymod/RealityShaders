@@ -90,8 +90,13 @@ technique t0
 	pass p0
 	{
 		CullMode = NONE;
-		DepthBias = -0.00001;
 		ShadeMode = FLAT;
+
+		#if PR_IS_REVERSED_Z
+			DepthBias = 0.00001;
+		#else
+			DepthBias = -0.00001;
+		#endif
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;

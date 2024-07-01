@@ -246,12 +246,13 @@ PS2FB PS_Water(in VS2PS Input)
 		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
-	// Compute Fresnel 
+	// Compute Fresnel
 	#if defined(USE_FRESNEL)
 		float Fresnel = ComputeFresnelFactor(TangentNormal, NWorldViewDir, POW_TRANSPARENCY);
 	#else
 		float Fresnel = 1.0;
 	#endif
+
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.a);
 
 	Output.Color = OutputColor;
