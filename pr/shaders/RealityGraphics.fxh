@@ -36,7 +36,7 @@
 	#define PR_ZFUNC_WITHEQUAL 4
 	#if (PR_ZFUNC_NOEQUAL == 5) && (PR_ZFUNC_WITHEQUAL == 7)
 		#define PR_IS_REVERSED_Z 1
-	#else
+	#endif
 
 	// #define _USELINEARLIGHTING_
 	// #define _USETONEMAP_
