@@ -68,7 +68,13 @@
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, 0.0, 0.0, 0.0)).r;
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(0.0, Texel.y, 0.0, 0.0)).r;
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel).r;
-		float4 CMPBits = float4(Samples >= saturate(GetSlopedBasedBias(ShadowCoords.z)));
+
+		#if PR_IS_REVERSED_Z
+			float4 CMPBits = float4(Samples <= saturate(GetSlopedBasedBias(ShadowCoords.z)));
+		#else
+			float4 CMPBits = float4(Samples >= saturate(GetSlopedBasedBias(ShadowCoords.z)));
+		#endif
+
 		return dot(CMPBits, 0.25);
 	}
 

@@ -1,4 +1,9 @@
 
+#include "shaders/RealityGraphics.fxh"
+#if !defined(_HEADERS_)
+	#include "../RealityGraphics.fxh"
+#endif
+
 /*
 	Depth-based functions
 */
@@ -69,6 +74,7 @@
 		#else
 			float4 CMPBits = float4(Samples >= saturate(GetSlopedBasedBias(ShadowCoords.z)));
 		#endif
+
 		return dot(CMPBits, 0.25);
 	}
 
