@@ -385,4 +385,15 @@
 		AlphaChannel = (AlphaChannel < AlphaTest) ? 0.0 : 1.0;
 	}
 
+	/*
+		Rescale alpha by partial derivative
+		Source: Anti-aliased Alpha Test: The Esoteric Alpha To Coverage
+		https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f
+	*/
+	void RescaleAlpha(inout float AlphaChannel)
+	{
+		const float Cutoff = 0.4;
+		AlphaChannel = (AlphaChannel - Cutoff) / max(fwidth(AlphaChannel), 1e-4) + 0.5;
+	}
+
 #endif

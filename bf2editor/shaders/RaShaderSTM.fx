@@ -310,6 +310,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 	TonemapAndLinearToSRGBEst(Output.Color);
+	RescaleAlpha(Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
