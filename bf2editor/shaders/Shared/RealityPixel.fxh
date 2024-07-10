@@ -218,7 +218,7 @@
 
 	int2 GetScreenSize(float2 Tex)
 	{
-		return max(1.0 / fwidth(Tex), 0.0);
+		return max(round(1.0 / fwidth(Tex)), 0.0);
 	}
 
 	float GetAspectRatio(float2 ScreenSize)
