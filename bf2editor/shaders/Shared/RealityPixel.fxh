@@ -211,14 +211,14 @@
 		return lerp(Color1, Color2, smoothstep(0.2, 0.8, F - (0.1 * Blend)));
 	}
 
-	float2 GetPixelSize(float2 Tex)
-	{
-		return fwidth(Tex);
-	}
-
 	int2 GetScreenSize(float2 Tex)
 	{
-		return max(round(1.0 / fwidth(Tex)), 0.0);
+		return max(round(1.0 / fwidth(Tex)), 1.0);
+	}
+
+	float2 GetPixelSize(float2 Tex)
+	{
+		return 1.0 / GetScreenSize(Tex);
 	}
 
 	float GetAspectRatio(float2 ScreenSize)
