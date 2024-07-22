@@ -129,10 +129,9 @@ float4 GetTex(float2 Tex, float4 Offset)
 {
 	return (Tex.xyyy * float4(1.0, 1.0, 0.0, 0.0)) + Offset;
 }
+
 /*
 	Tinnitus using Ronja Böhringer's signed distance fields
-	---
-	https://github.com/ronja-tutorials/ShaderTutorials
 */
 
 VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
@@ -148,24 +147,24 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 {
 	// Modify uniform data
+	float VignetteRadius = min(VIGNETTE_RADIUS, 2.0);
 	float SatLerpBias = saturate(_BackBufferLerpBias);
 	float LerpBias = saturate(smoothstep(0.0, 0.5, SatLerpBias));
 
+	// Create tex for use in vignette effects
+	float2 VignetteTex = Input.Tex0 - 0.5;
+
 	// Spread the blur as you go lower on the screen
-	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
+	float3 SpreadFactor = 1.0;
+	FFX_Lens_ApplyVignette(VignetteTex * 2.0, float2(0.0, 1.0), SpreadFactor, 1.0);
+
+	SpreadFactor = 1.0 - saturate(SpreadFactor);
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
 	SpreadFactor *= LerpBias;
-	float4 BlurColor = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor, true);
+	float4 BlurColor = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor.r, true);
 
 	// Vignette BlurColor
-	float2 VignetteTex = Input.Tex0 - 0.5;
-	VignetteTex.x *= 2.0;
-	FFX_Lens_ApplyVignette(
-		VignetteTex,
-		float2(0.0, 0.5),
-		BlurColor.rgb,
-		min(VIGNETTE_RADIUS, 2.0)
-	);
+	FFX_Lens_ApplyVignette(VignetteTex * float2(2.0, 1.0), float2(0.0, 0.5), BlurColor.rgb, VignetteRadius);
 
 	return float4(BlurColor.rgb, LerpBias);
 }
