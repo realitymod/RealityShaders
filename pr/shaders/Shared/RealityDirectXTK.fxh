@@ -36,8 +36,6 @@
 #if !defined(DIRECTXTK)
 	#define DIRECTXTK
 
-	static const float PI = acos(-1.0);
-
 	// (Approximate) sRGB to linear
 	float4 SRGBToLinearEst(float4 ColorMap)
 	{

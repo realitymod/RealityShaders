@@ -35,13 +35,20 @@
 
 	// Project Reality's default Z-testing
 	// We expose it here so it is easy to port over to reversed depth buffering
-	#define PR_ZFUNC_NOEQUAL 2
-	#define PR_ZFUNC_WITHEQUAL 4
-	#if (PR_ZFUNC_NOEQUAL == 5) && (PR_ZFUNC_WITHEQUAL == 7)
-		#define PR_IS_REVERSED_Z 1
+	#define PR_IS_REVERSED_Z 0
+	#if PR_IS_REVERSED_Z
+		#define PR_ZFUNC_NOEQUAL GREATER
+		#define PR_ZFUNC_WITHEQUAL GREATEREQUAL
+	#else
+		#define PR_ZFUNC_NOEQUAL LESS
+		#define PR_ZFUNC_WITHEQUAL LESSEQUAL
 	#endif
-
 
 	// #define _USELINEARLIGHTING_
 	// #define _USETONEMAP_
+
+	float GetPi()
+	{
+		return acos(-1.0);
+	}
 #endif

@@ -22,6 +22,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
+#define VIGNETTE_RADIUS 1.5
 #define TINNITUS_BLUR_RADIUS 1.0
 #define THERMAL_SIZE 720.0
 
@@ -154,26 +155,19 @@ float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 	float SpreadFactor = saturate(1.0 - (Input.Tex0.y * Input.Tex0.y));
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
 	SpreadFactor *= LerpBias;
-	float4 Color = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor, true);
+	float4 BlurColor = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor, true);
 
-	// Get mask coordinates
-	float2 MaskTexPeak = 1.0;
-	float2 MaskTex = Input.Tex0;
+	// Vignette BlurColor
+	float2 VignetteTex = Input.Tex0 - 0.5;
+	VignetteTex.x *= 2.0;
+	FFX_Lens_ApplyVignette(
+		VignetteTex,
+		float2(0.0, 0.5),
+		BlurColor.rgb,
+		min(VIGNETTE_RADIUS, 2.0)
+	);
 
-	// Adjust mask coordinates
-	MaskTexPeak = (MaskTexPeak * float2(2.0, 1.0)) - 1.0;
-	MaskTex = (MaskTex * float2(2.0, 1.0)) - 1.0;
-
-	// Get SDF mask that darkens the left, right, and top edges
-	float HalfValue = lerp(0.0, 0.4, LerpBias);
-	float FocusPeak = length(MaskTexPeak - (float2)HalfValue);
-	float FocusMain = length(max(abs(MaskTex) - (float2)HalfValue, 0.0));
-	float FocusMask = saturate(smoothstep(0.0, FocusPeak, FocusMain));
-
-	// Composite final product
-	float3 OutputColor = lerp(Color.rgb, 0.0, FocusMask);
-
-	return float4(OutputColor.rgb, LerpBias);
+	return float4(BlurColor.rgb, LerpBias);
 }
 
 technique Tinnitus
