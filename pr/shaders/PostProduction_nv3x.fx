@@ -149,7 +149,6 @@ VS2PS_Quad VS_Tinnitus(APP2VS_Quad Input)
 float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 {
 	// Modify uniform data
-	float VignetteRadius = min(VIGNETTE_RADIUS, 2.0);
 	float SatLerpBias = saturate(_BackBufferLerpBias);
 	float LerpBias = saturate(smoothstep(0.0, 0.5, SatLerpBias));
 
@@ -158,14 +157,14 @@ float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 
 	// Spread the blur as you go lower on the screen
 	float3 SpreadFactor = 1.0;
-	FFX_Lens_ApplyVignette(VignetteTex * 2.0, float2(0.0, 1.0), SpreadFactor, 1.0);
+	FFX_Lens_ApplyVignette(VignetteTex * 2.0, float2(0.0, 1.0), SpreadFactor, LerpBias);
 
 	SpreadFactor = 1.0 - saturate(SpreadFactor);
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
-	SpreadFactor *= LerpBias;
 	float4 BlurColor = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor.r, true);
 
 	// Vignette BlurColor
+	float VignetteRadius = min(VIGNETTE_RADIUS, 2.0) * LerpBias;
 	FFX_Lens_ApplyVignette(VignetteTex * float2(2.0, 1.0), float2(0.0, 0.5), BlurColor.rgb, VignetteRadius);
 
 	return float4(BlurColor.rgb, LerpBias);
