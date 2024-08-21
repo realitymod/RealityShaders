@@ -25,7 +25,7 @@ struct VS2PS
 VS2PS VS_Spline(APP2VS_Spline Input)
 {
 	VS2PS Output = (VS2PS)0.0;
-	Input.Pos.xyz -= 0.035 * Input.Normal
+	Input.Pos.xyz -= 0.035 * Input.Normal;
 	Output.HPos = mul(Input.Pos, _WorldViewProj);
 	return Output;
 }
