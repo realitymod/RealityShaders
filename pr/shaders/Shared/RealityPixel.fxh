@@ -339,47 +339,60 @@
 	/*
 		Get hashed alpha testing (Chris Wyman, NVIDIA, 2017)
 		---
-		https://developer.download.nvidia.com/assets/gameworks/downloads/regular/GDC17/RealTimeRenderingAdvances_HashedAlphaTesting_GDC2017_FINAL.pdf
+		https://cwyman.org/papers/tvcg17_hashedAlphaExtended.pdf
 	*/
 	void SetHashedAlphaTest(float2 Tex, inout float AlphaChannel)
 	{
-		const float G_HashScale = 1.0;
-		float MaxD = max(length(ddx(Tex)), length(ddy(Tex)));
-		float PixScale = 1.0 / (G_HashScale * MaxD);
+		const float HashScale = 1.0;
+		float2 DX = ddx(Tex);
+		float2 DY = ddy(Tex);
+		float2 AnisoDeriv = max(abs(DX), abs(DY));
+		float2 AnisoScales = rsqrt(2.0) / (HashScale * AnisoDeriv);
 
-		// Find two nearest log-discretized noise scales
-		float2 PixScales = 0.0;
-		PixScales.x = floor(log2(PixScale));
-		PixScales.y = ceil(log2(PixScale));
-		PixScales = exp2(PixScales);
+		// Find log-discretized noise scales
+		float2 ScaleLog = log2(AnisoScales);
+		float2 ScaleFloor = exp2(floor(ScaleLog));
+		float2 ScaleCeil = exp2(ceil(ScaleLog));
 
-		// Compute alpha thresholds to our noise scales
-		float2 AlphaThresholds = 0.0;
-		AlphaThresholds.x = GetHash1(floor(Tex * PixScales.x), 0.0);
-		AlphaThresholds.y = GetHash1(floor(Tex * PixScales.y), 0.0);
+		// Compute alpha Thresholds at our 2 noise scales
+		float2 Alpha = 0.0;
+		Alpha.x = GetHash1(floor(ScaleFloor * Tex), 0.0);
+		Alpha.y = GetHash1(floor(ScaleCeil * Tex), 0.0);
 
-		// Factor to interpolate lerp() with
-		float LerpFactor = frac(log2(PixScale));
+		// Factor to linearly interpolate with
+		float2 FracLoc = frac(ScaleLog);
+		float2 ToCorners = float2(length(FracLoc), length(1.0 - FracLoc));
+		float LerpFactor = ToCorners.x / dot(ToCorners, 1.0);
 
 		// Interpolate alpha threshold from noise at two scales
-		float X = lerp(AlphaThresholds.x, AlphaThresholds.y, LerpFactor);
+		float X = lerp(Alpha.x, Alpha.y, LerpFactor);
 
-		// Pass into CDF to compute uniformly distribute threshold
+		// Modify inputs to b(x) based on degree of aniso
+		float2 DTex = float2(length(DX), length(DY));
+		float Aniso = max(DTex.x / DTex.y, DTex.y / DTex.x);
+		X = Aniso * X;
+
+		// Pass into CDF to compute uniformly distributed threshold
 		float A = min(LerpFactor, 1.0 - LerpFactor);
 		float InvA = 1.0 - A;
 		float InvX = 1.0 - X;
-		float Divisor = (2.0 * A * InvA);
-
+		float Divisor = 1.0 / (2.0 * A * InvA);
 		float3 Cases = 0.0;
-		Cases.x = X*X / Divisor;
+		Cases.x = (X * X) * Divisor;
 		Cases.y = (X - 0.5 * A) / InvA;
-		Cases.z = 1.0 - (InvX*InvX / Divisor);
+		Cases.z = 1.0 - ((InvA * InvA) / Divisor);
 
 		// Find our final, uniformly distributed alpha threshold
 		float Threshold = (X < InvA) ? ((X < A) ? Cases.x : Cases.y) : Cases.z;
 
-		// Avoids `threshold == 0`. Could also do `threshold = 1.0 - threshold`
+		// Avoids AT == 0. Could also do AT = 1-AT
 		float AlphaTest = clamp(Threshold, 1.0 - Threshold, 1.0);
+
+		// Fading
+		float N = 6.0;
+		float XN = X / N;
+		float ThresholdWeight = (X <= 0.0) ? 0.0 : ((X < N) ? XN * XN : 1.0);
+		AlphaTest = 0.5 + (Threshold * ThresholdWeight);
 
 		// Output new alpha
 		AlphaChannel = (AlphaChannel < AlphaTest) ? 0.0 : 1.0;

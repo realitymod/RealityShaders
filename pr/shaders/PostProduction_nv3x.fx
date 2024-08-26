@@ -24,7 +24,7 @@
 	Note: Some TV shaders write to the same render target as optic shaders
 */
 
-#define VIGNETTE_RADIUS 1.5
+#define VIGNETTE_RADIUS 1.0
 #define TINNITUS_BLUR_RADIUS 1.0
 #define THERMAL_SIZE 720.0
 
