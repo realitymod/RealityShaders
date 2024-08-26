@@ -165,11 +165,12 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight * 2.0;
-	OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
+	OutputColor.a = saturate((Base.a * 2.0) * (_Transparency_x8.a * 8.0));
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
+	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -297,11 +298,12 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight * 2.0;
-	OutputColor.a = (Base.a * 2.0) * (_Transparency_x8.a * 8.0);
+	OutputColor.a = saturate((Base.a * 2.0) * (_Transparency_x8.a * 8.0));
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
+	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
