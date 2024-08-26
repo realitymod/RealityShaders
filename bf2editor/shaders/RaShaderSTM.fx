@@ -312,6 +312,8 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	TonemapAndLinearToSRGBEst(Output.Color);
 	#if _BASE_
 		SetHashedAlphaTest(Input.BaseAndDetail.xy, Output.Color.a);
+	#elif (_DETAIL_ || _PARALLAXDETAIL_)
+		SetHashedAlphaTest(Input.BaseAndDetail.zw, Output.Color.a);
 	#endif
 
 	#if defined(LOG_DEPTH)
