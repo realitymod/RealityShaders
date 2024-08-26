@@ -367,11 +367,6 @@
 		// Interpolate alpha threshold from noise at two scales
 		float X = lerp(Alpha.x, Alpha.y, LerpFactor);
 
-		// Modify inputs to b(x) based on degree of aniso
-		float2 DTex = float2(length(DX), length(DY));
-		float Aniso = max(DTex.x / DTex.y, DTex.y / DTex.x);
-		X = Aniso * X;
-
 		// Pass into CDF to compute uniformly distributed threshold
 		float A = min(LerpFactor, 1.0 - LerpFactor);
 		float InvA = 1.0 - A;
@@ -388,10 +383,17 @@
 		// Avoids AT == 0. Could also do AT = 1-AT
 		float AlphaTest = clamp(Threshold, 1.0 - Threshold, 1.0);
 
-		// Fading
+		// Modify inputs to ThresholdWeight(x) based on degree of aniso
+		float2 DLength = float2(length(DX), length(DY));
+		float Aniso = max(DLength.x / DLength.y, DLength.y / DLength.x);
+		X = Aniso * X;
+
+		// Compute ThresholdWeight(x)
 		float N = 6.0;
 		float XN = X / N;
 		float ThresholdWeight = (X <= 0.0) ? 0.0 : ((X < N) ? XN * XN : 1.0);
+
+		// Apply fading
 		AlphaTest = 0.5 + (Threshold * ThresholdWeight);
 
 		// Output new alpha
