@@ -378,26 +378,26 @@
 		Cases.z = 1.0 - ((InvA * InvA) / Divisor);
 
 		// Find our final, uniformly distributed alpha threshold
-		float Threshold = (X < InvA) ? ((X < A) ? Cases.x : Cases.y) : Cases.z;
+		float AlphaT = (X < InvA) ? ((X < A) ? Cases.x : Cases.y) : Cases.z;
 
 		// Avoids AT == 0. Could also do AT = 1-AT
-		float AlphaTest = clamp(Threshold, 1.0 - Threshold, 1.0);
+		AlphaT = clamp(Threshold, 1.0e-6, 1.0);
 
-		// Modify inputs to ThresholdWeight(x) based on degree of aniso
+		// Modify inputs to HashWeight(x) based on degree of aniso
 		float2 DLength = float2(length(DX), length(DY));
 		float Aniso = max(DLength.x / DLength.y, DLength.y / DLength.x);
 		X = Aniso * X;
 
-		// Compute ThresholdWeight(x)
+		// Compute HashWeight(x)
 		float N = 6.0;
 		float XN = X / N;
-		float ThresholdWeight = (X <= 0.0) ? 0.0 : ((X < N) ? XN * XN : 1.0);
+		float HashWeight = (X <= 0.0) ? 0.0 : ((0.0 < X) && (X < N)) ? XN * XN : 1.0;
 
 		// Apply fading
-		AlphaTest = 0.5 + (Threshold * ThresholdWeight);
+		AlphaT = 0.5 + ((AlphaT - 0.5) * HashWeight);
 
 		// Output new alpha
-		AlphaChannel = (AlphaChannel < AlphaTest) ? 0.0 : 1.0;
+		AlphaChannel = (AlphaChannel < AlphaT) ? 0.0 : 1.0;
 	}
 
 	/*
