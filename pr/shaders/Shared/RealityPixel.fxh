@@ -381,7 +381,7 @@
 		float AlphaT = (X < InvA) ? ((X < A) ? Cases.x : Cases.y) : Cases.z;
 
 		// Avoids AT == 0. Could also do AT = 1-AT
-		AlphaT = clamp(Threshold, 1.0e-6, 1.0);
+		AlphaT = clamp(AlphaT, 1.0e-6, 1.0);
 
 		// Modify inputs to HashWeight(x) based on degree of aniso
 		float2 DLength = float2(length(DX), length(DY));
@@ -393,8 +393,8 @@
 		float XN = X / N;
 		float HashWeight = (X <= 0.0) ? 0.0 : ((0.0 < X) && (X < N)) ? XN * XN : 1.0;
 
-		// Apply fading
-		AlphaT = 0.5 + ((AlphaT - 0.5) * HashWeight);
+		// Apply fading [0.0, 1.0)
+		AlphaT = saturate(0.5 + ((AlphaT - 0.5) * HashWeight));
 
 		// Output new alpha
 		AlphaChannel = (AlphaChannel < AlphaT) ? 0.0 : 1.0;
