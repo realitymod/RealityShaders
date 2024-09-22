@@ -397,7 +397,7 @@
 		AlphaT = saturate(0.5 + ((AlphaT - 0.5) * HashWeight));
 
 		// Output new alpha
-		AlphaChannel = (AlphaChannel > AlphaT) ? AlphaChannel : 0.0;
+		AlphaChannel = (AlphaChannel > AlphaT) ? 1.0 : 0.0;
 	}
 
 	/*
