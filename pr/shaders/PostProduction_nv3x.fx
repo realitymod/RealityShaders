@@ -10,7 +10,7 @@
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDirectXTK.fxh"
-	#include "shaders/RealityFidelityFX.fxh"
+	#include "shared/RealityFidelityFX.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
 
