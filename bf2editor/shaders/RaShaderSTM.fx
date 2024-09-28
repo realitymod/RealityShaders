@@ -290,8 +290,8 @@ PS2FB PS_StaticMesh(VS2PS Input)
 			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
-		// We multiply N.L by 0.65 to prevent complete darkness for surfaces facing away from the sun
-		float IHalfNL = saturate(1.0 - (Light.Diffuse * 0.65));
+		// We divide N.L by 5 to prevent complete darkness for surfaces facing away from the sun
+		float IHalfNL = saturate((1.0 - (Light.Diffuse / 5.0)) * 0.65);
 
 		// We add ambient to get correct ambient for surfaces parallel to the sun
 		float3 Ambient = (StaticSkyColor * IHalfNL) * Lightmap.b;
