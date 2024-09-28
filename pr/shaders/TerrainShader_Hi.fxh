@@ -121,7 +121,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float LerpValue = GetLerpValue(WorldPos.xwz, _CameraPos.xwz);
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 
-	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleTex1_Clamp, Input.LightTex));
+	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.zw);
 
 	float3 BlendValue = saturate(abs(WorldNormal.xyz) - _BlendMod);

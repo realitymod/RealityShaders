@@ -119,7 +119,7 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	float3 LocalPos = Input.Pos.xyz;
 	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 
-	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleAccumLightMap, Input.LightTex));
+	float4 AccumLights = tex2Dproj(SampleAccumLightMap, Input.LightTex);
 	float3 TerrainSunColor = _SunColor.rgb * 2.0;
 	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 

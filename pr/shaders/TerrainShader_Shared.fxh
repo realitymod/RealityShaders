@@ -10,6 +10,12 @@
 
 /*
 	Fill lightmapping
+	
+	ZFillLightMap generates the accumulation lightmap for the following shaders:
+		RaShaderRoad.fx | texture LightMap; SampleAccumLightMap
+		RoadCompiled.fx | texture LightMap; SampleAccumLightMap
+		TerrainShader_Shared.fxh | PS_Shared_LowDetail() -> SampleTex1_Clamp
+		TerrainShader_Shared.fxh | FullDetail_Hi() -> SampleTex1_Clamp
 */
 
 struct VS2PS_Shared_ZFillLightMap
@@ -43,8 +49,6 @@ PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 
 	Output.Color = saturate(float4(_GIColor.rgb * LightMap.bbb, LightMap.g));
 
-	LinearToSRGBEst(Output.Color);
-
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
@@ -57,8 +61,6 @@ PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = saturate(ZFillLightMapColor);
-
-	LinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
@@ -241,7 +243,7 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleTex1_Clamp, Input.LightTex));
+	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
 	float4 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.YPlaneTex) * 2.0);
