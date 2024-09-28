@@ -244,15 +244,12 @@ PS2FB PS_Particle_Low_Additive(VS2PS Input)
 	// Textures
 	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 
-	// Lighting
-	// Mask with alpha since were doing an add
-	float AlphaMask = DiffuseMap.a * VF.AlphaBlend;
-	float4 LightColor = float4(Input.Color.rgb * AlphaMask, 1.0);
-	float4 OutputColor = DiffuseMap * LightColor;
+	// Lighting | Mask with alpha since were doing an add
+	float4 OutputColor = DiffuseMap * float4(Input.Color.rgb, VF.AlphaBlend);
 
 	Output.Color = OutputColor;
 	TonemapAndLinearToSRGBEst(Output.Color);
-	Output.Color.rgb *= GetFogValue(Input.ViewPos, 0.0);
+	Output.Color.a *= GetFogValue(Input.ViewPos, 0.0);
 
 	return Output;
 }
@@ -269,15 +266,12 @@ PS2FB PS_Particle_High_Additive(VS2PS Input)
 	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.IntensityBlend);
 
-	// Lighting
-	// Mask with alpha since were doing an add
-	float AlphaMask = DiffuseMap.a * VF.AlphaBlend;
-	float4 LightColor = float4(Input.Color.rgb * AlphaMask, 1.0);
-	float4 OutputColor = DiffuseMap * LightColor;
+	// Lighting | Mask with alpha since were doing an add
+	float4 OutputColor = DiffuseMap * float4(Input.Color.rgb, VF.AlphaBlend);
 
 	Output.Color = OutputColor;
 	TonemapAndLinearToSRGBEst(Output.Color);
-	Output.Color.rgb *= GetFogValue(Input.ViewPos, 0.0);
+	Output.Color.a *= GetFogValue(Input.ViewPos, 0.0);
 
 	return Output;
 }
@@ -290,8 +284,6 @@ PS2FB PS_Particle_High_Additive(VS2PS Input)
 	StencilEnable = FALSE; \
 	StencilFunc = ALWAYS; \
 	StencilPass = ZERO; \
-	AlphaTestEnable = TRUE; \
-	AlphaRef = (_AlphaPixelTestRef); \
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCBLEND; \
 	DestBlend = DESTBLEND; \
@@ -340,7 +332,7 @@ technique AdditiveLow
 {
 	pass p0
 	{
-		GET_RENDERSTATES_PARTICLES(ONE, ONE)
+		GET_RENDERSTATES_PARTICLES(SRCALPHA, ONE)
 		VertexShader = compile vs_3_0 VS_Particle();
 		PixelShader = compile ps_3_0 PS_Particle_Low_Additive();
 	}
@@ -350,7 +342,7 @@ technique AdditiveHigh
 {
 	pass p0
 	{
-		GET_RENDERSTATES_PARTICLES(ONE, ONE)
+		GET_RENDERSTATES_PARTICLES(SRCALPHA, ONE)
 		VertexShader = compile vs_3_0 VS_Particle();
 		PixelShader = compile ps_3_0 PS_Particle_High_Additive();
 	}
