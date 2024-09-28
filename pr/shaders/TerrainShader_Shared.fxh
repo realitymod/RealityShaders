@@ -43,6 +43,8 @@ PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 
 	Output.Color = saturate(float4(_GIColor.rgb * LightMap.bbb, LightMap.g));
 
+	LinearToSRGBEst(Output.Color);
+
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
@@ -55,6 +57,8 @@ PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = saturate(ZFillLightMapColor);
+
+	LinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
