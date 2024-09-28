@@ -155,7 +155,7 @@ PS2FB PS_Road(VS2PS Input)
 	float4 WorldPos = Input.Pos;
 	float ZFade = GetRoadZFade(WorldPos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
 
-	float4 AccumLights = SRGBToLinearEst(tex2Dproj(SampleLightMap, Input.LightTex));
+	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
 	float3 Light = ((TerrainSunColor * (AccumLights.a * 2.0)) + AccumLights.rgb) * 2.0;
 
 	float4 Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
