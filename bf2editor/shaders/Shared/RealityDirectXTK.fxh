@@ -95,7 +95,7 @@
 
 	float ToHalfNL(float DotNL)
 	{
-		DotNL = (DotNL * 0.5) + 0.5;
+		DotNL = saturate((DotNL * 0.5) + 0.5);
 		return DotNL * DotNL;
 	}
 
