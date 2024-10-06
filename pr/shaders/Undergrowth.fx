@@ -135,7 +135,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 
 	float3 LocalPos = Input.Pos.xyz;
 
-	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
+	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy) * 2.0);
 	float4 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw));
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale);
 	float4 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
@@ -164,8 +164,8 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 	TerrainLight += (_GIColor.rgb * TerrainLightMap.z);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight * 2.0;
-	OutputColor.a = saturate((Base.a * 2.0) * (_Transparency_x8.a * 8.0));
+	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight;
+	OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
@@ -271,7 +271,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z);
 	float3 TerrainLightMap = Input.TerrainLightMap;
 
-	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
+	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy) * 2.0);
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
@@ -297,8 +297,8 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	TerrainLight += (_GIColor.rgb * TerrainLightMap.z);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight * 2.0;
-	OutputColor.a = saturate((Base.a * 2.0) * (_Transparency_x8.a * 8.0));
+	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
+	OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));

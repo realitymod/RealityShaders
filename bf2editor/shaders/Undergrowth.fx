@@ -136,7 +136,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float4 LocalPos = Input.Pos;
 	float3 TerrainSunColor = _SunColor;
 
-	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
+	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy) * 2.0);
 	float4 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw));
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale);
 	float4 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
@@ -162,12 +162,12 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	TerrainLight += (_GIColor.rgb * TerrainLightMap.z);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight * 2.0;
+	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight;
 
 	#if defined(_EDITOR_)
-		OutputColor.a = saturate(Base.a * 2.0);
+		OutputColor.a = saturate(Base.a);
 	#else
-		OutputColor.a = saturate((Base.a * 2.0) * (_Transparency_x8.a * 8.0));
+		OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
 	#endif
 
 	Output.Color = OutputColor;
@@ -274,7 +274,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z);
 	float3 TerrainLightMap = Input.TerrainLightMap;
 
-	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
+	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy) * 2.0);
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
@@ -297,12 +297,12 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	TerrainLight += (_GIColor.rgb * TerrainLightMap.z);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight * 2.0;
+	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
 
 	#if defined(_EDITOR_)
-		OutputColor.a = saturate(Base.a * 2.0);
+		OutputColor.a = saturate(Base.a);
 	#else
-		OutputColor.a = saturate((Base.a * 2.0) * (_Transparency_x8.a * 8.0));
+		OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
 	#endif
 
 	Output.Color = OutputColor;
