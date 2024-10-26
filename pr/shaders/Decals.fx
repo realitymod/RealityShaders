@@ -174,7 +174,9 @@ PS2FB PS_Decals(VS2PS Input)
 	ZEnable = TRUE; \
 	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = FALSE; \
-	AlphaTestEnable = FALSE; \
+	AlphaTestEnable = TRUE; \
+	AlphaRef = 0; \
+	AlphaFunc = GREATER; \
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCALPHA; \
 	DestBlend = INVSRCALPHA; \
