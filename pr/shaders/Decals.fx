@@ -170,13 +170,11 @@ PS2FB PS_Decals(VS2PS Input)
 }
 
 #define GET_RENDERSTATES_DECAL \
-	CullMode = NONE; \
+	CullMode = CW; \
 	ZEnable = TRUE; \
 	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = FALSE; \
-	AlphaTestEnable = TRUE; \
-	AlphaRef = 0; \
-	AlphaFunc = GREATER; \
+	AlphaTestEnable = FALSE; \
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCALPHA; \
 	DestBlend = INVSRCALPHA; \
