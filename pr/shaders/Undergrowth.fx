@@ -197,7 +197,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = 0; \
+			AlphaRef = PR_ALPHA_REF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \
@@ -332,7 +332,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = 0; \
+			AlphaRef = PR_ALPHA_REF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \
@@ -412,7 +412,7 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = 0; \
+			AlphaRef = PR_ALPHA_REF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			ColorWriteEnable = 0; \

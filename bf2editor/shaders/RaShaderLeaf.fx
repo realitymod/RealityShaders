@@ -289,7 +289,7 @@ technique defaultTechnique
 
 		CullMode = NONE;
 		AlphaTestEnable = TRUE;
-		AlphaRef = 0;
+		AlphaRef = PR_ALPHA_REF;
 		AlphaFunc = GREATER;
 
 		#if _POINTLIGHT_

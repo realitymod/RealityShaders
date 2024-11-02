@@ -141,7 +141,7 @@ technique defaultTechnique
 		CullMode = NONE;
 
 		AlphaTestEnable = TRUE; // (AlphaTest);
-		AlphaRef = 127; // (alphaRef);
+		AlphaRef = PR_ALPHA_REF; // (alphaRef);
 
 		VertexShader = compile vs_3_0 VS_Basic();
 		PixelShader = compile ps_3_0 PS_Basic();

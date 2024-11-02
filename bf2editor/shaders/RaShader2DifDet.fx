@@ -143,7 +143,7 @@ technique defaultTechnique
 		AlphaBlendEnable = (AlphaBlendEnable);
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
+		AlphaRef = PR_ALPHA_REF; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 
 		VertexShader = compile vs_3_0 VS_Basic();
 		PixelShader = compile ps_3_0 PS_Basic();

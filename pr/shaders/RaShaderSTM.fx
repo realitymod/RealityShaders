@@ -329,7 +329,7 @@ technique defaultTechnique
 		ZFunc = PR_ZFUNC_NOEQUAL;
 
 		AlphaTestEnable = (AlphaTest);
-		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
+		AlphaRef = PR_ALPHA_REF; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 
 		#if _POINTLIGHT_
 			ZFunc = PR_ZFUNC_WITHEQUAL;
