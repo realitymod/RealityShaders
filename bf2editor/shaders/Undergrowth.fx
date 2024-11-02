@@ -173,7 +173,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
 	TonemapAndLinearToSRGBEst(Output.Color);
-	RescaleAlpha(Output.Color.a);
+	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -308,7 +308,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
 	TonemapAndLinearToSRGBEst(Output.Color);
-	RescaleAlpha(Output.Color.a);
+	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -390,7 +390,7 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 	OutputColor.a *= (_Transparency_x8.a * 8.0);
 
 	Output.Color = OutputColor;
-	RescaleAlpha(Output.Color.a);
+	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
