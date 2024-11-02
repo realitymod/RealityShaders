@@ -266,7 +266,7 @@ PS2FB PS_Leaf(VS2PS Input)
 		ApplyFog(Output.Color.rgb, FogValue);
 	#endif
 	TonemapAndLinearToSRGBEst(Output.Color);
-	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+	RescaleAlpha(Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
