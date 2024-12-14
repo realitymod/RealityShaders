@@ -17,10 +17,7 @@
 /*
 	Description: Renders object's diffuse map
 
-	Global variables we use to hold the view matrix, projection matrix,
-	ambient material, diffuse material, and the light vector that
-	describes the direction to the light source. These variables are
-	initialized from the application.
+	Global variables we use to hold the view matrix, projection matrix, ambient material, diffuse material, and the light vector that describes the direction to the light source. These variables are initialized from the application.
 */
 
 float4x4 Bones[26];
