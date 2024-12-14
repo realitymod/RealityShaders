@@ -77,11 +77,10 @@ struct VS2PS
 	float4 BaseAndDetail : TEXCOORD1; // .xy = BaseTex; .zw = DetailTex;
 	float4 DirtAndCrack : TEXCOORD2; // .xy = DirtTex; .zw = CrackTex;
 
-	#if defined(_PERPIXEL_)
-		float3 WorldTangent : TEXCOORD3;
-		float3 WorldBinormal : TEXCOORD4;
-	#endif
+	float3 WorldTangent : TEXCOORD3;
+	float3 WorldBinormal : TEXCOORD4;
 	float3 WorldNormal : TEXCOORD5;
+
 	#if _LIGHTMAP_
 		float4 LightMapTex : TEXCOORD6;
 	#endif
@@ -200,30 +199,26 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 // This also includes the composite Gloss map
 float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 {
-	#if defined(_PERPIXEL_)
-		float3 TangentNormal = float3(0.0, 0.0, 1.0);
-		#if	_NBASE_
-			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
-		#endif
-		#if _PARALLAXDETAIL_
-			// TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
-			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
-		#elif _NDETAIL_
-			TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
-		#endif
-		#if _NCRACK_
-			float3 CrackTangentNormals = tex2D(SampleCrackNormalMap, Input.DirtAndCrack.zw).xyz;
-			float CrackMask = tex2D(SampleCrackMap, Input.DirtAndCrack.zw).a;
-			TangentNormal = lerp(TangentNormal, CrackTangentNormals, CrackMask);
-		#endif
-
-		// [tangent-space] -> [object-space] -> [world-space]
-		TangentNormal = normalize((TangentNormal * 2.0) - 1.0);
-		float3 WorldNormal = normalize(mul(TangentNormal, WorldTBN));
-		return WorldNormal;
-	#else
-		return WorldTBN[2];
+	float3 TangentNormal = float3(0.0, 0.0, 1.0);
+	#if _NBASE_
+		TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
 	#endif
+	#if _PARALLAXDETAIL_
+		// TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
+		TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
+	#elif _NDETAIL_
+		TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
+	#endif
+	#if _NCRACK_
+		float3 CrackTangentNormals = tex2D(SampleCrackNormalMap, Input.DirtAndCrack.zw).xyz;
+		float CrackMask = tex2D(SampleCrackMap, Input.DirtAndCrack.zw).a;
+		TangentNormal = lerp(TangentNormal, CrackTangentNormals, CrackMask);
+	#endif
+
+	// [tangent-space] -> [object-space] -> [world-space]
+	TangentNormal = normalize((TangentNormal * 2.0) - 1.0);
+	float3 WorldNormal = normalize(mul(TangentNormal, WorldTBN));
+	return WorldNormal;
 }
 
 float4 GetLightmap(VS2PS Input)
@@ -270,7 +265,12 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	// Prepare texture data
 	float Gloss = 0.0;
 	float4 ColorMap = GetDiffuseMap(Input, ParallaxTex, Gloss);
-	float3 WorldNormal = GetNormalMap(Input, ParallaxTex, WorldTBN);
+
+	#if defined(_PERPIXEL_)
+		float3 WorldNormal = GetNormalMap(Input, ParallaxTex, WorldTBN);
+	#else
+		float3 WorldNormal = WorldTBN[2];
+	#endif
 
 	#if defined(_PERPIXEL_)
 		Gloss = Gloss;
