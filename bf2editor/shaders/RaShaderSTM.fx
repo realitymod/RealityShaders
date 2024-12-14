@@ -74,15 +74,20 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
+	float4 BaseAndDetail : TEXCOORD1; // .xy = BaseTex; .zw = DetailTex;
+	float4 DirtAndCrack : TEXCOORD2; // .xy = DirtTex; .zw = CrackTex;
 
-	float3 WorldTangent : TEXCOORD1;
-	float3 WorldBinormal : TEXCOORD2;
-	float3 WorldNormal : TEXCOORD3;
-
-	float4 BaseAndDetail : TEXCOORD4; // .xy = BaseTex; .zw = DetailTex;
-	float4 DirtAndCrack : TEXCOORD5; // .xy = DirtTex; .zw = CrackTex;
-	float4 LightMapTex : TEXCOORD6;
-	float4 ShadowTex : TEXCOORD7;
+	#if defined(_PERPIXEL_)
+		float3 WorldTangent : TEXCOORD3;
+		float3 WorldBinormal : TEXCOORD4;
+	#endif
+	float3 WorldNormal : TEXCOORD5;
+	#if _LIGHTMAP_
+		float4 LightMapTex : TEXCOORD6;
+	#endif
+	#if _SHADOW_ && _LIGHTMAP_
+		float4 ShadowTex : TEXCOORD7;
+	#endif
 };
 
 struct PS2FB
@@ -124,8 +129,10 @@ VS2PS VS_StaticMesh(APP2VS Input)
 	#endif
 
 	float3x3 WorldTBN = mul(ObjectTBN, (float3x3)World);
-	Output.WorldTangent = WorldTBN[0];
-	Output.WorldBinormal = WorldTBN[1];
+	#if defined(_PERPIXEL_)
+		Output.WorldTangent = WorldTBN[0];
+		Output.WorldBinormal = WorldTBN[1];
+	#endif
 	Output.WorldNormal = WorldTBN[2];
 
 	#if _BASE_
@@ -140,7 +147,7 @@ VS2PS VS_StaticMesh(APP2VS Input)
 	#if _CRACK_
 		Output.DirtAndCrack.zw = Input.TexSets[CrackTexID].xy * TexUnpack;
 	#endif
-	#if	_LIGHTMAP_
+	#if _LIGHTMAP_
 		Output.LightMapTex.xy = Input.TexSets[LightMapTexID].xy * TexUnpack * LightMapOffset.xy + LightMapOffset.zw;
 	#endif
 	#if _SHADOW_ && _LIGHTMAP_
@@ -286,7 +293,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
-		#if _LIGHTMAP_ && _SHADOW_
+		#if _SHADOW_ && _LIGHTMAP_
 			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 

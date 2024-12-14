@@ -62,14 +62,17 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 
-	float3 WorldTangent : TEXCOORD1;
-	float3 WorldBinormal : TEXCOORD2;
-	float3 WorldNormal : TEXCOORD3;
-
-	float2 Tex0 : TEXCOORD4;
-	float4 ShadowTex : TEXCOORD5;
-	float4 ShadowOccTex : TEXCOORD6;
-
+	#if _HASNORMALMAP_
+		float3 WorldTangent : TEXCOORD2;
+		float3 WorldBinormal : TEXCOORD3;
+	#endif
+	float3 WorldNormal : TEXCOORD4;
+	#if _HASSHADOW_
+		float4 ShadowTex : TEXCOORD5;
+	#endif
+	#if _HASSHADOWOCCLUSION_
+		float4 ShadowOccTex : TEXCOORD6;
+	#endif
 	float3 LightDir : TEXCOORD7;
 	float3 ViewDir : TEXCOORD8;
 };

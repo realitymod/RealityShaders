@@ -94,16 +94,22 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
+	float2 Tex0 : TEXCOORD1;
 
-	float3 WorldTangent : TEXCOORD1;
-	float3 WorldBinormal : TEXCOORD2;
-	float3 WorldNormal : TEXCOORD3;
-
-	float2 Tex0 : TEXCOORD4;
-	float4 ShadowTex : TEXCOORD5;
-	float4 ShadowOccTex : TEXCOORD6;
-
-	float3 SkinLightDir : TEXCOORD7;
+	#if _HASNORMALMAP_
+		float3 WorldTangent : TEXCOORD2;
+		float3 WorldBinormal : TEXCOORD3;
+	#endif
+	float3 WorldNormal : TEXCOORD4;
+	#if _HASSHADOW_
+		float4 ShadowTex : TEXCOORD5;
+	#endif
+	#if _HASSHADOWOCCLUSION_
+		float4 ShadowOccTex : TEXCOORD6;
+	#endif
+	#if _HASCOCKPIT_
+		float3 SkinLightDir : TEXCOORD7;
+	#endif
 };
 
 struct PS2FB
@@ -176,10 +182,12 @@ VS2PS VS_BundledMesh(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
-	// Get object-space data
-	float4 ObjectPos = Input.Pos * PosUnpack; // Unpack object-space position
-	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
-	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
+	// Unpack object-space position
+	float4 ObjectPos = Input.Pos * PosUnpack;
+	// Unpack object-space tangent and normal
+	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y;
+	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
+	// Create object-space TBN
 	float3x3 ObjectTBN = GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
 
 	// Get world-space data
@@ -236,7 +244,7 @@ float3 GetWorldLightVec(VS2PS Input, float3 WorldPos)
 		#if _HASCOCKPIT_
 			// Use skinned lighting vector to part to create static cockpit lighting
 			float3 LightVec = Input.SkinLightDir;
-		#else 
+		#else
 			float3 LightVec = -Lights[0].dir;
 		#endif
 		return LightVec;

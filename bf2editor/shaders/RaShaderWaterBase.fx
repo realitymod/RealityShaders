@@ -137,7 +137,9 @@ struct VS2PS
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
 
-	float2 LightMapTex : TEXCOORD1;
+	#if defined(USE_LIGHTMAP)
+		float2 LightMapTex : TEXCOORD1;
+	#endif
 	#if defined(USE_SHADOWS)
 		float4 ShadowTex : TEXCOORD2;
 	#endif
