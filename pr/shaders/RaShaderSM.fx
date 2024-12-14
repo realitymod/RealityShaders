@@ -61,6 +61,7 @@ struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Pos : TEXCOORD0;
+	float2 Tex0 : TEXCOORD1;
 
 	#if _HASNORMALMAP_
 		float3 WorldTangent : TEXCOORD2;
