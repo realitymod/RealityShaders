@@ -107,4 +107,3 @@ technique controlpoint
 		PixelShader = compile ps_3_0 PS_ControlPoint();
 	}
 }
-

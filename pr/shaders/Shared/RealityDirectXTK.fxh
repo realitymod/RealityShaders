@@ -161,4 +161,3 @@
 		return normalize(mul(LocalNormal, TBN));
 	}
 #endif
-

@@ -167,4 +167,3 @@ technique defaultTechnique
 		PixelShader = compile ps_3_0 PS_TrunkOG();
 	}
 }
-

@@ -321,4 +321,3 @@ technique EditorDebug
 		PixelShader = compile ps_3_0 PS_Debug_LightSource();
 	}
 }
-

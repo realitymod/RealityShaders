@@ -348,4 +348,3 @@ technique AdditiveHigh
 		PixelShader = compile ps_3_0 PS_Particle_High_Additive();
 	}
 }
-

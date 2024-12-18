@@ -621,7 +621,6 @@ VS2PS_GBuffBaseDetailCrackLMParallax VS_GBuffBaseDetailCrackLMParallax(APP2VS_GB
 	return Output;
 }
 
-
 VS2PS_GBuffBaseDetailDirtCrack VS_GBuffBaseDetailDirtCrack(APP2VS_GBuffBaseDetailDirtCrack Input)
 {
 	VS2PS_GBuffBaseDetailDirtCrack Output;
@@ -1073,4 +1072,3 @@ CREATE_TECHNIQUE_DX9G(DX9GBuffbasedetaildirtcrack, VS_GBuffBaseDetailDirtCrack()
 CREATE_TECHNIQUE_DX9G(DX9GBuffbasedetaildirtcrackparallax, VS_GBuffBaseDetailDirtCrackParallax(), PS_GBuffBaseDetailDirtCrackParallax())
 CREATE_TECHNIQUE_DX9G(DX9GBuffbasedetaildirtcrackLM, VS_GBuffBaseDetailDirtCrackLM(), PS_GBuffBaseDetailDirtCrackLM())
 CREATE_TECHNIQUE_DX9G(DX9GBuffbasedetaildirtcrackLMparallax, VS_GBuffBaseDetailDirtCrackLMParallax(), PS_GBuffBaseDetailDirtCrackLMParallax())
-

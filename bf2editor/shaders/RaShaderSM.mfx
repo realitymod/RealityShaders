@@ -12,7 +12,6 @@ string GenerateStructs[] =
 	"InstanceParameters"
 };
 
-
 // this is the common vertexElement members
 string reqVertexElementBase[] =
 {
@@ -42,7 +41,6 @@ string TemplateParametersBase[] =
 	// "CubeMap", // Funky name!!!
 };
 
-
 // this is the common instance parameters
 string InstanceParametersBase[] =
 {
@@ -58,7 +56,6 @@ string InstanceParametersBase[] =
 	"World",
 	"Transparency",
 };
-
 
 // Literals, and their requirements
 
@@ -131,7 +128,6 @@ const dword _pointlight_ : LITERAL;
 
 // const dword _useperpixelnormalize_ : LITERAL;
 // const dword _userenormalizedtextures_ : LITERAL;
-
 
 // This is the array of the shader permutations to generate.
 // the resulting shadername is the name of this file + the permutationname - "_"

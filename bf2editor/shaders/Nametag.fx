@@ -360,4 +360,3 @@ technique nametag_vehicleIcons
 		PixelShader = compile ps_3_0 PS_Nametag_Vehicle_Icons();
 	}
 }
-

@@ -457,4 +457,3 @@ technique SkyDomeFlareOcclude
 		PixelShader = compile ps_3_0 PS_SkyDome_Flare_Occlude();
 	}
 }
-

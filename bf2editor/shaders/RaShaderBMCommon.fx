@@ -92,4 +92,3 @@ Light Lights[1];
 float4 PosUnpack;
 float TexUnpack;
 float2 NormalUnpack;
-

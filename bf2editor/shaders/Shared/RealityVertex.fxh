@@ -33,4 +33,3 @@
 		return float3x3(Tangent, Binormal, Normal);
 	}
 #endif
-

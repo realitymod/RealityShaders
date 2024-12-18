@@ -150,4 +150,3 @@ technique Low_Terrain
 		PixelShader = compile ps_3_0 PS_Shared_UnderWater();
 	}
 }
-

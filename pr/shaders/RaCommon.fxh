@@ -199,4 +199,3 @@
 		return ShadowCoords;
 	}
 #endif
-

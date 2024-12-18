@@ -74,4 +74,3 @@ CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, CLAMP)
 
 texture NormalMap;
 CREATE_SAMPLER(SampleNormalMap, NormalMap, CLAMP)
-

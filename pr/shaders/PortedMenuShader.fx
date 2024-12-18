@@ -199,4 +199,3 @@ technique QuadCache
 		PixelShader = compile ps_3_0 PS_Quad_Cache();
 	}
 }
-

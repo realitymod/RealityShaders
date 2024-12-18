@@ -251,4 +251,3 @@ technique Cells
 		PixelShader = compile ps_3_0 PS_Cells();
 	}
 }
-

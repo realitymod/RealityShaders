@@ -54,4 +54,3 @@
 		return saturate(saturate((WorldPos.y - _HemiShadowAltitude) / 10.0) + Offset);
 	}
 #endif
-

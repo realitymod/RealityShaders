@@ -12,7 +12,6 @@ string GenerateStructs[] =
 	"InstanceParameters"
 };
 
-
 // this is the common vertexElement members
 string reqVertexElementBase[] =
 {
@@ -59,7 +58,6 @@ string InstanceParametersBase[] =
 	"GeomBones",
 	"Transparency",
 };
-
 
 // Literals, and their requirements
 
@@ -239,4 +237,3 @@ string DeprecationList[] =
 	{"hasshadow", "hasdot3alphatest", "hascolormapgloss", ""},
 	{"hasuvanimation", "hasgimap", ""},
 };
-

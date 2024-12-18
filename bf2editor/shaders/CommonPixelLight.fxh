@@ -34,4 +34,3 @@
 	float4 _LightColor : LightColor;
 
 #endif
-

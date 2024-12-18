@@ -109,9 +109,7 @@ technique Lightning
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE;
 
-
 		VertexShader = compile vs_3_0 VS_Lightning();
 		PixelShader = compile ps_3_0 PS_Lightning();
 	}
 }
-

@@ -51,4 +51,3 @@
 		return acos(-1.0);
 	}
 #endif
-

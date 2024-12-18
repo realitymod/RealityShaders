@@ -134,4 +134,3 @@ technique Variable
 		PixelShader = compile ps_3_0 PS_BM_ZOnly();
 	}
 }
-

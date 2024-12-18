@@ -111,7 +111,6 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 	return Output;
 }
 
-
 PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform bool UseEnvMap)
 {
 	PS2FB Output = (PS2FB)0.0;
@@ -454,4 +453,3 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 PS_Shared_ZFillLightMap_2();
 	}
 }
-

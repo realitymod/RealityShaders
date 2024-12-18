@@ -330,4 +330,3 @@ technique TrailHigh
 		PixelShader = compile ps_3_0 PS_Trail_High();
 	}
 }
-
