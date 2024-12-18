@@ -1,3 +1,4 @@
+#line 2 "DebugCircleShader.fx"
 
 /*
 	Include header files
@@ -138,3 +139,4 @@ technique t0_usezbuffer
 		PixelShader = compile ps_3_0 PS_Debug_Circle();
 	}
 }
+

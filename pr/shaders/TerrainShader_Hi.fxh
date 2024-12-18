@@ -1,3 +1,5 @@
+#line 2 "TerrainShader_Hi.fxh"
+
 #include "shaders/TerrainShader.fxh"
 #if !defined(_HEADERS_)
 	#include "TerrainShader.fxh"
@@ -452,3 +454,4 @@ technique Hi_Terrain
 		PixelShader = compile ps_3_0 PS_Shared_ZFillLightMap_2();
 	}
 }
+

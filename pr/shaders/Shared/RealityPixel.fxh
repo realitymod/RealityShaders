@@ -1,3 +1,4 @@
+#line 2 "RealityPixel.fxh"
 
 #include "shaders/shared/RealityDirectXTK.fxh"
 #if !defined(_HEADERS_)
@@ -412,3 +413,4 @@
 	}
 
 #endif
+

@@ -1,3 +1,4 @@
+#line 2 "TerrainEditorShader.fx"
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
@@ -1096,3 +1097,4 @@ technique SurroundingEditorTerrain <
 		PixelShader = compile ps_3_0 PS_SET_ColorLightingOnly();
 	}
 }
+

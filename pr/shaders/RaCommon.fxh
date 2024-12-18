@@ -1,3 +1,4 @@
+#line 2 "RaCommon.fxh"
 
 /*
 	Include header files
@@ -198,3 +199,4 @@
 		return ShadowCoords;
 	}
 #endif
+

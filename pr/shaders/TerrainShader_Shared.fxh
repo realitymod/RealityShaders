@@ -1,3 +1,4 @@
+#line 2 "TerrainShader_Shared.fxh"
 
 /*
 	Description: Shared functions for terrain shader
@@ -641,3 +642,4 @@ technique TerrainOccludershadow
 		PixelShader = compile ps_3_0 PS_Hi_OccluderShadow();
 	}
 }
+

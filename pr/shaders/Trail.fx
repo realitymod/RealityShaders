@@ -1,3 +1,4 @@
+#line 2 "Trail.fx"
 
 /*
 	Include header files
@@ -329,3 +330,4 @@ technique TrailHigh
 		PixelShader = compile ps_3_0 PS_Trail_High();
 	}
 }
+

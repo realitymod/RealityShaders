@@ -1,3 +1,4 @@
+#line 2 "FSQuadDrawer.fx"
 
 /*
 	Include header files
@@ -803,3 +804,4 @@ technique ResetStencilCuller
 		PixelShader = compile ps_3_0 PS_Dummy();
 	}
 }
+

@@ -1,3 +1,4 @@
+#line 2 "TerrainShader.fxh"
 
 /*
 	Include header files
@@ -212,3 +213,4 @@
 	}
 
 #endif
+

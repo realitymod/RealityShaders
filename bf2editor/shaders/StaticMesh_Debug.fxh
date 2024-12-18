@@ -1,3 +1,4 @@
+#line 2 "StaticMesh_Debug.fxh"
 
 #include "Shaders/StaticMesh_Data.fxh"
 #if !defined(_HEADERS_)
@@ -54,3 +55,4 @@ technique showTangentBasis
 		PixelShader = compile ps_3_0 PS_ShowTangentBasis();
 	}
 }
+

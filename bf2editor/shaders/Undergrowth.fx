@@ -1,3 +1,4 @@
+#line 2 "Undergrowth.fx"
 
 /*
 	Include header files
@@ -428,3 +429,4 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 
 CREATE_TECHNIQUE_UG_ZONLY(ZOnly, VS_Undergrowth_ZOnly(), PS_Undergrowth_ZOnly())
 CREATE_TECHNIQUE_UG_ZONLY(ZOnly_Simple, VS_Undergrowth_ZOnly(), PS_Undergrowth_ZOnly())
+

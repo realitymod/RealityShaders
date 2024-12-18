@@ -1,3 +1,4 @@
+#line 2 "SimpleAlphaBlendShader.fx"
 
 /*
 	Include header files
@@ -107,3 +108,4 @@ technique t0
 		PixelShader = compile ps_3_0 PS_Shader();
 	}
 }
+

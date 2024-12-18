@@ -1,3 +1,4 @@
+#line 2 "FXCommon.fxh"
 
 /*
 	Description: Shared code in particle shaders
@@ -53,3 +54,4 @@
 		return saturate(saturate((WorldPos.y - _HemiShadowAltitude) / 10.0) + Offset);
 	}
 #endif
+

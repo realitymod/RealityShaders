@@ -1,3 +1,4 @@
+#line 2 "DebugSphereShader.fx"
 
 /*
 	Include header files
@@ -320,3 +321,4 @@ technique EditorDebug
 		PixelShader = compile ps_3_0 PS_Debug_LightSource();
 	}
 }
+

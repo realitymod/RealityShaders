@@ -1,3 +1,4 @@
+#line 2 "DebugLineGraph.fx"
 
 /*
 	Description: Renders debug linegraph
@@ -64,3 +65,4 @@ technique Graph <
 		PixelShader = compile ps_3_0 PS_Debug_Linegraph();
 	}
 }
+

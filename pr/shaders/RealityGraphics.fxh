@@ -1,3 +1,5 @@
+#line 2 "RealityGraphics.fxh"
+
 #include "shaders/SettingsDefines.fxh"
 
 /*
@@ -49,3 +51,4 @@
 		return acos(-1.0);
 	}
 #endif
+

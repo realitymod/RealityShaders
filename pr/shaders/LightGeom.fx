@@ -1,3 +1,4 @@
+#line 2 "LightGeom.fx"
 
 /*
 	Include header files
@@ -169,3 +170,4 @@ technique Spotlight
 		PixelShader = compile ps_3_0 PS_SpotLight();
 	}
 }
+

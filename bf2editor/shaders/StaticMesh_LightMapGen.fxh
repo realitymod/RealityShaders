@@ -1,3 +1,4 @@
+#line 2 "StaticMesh_LightMapGen.fxh"
 
 #include "Shaders/StaticMesh_Data.fxh"
 #if !defined(_HEADERS_)
@@ -122,3 +123,4 @@ technique lightmapGeneration
 		PixelShader = compile ps_3_0 PS_LightMapGen();
 	}
 }
+

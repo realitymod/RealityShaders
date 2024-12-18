@@ -1,3 +1,4 @@
+#line 2 "PortedMenuShader.fx"
 
 /*
 	Description: Shader that handles BF2's UI elements
@@ -198,3 +199,4 @@ technique QuadCache
 		PixelShader = compile ps_3_0 PS_Quad_Cache();
 	}
 }
+

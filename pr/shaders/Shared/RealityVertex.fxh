@@ -1,3 +1,4 @@
+#line 2 "RealityVertex.fxh"
 
 /*
 	Shared functions that process/generate data in the vertex shader
@@ -32,3 +33,4 @@
 		return float3x3(Tangent, Binormal, Normal);
 	}
 #endif
+

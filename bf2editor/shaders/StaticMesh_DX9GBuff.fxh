@@ -1,3 +1,4 @@
+#line 2 "StaticMesh_DX9GBuff.fxh"
 
 #include "Shaders/StaticMesh_Data.fxh"
 #if !defined(_HEADERS_)
@@ -1072,3 +1073,4 @@ CREATE_TECHNIQUE_DX9G(DX9GBuffbasedetaildirtcrack, VS_GBuffBaseDetailDirtCrack()
 CREATE_TECHNIQUE_DX9G(DX9GBuffbasedetaildirtcrackparallax, VS_GBuffBaseDetailDirtCrackParallax(), PS_GBuffBaseDetailDirtCrackParallax())
 CREATE_TECHNIQUE_DX9G(DX9GBuffbasedetaildirtcrackLM, VS_GBuffBaseDetailDirtCrackLM(), PS_GBuffBaseDetailDirtCrackLM())
 CREATE_TECHNIQUE_DX9G(DX9GBuffbasedetaildirtcrackLMparallax, VS_GBuffBaseDetailDirtCrackLMParallax(), PS_GBuffBaseDetailDirtCrackLMParallax())
+

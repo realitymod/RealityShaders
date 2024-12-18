@@ -1,3 +1,4 @@
+#line 2 "RoadCompiled.fx"
 
 /*
 	Include header files
@@ -256,3 +257,4 @@ technique roadcompiledLightingOnly
 		PixelShader = compile ps_3_0 PS_RoadCompiled_LightingOnly();
 	}
 }
+

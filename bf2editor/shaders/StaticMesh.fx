@@ -1,3 +1,4 @@
+#line 2 "StaticMesh.fx"
 
 #include "Shaders/StaticMesh_Data.fxh"
 #include "Shaders/StaticMesh_DX9Z.fxh"
@@ -148,3 +149,4 @@ technique DrawShadowMap
 		PixelShader = compile ps_3_0 PS_ShadowMapPoint();
 	}
 }
+

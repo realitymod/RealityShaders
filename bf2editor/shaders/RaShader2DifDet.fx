@@ -1,3 +1,4 @@
+#line 2 "RaShader2DifDet.fx"
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
@@ -149,3 +150,4 @@ technique defaultTechnique
 		PixelShader = compile ps_3_0 PS_Basic();
 	}
 }
+

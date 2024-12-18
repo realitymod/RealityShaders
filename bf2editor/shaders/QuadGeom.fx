@@ -1,3 +1,4 @@
+#line 2 "QuadGeom.fx"
 
 texture Tex0: TEXLAYER0;
 
@@ -66,3 +67,4 @@ technique TexturedQuad
 		PixelShader = compile ps_3_0 PS_Quad();
 	}
 }
+

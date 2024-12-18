@@ -1,3 +1,4 @@
+#line 2 "RaShaderDefault.fx"
 
 /*
 	Include header files
@@ -99,3 +100,4 @@ technique defaultShader
 		PixelShader = compile ps_3_0 PS_Default();
 	}
 }
+

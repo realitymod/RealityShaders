@@ -1,3 +1,4 @@
+#line 2 "RaShaderBMadditive.fx"
 
 /*
 	Include header files
@@ -137,3 +138,4 @@ technique defaultTechnique
 		PixelShader = compile ps_3_0 PS_BM_Additive();
 	}
 }
+

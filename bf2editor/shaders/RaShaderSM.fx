@@ -1,3 +1,4 @@
+#line 2 "RaShaderSM.fx"
 
 /*
 	Include header files
@@ -364,3 +365,4 @@ technique VariableTechnique
 		PixelShader = compile ps_3_0 PS_SkinnedMesh();
 	}
 }
+

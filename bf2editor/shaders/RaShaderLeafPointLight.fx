@@ -1,3 +1,5 @@
+#line 2 "RaShaderLeafPointLight.fx"
+
 #define LEAF_MOVEMENT 0.04
 
 #include "shaders/RealityGraphics.fxh"
@@ -147,3 +149,4 @@ technique defaultTechnique
 		PixelShader = compile ps_3_0 PS_Basic();
 	}
 }
+

@@ -1,3 +1,4 @@
+#line 2 "RaShaderBM.fx"
 
 /*
 	Include header files
@@ -472,3 +473,4 @@ technique Variable
 		PixelShader = compile ps_3_0 PS_BundledMesh();
 	}
 }
+

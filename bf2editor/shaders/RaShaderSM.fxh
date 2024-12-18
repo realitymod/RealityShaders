@@ -1,3 +1,4 @@
+#line 2 "RaShaderSM.fxh"
 
 /*
 	Include header files
@@ -68,3 +69,4 @@ CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, CLAMP)
 
 texture NormalMap;
 CREATE_SAMPLER(SampleNormalMap, NormalMap, CLAMP)
+

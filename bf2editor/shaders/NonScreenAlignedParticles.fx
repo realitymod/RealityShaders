@@ -1,3 +1,4 @@
+#line 2 "NonScreenAlignedParticles.fx"
 
 /*
 	Include header files
@@ -325,3 +326,4 @@ technique NSAParticleHigh
 		PixelShader = compile ps_3_0 PS_Particle_High();
 	}
 }
+

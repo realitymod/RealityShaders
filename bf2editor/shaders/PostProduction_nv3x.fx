@@ -1,3 +1,4 @@
+#line 2 "PostProduction_nv3x.fx"
 
 /*
 	Include header files
@@ -495,3 +496,4 @@ technique Flashbang
 		PixelShader = compile ps_3_0 PS_Flashbang();
 	}
 }
+

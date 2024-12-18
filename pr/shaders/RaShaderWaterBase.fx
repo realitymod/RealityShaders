@@ -1,3 +1,4 @@
+#line 2 "RaShaderWaterBase.fx"
 
 /*
 	Include header files
@@ -291,3 +292,4 @@ technique defaultShader
 		PixelShader = compile ps_3_0 PS_Water();
 	}
 }
+

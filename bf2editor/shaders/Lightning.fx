@@ -1,3 +1,4 @@
+#line 2 "Lightning.fx"
 
 /*
 	Include header files
@@ -113,3 +114,4 @@ technique Lightning
 		PixelShader = compile ps_3_0 PS_Lightning();
 	}
 }
+

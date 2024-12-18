@@ -1,3 +1,4 @@
+#line 2 "CommonPixelLight.fxh"
 
 /*
 	Description: Outputs common terrain light for staticmesh and terrain shaders
@@ -34,3 +35,4 @@
 	float4 _LightColor : LightColor;
 
 #endif
+

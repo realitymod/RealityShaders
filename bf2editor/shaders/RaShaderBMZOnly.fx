@@ -1,3 +1,4 @@
+#line 2 "RaShaderBMZOnly.fx"
 
 /*
 	Include header files
@@ -133,3 +134,4 @@ technique Variable
 		PixelShader = compile ps_3_0 PS_BM_ZOnly();
 	}
 }
+

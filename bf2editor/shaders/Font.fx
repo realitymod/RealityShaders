@@ -1,3 +1,4 @@
+#line 2 "Font.fx"
 
 /*
 	Description: Renders game font
@@ -134,3 +135,4 @@ technique SelectionQuad
 		PixelShader = compile ps_3_0 PS_SelectionQuad();
 	}
 }
+

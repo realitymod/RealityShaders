@@ -1,3 +1,4 @@
+#line 2 "Decals.fx"
 
 /*
 	Include header files
@@ -206,3 +207,4 @@ technique Decal
 		PixelShader = compile ps_3_0 PS_Decals();
 	}
 }
+

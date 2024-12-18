@@ -1,3 +1,4 @@
+#line 2 "RealityDepth.fxh"
 
 #include "shaders/RealityGraphics.fxh"
 #if !defined(_HEADERS_)
@@ -84,3 +85,4 @@
 	}
 
 #endif
+

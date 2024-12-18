@@ -1,3 +1,4 @@
+#line 2 "PortedFontShader.fx"
 
 /*
 	Description: Renders command-line font
@@ -139,3 +140,4 @@ technique Overlay <
 		PixelShader = compile ps_3_0 PS_Overlay_HPos();
 	}
 }
+

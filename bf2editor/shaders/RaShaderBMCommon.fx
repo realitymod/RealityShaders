@@ -1,3 +1,4 @@
+#line 2 "RaShaderBMCommon.fx"
 
 // common BundledMesh samplers
 
@@ -91,3 +92,4 @@ Light Lights[1];
 float4 PosUnpack;
 float TexUnpack;
 float2 NormalUnpack;
+

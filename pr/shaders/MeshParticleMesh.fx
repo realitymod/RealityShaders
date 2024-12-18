@@ -1,3 +1,4 @@
+#line 2 "MeshParticleMesh.fx"
 
 /*
 	Include header files
@@ -185,3 +186,4 @@ technique DiffuseWithZWrite
 		PixelShader = compile ps_3_0 PS_Diffuse();
 	}
 }
+

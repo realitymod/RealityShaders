@@ -1,3 +1,5 @@
+#line 2 "SplineShader.fx"
+
 #include "shaders/RealityGraphics.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
@@ -105,3 +107,4 @@ technique controlpoint
 		PixelShader = compile ps_3_0 PS_ControlPoint();
 	}
 }
+

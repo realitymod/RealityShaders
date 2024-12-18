@@ -1,3 +1,4 @@
+#line 2 "RoadCompiled.fx"
 
 /*
 	Include header files
@@ -203,3 +204,4 @@ technique roadcompiledFull
 		PixelShader = compile ps_3_0 PS_RoadCompiled();
 	}
 }
+

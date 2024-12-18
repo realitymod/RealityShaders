@@ -1,3 +1,4 @@
+#line 2 "Particles.fx"
 
 /*
 	Include header files
@@ -347,3 +348,4 @@ technique AdditiveHigh
 		PixelShader = compile ps_3_0 PS_Particle_High_Additive();
 	}
 }
+

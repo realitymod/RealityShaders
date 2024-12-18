@@ -1,3 +1,4 @@
+#line 2 "LoadingScreen.fx"
 
 /*
 	Description: Renders loading screen at startup
@@ -79,3 +80,4 @@ technique Screen
 		PixelShader = compile ps_3_0 PS_Screen();
 	}
 }
+

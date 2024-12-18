@@ -1,3 +1,4 @@
+#line 2 "StaticMesh_Data.fxh"
 
 #if !defined(_HEADERS_)
 	#define _HEADERS_
@@ -129,3 +130,4 @@
 	}
 
 #endif
+

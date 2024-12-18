@@ -1,3 +1,5 @@
+#line 2 "Road.fx"
+
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/RaCommon.fxh"
@@ -272,3 +274,4 @@ technique projectroad
 		PixelShader = compile ps_3_0 PS_ProjectRoad();
 	}
 }
+

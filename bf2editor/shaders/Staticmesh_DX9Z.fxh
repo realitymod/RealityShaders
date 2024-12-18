@@ -1,3 +1,4 @@
+#line 2 "Staticmesh_DX9Z.fxh"
 
 #include "Shaders/StaticMesh_Data.fxh"
 #include "Shaders/RealityGraphics.fxh"
@@ -416,3 +417,4 @@ CREATE_TECHNIQUE_DX9Z(DX9ZAndDiffusebasedetailcrack, VS_ZAndDiffusebasedetailcra
 CREATE_TECHNIQUE_DX9Z(DX9ZAndDiffusebasedetailcrackparallax, VS_ZAndDiffusebasedetailcrackparallax(), PS_ZAndDiffusebasedetailcrackparallax())
 CREATE_TECHNIQUE_DX9Z(DX9ZAndDiffusebasedetaildirtcrack, VS_ZAndDiffusebasedetaildirtcrack(), PS_ZAndDiffusebasedetaildirtcrack())
 CREATE_TECHNIQUE_DX9Z(DX9ZAndDiffusebasedetaildirtcrackparallax, VS_ZAndDiffusebasedetaildirtcrackparallax(), PS_ZAndDiffusebasedetaildirtcrackparallax())
+

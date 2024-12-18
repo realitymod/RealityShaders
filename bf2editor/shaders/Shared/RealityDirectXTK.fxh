@@ -1,3 +1,4 @@
+#line 2 "RealityDirectXTK.fxh"
 
 #include "shaders/RealityGraphics.fxh"
 #if !defined(_HEADERS_)
@@ -160,3 +161,4 @@
 		return normalize(mul(LocalNormal, TBN));
 	}
 #endif
+

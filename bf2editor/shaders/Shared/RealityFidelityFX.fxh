@@ -1,3 +1,4 @@
+#line 2 "RealityFidelityFX.fxh"
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityPixel.fxh"
@@ -175,3 +176,4 @@
 	}
 
 #endif
+

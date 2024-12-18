@@ -1,3 +1,4 @@
+#line 2 "DebugD3DXMeshShapeShader.fx"
 
 /*
 	Include header files
@@ -870,3 +871,4 @@ technique projectorfrustum
 		PixelShader = compile ps_3_0 PS_Debug_Frustum(1.0);
 	}
 }
+

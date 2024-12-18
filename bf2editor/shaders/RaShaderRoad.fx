@@ -1,3 +1,4 @@
+#line 2 "RaShaderRoad.fx"
 
 /*
 	Include header files
@@ -218,3 +219,4 @@ technique defaultTechnique
 		PixelShader = compile ps_3_0 PS_Road();
 	}
 }
+

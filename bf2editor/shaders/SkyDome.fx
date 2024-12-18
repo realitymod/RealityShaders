@@ -1,3 +1,4 @@
+#line 2 "SkyDome.fx"
 
 /*
 	Include header files
@@ -456,3 +457,4 @@ technique SkyDomeFlareOcclude
 		PixelShader = compile ps_3_0 PS_SkyDome_Flare_Occlude();
 	}
 }
+
