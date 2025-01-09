@@ -58,9 +58,9 @@
 		return float2(Pf0);
 	}
 
-	float2 ToFloat16(uint2 InputValue)
+	float2 ToFloat16(float2 InputValue)
 	{
-		return float2(InputValue * (1.0 / 65536.0) - 0.5);
+		return float2(int2(InputValue) * (1.0 / 65536.0) - 0.5);
 	}
 
 	// Function call to calculate the red and green wavelength/channel sample offset values.
@@ -130,9 +130,8 @@
 		float2 VignetteMask = 0.0;
 		float2 CoordFromCenter = abs(Coord - CenterCoord);
 
-		const float Pi = GetPi();
-		const float PiOver2 = Pi * 0.5;
-		const float PiOver4 = Pi * 0.25;
+		float PiOver2 = GetPi() * 0.5;
+		float PiOver4 = GetPi() * 0.25;
 		VignetteMask = cos(min(CoordFromCenter * VignetteAmount * PiOver4, PiOver2));
 		VignetteMask *= VignetteMask;
 		VignetteMask *= VignetteMask;
