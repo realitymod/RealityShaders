@@ -496,3 +496,35 @@ technique Flashbang
 		PixelShader = compile ps_3_0 PS_Flashbang();
 	}
 }
+
+float4 PS_Fog(VS2PS_Quad Input) : COLOR0
+{
+	float3 WorldPos = tex2D(SampleTex0, Input.Tex0);
+	float UVCoord =  saturate((WorldPos.zzzz - _FogStartAndEnd.r) / _FogStartAndEnd.g); // _FogColorAndViewDistance.a);
+	return saturate(float4(_FogColor.rgb, UVCoord));
+	// float2 fogcoords = float2(UVCoord, 0.0);
+	return tex2D(SampleTex1, float2(UVCoord, 0.0)) * _FogColor.rgbb;
+}
+
+technique Fog
+{
+	pass p0
+	{
+		ZEnable = FALSE;
+
+		AlphaBlendEnable = TRUE;
+		SrcBlend = SRCALPHA; // SRCCOLOR;
+		DestBlend = INVSRCALPHA; // ZERO;
+
+		StencilEnable = TRUE; // FALSE;
+		StencilFunc = NOTEQUAL;
+		StencilRef = 0x00;
+		StencilMask = 0xFF;
+		StencilFail = KEEP;
+		StencilZFail = KEEP;
+		StencilPass = KEEP;
+
+		VertexShader = compile vs_3_0 VS_Quad();
+		PixelShader = compile ps_3_0 PS_Fog();
+	}
+}

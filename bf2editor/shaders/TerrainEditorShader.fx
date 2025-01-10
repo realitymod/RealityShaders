@@ -123,6 +123,17 @@ struct VS2PS_EditorDetail
 	float4 Pos : TEXCOORD0;
 	float4 Normal : TEXCOORD1;
 	float4 Tex0 : TEXCOORD2; // .xy = Input.Pos0.xy; .zw = BiTex;
+	float4 YPlaneTex : TEXCOORD3;
+	float2 XPlaneTex : TEXCOORD4;
+	float2 ZPlaneTex : TEXCOORD5;
+};
+
+struct VS2PS_EditorDetailPlaneMapping
+{
+	float4 HPos : POSITION;
+	float4 Pos : TEXCOORD0;
+	float4 Normal : TEXCOORD1;
+	float4 Tex0 : TEXCOORD2; // .xy = Input.Pos0.xy; .zw = BiTex;
 	float4 YPlaneTex : TEXCOORD3; // .xy = near; .zw = far;
 	float4 XPlaneTex : TEXCOORD4; // .xy = near; .zw = far;
 	float4 ZPlaneTex : TEXCOORD5; // .xy = near; .zw = far;
@@ -199,12 +210,71 @@ float4 GetWorldPos(float2 Pos0, float2 Pos1)
 	Terrain: Detail Texture Mode
 */
 
-VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
+void AssembleXYZPlaneTex(in float3 Tex, in float4 Tiling, out float2 XPlaneTex, inout float2 YPlaneTex, inout float2 ZPlaneTex)
 {
-	VS2PS_EditorDetail Output = (VS2PS_EditorDetail)0;
-	float4 MorphedWorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	float2 YPlane = Tex.xz;
+	YPlaneTex.xy = YPlane * Tiling.z;
+
+	float2 XPlane = Tex.zy;
+	XPlaneTex.xy = XPlane * Tiling.xy;
+	XPlaneTex.y += Tiling.w;
+
+	float2 ZPlane = Tex.xy;
+	ZPlaneTex.xy = ZPlane * Tiling.xy;
+	ZPlaneTex.y += Tiling.w;
+}
+
+struct EditorDetail
+{
+	float4 HPos;
+	float4 Pos;
+	float4 Normal;
+	float4 Tex0;
+};
+
+struct PlaneTex
+{
+	float4 X;
+	float4 Y;
+	float4 Z;
+};
+
+PlaneTex GetPlaneTex(float4 Pos0, float4 Pos1)
+{
+	PlaneTex Output;
+
+	float3 Tex = float3
+	(
+		Pos0.x * _TexScale.x,
+		-(Pos1.x * _TexScale.y),
+		Pos0.y * _TexScale.z
+	);
+
+	float2 Y = Tex.xz;
+	Output.Y.xy = Y * _NearTexTiling.z;
+	Output.Y.zw = Y * _FarTexTiling.z;
+
+	float2 X = Tex.zy;
+	Output.X.xy = X * _NearTexTiling.xy;
+	Output.X.y += _NearTexTiling.w;
+	Output.X.zw = X * _FarTexTiling.xy;
+	Output.X.w += _FarTexTiling.w;
+
+	float2 Z = Tex.xy;
+	Output.Z.xy = Z * _NearTexTiling.xy;
+	Output.Z.y += _NearTexTiling.w;
+	Output.Z.zw = Z * _FarTexTiling.xy;
+	Output.Z.w += _FarTexTiling.w;
+
+	return Output;
+}
+
+EditorDetail GetEditorDetail(float4 Pos0, float4 Pos1, float2 Tex0, float3 Normal)
+{
+	EditorDetail Output = (EditorDetail)0.0;
 
 	// tl: output HPos as early as possible.
+	float4 MorphedWorldPos = GetWorldPos(Pos0.xy, Pos1.xw);
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Pos = float4(MorphedWorldPos.xyz, Output.HPos.w);
 
@@ -214,9 +284,40 @@ VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
 	#endif
 
 	// tl: uncompress normal
-	Output.Normal.xyz = (Input.Normal * 2.0) - 1.0;
-	Output.Tex0.xy = Input.Pos0.xy;
+	Output.Normal.xyz = (Normal * 2.0) - 1.0;
+	Output.Tex0.xy = Pos0.xy;
 	Output.Tex0.zw = ((Output.Tex0.xy * _TexScale.xz) * _BiFixTex.x) + _BiFixTex.y;
+
+	return Output;
+}
+
+VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
+{
+	VS2PS_EditorDetail Output = (VS2PS_EditorDetail)0;
+	EditorDetail InitEditorDetail = GetEditorDetail(Input.Pos0, Input.Pos1, Input.Tex0, Input.Normal);
+
+	Output.HPos = InitEditorDetail.HPos;
+	Output.Pos = InitEditorDetail.Pos;
+	Output.Normal = InitEditorDetail.Normal;
+	Output.Tex0 = InitEditorDetail.Tex0;
+
+	PlaneTex Plane = GetPlaneTex(Input.Pos0, Input.Pos1);
+	Output.XPlaneTex = Plane.X;
+	Output.YPlaneTex.xy = Plane.Y.xy;
+	Output.ZPlaneTex.xy = Plane.Z.xy;
+
+	return Output;
+}
+
+VS2PS_EditorDetailPlaneMapping VS_EditorDetailTexturedPlaneMapping(APP2VS_EditorDetailTextured Input)
+{
+	VS2PS_EditorDetailPlaneMapping Output;
+	EditorDetail InitEditorDetail = GetEditorDetail(Input.Pos0, Input.Pos1, Input.Tex0, Input.Normal);
+
+	Output.HPos = InitEditorDetail.HPos;
+	Output.Pos = InitEditorDetail.Pos;
+	Output.Normal = InitEditorDetail.Normal;
+	Output.Tex0 = InitEditorDetail.Tex0;
 
 	float3 Tex = float3
 	(
@@ -225,21 +326,10 @@ VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
 		Input.Pos0.y * _TexScale.z
 	);
 
-	float2 YPlane = Tex.xz;
-	Output.YPlaneTex.xy = YPlane * _NearTexTiling.z;
-	Output.YPlaneTex.zw = YPlane * _FarTexTiling.z;
-
-	float2 XPlane = Tex.zy;
-	Output.XPlaneTex.xy = XPlane * _NearTexTiling.xy;
-	Output.XPlaneTex.y += _NearTexTiling.w;
-	Output.XPlaneTex.zw = XPlane * _FarTexTiling.xy;
-	Output.XPlaneTex.w += _FarTexTiling.w;
-
-	float2 ZPlane = Tex.xy;
-	Output.ZPlaneTex.xy = ZPlane * _NearTexTiling.xy;
-	Output.ZPlaneTex.y += _NearTexTiling.w;
-	Output.ZPlaneTex.zw = ZPlane * _FarTexTiling.xy;
-	Output.ZPlaneTex.w += _FarTexTiling.w;
+	PlaneTex Plane = GetPlaneTex(Input.Pos0, Input.Pos1);
+	Output.XPlaneTex = Plane.X;
+	Output.YPlaneTex = Plane.Y;
+	Output.ZPlaneTex = Plane.Z;
 
 	return Output;
 }
@@ -256,7 +346,7 @@ float GetLerpValue(float3 WorldPos)
 	return saturate(CameraDist * _NearFarMorphLimits.x - _NearFarMorphLimits.y);
 }
 
-PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bool UseEnvMap, bool ColorOnly)
+PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool ColorOnly)
 {
 	PS2FB Output = (PS2FB)0;
 
@@ -273,12 +363,10 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.zw));
 	float4 LowComponent = tex2D(SampleTex5, Input.Tex0.zw);
-	float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.YPlaneTex.xy) * float4(2.0, 2.0, 2.0, 1.0));
-	float4 XPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.XPlaneTex.xy) * 2.0);
-	float4 ZPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.ZPlaneTex.xy) * 2.0);
-	float3 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.YPlaneTex.zw) * 2.0);
-	float3 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.XPlaneTex.zw) * 2.0);
-	float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.ZPlaneTex.zw) * 2.0);
+	float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.YPlaneTex.zw) * float4(2.0, 2.0, 2.0, 1.0));
+	float3 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.YPlaneTex.xy) * 2.0);
+	float3 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.XPlaneTex.xy) * 2.0);
+	float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.ZPlaneTex.xy) * 2.0);
 	float EnvMapScale = YPlaneDetailmap.a;
 
 	float Blue = 0.0;
@@ -290,17 +378,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue, LowComponent.b);
 
-	float4 DetailMap = 1.0;
-	if(UsePlaneMapping)
-	{
-		DetailMap += (XPlaneDetailmap * BlendValue.x);
-		DetailMap += (YPlaneDetailmap * BlendValue.y);
-		DetailMap += (ZPlaneDetailmap * BlendValue.z);
-	}
-	else
-	{
-		DetailMap = YPlaneDetailmap;
-	}
+	float4 DetailMap = YPlaneDetailmap;
 
 	float4 Lights = 1.0;
 	if (!ColorOnly)
@@ -334,22 +412,90 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UsePlaneMapping, bo
 	return Output;
 }
 
-#define CREATE_PS(FUNCTION_NAME, PLANE_MAPPING, ENVMAP, COLOR_ONLY) \
-	PS2FB FUNCTION_NAME(VS2PS_EditorDetail Input) \
-	{ \
-		return GetEditorDetailTextured(Input, PLANE_MAPPING, ENVMAP, COLOR_ONLY); \
+PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, bool UseEnvMap, bool ColorOnly)
+{
+	PS2FB Output = (PS2FB)0;
+
+	float4 WorldPos = Input.Pos;
+	float3 WorldNormal = normalize(Input.Normal);
+	float LerpValue = GetLerpValue(WorldPos.xyz);
+	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
+	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
+
+	float4 Component = tex2D(SampleTex2, Input.Tex0.zw);
+	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
+	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
+	float ChartContribution = dot(Component.xyz, _ComponentSelector.xyz);
+
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.zw));
+	float4 LowComponent = tex2D(SampleTex5, Input.Tex0.zw);
+	float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.YPlaneTex.xy) * float4(2.0, 2.0, 2.0, 1.0));
+	float4 XPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.XPlaneTex.xy) * 2.0);
+	float4 ZPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.ZPlaneTex.xy) * 2.0);
+	float3 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.YPlaneTex.zw) * 2.0);
+	float3 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.XPlaneTex.zw) * 2.0);
+	float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.ZPlaneTex.zw) * 2.0);
+	float EnvMapScale = YPlaneDetailmap.a;
+
+	float Blue = 0.0;
+	Blue += (XPlaneLowDetailmap.g * BlendValue.x);
+	Blue += (YPlaneLowDetailmap.r * BlendValue.y);
+	Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
+
+	float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b, LowDetailMapBlend);
+	LowDetailMap *= lerp(1.0, Blue, LowComponent.b);
+
+	float4 DetailMap = YPlaneDetailmap * BlendValue.y;
+	DetailMap += (XPlaneDetailmap * BlendValue.x);
+	DetailMap += (ZPlaneDetailmap * BlendValue.z);
+
+	float4 Lights = 1.0;
+	if (!ColorOnly)
+	{
+		Lights = GetTerrainLights(SampleTex4, Input.Tex0.zw, _PointColor);
 	}
 
-CREATE_PS(PS_EditorDetailTextured, false, false, false)
-CREATE_PS(PS_EditorDetailTextured_PlaneMapping, true, false, false)
-CREATE_PS(PS_EditorDetailTextured_WithEnvMap, false, true, false)
-CREATE_PS(PS_EditorDetailTexturedColorOnly, false, false, true)
-CREATE_PS(PS_EditorDetailTextured_PlaneMappingColorOnly, true, false, true)
-CREATE_PS(PS_EditorDetailTextured_WithEnvMapColorOnly, false, true, true)
+	float4 BothDetailMap = DetailMap * LowDetailMap;
+	float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
+	float4 OutputColor = ColorMap * OutputDetail * Lights;
 
-#undef CREATE_PS
+	if (UseEnvMap)
+	{
+		float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
+		float4 EnvMapColor = SRGBToLinearEst(texCUBE(SampleTex7Cube, Reflection));
+		OutputColor = lerp(OutputColor, EnvMapColor, saturate(EnvMapScale * (1.0 - LerpValue)));
+	}
 
-#define CREATE_PASS(PASS_NAME, VERTEX_SHADER, PIXEL_SHADER) \
+	Output.Color = OutputColor;
+	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
+
+	Output.Color.a = 1.0;
+	Output.Color *= ChartContribution;
+
+	#if defined(LOG_DEPTH)
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+	#endif
+
+	return Output;
+}
+
+#define CREATE_PS_EDITORDETAILTEXTURED(INPUT_VS_STRUCT, PS_NAME, FUNCTION, ENVMAP, COLOR_ONLY) \
+	PS2FB PS_NAME(INPUT_VS_STRUCT Input) \
+	{ \
+		return FUNCTION(Input, ENVMAP, COLOR_ONLY); \
+	}
+
+CREATE_PS_EDITORDETAILTEXTURED(VS2PS_EditorDetail, PS_EditorDetailTextured, GetEditorDetailTextured, false, false)
+CREATE_PS_EDITORDETAILTEXTURED(VS2PS_EditorDetailPlaneMapping, PS_EditorDetailTextured_PlaneMapping, GetEditorDetailTexturedPlaneMapping, false, false)
+CREATE_PS_EDITORDETAILTEXTURED(VS2PS_EditorDetail, PS_EditorDetailTextured_WithEnvMap, GetEditorDetailTextured, true, false)
+CREATE_PS_EDITORDETAILTEXTURED(VS2PS_EditorDetail, PS_EditorDetailTexturedColorOnly, GetEditorDetailTextured, false, true)
+CREATE_PS_EDITORDETAILTEXTURED(VS2PS_EditorDetailPlaneMapping, PS_EditorDetailTextured_PlaneMappingColorOnly, GetEditorDetailTexturedPlaneMapping, false, true)
+CREATE_PS_EDITORDETAILTEXTURED(VS2PS_EditorDetail, PS_EditorDetailTextured_WithEnvMapColorOnly, GetEditorDetailTextured, true, true)
+
+#define CREATE_PASS_EDITORDETAILTEXTURED(PASS_NAME, VERTEX_SHADER, PIXEL_SHADER) \
 	pass PASS_NAME \
 	{ \
 		CullMode = CW; \
@@ -366,16 +512,14 @@ CREATE_PS(PS_EditorDetailTextured_WithEnvMapColorOnly, false, true, true)
 
 technique EditorDetailTextured
 {
-	CREATE_PASS(topDownMapping, VS_EditorDetailTextured(), PS_EditorDetailTextured())
-	CREATE_PASS(planeMapping, VS_EditorDetailTextured(), PS_EditorDetailTextured_PlaneMapping())
-	CREATE_PASS(topDownMappingWithEnvMap, VS_EditorDetailTextured(), PS_EditorDetailTextured_WithEnvMap())
+	CREATE_PASS_EDITORDETAILTEXTURED(topDownMapping, VS_EditorDetailTextured(), PS_EditorDetailTextured())
+	CREATE_PASS_EDITORDETAILTEXTURED(planeMapping, VS_EditorDetailTexturedPlaneMapping(), PS_EditorDetailTextured_PlaneMapping())
+	CREATE_PASS_EDITORDETAILTEXTURED(topDownMappingWithEnvMap, VS_EditorDetailTextured(), PS_EditorDetailTextured_WithEnvMap())
 
-	CREATE_PASS(topDownMappingColorOnly, VS_EditorDetailTextured(), PS_EditorDetailTexturedColorOnly())
-	CREATE_PASS(planeMappingColorOnly, VS_EditorDetailTextured(), PS_EditorDetailTextured_PlaneMappingColorOnly())
-	CREATE_PASS(topDownMappingWithEnvMapColorOnly, VS_EditorDetailTextured(), PS_EditorDetailTextured_WithEnvMapColorOnly())
+	CREATE_PASS_EDITORDETAILTEXTURED(topDownMappingColorOnly, VS_EditorDetailTextured(), PS_EditorDetailTexturedColorOnly())
+	CREATE_PASS_EDITORDETAILTEXTURED(planeMappingColorOnly, VS_EditorDetailTexturedPlaneMapping(), PS_EditorDetailTextured_PlaneMappingColorOnly())
+	CREATE_PASS_EDITORDETAILTEXTURED(topDownMappingWithEnvMapColorOnly, VS_EditorDetailTextured(), PS_EditorDetailTextured_WithEnvMapColorOnly())
 }
-
-#undef CREATE_PASS
 
 /*
 	[DISPLAY SHADERS]
@@ -636,7 +780,7 @@ PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 	return Output;
 }
 
-#define CREATE_TECHNIQUE(TECHNIQUE_NAME, VERTEX_SHADER, PIXEL_SHADER) \
+#define CREATE_TECHNIQUE_GRID(TECHNIQUE_NAME, VERTEX_SHADER, PIXEL_SHADER) \
 	technique TECHNIQUE_NAME \
 	{ \
 		pass p0 \
@@ -650,10 +794,8 @@ PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 		} \
 	}
 
-CREATE_TECHNIQUE(EditorGrid, VS_EditorGrid(), PS_EditorGrid())
-CREATE_TECHNIQUE(EditorTopoGrid, VS_EditorTopoGrid(), PS_EditorTopoGrid())
-
-#undef CREATE_TECHNIQUE
+CREATE_TECHNIQUE_GRID(EditorGrid, VS_EditorGrid(), PS_EditorGrid())
+CREATE_TECHNIQUE_GRID(EditorTopoGrid, VS_EditorTopoGrid(), PS_EditorTopoGrid())
 
 /*
 	[ZFILL SHADER]
@@ -740,7 +882,7 @@ PS2FB PS_EditorGrowth(VS2PS_EditorFoliage Input)
 	return Output;
 }
 
-#define CREATE_TECHNIQUE(TECHNIQUE_NAME, VERTEX_SHADER, PIXEL_SHADER) \
+#define CREATE_TECHNIQUE_GROWTH(TECHNIQUE_NAME, VERTEX_SHADER, PIXEL_SHADER) \
 	technique TECHNIQUE_NAME \
 	{ \
 		pass p0 \
@@ -755,12 +897,10 @@ PS2FB PS_EditorGrowth(VS2PS_EditorFoliage Input)
 		} \
 	}
 
-CREATE_TECHNIQUE(EditorUndergrowth, VS_EditorGrowth(), PS_EditorGrowth())
-CREATE_TECHNIQUE(EditorOvergrowth, VS_EditorGrowth(), PS_EditorGrowth())
-CREATE_TECHNIQUE(EditorOvergrowthShadow, VS_EditorGrowth(), PS_EditorGrowth())
-CREATE_TECHNIQUE(EditorMaterialmap, VS_EditorGrowth(), PS_EditorGrowth())
-
-#undef CREATE_TECHNIQUE
+CREATE_TECHNIQUE_GROWTH(EditorUndergrowth, VS_EditorGrowth(), PS_EditorGrowth())
+CREATE_TECHNIQUE_GROWTH(EditorOvergrowth, VS_EditorGrowth(), PS_EditorGrowth())
+CREATE_TECHNIQUE_GROWTH(EditorOvergrowthShadow, VS_EditorGrowth(), PS_EditorGrowth())
+CREATE_TECHNIQUE_GROWTH(EditorMaterialmap, VS_EditorGrowth(), PS_EditorGrowth())
 
 /*
 	Terrain: Hemimap Mode
@@ -773,7 +913,7 @@ VS2PS_EditorFoliage VS_EditorHemimap(APP2VS Input)
 	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
-	
+
 	// Output depth
 	#if defined(LOG_DEPTH)
 		Output.Pos.w = Output.HPos.w + 1.0;
