@@ -245,22 +245,22 @@ PlaneTex GetPlaneTex(float4 Pos0, float4 Pos1)
 
 	float3 Tex = float3
 	(
-		Pos0.x * _TexScale.x,
+		Pos0.y * _TexScale.z,
 		-(Pos1.x * _TexScale.y),
-		Pos0.y * _TexScale.z
+		Pos0.x *_TexScale.x
 	);
 
-	float2 Y = Tex.xz;
+	float2 Y = Tex.zx;
 	Output.Y.xy = Y * _NearTexTiling.z;
 	Output.Y.zw = Y * _FarTexTiling.z;
 
-	float2 X = Tex.zy;
+	float2 X = Tex.xy;
 	Output.X.xy = X * _NearTexTiling.xy;
 	Output.X.y += _NearTexTiling.w;
 	Output.X.zw = X * _FarTexTiling.xy;
 	Output.X.w += _FarTexTiling.w;
 
-	float2 Z = Tex.xy;
+	float2 Z = Tex.zy;
 	Output.Z.xy = Z * _NearTexTiling.xy;
 	Output.Z.y += _NearTexTiling.w;
 	Output.Z.zw = Z * _FarTexTiling.xy;
@@ -302,9 +302,10 @@ VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
 	Output.Tex0 = InitEditorDetail.Tex0;
 
 	PlaneTex Plane = GetPlaneTex(Input.Pos0, Input.Pos1);
-	Output.XPlaneTex = Plane.X;
-	Output.YPlaneTex.xy = Plane.Y.xy;
-	Output.ZPlaneTex.xy = Plane.Z.xy;
+	Output.YPlaneTex.zw = Plane.Y.xy;
+	Output.YPlaneTex.xy = Plane.Y.zw;
+	Output.XPlaneTex = Plane.X.zw;
+	Output.ZPlaneTex = Plane.Z.zw;
 
 	return Output;
 }
@@ -318,13 +319,6 @@ VS2PS_EditorDetailPlaneMapping VS_EditorDetailTexturedPlaneMapping(APP2VS_Editor
 	Output.Pos = InitEditorDetail.Pos;
 	Output.Normal = InitEditorDetail.Normal;
 	Output.Tex0 = InitEditorDetail.Tex0;
-
-	float3 Tex = float3
-	(
-		Input.Pos0.x * _TexScale.x,
-		-(Input.Pos1.x * _TexScale.y),
-		Input.Pos0.y * _TexScale.z
-	);
 
 	PlaneTex Plane = GetPlaneTex(Input.Pos0, Input.Pos1);
 	Output.XPlaneTex = Plane.X;
@@ -365,8 +359,8 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 	float4 LowComponent = tex2D(SampleTex5, Input.Tex0.zw);
 	float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.YPlaneTex.zw) * float4(2.0, 2.0, 2.0, 1.0));
 	float3 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.YPlaneTex.xy) * 2.0);
-	float3 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.XPlaneTex.xy) * 2.0);
-	float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.ZPlaneTex.xy) * 2.0);
+	float3 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.XPlaneTex) * 2.0);
+	float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.ZPlaneTex) * 2.0);
 	float EnvMapScale = YPlaneDetailmap.a;
 
 	float Blue = 0.0;
