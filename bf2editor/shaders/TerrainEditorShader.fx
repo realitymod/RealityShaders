@@ -210,20 +210,6 @@ float4 GetWorldPos(float2 Pos0, float2 Pos1)
 	Terrain: Detail Texture Mode
 */
 
-void AssembleXYZPlaneTex(in float3 Tex, in float4 Tiling, out float2 XPlaneTex, inout float2 YPlaneTex, inout float2 ZPlaneTex)
-{
-	float2 YPlane = Tex.xz;
-	YPlaneTex.xy = YPlane * Tiling.z;
-
-	float2 XPlane = Tex.zy;
-	XPlaneTex.xy = XPlane * Tiling.xy;
-	XPlaneTex.y += Tiling.w;
-
-	float2 ZPlane = Tex.xy;
-	ZPlaneTex.xy = ZPlane * Tiling.xy;
-	ZPlaneTex.y += Tiling.w;
-}
-
 struct EditorDetail
 {
 	float4 HPos;
@@ -245,22 +231,22 @@ PlaneTex GetPlaneTex(float4 Pos0, float4 Pos1)
 
 	float3 Tex = float3
 	(
-		Pos0.y * _TexScale.z,
+		Pos0.x * _TexScale.x,
 		-(Pos1.x * _TexScale.y),
-		Pos0.x *_TexScale.x
+		Pos0.y * _TexScale.z
 	);
 
-	float2 Y = Tex.zx;
+	float2 Y = Tex.xz;
 	Output.Y.xy = Y * _NearTexTiling.z;
 	Output.Y.zw = Y * _FarTexTiling.z;
 
-	float2 X = Tex.xy;
+	float2 X = Tex.zy;
 	Output.X.xy = X * _NearTexTiling.xy;
 	Output.X.y += _NearTexTiling.w;
 	Output.X.zw = X * _FarTexTiling.xy;
 	Output.X.w += _FarTexTiling.w;
 
-	float2 Z = Tex.zy;
+	float2 Z = Tex.xy;
 	Output.Z.xy = Z * _NearTexTiling.xy;
 	Output.Z.y += _NearTexTiling.w;
 	Output.Z.zw = Z * _FarTexTiling.xy;
@@ -283,8 +269,7 @@ EditorDetail GetEditorDetail(float4 Pos0, float4 Pos1, float2 Tex0, float3 Norma
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
-	// tl: uncompress normal
-	Output.Normal.xyz = (Normal * 2.0) - 1.0;
+	Output.Normal.xyz = Normal;
 	Output.Tex0.xy = Pos0.xy;
 	Output.Tex0.zw = ((Output.Tex0.xy * _TexScale.xz) * _BiFixTex.x) + _BiFixTex.y;
 
@@ -302,8 +287,8 @@ VS2PS_EditorDetail VS_EditorDetailTextured(APP2VS_EditorDetailTextured Input)
 	Output.Tex0 = InitEditorDetail.Tex0;
 
 	PlaneTex Plane = GetPlaneTex(Input.Pos0, Input.Pos1);
-	Output.YPlaneTex.zw = Plane.Y.xy;
 	Output.YPlaneTex.xy = Plane.Y.zw;
+	Output.YPlaneTex.zw = Plane.Y.xy;
 	Output.XPlaneTex = Plane.X.zw;
 	Output.ZPlaneTex = Plane.Z.zw;
 
@@ -345,7 +330,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 	PS2FB Output = (PS2FB)0;
 
 	float4 WorldPos = Input.Pos;
-	float3 WorldNormal = normalize(Input.Normal);
+	float3 WorldNormal = normalize(Input.Normal.xyz);
 	float LerpValue = GetLerpValue(WorldPos.xyz);
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
@@ -363,10 +348,9 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 	float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.ZPlaneTex) * 2.0);
 	float EnvMapScale = YPlaneDetailmap.a;
 
-	float Blue = 0.0;
-	Blue += (XPlaneLowDetailmap.g * BlendValue.x);
-	Blue += (YPlaneLowDetailmap.r * BlendValue.y);
-	Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
+	float Blue = (XPlaneLowDetailmap.y * BlendValue.x);
+	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
+	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
 	float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b, LowDetailMapBlend);
