@@ -193,7 +193,6 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
-	RescaleAlpha(Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

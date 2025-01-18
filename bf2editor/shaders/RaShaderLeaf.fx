@@ -268,7 +268,7 @@ PS2FB PS_Leaf(VS2PS Input)
 		ApplyFog(Output.Color.rgb, FogValue);
 	#endif
 	TonemapAndLinearToSRGBEst(Output.Color);
-	RescaleAlpha(Output.Color.a);
+	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -290,7 +290,7 @@ technique defaultTechnique
 
 		CullMode = NONE;
 		AlphaTestEnable = TRUE;
-		AlphaRef = PR_ALPHA_REF;
+		AlphaRef = PR_ALPHA_REF_LEAF;
 		AlphaFunc = GREATER;
 
 		#if _POINTLIGHT_

@@ -171,7 +171,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
-	RescaleAlpha(Output.Color.a);
+	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -198,7 +198,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = PR_ALPHA_REF; \
+			AlphaRef = PR_ALPHA_REF_LEAF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \
@@ -304,7 +304,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
-	RescaleAlpha(Output.Color.a);
+	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
@@ -333,7 +333,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = PR_ALPHA_REF; \
+			AlphaRef = PR_ALPHA_REF_LEAF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \
@@ -386,7 +386,7 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 	OutputColor.a *= (_Transparency_x8.a * 8.0);
 
 	Output.Color = OutputColor;
-	RescaleAlpha(Output.Color.a);
+	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
@@ -413,7 +413,7 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = PR_ALPHA_REF; \
+			AlphaRef = PR_ALPHA_REF_LEAF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			ColorWriteEnable = 0; \
