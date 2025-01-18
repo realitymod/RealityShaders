@@ -124,6 +124,7 @@ PS2FB PS_Basic(VS2PS Input)
 	Output.Color.rgb = (DiffuseMap.rgb * DetailMap.rgb) * Diffuse;
 	Output.Color.a = DiffuseMap.a;
 	TonemapAndLinearToSRGBEst(Output.Color);
+	RescaleAlpha(Output.Color.a);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
