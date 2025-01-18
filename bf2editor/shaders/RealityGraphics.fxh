@@ -4,7 +4,7 @@
 
 /*
 	Shared shader code that we use for Project Reality: BF2
-	Author: [R-DEV]papadanku @ 2023
+	Author: [R-DEV]papadanku @ 2025
 */
 
 #if !defined(_HEADERS_)
