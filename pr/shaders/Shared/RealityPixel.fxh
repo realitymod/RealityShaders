@@ -397,8 +397,8 @@
 		// Apply fading [0.0, 1.0)
 		AlphaT = saturate(0.5 + ((AlphaT - 0.5) * HashWeight));
 
-		// Output new alpha
-		AlphaChannel *= (AlphaChannel > AlphaT);
+		// Output new alpha if it is greater than 0.0
+		AlphaChannel = (AlphaChannel > 0.0) ? AlphaChannel > AlphaT : 0.0;
 	}
 
 	/*
