@@ -4,11 +4,13 @@
 #include "shaders/RaCommon.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/shared/RealityPixel.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "RaCommon.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
+	#include "shared/RealityPixel.fxh"
 #endif
 
 #define LIGHT_ADD float3(0.5, 0.5, 0.5)

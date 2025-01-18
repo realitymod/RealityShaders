@@ -408,7 +408,7 @@
 	*/
 	void RescaleAlpha(inout float AlphaChannel)
 	{
-		const float Cutoff = 0.4;
+		const float Cutoff = 0.5;
 		AlphaChannel = (AlphaChannel - Cutoff) / max(fwidth(AlphaChannel), 1e-4) + 0.5;
 	}
 
