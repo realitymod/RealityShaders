@@ -19,8 +19,13 @@
 
 	// This hardcoded value fixes a bug with undergrowth's alphatesting
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
-	#define PR_ALPHA_REF 0
-	#define PR_ALPHA_REF_LEAF 0
+	#define PR_ALPHA_REF 127
+
+	#if defined(HASHED_ALPHA)
+		#define PR_ALPHA_REF_LEAF 0
+	#else
+		#define PR_ALPHA_REF_LEAF 127
+	#endif
 
 	/*
 		D3DCMP_NEVER         = 1,

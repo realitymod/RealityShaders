@@ -344,61 +344,63 @@
 	*/
 	void SetHashedAlphaTest(float2 Tex, inout float AlphaChannel)
 	{
-		const float HashScale = 1.0;
-		float2 DX = ddx(Tex);
-		float2 DY = ddy(Tex);
-		float2 AnisoDeriv = max(abs(DX), abs(DY));
-		float2 AnisoScales = rsqrt(2.0) / (HashScale * AnisoDeriv);
+		#if defined(HASHED_ALPHA)
+			const float HashScale = 1.0;
+			float2 DX = ddx(Tex);
+			float2 DY = ddy(Tex);
+			float2 AnisoDeriv = max(abs(DX), abs(DY));
+			float2 AnisoScales = rsqrt(2.0) / (HashScale * AnisoDeriv);
 
-		// Find log-discretized noise scales
-		float2 ScaleLog = log2(AnisoScales);
-		float2 ScaleFloor = exp2(floor(ScaleLog));
-		float2 ScaleCeil = exp2(ceil(ScaleLog));
+			// Find log-discretized noise scales
+			float2 ScaleLog = log2(AnisoScales);
+			float2 ScaleFloor = exp2(floor(ScaleLog));
+			float2 ScaleCeil = exp2(ceil(ScaleLog));
 
-		// Compute alpha Thresholds at our 2 noise scales
-		float2 Alpha = 0.0;
-		Alpha.x = GetHash1(floor(ScaleFloor * Tex), 0.0);
-		Alpha.y = GetHash1(floor(ScaleCeil * Tex), 0.0);
+			// Compute alpha Thresholds at our 2 noise scales
+			float2 Alpha = 0.0;
+			Alpha.x = GetHash1(floor(ScaleFloor * Tex), 0.0);
+			Alpha.y = GetHash1(floor(ScaleCeil * Tex), 0.0);
 
-		// Factor to linearly interpolate with
-		float2 FracLoc = frac(ScaleLog);
-		float2 ToCorners = float2(length(FracLoc), length(1.0 - FracLoc));
-		float LerpFactor = ToCorners.x / dot(ToCorners, 1.0);
+			// Factor to linearly interpolate with
+			float2 FracLoc = frac(ScaleLog);
+			float2 ToCorners = float2(length(FracLoc), length(1.0 - FracLoc));
+			float LerpFactor = ToCorners.x / dot(ToCorners, 1.0);
 
-		// Interpolate alpha threshold from noise at two scales
-		float X = lerp(Alpha.x, Alpha.y, LerpFactor);
+			// Interpolate alpha threshold from noise at two scales
+			float X = lerp(Alpha.x, Alpha.y, LerpFactor);
 
-		// Pass into CDF to compute uniformly distributed threshold
-		float A = min(LerpFactor, 1.0 - LerpFactor);
-		float InvA = 1.0 - A;
-		float InvX = 1.0 - X;
-		float Divisor = 1.0 / (2.0 * A * InvA);
-		float3 Cases = 0.0;
-		Cases.x = (X * X) * Divisor;
-		Cases.y = (X - 0.5 * A) / InvA;
-		Cases.z = 1.0 - ((InvA * InvA) / Divisor);
+			// Pass into CDF to compute uniformly distributed threshold
+			float A = min(LerpFactor, 1.0 - LerpFactor);
+			float InvA = 1.0 - A;
+			float InvX = 1.0 - X;
+			float Divisor = 1.0 / (2.0 * A * InvA);
+			float3 Cases = 0.0;
+			Cases.x = (X * X) * Divisor;
+			Cases.y = (X - 0.5 * A) / InvA;
+			Cases.z = 1.0 - ((InvA * InvA) / Divisor);
 
-		// Find our final, uniformly distributed alpha threshold
-		float AlphaT = (X < InvA) ? ((X < A) ? Cases.x : Cases.y) : Cases.z;
+			// Find our final, uniformly distributed alpha threshold
+			float AlphaT = (X < InvA) ? ((X < A) ? Cases.x : Cases.y) : Cases.z;
 
-		// Avoids AT == 0. Could also do AT = 1-AT
-		AlphaT = clamp(AlphaT, 1.0e-6, 1.0);
+			// Avoids AT == 0. Could also do AT = 1-AT
+			AlphaT = clamp(AlphaT, 1.0e-6, 1.0);
 
-		// Modify inputs to HashWeight(x) based on degree of aniso
-		float2 DLength = float2(length(DX), length(DY));
-		float Aniso = max(DLength.x / DLength.y, DLength.y / DLength.x);
-		X = Aniso * X;
+			// Modify inputs to HashWeight(x) based on degree of aniso
+			float2 DLength = float2(length(DX), length(DY));
+			float Aniso = max(DLength.x / DLength.y, DLength.y / DLength.x);
+			X = Aniso * X;
 
-		// Compute HashWeight(x)
-		float N = 6.0;
-		float XN = X / N;
-		float HashWeight = (X <= 0.0) ? 0.0 : ((0.0 < X) && (X < N)) ? XN * XN : 1.0;
+			// Compute HashWeight(x)
+			float N = 6.0;
+			float XN = X / N;
+			float HashWeight = (X <= 0.0) ? 0.0 : ((0.0 < X) && (X < N)) ? XN * XN : 1.0;
 
-		// Apply fading [0.0, 1.0)
-		AlphaT = saturate(0.5 + ((AlphaT - 0.5) * HashWeight));
+			// Apply fading [0.0, 1.0)
+			AlphaT = saturate(0.5 + ((AlphaT - 0.5) * HashWeight));
 
-		// Output new alpha if it is greater than 0.0
-		AlphaChannel = (AlphaChannel > 0.0) ? AlphaChannel > AlphaT : 0.0;
+			// Output new alpha if it is greater than 0.0
+			AlphaChannel = (AlphaChannel > 0.0) ? AlphaChannel > AlphaT : 0.0;
+		#endif
 	}
 
 	/*
