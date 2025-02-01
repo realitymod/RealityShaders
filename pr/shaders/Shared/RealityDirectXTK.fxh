@@ -37,11 +37,15 @@
 #if !defined(DIRECTXTK)
 	#define DIRECTXTK
 
+	/*
+		https://github.com/microsoft/DirectX-Specs
+	*/
+
 	// (Approximate) sRGB to linear
 	float4 SRGBToLinearEst(float4 ColorMap)
 	{
 		#if defined(_USELINEARLIGHTING_)
-			ColorMap.rgb = pow(abs(ColorMap.rgb), 2.2);
+			ColorMap.rgb = (ColorMap <= 0.04045) ? ColorMap / 12.92 : pow((ColorMap + 0.055) / 1.055, 2.4);
 		#endif
 		return ColorMap;
 	}
@@ -50,7 +54,7 @@
 	void LinearToSRGBEst(inout float4 Color)
 	{
 		#if defined(_USELINEARLIGHTING_)
-			Color.rgb = pow(abs(Color.rgb), 1.0 / 2.2);
+			Color = (Color <=  0.0031308) ? 12.92 * Color : 1.055 * pow(Color, 1.0 / 2.4) - 0.055;
 		#endif
 	}
 
