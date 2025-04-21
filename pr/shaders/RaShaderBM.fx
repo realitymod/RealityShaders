@@ -316,10 +316,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#if _HASGIMAP_
 		float4 GI = SRGBToLinearEst(tex2D(SampleGIMap, Input.Tex0));
 		float4 GI_TIS = GI; // M
-		if (GI_TIS.a < 0.01)
-		{
-			GI = 1.0;
-		}
+		GI = (GI_TIS.a < 0.01) ? 1.0 : GI;
 	#else
 		const float4 GI = 1.0;
 	#endif
@@ -359,22 +356,11 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	if (IsTisActive())
 	{
 		#if _HASGIMAP_
-			if (GI_TIS.a < 0.01)
-			{
-				if (GI_TIS.g < 0.01)
-				{
-					OutputColor.rgb = float3(lerp(0.43, 0.17, ColorTex.b), 1.0, 0.0);
-				}
-				else
-				{
-					OutputColor.rgb = float3(GI_TIS.g, 1.0, 0.0);
-				}
-			}
-			else
-			{
-				// Normal Wrecks also cold
-				OutputColor.rgb = float3(lerp(0.43, 0.17, ColorTex.b), 1.0, 0.0);
-			}
+			float Cold = lerp(0.43, 0.17, ColorTex.b);
+			float Hot = 0.7;
+			float Temp = lerp(Cold, Hot, GI_TIS.g);
+			Temp = (GI_TIS.a < 0.01) ? Temp : Cold;
+			OutputColor.rgb = float3(Temp, 1.0, 0.0);
 		#else
 			OutputColor.rgb = float3(lerp(0.64, 0.3, ColorTex.b), 1.0, 0.0); // M // 0.61, 0.25
 		#endif
