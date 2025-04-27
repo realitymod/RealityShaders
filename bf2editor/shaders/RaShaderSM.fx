@@ -188,13 +188,14 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	Bone B = GetBoneData(Input);
 	float4 ObjectPos = GetObjectPos(Input, B);
 	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
+	ObjectTBN = mul(ObjectTBN, (float3x3)B.Mat[0]);
 
 	// Output HPos data
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
 	// World-space data
 	float4 WorldPos = mul(float4(Input.Pos.xyz, 1.0), World);
 	float4 SkinWorldPos = mul(ObjectPos, World);
-	float3x3 WorldMat = mul((float3x3)GetBoneMatrix(Input, 0), (float3x3)World);
+	float3x3 WorldMat = mul((float3x3)B.Mat[0], (float3x3)World);
 	float3x3 WorldTBN = mul(ObjectTBN, WorldMat);
 	#if _HASNORMALMAP_
 		#if _OBJSPACENORMALMAP_
