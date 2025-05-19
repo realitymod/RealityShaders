@@ -216,7 +216,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	#endif
 
 	// Lighting data
-	float4 WorldPos = Input.Pos.xyz;
+	float4 WorldPos = Input.Pos;
 	float3 LightDir = normalize(-Lights[0].dir.xyz);
 	float3 WorldLightDir = normalize(mul(LightDir, (float3x3)World));
 	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
