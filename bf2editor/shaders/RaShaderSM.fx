@@ -75,8 +75,6 @@ struct VS2PS
 	#if _HASSHADOWOCCLUSION_
 		float4 ShadowOccTex : TEXCOORD6;
 	#endif
-	float3 LightDir : TEXCOORD7;
-	float3 ViewDir : TEXCOORD8;
 };
 
 struct PS2FB
@@ -95,27 +93,18 @@ float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 	return MatBones[IndexArray[Bone]];
 }
 
+float4x3 GetBlendedBoneMatrix(APP2VS Input)
+{
+	float4x3 Mat0 = GetBoneMatrix(Input, 0);
+	float4x3 Mat1 = GetBoneMatrix(Input, 1);
+	return lerp(Mat1, Mat0, Input.BlendWeights); 
+}
+
 float GetBinormalFlipping(APP2VS Input)
 {
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
 	int IndexArray[4] = (int[4])IndexVector;
 	return 1.0 + IndexArray[2] * -2.0;
-}
-
-struct Bone
-{
-	float4x3 Mat[2];
-	float Weight[2];
-};
-
-Bone GetBoneData(APP2VS Input)
-{
-	Bone Output = (Bone)0.0;
-	Output.Mat[0] = GetBoneMatrix(Input, 0);
-	Output.Mat[1] = GetBoneMatrix(Input, 1);
-	Output.Weight[0] = Input.BlendWeights;
-	Output.Weight[1] = 1.0 - Input.BlendWeights;
-	return Output;
 }
 
 struct LightColors
@@ -144,33 +133,6 @@ LightColors GetLightColors()
 	return Output;
 }
 
-float4 GetObjectPos(APP2VS Input, Bone B)
-{
-	float3 Pos = 0.0;
-	Pos += (mul(Input.Pos, B.Mat[0]) * B.Weight[0]);
-	Pos += (mul(Input.Pos, B.Mat[1]) * B.Weight[1]);
-	return float4(Pos, 1.0);
-}
-
-float3 GetObjectDir(Bone B, float3 SObjectDir)
-{
-	float3 Dir = 0.0;
-	Dir += (mul((float3x3)B.Mat[0], SObjectDir) * B.Weight[0]);
-	Dir += (mul((float3x3)B.Mat[1], SObjectDir) * B.Weight[1]);
-	return Dir;
-}
-
-float3 GetTangentDir(Bone B, float3x3 ObjectTBN, float3 SObjectDir)
-{
-	float3x3 Mat1 = mul(ObjectTBN, (float3x3)B.Mat[0]);
-	float3x3 Mat2 = mul(ObjectTBN, (float3x3)B.Mat[1]);
-
-	float3 Dir = 0.0;
-	Dir += (mul(Mat1, SObjectDir) * B.Weight[0]);
-	Dir += (mul(Mat2, SObjectDir) * B.Weight[1]);
-	return Dir;
-}
-
 float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 {
 	// LocalHeight scale, 1 for top and 0 for bottom
@@ -185,17 +147,16 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	VS2PS Output = (VS2PS)0.0;
 
 	// Get skinned object-space data
-	Bone B = GetBoneData(Input);
-	float4 ObjectPos = GetObjectPos(Input, B);
+	float4x3 BoneMatrix = GetBlendedBoneMatrix(Input);
+	float4 ObjectPos = float4(mul(Input.Pos, BoneMatrix), 1.0);
 	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
-	ObjectTBN = mul(ObjectTBN, (float3x3)B.Mat[0]);
 
 	// Output HPos data
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
 	// World-space data
 	float4 WorldPos = mul(float4(Input.Pos.xyz, 1.0), World);
 	float4 SkinWorldPos = mul(ObjectPos, World);
-	float3x3 WorldMat = mul((float3x3)B.Mat[0], (float3x3)World);
+	float3x3 WorldMat = mul((float3x3)BoneMatrix, (float3x3)World);
 	float3x3 WorldTBN = mul(ObjectTBN, WorldMat);
 	#if _HASNORMALMAP_
 		#if _OBJSPACENORMALMAP_
@@ -228,30 +189,12 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 		Output.ShadowOccTex = GetShadowProjection(SkinWorldPos, true);
 	#endif
 
-	// Lighting data
-	float3 ViewDir = normalize(ObjectSpaceCamPos.xyz - ObjectPos.xyz);
-	float3 LightDir = -Lights[0].dir.xyz;
-	#if _OBJSPACENORMALMAP_ // Object-space normalmap
-		// [skinned-object-space] -> [object_space]
-		Output.ViewDir = normalize(GetObjectDir(B, ViewDir));
-		Output.LightDir = normalize(GetObjectDir(B, LightDir));
-	#else // Tangent-space normalmap, or no normalmap
-		// [skinned-object-space] -> [object-space] -> [tangent-space]
-		Output.ViewDir = normalize(GetTangentDir(B, ObjectTBN, ViewDir));
-		Output.LightDir = normalize(GetTangentDir(B, ObjectTBN, LightDir));
-	#endif
-
 	return Output;
 }
 
 PS2FB PS_SkinnedMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
-
-	// Lighting data
-	float4 WorldPos = Input.Pos;
-	float3 LightDir = normalize(Input.LightDir);
-	float3 ViewDir = normalize(Input.ViewDir);
 
 	// Texture-space data
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
@@ -271,6 +214,12 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 		float4 NormalMap = float4(0.0, 0.0, 1.0, 0.0);
 		float3 WorldNormal = normalize(Input.WorldNormal);
 	#endif
+
+	// Lighting data
+	float4 WorldPos = Input.Pos.xyz;
+	float3 LightDir = normalize(-Lights[0].dir.xyz);
+	float3 WorldLightDir = normalize(mul(LightDir, (float3x3)World));
+	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
 	#if _HASSHADOW_
 		float Shadow = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
@@ -314,7 +263,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	// Calculate lighting
 	LightColors LC = GetLightColors();
-	ColorPair Lighting = ComputeLights(NormalMap.xyz, LightDir, ViewDir, SpecularPower);
+	ColorPair Lighting = ComputeLights(WorldNormal.xyz, WorldLightDir, WorldViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 DiffuseRGB = (Lighting.Diffuse * LC.Diffuse) * TotalLights;
 	float3 SpecularRGB = ((Lighting.Specular * NormalMap.a) * LC.Specular) * TotalLights;
