@@ -62,10 +62,10 @@
 		ShadowCoords.z = saturate(GetSlopedBasedBias(ShadowCoords.z));
 		float2 Texel = fwidth(ShadowCoords.xy);
 		float4 Samples = 0.0;
-		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords + float2(Texel.x, Texel.y)).r;
-		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float2(-Texel.x, -Texel.y)).r;
-		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float2(-Texel.x, Texel.y)).r;
-		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + float2(Texel.x, -Texel.y)).r;
+		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, Texel.y, 0.0, 0.0)).r;
+		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, -Texel.y, 0.0, 0.0)).r;
+		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, Texel.y, 0.0, 0.0)).r;
+		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, -Texel.y, 0.0, 0.0)).r;
 		return dot(Samples, 0.25);
 	}
 
