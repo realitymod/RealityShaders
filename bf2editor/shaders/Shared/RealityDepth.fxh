@@ -60,7 +60,7 @@
 	float GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
 		ShadowCoords.z = saturate(GetSlopedBasedBias(ShadowCoords.z));
-		float4 Texel = fwidth(ShadowCoords.xy);
+		float2 Texel = fwidth(ShadowCoords.xy);
 		float4 Samples = 0.0;
 		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords + float2(Texel.x, Texel.y)).r;
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float2(-Texel.x, -Texel.y)).r;
