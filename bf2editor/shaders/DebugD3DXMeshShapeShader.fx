@@ -362,19 +362,14 @@ technique collisionMesh
 		CullMode = NONE;
 		ShadeMode = FLAT;
 
-		#if PR_IS_REVERSED_Z
-			DepthBias = 0.00001;
-		#else
-			DepthBias = -0.00001;
-		#endif
+		ZEnable = TRUE;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
+		ZWriteEnable = TRUE;
+		DepthBias = PR_DEPTHBIAS_DEBUG;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-
-		ZWriteEnable = TRUE;
-		ZEnable = TRUE;
-		ZFunc = PR_ZFUNC_WITHEQUAL;
 
 		VertexShader = compile vs_3_0 VS_Debug_CollisionMesh();
 		PixelShader = compile ps_3_0 PS_Debug_CollisionMesh();
@@ -384,19 +379,14 @@ technique collisionMesh
 	{
 		FillMode = WIREFRAME;
 
-		#if PR_IS_REVERSED_Z
-			DepthBias = 0.000018;
-		#else
-			DepthBias = -0.000018;
-		#endif
+		ZEnable = TRUE;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
+		ZWriteEnable = TRUE;
+		DepthBias = PR_DEPTHBIAS_DEBUG;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-
-		ZEnable = TRUE;
-		ZFunc = PR_ZFUNC_WITHEQUAL;
-		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_CollisionMesh();
 		PixelShader = compile ps_3_0 PS_Debug_CollisionMesh(0.5);

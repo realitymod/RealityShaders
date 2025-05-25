@@ -93,19 +93,14 @@ technique t0
 		CullMode = NONE;
 		ShadeMode = FLAT;
 
-		#if PR_IS_REVERSED_Z
-			DepthBias = 0.00001;
-		#else
-			DepthBias = -0.00001;
-		#endif
+		ZEnable = FALSE;
+		ZFunc = PR_ZFUNC_WITHEQUAL;
+		ZWriteEnable = TRUE;
+		DepthBias = PR_DEPTHBIAS_DEBUG;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-
-		ZEnable = FALSE;
-		ZFunc = PR_ZFUNC_WITHEQUAL;
-		ZWriteEnable = TRUE;
 
 		VertexShader = compile vs_3_0 VS_Debug_Circle();
 		PixelShader = compile ps_3_0 PS_Debug_Circle();

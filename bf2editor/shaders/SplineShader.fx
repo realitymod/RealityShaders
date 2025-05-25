@@ -65,15 +65,11 @@ technique spline
 	pass p0
 	{
 		CullMode = NONE;
+		DepthBias = PR_DEPTHBIAS_SPLINE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-
-		#if PR_IS_REVERSED_Z
-			DepthBias = 0.0003;
-		#else
-			DepthBias = -0.0003;
-		#endif
 	
 		VertexShader = compile vs_3_0 VS_Spline();
 		PixelShader = compile ps_3_0 PS_Spline();
@@ -96,12 +92,7 @@ technique controlpoint
 	{
 		CullMode = NONE;
 		AlphaBlendEnable = FALSE;
-
-		#if PR_IS_REVERSED_Z
-			DepthBias = 0.0003;
-		#else
-			DepthBias = -0.0003;
-		#endif
+		DepthBias = PR_DEPTHBIAS_SPLINE;
 
 		VertexShader = compile vs_3_0 VS_ControlPoint();
 		PixelShader = compile ps_3_0 PS_ControlPoint();

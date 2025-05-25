@@ -170,16 +170,8 @@ technique roadcompiledFull
 		ZEnable = TRUE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
-
-		/*
-			#if PR_IS_REVERSED_Z
-				DepthBias = 0.0001;
-				SlopeScaleDepthBias = 0.00001;
-			#else
-				DepthBias = -0.0001;
-				SlopeScaleDepthBias = -0.00001;
-			#endif
-		*/
+		DepthBias = PR_DEPTHBIAS_ROAD;
+		SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
 
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
@@ -193,16 +185,8 @@ technique roadcompiledFull
 	{
 		ZEnable = FALSE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
-
-		/*
-			#if PR_IS_REVERSED_Z
-				DepthBias = 0.0001;
-				SlopeScaleDepthBias = 0.00001;
-			#else
-				DepthBias = -0.0001;
-				SlopeScaleDepthBias = -0.00001;
-			#endif
-		*/
+		DepthBias = PR_DEPTHBIAS_ROAD;
+		SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
 
 		AlphaBlendEnable = FALSE;
 
@@ -242,17 +226,12 @@ technique roadcompiledLightingOnly
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		#if PR_IS_REVERSED_Z
-			DepthBias = 0.000025;
-			// SlopeScaleDepthBias = 0.5;
-		#else
-			DepthBias = -0.000025;
-			// SlopeScaleDepthBias = -0.5;
-		#endif
-
 		ZEnable = FALSE;
 		// CullMode = NONE;
 		// FillMode = WIREFRAME;
+		DepthBias = PR_DEPTHBIAS_ROAD;
+		SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
+
 		VertexShader = compile vs_3_0 VS_RoadCompiled();
 		PixelShader = compile ps_3_0 PS_RoadCompiled_LightingOnly();
 	}

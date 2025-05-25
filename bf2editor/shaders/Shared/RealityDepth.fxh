@@ -24,11 +24,7 @@
 		---
 		Source: https://download.nvidia.com/developer/presentations/2004/GPU_Jackpot/Shadow_Mapping.pdf
 	*/
-	#if PR_IS_REVERSED_Z
-		float GetSlopedBasedBias(float Depth, uniform float SlopeScale = 0.00001, uniform float Bias = 0.005)
-	#else
-		float GetSlopedBasedBias(float Depth, uniform float SlopeScale = -0.00001, uniform float Bias = -0.005)
-	#endif
+	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = PR_SLOPESCALE, uniform float Bias = PR_DEPTHBIAS)
 	{
 		float M = fwidth(Depth);
 		return Depth + (M * SlopeScale) + Bias;
@@ -63,20 +59,19 @@
 	*/
 	float GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
-		float4 Texel = float4(0.5 / 1024.0, 0.5 / 1024.0, 0.0, 0.0);
+		ShadowCoords.z = saturate(GetSlopedBasedBias(ShadowCoords.z));
+		float4 Texel = float4(fwidth(ShadowCoords.xy), 0.0, 0.0);
 		float4 Samples = 0.0;
 		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords).r;
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, 0.0, 0.0, 0.0)).r;
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(0.0, Texel.y, 0.0, 0.0)).r;
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel).r;
+		return dot(Samples, 0.25);
+	}
 
-		#if PR_IS_REVERSED_Z
-			float4 CMPBits = float4(Samples <= saturate(GetSlopedBasedBias(ShadowCoords.z)));
-		#else
-			float4 CMPBits = float4(Samples >= saturate(GetSlopedBasedBias(ShadowCoords.z)));
-		#endif
-
-		return dot(CMPBits, 0.25);
+	void ReverseDepth(inout float4 HPos)
+	{
+		// HPos.z = (1.0 - (HPos.z / HPos.w)) * HPos.w;
 	}
 
 #endif

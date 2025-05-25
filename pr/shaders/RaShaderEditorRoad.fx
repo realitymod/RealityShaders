@@ -180,19 +180,17 @@ technique defaultTechnique
 		#endif
 
 		CullMode = CCW;
-	
+
 		ZEnable = TRUE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
+		// DepthBias = (RoadDepthBias);
+		// SlopeScaleDepthBias = (RoadSlopeScaleDepthBias);
 
 		AlphaTestEnable = FALSE;
-
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-
-		// DepthBias = (RoadDepthBias);
-		// SlopeScaleDepthBias = (RoadSlopeScaleDepthBias);
 
 		VertexShader = compile vs_3_0 VS_Editor_Road();
 		PixelShader = compile ps_3_0 PS_Editor_Road();

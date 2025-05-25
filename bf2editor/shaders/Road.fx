@@ -166,11 +166,12 @@ technique roadeditable
 {
 	pass p0
 	{
+		ZEnable = TRUE;
+		ZWriteEnable = FALSE;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_RoadEditable();
 		PixelShader = compile ps_3_0 PS_RoadEditable();
@@ -178,20 +179,14 @@ technique roadeditable
 
 	pass p1 // draw material
 	{
+		ZEnable = TRUE;
+		ZWriteEnable = FALSE;
+		DepthBias = PR_DEPTHBIAS_ROAD;
+		SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
+
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-
-		#if PR_IS_REVERSED_Z
-			DepthBias = 0.0001;
-			SlopeScaleDepthBias = 0.00001;
-		#else
-			DepthBias = -0.0001;
-			SlopeScaleDepthBias = -0.00001;
-		#endif
-
-		ZEnable = TRUE;
-		ZWriteEnable = FALSE;
 
 		VertexShader = compile vs_3_0 VS_RoadEditable_DrawMaterial();
 		PixelShader = compile ps_3_0 PS_RoadEditable_DrawMaterial();

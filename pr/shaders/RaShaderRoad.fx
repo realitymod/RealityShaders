@@ -206,14 +206,13 @@ technique defaultTechnique
 		ZEnable = TRUE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
+		DepthBias = PR_DEPTHBIAS_ROAD;
+		SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
 
 		AlphaTestEnable = FALSE;
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-
-		// DepthBias = (RoadDepthBias);
-		// SlopeScaleDepthBias = (RoadSlopeScaleDepthBias);
 
 		VertexShader = compile vs_3_0 VS_Road();
 		PixelShader = compile ps_3_0 PS_Road();
