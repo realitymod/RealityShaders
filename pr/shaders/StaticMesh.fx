@@ -156,8 +156,7 @@ struct APP2VS_ShadowMap
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float4 DepthPos : TEXCOORD0;
-	float2 Tex0 : TEXCOORD1;
+	float3 Tex0 : TEXCOORD0; // .xy = Tex0; .z = Depth;
 };
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS_ShadowMap Input)
@@ -167,33 +166,29 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS_ShadowMap Input)
 	float4 UnpackPos = Input.Pos * _PosUnpack;
 	float4 WorldPos = mul(float4(UnpackPos.xyz, 1.0), _WorldMat);
 
+	// Output shadow depth
 	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-	Output.DepthPos = Output.HPos; // Output shadow depth
 
-	Output.Tex0 = Input.Tex * _TexUnpack;
+	// Output shadow depth
+	Output.Tex0.z = Output.HPos.z / Output.HPos.w;
+
+	// Texcoord data
+	Output.Tex0.xy = Input.Tex * _TexUnpack;
 
 	return Output;
 }
 
 float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
-	#if NVIDIA
-		return 0;
-	#else
-		return Input.DepthPos.z / Input.DepthPos.w;
-	#endif
+	return Input.Tex0.z;
 }
 
 float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
 {
 	const float AlphaRef = 96.0 / 255.0;
-	float4 Alpha = tex2D(SampleShadowAlpha, Input.Tex0);
-	#if NVIDIA
-		return Alpha;
-	#else
-		clip(Alpha.a - AlphaRef);
-		return Input.DepthPos.z / Input.DepthPos.w;
-	#endif
+	float4 Alpha = tex2D(SampleShadowAlpha, Input.Tex0.xy);
+	clip(Alpha.a - AlphaRef);
+	return Input.Tex0.z;
 }
 
 #define GET_RENDERSTATES_SHADOWMAP \

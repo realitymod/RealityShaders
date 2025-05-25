@@ -409,8 +409,7 @@ technique humanskin
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float4 DepthPos : TEXCOORD0;
-	float2 Tex0 : TEXCOORD1;
+	float3 Tex0 : TEXCOORD0; // .xy = Tex0; .z = Depth;
 };
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
@@ -427,32 +426,28 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	BoneMat += (_BoneArray[IndexArray[1]] * (1.0 - BlendWeightsArray[0]));
 	float4 BonePos = float4(mul(Input.Pos, BoneMat), 1.0);
 
+	// Output shadow depth
 	Output.HPos = GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat);
 
-	Output.DepthPos = Output.HPos;
-	Output.Tex0 = Input.TexCoord0;
+	// Output shadow depth
+	Output.Tex0.z = Output.HPos.z / Output.HPos.w;
+
+	// Texcoord data
+	Output.Tex0.xy = Input.TexCoord;
 
 	return Output;
 }
 
 float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
-	#if NVIDIA
-		return 0.0;
-	#else
-		return Input.DepthPos.z / Input.DepthPos.w;
-	#endif
+	return Input.Tex0.z;
 }
 
 float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
 {
-	float Alpha = tex2D(SampleTex0, Input.Tex0).a - _ShadowAlphaThreshold;
-	#if NVIDIA
-		return Alpha;
-	#else
-		clip(Alpha);
-		return Input.DepthPos.z / Input.DepthPos.w;
-	#endif
+	float Alpha = tex2D(SampleTex0, Input.Tex0.xy).a - _ShadowAlphaThreshold;
+	clip(Alpha);
+	return Input.Tex0.z;
 }
 
 #define GET_RENDERSTATES_SHADOWMAP \
