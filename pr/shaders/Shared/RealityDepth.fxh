@@ -60,12 +60,12 @@
 	float GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
 		ShadowCoords.z = saturate(GetSlopedBasedBias(ShadowCoords.z));
-		float4 Texel = float4(fwidth(ShadowCoords.xy), 0.0, 0.0);
+		float4 Texel = fwidth(ShadowCoords.xy);
 		float4 Samples = 0.0;
-		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords).r;
-		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, 0.0, 0.0, 0.0)).r;
-		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(0.0, Texel.y, 0.0, 0.0)).r;
-		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + Texel).r;
+		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords + float2(Texel.x, Texel.y)).r;
+		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float2(-Texel.x, -Texel.y)).r;
+		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float2(-Texel.x, Texel.y)).r;
+		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + float2(Texel.x, -Texel.y)).r;
 		return dot(Samples, 0.25);
 	}
 
