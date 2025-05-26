@@ -132,17 +132,17 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 	float Alpha = saturate(Fade * Input.Color.a);
 	float Shadow = 1.0;
 
-	if(UseShadow)
+	if (UseShadow)
 	{
 		float4 Samples;
-		float2 Texel = 1.0 / 1024.0;
-		Input.ShadowTex.xy = clamp(Input.ShadowTex.xy,  Input.ViewPortMap.xy, Input.ViewPortMap.zw);
-		Samples.x = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy);
-		Samples.y = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy + float2(Texel.x, 0.0));
-		Samples.z = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy + float2(0.0, Texel.y));
-		Samples.w = tex2D(SampleDecalShadowMap, Input.ShadowTex.xy + Texel);
-		float4 Cmpbits = Samples >= saturate(Input.ShadowTex.z);
-		Shadow = dot(Cmpbits, 0.25);
+		float2 Texel = fwidth(Input.ShadowTex.xy);
+		Input.ShadowTex.xy = clamp(Input.ShadowTex.xy, Input.ViewPortMap.xy, Input.ViewPortMap.zw);
+		float4 Tex = float4(ShadowTex.xyz, 1.0);
+		Samples.x = tex2Dproj(SampleDecalShadowMap, Tex + float4(-Texel.x, -Texel.y, 0.0, 0.0));
+		Samples.y = tex2Dproj(SampleDecalShadowMap, Tex + float4(Texel.x, Texel.y, 0.0, 0.0));
+		Samples.z = tex2Dproj(SampleDecalShadowMap, Tex + float4(-Texel.x, Texel.y, 0.0, 0.0));
+		Samples.w = tex2Dproj(SampleDecalShadowMap, Tex + float4(Texel.x, -Texel.y, 0.0, 0.0));
+		Shadow = dot(Samples, 0.25);
 	}
 
 	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
