@@ -117,7 +117,7 @@ VS2PS_ShadowMap VS_ShadowMapPoint(APPDATA_ShadowMap Input)
 float4 PS_ShadowMapPoint(VS2PS_ShadowMap Input) : COLOR
 {
 	clip(Input.PosZW.x - 0.5);
-	return GetSlopedBasedBias(Input.PosZW.x - 0.5);
+	return Input.PosZW.x - 0.5;
 }
 
 technique DrawShadowMap

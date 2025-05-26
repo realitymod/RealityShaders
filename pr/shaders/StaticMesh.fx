@@ -177,7 +177,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS_ShadowMap Input)
 
 float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
-	return GetSlopedBasedBias(Input.Tex0.z / Input.Tex0.w);
+	return Input.Tex0.z / Input.Tex0.w;
 }
 
 float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
@@ -185,7 +185,7 @@ float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
 	const float AlphaRef = 96.0 / 255.0;
 	float4 Alpha = tex2D(SampleShadowAlpha, Input.Tex0.xy);
 	clip(Alpha.a - AlphaRef);
-	return GetSlopedBasedBias(Input.Tex0.z / Input.Tex0.w);
+	return Input.Tex0.z / Input.Tex0.w;
 }
 
 #define GET_RENDERSTATES_SHADOWMAP \
