@@ -156,7 +156,7 @@ struct APP2VS_ShadowMap
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float3 Tex0 : TEXCOORD0; // .xy = Tex0; .z = Depth;
+	float3 Tex0 : TEXCOORD0; // .xy = Tex0; .z = ShadowMapDepth;
 };
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS_ShadowMap Input)

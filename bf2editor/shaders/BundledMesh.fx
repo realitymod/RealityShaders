@@ -447,7 +447,7 @@ technique Alpha
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float Depth : TEXCOORD0;
+	float ShadowMapDepth : TEXCOORD0;
 };
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
@@ -466,20 +466,20 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
 
 	// Output shadow depth
-	Output.Depth = Output.HPos.z / Output.HPos.w;
+	Output.ShadowMapDepth = Output.HPos.z / Output.HPos.w;
 
 	return Output;
 }
 
 float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
-	return Input.Depth;
+	return Input.ShadowMapDepth;
 }
 
 struct VS2PS_ShadowMap_Alpha
 {
 	float4 HPos : POSITION;
-	float3 Tex0 : TEXCOORD0; // .xy = Tex0; .z = Depth;
+	float3 Tex0 : TEXCOORD0; // .xy = Tex0; .z = ShadowMapDepth;
 };
 
 VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
