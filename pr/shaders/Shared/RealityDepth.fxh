@@ -24,7 +24,7 @@
 		---
 		Source: https://download.nvidia.com/developer/presentations/2004/GPU_Jackpot/Shadow_Mapping.pdf
 	*/
-	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = PR_SLOPESCALE_OBJECT, uniform float Bias = PR_DEPTHBIAS_OBJECT)
+	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = PR_SLOPESCALE_SHADOWMAP, uniform float Bias = PR_DEPTHBIAS_SHADOWMAP)
 	{
 		float M = fwidth(Depth);
 		return Depth + (M * SlopeScale) + Bias;
