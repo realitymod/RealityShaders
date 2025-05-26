@@ -433,7 +433,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	Output.Tex0.z = Output.HPos.z / Output.HPos.w;
 
 	// Texcoord data
-	Output.Tex0.xy = Input.TexCoord;
+	Output.Tex0.xy = Input.TexCoord0;
 
 	return Output;
 }
