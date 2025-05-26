@@ -316,12 +316,7 @@ VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
 
 float4 PS_Shared_DynamicShadowmap(VS2PS_Shared_DynamicShadowmap Input) : COLOR0
 {
-	#if NVIDIA
-		float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex).r;
-	#else
-		float AvgShadowValue = (tex2Dproj(SampleTex2_Clamp, Input.ShadowTex).r == 1.0);
-	#endif
-	return AvgShadowValue.x;
+	return tex2Dproj(SampleTex2_Clamp, Input.ShadowTex).r;
 }
 
 /*

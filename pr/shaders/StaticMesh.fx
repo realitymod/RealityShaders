@@ -166,11 +166,8 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS_ShadowMap Input)
 	float4 UnpackPos = Input.Pos * _PosUnpack;
 	float4 WorldPos = mul(float4(UnpackPos.xyz, 1.0), _WorldMat);
 
-	// Output shadow depth
-	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-
-	// Output shadow depth
-	Output.Tex0.zw = Output.HPos.zw;
+	// Output shadow coordinates & depth
+	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.zw);
 
 	// Texcoord data
 	Output.Tex0.xy = Input.Tex * _TexUnpack;

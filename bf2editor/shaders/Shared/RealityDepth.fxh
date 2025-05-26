@@ -45,12 +45,13 @@
 		---
 		NOTE: Make sure Pos and matrices are in same space!
 	*/
-	float4 GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat)
+	float4 GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat, out float2 LightDepth)
 	{
 		float4 ShadowCoords = mul(Pos, LightTrapezMat);
 		float4 LightCoords = mul(Pos, LightMat);
 		// (L.z/L.w)*T.w == (L.z/L.w) post homo
 		ShadowCoords.z = (LightCoords.z / LightCoords.w) * ShadowCoords.w;
+		LightDepth = LightCoords.zw;
 		return ShadowCoords;
 	}
 

@@ -426,11 +426,8 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	BoneMat += (_BoneArray[IndexArray[1]] * (1.0 - BlendWeightsArray[0]));
 	float4 BonePos = float4(mul(Input.Pos, BoneMat), 1.0);
 
-	// Output shadow depth
-	Output.HPos = GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat);
-
-	// Output shadow depth
-	Output.Tex0.zw = Output.HPos.zw;
+	// Output shadow coordinates & depth
+	Output.HPos = GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.zw);
 
 	// Texcoord data
 	Output.Tex0.xy = Input.TexCoord0;

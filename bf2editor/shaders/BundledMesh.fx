@@ -462,11 +462,8 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	float4x3 SkinWorldMat = _MatOneBoneSkinning[IndexArray[0]];
 	float4 WorldPos = float4(mul(UnpackPos, SkinWorldMat), 1.0);
 
-	// Output shadow depth
-	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-
-	// Output shadow depth
-	Output.ShadowMapDepth = Output.HPos.zw;
+	// Output shadow coordinates & depth
+	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.ShadowMapDepth);
 
 	return Output;
 }
@@ -495,11 +492,8 @@ VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
 	float4x3 SkinWorldMat = _MatOneBoneSkinning[IndexArray[0]];
 	float4 WorldPos = float4(mul(UnpackPos, SkinWorldMat), 1.0);
 
-	// Output shadow depth
-	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat);
-
-	// Output shadow depth
-	Output.Tex0.zw = Output.HPos.zw;
+	// Output shadow coordinates & depth
+	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.zw);
 
 	// Texcoord data
 	Output.Tex0.xy = Input.TexCoord;
