@@ -137,7 +137,7 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 		float4 Samples;
 		float2 Texel = fwidth(Input.ShadowTex.xy);
 		Input.ShadowTex.xy = clamp(Input.ShadowTex.xy, Input.ViewPortMap.xy, Input.ViewPortMap.zw);
-		float4 Tex = float4(ShadowTex.xyz, 1.0);
+		float4 Tex = float4(Input.ShadowTex.xyz, 1.0);
 		Samples.x = tex2Dproj(SampleDecalShadowMap, Tex + float4(-Texel.x, -Texel.y, 0.0, 0.0));
 		Samples.y = tex2Dproj(SampleDecalShadowMap, Tex + float4(Texel.x, Texel.y, 0.0, 0.0));
 		Samples.z = tex2Dproj(SampleDecalShadowMap, Tex + float4(-Texel.x, Texel.y, 0.0, 0.0));
