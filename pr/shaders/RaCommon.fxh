@@ -189,13 +189,7 @@
 	{
 		float4 ShadowCoords = mul(Pos, ShadowTrapMat);
 		float4 LightCoords = (IsOccluder) ? mul(Pos, ShadowOccProjMat) : mul(Pos, ShadowProjMat);
-
-		#if NVIDIA
-			ShadowCoords.z = (LightCoords.z * ShadowCoords.w) / LightCoords.w; // (zL*wT)/wL == zL/wL post homo
-		#else
-			ShadowCoords.z = LightCoords.z;
-		#endif
-
+		ShadowCoords.z = LightCoords.z;
 		return ShadowCoords;
 	}
 #endif
