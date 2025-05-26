@@ -60,14 +60,14 @@
 	*/
 	float GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
-		ShadowCoords.z = GetSlopedBasedBias(ShadowCoords.z) * ShadowCoords.w;
 		float2 Texel = fwidth(ShadowCoords.xy);
 		float4 Samples = 0.0;
 		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, Texel.y, 0.0, 0.0)).r;
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, -Texel.y, 0.0, 0.0)).r;
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, Texel.y, 0.0, 0.0)).r;
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, -Texel.y, 0.0, 0.0)).r;
-		return dot(Samples, 0.25);
+		float4 CMPBits = float4(Samples > saturate(GetSlopedBasedBias(ShadowCoords.z)));
+		return dot(CMPBits, 0.25);
 	}
 
 	void ReverseDepth(inout float4 HPos)
