@@ -316,7 +316,8 @@ VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
 
 float4 PS_Shared_DynamicShadowmap(VS2PS_Shared_DynamicShadowmap Input) : COLOR0
 {
-	return tex2Dproj(SampleTex2_Clamp, Input.ShadowTex).r;
+	float AvgShadowValue = tex2Dproj(SampleTex2_Clamp, Input.ShadowTex).x == 1.0;
+	return AvgShadowValue;
 }
 
 /*
@@ -582,35 +583,22 @@ struct APP2VS_HI_OccluderShadow
 struct VS2PS_HI_OccluderShadow
 {
 	float4 HPos : POSITION;
-	float4 DepthPos : TEXCOORD0;
+	float2 DepthPos : TEXCOORD0;
 };
-
-float4 GetOccluderShadow(float4 Pos, float4x4 LightTrapMat, float4x4 LightMat)
-{
-	float4 ShadowTex = mul(Pos, LightTrapMat);
-	float LightZ = mul(Pos, LightMat).z;
-	ShadowTex.z = LightZ * ShadowTex.w;
-	return ShadowTex;
-}
 
 VS2PS_HI_OccluderShadow VS_Hi_OccluderShadow(APP2VS_HI_OccluderShadow Input)
 {
 	VS2PS_HI_OccluderShadow Output = (VS2PS_HI_OccluderShadow)0.0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
-	Output.HPos = GetOccluderShadow(WorldPos, _vpLightTrapezMat, _vpLightMat);
-	Output.DepthPos = Output.HPos; // Output shadow depth
+	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.DepthPos);
 
 	return Output;
 }
 
 float4 PS_Hi_OccluderShadow(VS2PS_HI_OccluderShadow Input) : COLOR0
 {
-	#if NVIDIA
-		return 0.5;
-	#else
-		return Input.DepthPos.z / Input.DepthPos.w;
-	#endif
+	return Input.DepthPos.x / Input.DepthPos.y;
 }
 
 technique TerrainOccludershadow

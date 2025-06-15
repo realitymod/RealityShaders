@@ -49,8 +49,6 @@
 	{
 		float4 ShadowCoords = mul(Pos, LightTrapezMat);
 		float4 LightCoords = mul(Pos, LightMat);
-		// (L.z/L.w)*T.w == (L.z/L.w) post homo
-		ShadowCoords.z = (LightCoords.z / LightCoords.w) * ShadowCoords.w;
 		LightDepth = LightCoords.zw;
 		return ShadowCoords;
 	}
@@ -66,7 +64,7 @@
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, -Texel.y, 0.0, 0.0)).r;
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, Texel.y, 0.0, 0.0)).r;
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, -Texel.y, 0.0, 0.0)).r;
-		float4 CMPBits = float4(Samples > saturate(GetSlopedBasedBias(ShadowCoords.z)));
+		float4 CMPBits = float4(Samples >= saturate(GetSlopedBasedBias(ShadowCoords.z)));
 		return dot(CMPBits, 0.25);
 	}
 
