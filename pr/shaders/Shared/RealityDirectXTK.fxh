@@ -54,7 +54,7 @@
 	void LinearToSRGBEst(inout float4 Color)
 	{
 		#if defined(_USELINEARLIGHTING_)
-			Color = (Color <=  0.0031308) ? 12.92 * Color : 1.055 * pow(Color, 1.0 / 2.4) - 0.055;
+			Color = (Color <= 0.0031308) ? 12.92 * Color : 1.055 * pow(Color, 1.0 / 2.4) - 0.055;
 		#endif
 	}
 
