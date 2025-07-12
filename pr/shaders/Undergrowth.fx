@@ -136,8 +136,8 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 
 	float3 LocalPos = Input.Pos.xyz;
 
-	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy) * 2.0);
-	float4 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw));
+	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
+	float4 TerrainColor = SRGBToLinearEst(saturate(tex2D(SampleTerrainColorMap, Input.Tex0.zw) * 2.0));
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale);
 	float4 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
@@ -160,12 +160,11 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 	}
 	Lights = saturate(Lights);
 
-	float3 TerrainLight = _SunColor * (TerrainShadow * TerrainLightMap.y);
-	TerrainLight = (TerrainLight + Lights) * 2.0;
-	TerrainLight += (_GIColor.rgb * TerrainLightMap.z);
+	float3 TerrainLight = TerrainLightMap.y * _SunColor * TerrainShadow + Lights;
+	TerrainLight = (TerrainLight * 2.0) + (TerrainLightMap.z * _GIColor.rgb);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor.rgb) * TerrainLight;
+	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight;
 	OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
 
 	Output.Color = OutputColor;
@@ -268,11 +267,11 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	PS2FB Output = (PS2FB)0.0;
 
 	float3 LocalPos = Input.Pos.xyz;
-	float3 TerrainColor = SRGBToLinearEst(Input.TerrainColorMap);
+	float3 TerrainColor = SRGBToLinearEst(saturate(Input.TerrainColorMap * 2.0));
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z);
 	float3 TerrainLightMap = Input.TerrainLightMap;
 
-	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy) * 2.0);
+	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
@@ -293,12 +292,11 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	}
 	Lights = saturate(Lights);
 
-	float3 TerrainLight = _SunColor * (TerrainShadow * TerrainLightMap.y);
-	TerrainLight = (TerrainLight + Lights) * 2.0;
-	TerrainLight += (_GIColor.rgb * TerrainLightMap.z);
+	float3 TerrainLight = TerrainLightMap.y * _SunColor * TerrainShadow + Lights;
+	TerrainLight = (TerrainLight * 2.0) + (TerrainLightMap.z * _GIColor.rgb);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = (Base.rgb * TerrainColor) * TerrainLight;
+	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight;
 	OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
 
 	Output.Color = OutputColor;
