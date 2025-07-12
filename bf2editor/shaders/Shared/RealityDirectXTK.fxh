@@ -62,11 +62,11 @@
 	// https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 	float3 ToneMapACESFilmic(float3 x)
 	{
-		float a = 2.51f;
-		float b = 0.03f;
-		float c = 2.43f;
-		float d = 0.59f;
-		float e = 0.14f;
+		float a = 2.51;
+		float b = 0.03;
+		float c = 2.43;
+		float d = 0.59;
+		float e = 0.14;
 		return saturate((x*(a*x+b))/(x*(c*x+d)+e));
 	}
 
@@ -76,9 +76,7 @@
 	void TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
 		#if defined(_USETONEMAP_)
-			float Peak = max(max(Color.r, Color.g), Color.b);
-			float3 Ratio = Color.rgb / Peak;
-			Color.rgb = ToneMapACESFilmic(Peak) * Ratio;
+			Color.rgb = ToneMapACESFilmic(Color.rgb);
 		#endif
 
 		#if defined(_USELINEARLIGHTING_)
