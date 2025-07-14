@@ -296,7 +296,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	TerrainLight = (TerrainLight * 2.0) + (TerrainLightMap.z * _GIColor.rgb);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight;
+	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight * 2.0;
 	OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
 
 	Output.Color = OutputColor;
