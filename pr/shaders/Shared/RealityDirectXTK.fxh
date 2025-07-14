@@ -58,9 +58,22 @@
 		#endif
 	}
 
+	// AMD resolve tonemap
+	// https://gpuopen.com/learn/optimized-reversible-tonemapper-for-resolve/
+	float3 AMDResolve(float3 x)
+	{
+		return x / (max(max(x.r, x.g), x.b) + 1.0);
+	}
+
+	float3 TonemapAMDResolve(float3 x)
+	{
+		float3 WhiteAMDResolve = 1.0 / AMDResolve(1.0);
+		return AMDResolve(x) * WhiteAMDResolve;
+	}
+
 	// ACES Filmic tonemap operator
 	// https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
-	float3 ToneMapACESFilmic(float3 x)
+	float3 ACESFilmic(float3 x)
 	{
 		float a = 2.51;
 		float b = 0.03;
@@ -70,27 +83,10 @@
 		return saturate((x*(a*x+b))/(x*(c*x+d)+e));
 	}
 
-	// Hable tonemap operator
-	// http://filmicworlds.com/blog/filmic-tonemapping-operators/
-	float3 Hable(float3 x)
+	float3 ToneMapACESFilmic(float3 x)
 	{
-		float A = 0.15;
-		float B = 0.50;
-		float C = 0.10;
-		float D = 0.20;
-		float E = 0.02;
-		float F = 0.30;
-
-		return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
-	}
-
-	float3 TonemapHable(float3 x)
-	{
-		float W = 11.2;
-		float3 WhiteScale = 1.0 / Hable(W);
-		float3 TonemappedColor = Hable(x);
-
-		return x * WhiteScale;
+		float WhiteACES = 1.0 / ACESFilmic(1.0);
+		return ACESFilmic(x) * WhiteACES;
 	}
 
 	// Apply the (approximate) sRGB curve to linear values
@@ -99,7 +95,7 @@
 	void TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
 		#if defined(_USETONEMAP_)
-			Color.rgb = TonemapHable(Color.rgb);
+			Color.rgb = TonemapAMDResolve(Color.rgb);
 		#endif
 
 		#if defined(_USELINEARLIGHTING_)
