@@ -11,7 +11,7 @@
 
 /*
 	Fill lightmapping
-	
+
 	ZFillLightMap generates the accumulation lightmap for the following shaders:
 		RaShaderRoad.fx | texture LightMap; SampleAccumLightMap
 		RoadCompiled.fx | texture LightMap; SampleAccumLightMap
@@ -247,9 +247,9 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
-	float4 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.YPlaneTex) * 2.0);
-	float4 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.XZPlaneTex.xy) * 2.0);
-	float4 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.XZPlaneTex.zw) * 2.0);
+	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
+	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XZPlaneTex.xy);
+	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XZPlaneTex.zw);
 
 	float4 TerrainLights = (_SunColor * (AccumLights.a * 2.0)) + AccumLights;
 
@@ -266,8 +266,8 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
 
 	float LowDetailMapBlend = LowComponent.r;
-	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b, LowDetailMapBlend);
-	LowDetailMap *= lerp(1.0, Blue, LowComponent.b);
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
+	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
 	float4 OutputColor = ColorMap * LowDetailMap * TerrainLights * 2.0;
 
@@ -514,9 +514,9 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
-	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.YPlaneTex) * 2.0);
-	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.xy) * 2.0);
-	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.zw) * 2.0);
+	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, Input.YPlaneTex);
+	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.xy);
+	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.zw);
 
 	// If thermals assume gray color
 	if (IsTisActive())
@@ -524,12 +524,13 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 
-	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.z, saturate(dot(LowComponent.xy, 1.0)));
 	float Blue = 0.0;
 	Blue += (XPlaneLowDetailmap.y * BlendValue.x);
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
-	LowDetailMap *= lerp(1.0, Blue, LowComponent.z);
+
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.z * 2.0, saturate(dot(LowComponent.xy, 1.0)));
+	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.z);
 	float4 OutputColor = ColorMap * LowDetailMap;
 
 	// M (temporary fix)

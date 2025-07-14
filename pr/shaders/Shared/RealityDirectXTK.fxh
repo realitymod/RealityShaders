@@ -70,20 +70,43 @@
 		return saturate((x*(a*x+b))/(x*(c*x+d)+e));
 	}
 
+	// Hable tonemap operator
+	// http://filmicworlds.com/blog/filmic-tonemapping-operators/
+	float3 Hable(float3 x)
+	{
+		float A = 0.15;
+		float B = 0.50;
+		float C = 0.10;
+		float D = 0.20;
+		float E = 0.02;
+		float F = 0.30;
+
+		return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+	}
+
+	float3 TonemapHable(float3 x)
+	{
+		float W = 11.2;
+		float3 WhiteScale = 1.0 / Hable(W);
+		float3 TonemappedColor = Hable(x);
+
+		return x * WhiteScale;
+	}
+
 	// Apply the (approximate) sRGB curve to linear values
 	// Tonemapping through seperation of Max and RGB Ratio
 	// https://gpuopen.com/wp-content/uploads/2016/03/GdcVdrLottes.pdf
 	void TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
 		#if defined(_USETONEMAP_)
-			Color.rgb = ToneMapACESFilmic(Color.rgb);
+			Color.rgb = TonemapHable(Color.rgb);
 		#endif
 
 		#if defined(_USELINEARLIGHTING_)
 			LinearToSRGBEst(Color);
 		#endif
 	}
- 
+
 	struct ColorPair
 	{
 		float Diffuse;

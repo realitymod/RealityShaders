@@ -135,12 +135,12 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#else
 		float3 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
-		float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy) * float4(2.0, 2.0, 2.0, 1.0));
-		float4 XPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy) * 2.0);
-		float4 ZPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex6_Wrap, Input.ZPlaneTex.xy) * 2.0);
-		float3 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw) * 2.0);
-		float3 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw) * 2.0);
-		float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw) * 2.0);
+		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy);
+		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy);
+		float4 ZPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.ZPlaneTex.xy);
+		float3 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex.zw);
+		float3 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XPlaneTex.zw);
+		float3 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.ZPlaneTex.zw);
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color
@@ -156,11 +156,11 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
 
 		float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
-		float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b, LowDetailMapBlend);
-		LowDetailMap *= lerp(1.0, Blue, LowComponent.b);
+		float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
+		LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
 		float4 DetailMap = 0.0;
-		if(UseMounten)
+		if (UseMounten)
 		{
 			DetailMap += (XPlaneDetailmap * BlendValue.x);
 			DetailMap += (YPlaneDetailmap * BlendValue.y);
@@ -172,12 +172,12 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		}
 
 		float4 BothDetailMap = DetailMap * LowDetailMap;
-		float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
+		float4 OutputDetail = lerp(BothDetailMap * 2.0, LowDetailMap, LerpValue);
 		float3 OutputColor = ColorMap.rgb * OutputDetail.rgb * TerrainLights * 2.0;
 
 		if (UseEnvMap)
 		{
-			float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
+			float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), WorldNormal.xyz);
 			float3 EnvMapColor = SRGBToLinearEst(texCUBE(SamplerTex6_Cube, Reflection)).rgb;
 			OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue));
 		}

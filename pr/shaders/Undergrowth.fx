@@ -125,7 +125,7 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 	Output.Tex0.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
-	Output.Scale = Input.Packed.w * 0.5;
+	Output.Scale = Input.Packed.w;
 
 	return Output;
 }
@@ -136,9 +136,9 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 
 	float3 LocalPos = Input.Pos.xyz;
 
-	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
-	float4 TerrainColor = SRGBToLinearEst(saturate(tex2D(SampleTerrainColorMap, Input.Tex0.zw) * 2.0));
-	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale);
+	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
+	float4 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw));
+	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale * 0.5);
 	float4 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
@@ -164,7 +164,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 	TerrainLight = (TerrainLight * 2.0) + (TerrainLightMap.z * _GIColor.rgb);
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight;
+	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight * 2.0;
 	OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
 
 	Output.Color = OutputColor;
@@ -253,7 +253,7 @@ VS2PS_Simple VS_Undergrowth_Simple(APP2VS_Simple Input, uniform bool ShadowMapEn
 	#endif
 
 	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
-	Output.Tex0.z = Input.Packed.w * 0.5;
+	Output.Tex0.z = Input.Packed.w;
 	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
 
 	Output.TerrainColorMap = saturate(Input.TerrainColorMap);
@@ -267,11 +267,11 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	PS2FB Output = (PS2FB)0.0;
 
 	float3 LocalPos = Input.Pos.xyz;
-	float3 TerrainColor = SRGBToLinearEst(saturate(Input.TerrainColorMap * 2.0));
-	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z);
+	float3 TerrainColor = SRGBToLinearEst(Input.TerrainColorMap);
+	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z * 0.5);
 	float3 TerrainLightMap = Input.TerrainLightMap;
 
-	float4 Base = SRGBToLinearEst(tex2D(SampleColorMap, Input.Tex0.xy));
+	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color

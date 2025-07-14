@@ -342,19 +342,20 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.zw));
 	float4 LowComponent = tex2D(SampleTex5, Input.Tex0.zw);
-	float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.YPlaneTex.zw) * float4(2.0, 2.0, 2.0, 1.0));
-	float3 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.YPlaneTex.xy) * 2.0);
-	float3 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.XPlaneTex) * 2.0);
-	float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.ZPlaneTex) * 2.0);
+	float4 YPlaneDetailmap = tex2D(SampleTex1Wrap, Input.YPlaneTex.zw);
+	float3 YPlaneLowDetailmap = tex2D(SampleTex3Wrap, Input.YPlaneTex.xy);
+	float3 XPlaneLowDetailmap = tex2D(SampleTex3Wrap, Input.XPlaneTex);
+	float3 ZPlaneLowDetailmap = tex2D(SampleTex3Wrap, Input.ZPlaneTex);
 	float EnvMapScale = YPlaneDetailmap.a;
 
-	float Blue = (XPlaneLowDetailmap.y * BlendValue.x);
+	float Blue = 0.0;
+	Blue += (XPlaneLowDetailmap.y * BlendValue.x);
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
 	float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
-	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b, LowDetailMapBlend);
-	LowDetailMap *= lerp(1.0, Blue, LowComponent.b);
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
+	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
 	float4 DetailMap = YPlaneDetailmap;
 
@@ -365,12 +366,12 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 	}
 
 	float4 BothDetailMap = DetailMap * LowDetailMap;
-	float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
-	float4 OutputColor = ColorMap * OutputDetail * Lights;
+	float4 OutputDetail = lerp(BothDetailMap * 2.0, LowDetailMap, LerpValue);
+	float4 OutputColor = ColorMap * OutputDetail * Lights * 2.0;
 
 	if (UseEnvMap)
 	{
-		float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
+		float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), WorldNormal.xyz);
 		float4 EnvMapColor = SRGBToLinearEst(texCUBE(SampleTex7Cube, Reflection));
 		OutputColor = lerp(OutputColor, EnvMapColor, saturate(EnvMapScale * (1.0 - LerpValue)));
 	}
@@ -407,12 +408,12 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.zw));
 	float4 LowComponent = tex2D(SampleTex5, Input.Tex0.zw);
-	float4 YPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.YPlaneTex.xy) * float4(2.0, 2.0, 2.0, 1.0));
-	float4 XPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.XPlaneTex.xy) * 2.0);
-	float4 ZPlaneDetailmap = SRGBToLinearEst(tex2D(SampleTex1Wrap, Input.ZPlaneTex.xy) * 2.0);
-	float3 YPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.YPlaneTex.zw) * 2.0);
-	float3 XPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.XPlaneTex.zw) * 2.0);
-	float3 ZPlaneLowDetailmap = SRGBToLinearEst(tex2D(SampleTex3Wrap, Input.ZPlaneTex.zw) * 2.0);
+	float4 YPlaneDetailmap = tex2D(SampleTex1Wrap, Input.YPlaneTex.xy);
+	float4 XPlaneDetailmap = tex2D(SampleTex1Wrap, Input.XPlaneTex.xy);
+	float4 ZPlaneDetailmap = tex2D(SampleTex1Wrap, Input.ZPlaneTex.xy);
+	float3 YPlaneLowDetailmap = tex2D(SampleTex3Wrap, Input.YPlaneTex.zw);
+	float3 XPlaneLowDetailmap = tex2D(SampleTex3Wrap, Input.XPlaneTex.zw);
+	float3 ZPlaneLowDetailmap = tex2D(SampleTex3Wrap, Input.ZPlaneTex.zw);
 	float EnvMapScale = YPlaneDetailmap.a;
 
 	float Blue = 0.0;
@@ -421,10 +422,11 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 	Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
 
 	float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
-	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b, LowDetailMapBlend);
-	LowDetailMap *= lerp(1.0, Blue, LowComponent.b);
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
+	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
-	float4 DetailMap = YPlaneDetailmap * BlendValue.y;
+	float4 DetailMap = 0.0;
+	DetailMap += (YPlaneDetailmap * BlendValue.y);
 	DetailMap += (XPlaneDetailmap * BlendValue.x);
 	DetailMap += (ZPlaneDetailmap * BlendValue.z);
 
@@ -435,12 +437,12 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 	}
 
 	float4 BothDetailMap = DetailMap * LowDetailMap;
-	float4 OutputDetail = lerp(BothDetailMap, LowDetailMap, LerpValue);
-	float4 OutputColor = ColorMap * OutputDetail * Lights;
+	float4 OutputDetail = lerp(BothDetailMap * 2.0, LowDetailMap, LerpValue);
+	float4 OutputColor = ColorMap * OutputDetail * Lights * 2.0;
 
 	if (UseEnvMap)
 	{
-		float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), float3(0.0, 1.0, 0.0));
+		float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), WorldNormal.xyz);
 		float4 EnvMapColor = SRGBToLinearEst(texCUBE(SampleTex7Cube, Reflection));
 		OutputColor = lerp(OutputColor, EnvMapColor, saturate(EnvMapScale * (1.0 - LerpValue)));
 	}
@@ -1135,18 +1137,19 @@ PS2FB PS_SET(VS2PS_SET Input)
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
 	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos.xyz, Input.Tex0);
-	float4 ColorMap = tex2D(SampleTex0, Input.BiTex.zw);
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.BiTex.zw));
 	float4 LowComponent = tex2D(SampleTex4, Input.BiTex.zw);
-	float4 YPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, ST.YPlane) * 2.0);
-	float4 XPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, ST.XPlane) * 2.0);
-	float4 ZPlaneLowDetailmap = SRGBToLinearEst(GetProceduralTiles(SampleTex3Wrap, ST.ZPlane) * 2.0);
+	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, ST.YPlane);
+	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, ST.XPlane);
+	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex3Wrap, ST.ZPlane);
 
-	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.z, saturate(dot(LowComponent.xy, 1.0)));
 	float Blue = 0.0;
 	Blue += (XPlaneLowDetailmap.y * BlendValue.x);
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
-	LowDetailMap *= lerp(1.0, Blue, LowComponent.z);
+
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.z * 2.0, saturate(dot(LowComponent.xy, 1.0)));
+	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.z);
 
 	float4 Lights = GetTerrainLights(SampleTex1, Input.BiTex.xy, _PointColor);
 	float4 OutputColor = ColorMap * LowDetailMap * Lights;
