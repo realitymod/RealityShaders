@@ -9,49 +9,24 @@
 
 ## Features
 
-### Shader Model 3.0
+- **Shader Model 3.0:** Shader Model 3.0 allows modders to add more grapical updates into the game.
 
-Shader Model 3.0 allows modders to add more grapical updates into the game, such as:
+    - 3D water and terrain
+    - High precision shading
+    - Linear lighting
+    - Procedural effects
+    - Soft shadows
+    - Sharper texture filtering
+    - Steep parallax mapping
 
-- 3D water and terrain
-- High precision shading
-- Linear lighting
-- Procedural effects
-- Soft shadows
-- Sharper texture filtering
-- Steep parallax mapping
-
-### Updated BF2Editor Shaders
-
-The Shader Model 3.0 update allows BF2Editor to support updated dependencies and Large Address Aware.
-
-### Distance-Based Fog
-
-This fogging method eliminates "corner-peeking".
-
-### Half-Lambert Lighting
-
-[Valve Software's](https://advances.realtimerendering.com/s2006/Mitchell-ShadingInValvesSourceEngine.pdf) smoother version of the Lambertian Term used in lighting.
-
-### Logarithmic Depth Buffer
-
-Logarithmic depth buffering eliminates flickering within distant objects.
-
-### Per-Pixel Lighting
-
-Per-pixel lighting allows sharper lighting and smoother fogging.
-
-### Modernized Post-Processing
-
-This shader package includes updated thermal and suppression effects.
-
-### Procedural Sampling
-
-No more visible texture repetition off-map terrain.
-
-### Sharpened Filtering
-
-Support for 16x anisotropic filtering.
+- **Updated BF2Editor Shaders:** The Shader Model 3.0 update allows BF2Editor to support updated dependencies and Large Address Aware.
+- **Distance-Based Fog:** This fogging method eliminates "corner-peeking".
+- **Half-Lambert Lighting:** [Valve Software's](https://advances.realtimerendering.com/s2006/Mitchell-ShadingInValvsSourceEngine.pdf) smoother version of the Lambertian Term used in lighting.
+- **Logarithmic Depth Buffer:** Logarithmic depth buffering eliminates flickering within distant objects.
+- **Per-Pixel Lighting:** Per-pixel lighting allows sharper lighting and smoother fogging.
+- **Modernized Post-Processing:** This shader package includes updated thermal and suppression effects.
+- **Procedural Sampling:** No more visible texture repetition off-map terrain.
+- **Sharpened Filtering:** Support for 16x anisotropic filtering.
 
 ## Coding Convention
 
