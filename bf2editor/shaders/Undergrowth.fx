@@ -165,12 +165,13 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight * 2.0;
 
 	#if defined(_EDITOR_)
-		OutputColor.a = saturate(Base.a);
+		OutputColor.a = Base.a;
 	#else
-		OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
+		OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
 	#endif
 
 	Output.Color = OutputColor;
+	Output.Color.a *= 2.0;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
 	TonemapAndLinearToSRGBEst(Output.Color);
 	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
@@ -200,7 +201,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = <_AlphaRefValue>; \
+			AlphaRef = PR_ALPHA_REF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \
@@ -299,12 +300,13 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	OutputColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight * 2.0;
 
 	#if defined(_EDITOR_)
-		OutputColor.a = saturate(Base.a);
+		OutputColor.a = Base.a;
 	#else
-		OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
+		OutputColor.a = Base.a * (_Transparency_x8.a * 8.0);
 	#endif
 
 	Output.Color = OutputColor;
+	Output.Color.a *= 2.0;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
 	TonemapAndLinearToSRGBEst(Output.Color);
 	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
@@ -336,7 +338,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = <_AlphaRefValue>; \
+			AlphaRef = PR_ALPHA_REF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \
@@ -389,6 +391,7 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 	OutputColor.a *= (_Transparency_x8.a * 8.0);
 
 	Output.Color = OutputColor;
+	Output.Color.a *= 2.0;
 	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
@@ -416,7 +419,7 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = <_AlphaRefValue>; \
+			AlphaRef = PR_ALPHA_REF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			ColorWriteEnable = 0; \

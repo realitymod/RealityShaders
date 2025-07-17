@@ -168,6 +168,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 	OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
 
 	Output.Color = OutputColor;
+	Output.Color.a *= 2.0;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
 	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
@@ -197,7 +198,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = <_AlphaRefValue>; \
+			AlphaRef = PR_ALPHA_REF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \
@@ -300,6 +301,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	OutputColor.a = saturate(Base.a * (_Transparency_x8.a * 8.0));
 
 	Output.Color = OutputColor;
+	Output.Color.a *= 2.0;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
 	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
@@ -331,7 +333,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = <_AlphaRefValue>; \
+			AlphaRef = PR_ALPHA_REF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			VertexShader = compile vs_3_0 VERTEX_SHADER; \
@@ -384,6 +386,7 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 	OutputColor.a *= (_Transparency_x8.a * 8.0);
 
 	Output.Color = OutputColor;
+	Output.Color.a *= 2.0;
 	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
@@ -411,7 +414,7 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 		{ \
 			CullMode = CW; \
 			AlphaTestEnable = TRUE; \
-			AlphaRef = <_AlphaRefValue>; \
+			AlphaRef = PR_ALPHA_REF; \
 			AlphaFunc = GREATER; \
 			ZFunc = PR_ZFUNC_NOEQUAL; \
 			ColorWriteEnable = 0; \
