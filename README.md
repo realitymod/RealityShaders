@@ -34,15 +34,15 @@
     - State parameters
     - System semantics
 - **ALL_CAPS**
-    - Preprocessor Macros
-    - Preprocessor Macro Arguments
+    - Preprocessor macros
+    - Preprocessor macro arguments
 - **_SnakeCase**
     - Uniform variables
 - **SnakeCase**
     - Function arguments
-    - Global Variables
-    - Local Variables
-    - Textures and Samples
+    - Global variables
+    - Local variables
+    - Textures and samples
 - **Snake_Case**
     - Data subcategory
 - **PREFIX_Data**
