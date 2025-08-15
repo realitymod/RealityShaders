@@ -367,7 +367,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 
 	float4 BothDetailMap = DetailMap * LowDetailMap;
 	float4 OutputDetail = lerp(BothDetailMap * 2.0, LowDetailMap, LerpValue);
-	float4 OutputColor = ColorMap * OutputDetail * Lights * 2.0;
+	float4 OutputColor = ColorMap * OutputDetail * Lights;
 
 	if (UseEnvMap)
 	{
@@ -438,7 +438,7 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 
 	float4 BothDetailMap = DetailMap * LowDetailMap;
 	float4 OutputDetail = lerp(BothDetailMap * 2.0, LowDetailMap, LerpValue);
-	float4 OutputColor = ColorMap * OutputDetail * Lights * 2.0;
+	float4 OutputColor = ColorMap * OutputDetail * Lights;
 
 	if (UseEnvMap)
 	{
