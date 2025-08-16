@@ -162,23 +162,28 @@
 		---
 		See also follow-up blog post: http://www.thetenthplanet.de/archives/1180
 	*/
-	float3x3 CalculateTBN(float3 Pos, float3 Normal, float2 Tex)
+	float3x3 CalculateTBN(float3 Pos, float2 Tex, float3 Normal)
 	{
-		float3 DPos1 = ddx(Pos);
-		float3 DPos2 = ddy(Pos);
-		float2 DTex1 = ddx(Tex);
-		float2 DTex2 = ddy(Tex);
+		// Get edge vectors of the pixel triangle
+		float3 DP1 = ddx(Pos);
+		float3 DP2 = ddy(Pos);
+		float2 DT1 = ddx(Tex);
+		float2 DT2 = ddy(Tex);
 
-		float3x3 M = float3x3(DPos1, DPos2, cross(DPos1, DPos2));
-		float2x3 InverseM = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
-		float3 Tangent = normalize(mul(float2(DTex1.x, DTex2.x), InverseM));
-		float3 BiTangent = normalize(mul(float2(DTex1.y, DTex2.y), InverseM));
-		return float3x3(Tangent, BiTangent, Normal);
+		// Solve the linear system
+		float3 DP2perp = cross(DP2, Normal);
+		float3 DP1perp = cross(Normal, DP1);
+		float3 Tangent = (DP2perp * DT1.xxx) + (DP1perp * DT2.xxx);
+		float3 BiTangent = (DP2perp * DT1.yyy) + (DP1perp * DT2.yyy);
+
+		// Construct a scale-invariant frame
+		float InvMax = rsqrt(max(dot(Tangent, Tangent), dot(BiTangent, BiTangent)));
+		return float3x3(Tangent * InvMax, BiTangent * InvMax, Normal);
 	}
 
 	float3 PeturbNormal(float3 LocalNormal, float3 Pos, float3 Normal, float2 Tex)
 	{
-		float3x3 TBN = CalculateTBN(Pos, Normal, Tex);
+		float3x3 TBN = CalculateTBN(Pos, Tex, Normal);
 		return normalize(mul(LocalNormal, TBN));
 	}
 #endif
