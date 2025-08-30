@@ -48,7 +48,8 @@ PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 	PS2FB Output = (PS2FB)0.0;
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 
-	Output.Color = saturate(float4(_GIColor.rgb * LightMap.bbb, LightMap.g));
+	// Pack accumulated light
+	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
@@ -250,13 +251,13 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
 	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XZPlaneTex.xy);
 	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XZPlaneTex.zw);
-
-	float4 TerrainLights = (_SunColor * (AccumLights.a * 2.0)) + AccumLights;
+	float4 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor);
 
 	// If thermals assume no shadows and gray color
 	if (IsTisActive())
 	{
-		TerrainLights = _SunColor + AccumLights;
+		TerrainLights = GetUnpackedAccumulatedLight(AccumLights, 0.0);
+		TerrainLights += (_SunColor.rgb * 2.0);
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 
@@ -269,7 +270,7 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
-	float4 OutputColor = ColorMap * LowDetailMap * TerrainLights * 2.0;
+	float4 OutputColor = ColorMap * LowDetailMap * TerrainLights;
 
 	// tl: changed a few things with this factor:
 	// - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.
@@ -373,10 +374,9 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 		float AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
 	#endif
 
-	float4 Light = saturate((_GIColor * LightMap.z) * 2.0) * 0.5;
-	Light.a = (AvgShadowValue < LightMap.y) ? AvgShadowValue : LightMap.y;
-
-	Output.Color = Light;
+	// Pack accumulated light
+	LightMap.g = min(LightMap.g, AvgShadowValue);
+	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

@@ -157,24 +157,24 @@ PS2FB PS_Road(VS2PS Input)
 	float ZFade = GetRoadZFade(WorldPos, WorldSpaceCamPos.xyz, RoadFadeOut);
 
 	float4 AccumLights = tex2Dproj(SampleAccumLightMap, Input.LightTex);
-	float3 Light = ((TerrainSunColor * (AccumLights.a * 2.0)) + AccumLights.rgb) * 2.0;
-
 	float4 Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if defined(USE_DETAIL)
 		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
 		Diffuse *= Detail;
 	#endif
+	float3 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, TerrainSunColor);
 
 	// On thermals no shadows
 	if (IsTisActive())
 	{
-		Light = (TerrainSunColor + AccumLights.rgb) * 2.0;
-		Diffuse.rgb *= Light;
+		TerrainLights = GetUnpackedAccumulatedLight(AccumLights, 0.0);
+		TerrainLights += (TerrainSunColor * 2.0);
+		Diffuse.rgb *= TerrainLights;
 		Diffuse.g = clamp(Diffuse.g, 0.0, 0.5);
 	}
 	else
 	{
-		Diffuse.rgb *= Light;
+		Diffuse.rgb *= TerrainLights;
 	}
 
 	#if defined(NO_BLEND)

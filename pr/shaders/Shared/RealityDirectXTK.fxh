@@ -85,7 +85,7 @@
 
 	float3 ToneMapACESFilmic(float3 x)
 	{
-		float WhiteACES = 1.0 / ACESFilmic(1.0);
+		float3 WhiteACES = 1.0 / ACESFilmic(1.0);
 		return ACESFilmic(x) * WhiteACES;
 	}
 
