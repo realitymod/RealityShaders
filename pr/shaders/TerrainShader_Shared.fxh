@@ -83,7 +83,7 @@ float GetLighting(float3 WorldPos, float3 WorldNormal)
 
 	// Calculate lighting
 	float Attenuation = GetLightAttenuation(WorldLightVec, _PointLight.attSqrInv);
-	float3 HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
+	float HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
 
 	return HalfNL * Attenuation;
 }
@@ -251,13 +251,13 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
 	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XZPlaneTex.xy);
 	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XZPlaneTex.zw);
-	float4 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor);
+	float4 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor.rgb);
 
 	// If thermals assume no shadows and gray color
 	if (IsTisActive())
 	{
 		TerrainLights = GetUnpackedAccumulatedLight(AccumLights, 0.0);
-		TerrainLights += (_SunColor.rgb * 2.0);
+		TerrainLights += (_SunColor * 2.0);
 		ColorMap.rgb = 1.0 / 3.0;
 	}
 
