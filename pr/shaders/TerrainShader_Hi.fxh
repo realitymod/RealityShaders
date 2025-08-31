@@ -156,7 +156,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		Blue += (YPlaneLowDetailmap.r * BlendValue.y);
 		Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
 
-		float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
+		float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g) * ScaledLerpValue;
 		float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 		LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
@@ -174,7 +174,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 
 		float4 BothDetailMap = DetailMap * LowDetailMap;
 		float4 OutputDetail = lerp(BothDetailMap * 2.0, LowDetailMap, LerpValue);
-		float3 OutputColor = ColorMap.rgb * OutputDetail.rgb * TerrainLights;
+		float3 OutputColor = ColorMap.rgb * OutputDetail.rgb;
 
 		if (UseEnvMap)
 		{
@@ -182,6 +182,8 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 			float3 EnvMapColor = SRGBToLinearEst(texCUBE(SamplerTex6_Cube, Reflection)).rgb;
 			OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue));
 		}
+
+		OutputColor *= TerrainLights;
 	#endif
 
 	Output.Color = float4(OutputColor, ChartContribution);

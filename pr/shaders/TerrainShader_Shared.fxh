@@ -262,14 +262,13 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	}
 
 	float Blue = 0.0;
-	Blue += (XPlaneLowDetailmap.g * BlendValue.x);
-	Blue += (YPlaneLowDetailmap.r * BlendValue.y);
-	Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
+	Blue += (XPlaneLowDetailmap.y * BlendValue.x);
+	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
+	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMapBlend = LowComponent.r;
+	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g);
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
-
 	float4 OutputColor = ColorMap * LowDetailMap * TerrainLights;
 
 	// tl: changed a few things with this factor:
@@ -529,8 +528,9 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.z * 2.0, saturate(dot(LowComponent.xy, 1.0)));
-	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.z);
+	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g);
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
+	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 	float4 OutputColor = ColorMap * LowDetailMap;
 
 	// M (temporary fix)

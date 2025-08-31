@@ -353,7 +353,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
+	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g) * ScaledLerpValue;
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
@@ -367,7 +367,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 
 	float4 BothDetailMap = DetailMap * LowDetailMap;
 	float4 OutputDetail = lerp(BothDetailMap * 2.0, LowDetailMap, LerpValue);
-	float4 OutputColor = ColorMap * OutputDetail * Lights;
+	float4 OutputColor = ColorMap * OutputDetail;
 
 	if (UseEnvMap)
 	{
@@ -376,7 +376,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 		OutputColor = lerp(OutputColor, EnvMapColor, saturate(EnvMapScale * (1.0 - LerpValue)));
 	}
 
-	Output.Color = OutputColor;
+	Output.Color = OutputColor * Lights;
 	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
@@ -417,11 +417,11 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 	float EnvMapScale = YPlaneDetailmap.a;
 
 	float Blue = 0.0;
-	Blue += (XPlaneLowDetailmap.g * BlendValue.x);
-	Blue += (YPlaneLowDetailmap.r * BlendValue.y);
-	Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
+	Blue += (XPlaneLowDetailmap.y * BlendValue.x);
+	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
+	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMapBlend = LowComponent.r * ScaledLerpValue;
+	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g) * ScaledLerpValue;
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
@@ -438,7 +438,7 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 
 	float4 BothDetailMap = DetailMap * LowDetailMap;
 	float4 OutputDetail = lerp(BothDetailMap * 2.0, LowDetailMap, LerpValue);
-	float4 OutputColor = ColorMap * OutputDetail * Lights;
+	float4 OutputColor = ColorMap * OutputDetail;
 
 	if (UseEnvMap)
 	{
@@ -447,7 +447,7 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 		OutputColor = lerp(OutputColor, EnvMapColor, saturate(EnvMapScale * (1.0 - LerpValue)));
 	}
 
-	Output.Color = OutputColor;
+	Output.Color = OutputColor * Lights;
 	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
@@ -747,7 +747,7 @@ PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 	float4 Color = Input.Tex0.z;
 
 	Color += float4(0.0, 0.0, 0.3, 1.0);
-	Color *= (Grid);
+	Color *= Grid;
 
 	Output.Color = Color;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
@@ -1148,14 +1148,15 @@ PS2FB PS_SET(VS2PS_SET Input)
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.z * 2.0, saturate(dot(LowComponent.xy, 1.0)));
-	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.z);
+	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g) * ScaledLerpValue;
+	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
+	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
 	float4 Lights = GetTerrainLights(SampleTex1, Input.BiTex.xy, _PointColor);
 	float4 OutputColor = ColorMap * LowDetailMap * Lights;
+	OutputColor = lerp(OutputColor, _TerrainWaterColor, WaterLerp);
 
 	Output.Color = OutputColor;
-	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
 
@@ -1177,8 +1178,9 @@ PS2FB PS_SET_ColorLightingOnly(VS2PS_SET_ColorLightingOnly Input)
 	float4 Lights = GetTerrainLights(SampleTex1, Input.BiTex.xy, _PointColor);
 
 	float4 OutputColor = ColorMap * Lights;
+	OutputColor = lerp(OutputColor, _TerrainWaterColor, WaterLerp);
+
 	Output.Color = OutputColor;
-	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
 	TonemapAndLinearToSRGBEst(Output.Color);
 
