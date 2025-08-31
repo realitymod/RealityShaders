@@ -49,7 +49,7 @@ PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 
 	// Pack accumulated light
-	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb);
+	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
@@ -375,7 +375,7 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 
 	// Pack accumulated light
 	LightMap.g = min(LightMap.g, AvgShadowValue);
-	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb);
+	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);

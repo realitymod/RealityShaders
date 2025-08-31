@@ -193,12 +193,12 @@
 		return ShadowCoords;
 	}
 
-	float4 SetPackedAccumulatedLight(float4 LightMap, float3 GIColor)
+	float4 SetPackedAccumulatedLight(float4 LightMap, float3 GIColor, float3 PointColor)
 	{
 		float4 PackedAccumulatedLight = 0.0;
-		PackedAccumulatedLight.rgb += (GIColor.rgb * LightMap.b);
-		// PackedAccumulatedLight.rgb += (LightMap.r * 0.5);
-		// PackedAccumulatedLight.rgb = saturate(PackedAccumulatedLight.rgb / 1.5);
+		PackedAccumulatedLight.rgb += (GIColor * LightMap.b);
+		// PackedAccumulatedLight.rgb += ((PointColor * LightMap.r) * 0.5);
+		PackedAccumulatedLight.rgb = saturate(PackedAccumulatedLight.rgb / 1.5);
 		PackedAccumulatedLight.a = LightMap.g;
 		return PackedAccumulatedLight;
 	}
