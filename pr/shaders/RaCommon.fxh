@@ -198,7 +198,7 @@
 		float4 PackedAccumulatedLight = 0.0;
 		PackedAccumulatedLight.rgb += (GIColor * LightMap.b);
 		// PackedAccumulatedLight.rgb += ((PointColor * LightMap.r) * 0.5);
-		PackedAccumulatedLight.rgb = saturate(PackedAccumulatedLight.rgb / 1.5);
+		// PackedAccumulatedLight.rgb = saturate(PackedAccumulatedLight.rgb / 1.5);
 		PackedAccumulatedLight.a = LightMap.g;
 		return PackedAccumulatedLight;
 	}
