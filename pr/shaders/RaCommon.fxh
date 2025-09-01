@@ -212,10 +212,10 @@
 		return AccumulatedLight;
 	}
 
-	float4 GetTerrainLight(float4 LightMap, float4 SunColor, float4 GIColor)
+	float4 GetTerrainLight(float4 LightMap, float4 SunColor, float4 GIColor, float4 StaticPointColor)
 	{
 		float4 TerrainLight = 0.0;
-		// TerrainLight += LightMap.r;
+		// TerrainLight += (LightMap.r * StaticPointColor);
 		TerrainLight += (GIColor * (LightMap.b * 2.0));
 		TerrainLight += (SunColor * (LightMap.g * 4.0));
 		return TerrainLight;

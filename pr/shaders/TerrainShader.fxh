@@ -51,7 +51,7 @@
 	float4 _DebugColor : DEBUGCELLCOLOR;
 	float4 _SunColor : SUNCOLOR;
 	float4 _GIColor : GICOLOR;
-	float4 _PointColor : POINTCOLOR;
+	float4 _PointColor : POINTCOLOR = float4(1.0, 1.0, 1.0, 1.0);
 
 	float4 _SunDirection : SUNDIRECTION;
 	float4 _LightPos1 : LIGHTPOS1;

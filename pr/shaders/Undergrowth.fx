@@ -34,6 +34,7 @@ float4 _SwayOffsets[16] : SwayOffset;
 float4 _ShadowTexCoordScaleAndOffset : ShadowTexCoordScaleAndOffset;
 float4 _SunColor : SunColor;
 float4 _GIColor : GIColor;
+float4 _StaticPointColor : StaticPointColor = float4(1.0, 1.0, 1.0, 1.0);
 float4 _PointLightPosAtten[4] : PointLightPosAtten;
 float4 _PointLightColor[4] : PointLightColor;
 int _AlphaRefValue : AlphaRef;
@@ -142,7 +143,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale * 0.5);
-	float3 TerrainLight = GetTerrainLight(TerrainLightMap, _SunColor * TerrainShadow, _GIColor).rgb;
+	float3 TerrainLight = GetTerrainLight(TerrainLightMap, _SunColor * TerrainShadow, _GIColor, _StaticPointColor).rgb;
 
 	// If thermals assume gray color
 	if (IsTisActive())
@@ -272,7 +273,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z * 0.5);
-	float3 TerrainLight = GetTerrainLight(TerrainLightMap, _SunColor * TerrainShadow, _GIColor).rgb;
+	float3 TerrainLight = GetTerrainLight(TerrainLightMap, _SunColor * TerrainShadow, _GIColor, _StaticPointColor).rgb;
 
 	// If thermals assume gray color
 	if (IsTisActive())
