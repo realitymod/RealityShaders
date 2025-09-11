@@ -47,9 +47,16 @@
 	*/
 	float4 GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat, out float2 LightDepth)
 	{
-		float4 ShadowCoords = mul(Pos, LightTrapezMat);
 		float4 LightCoords = mul(Pos, LightMat);
+		float4 ShadowCoords = mul(Pos, LightTrapezMat);
+
+		// (Lz / Lw) * Sw -> Lz / Lw;
+		ShadowCoords.z = LightCoords.z / LightCoords.w;
+		ShadowCoords.z *= ShadowCoords.w;
+
+		// Output the original LightCoords.zw so it can do a per-pixel division
 		LightDepth = LightCoords.zw;
+
 		return ShadowCoords;
 	}
 
@@ -59,6 +66,7 @@
 	float GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
 		float2 Texel = fwidth(ShadowCoords.xy);
+
 		float4 Samples = 0.0;
 		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, Texel.y, 0.0, 0.0)).r;
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, -Texel.y, 0.0, 0.0)).r;
