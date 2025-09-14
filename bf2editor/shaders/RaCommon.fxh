@@ -198,10 +198,7 @@
 	{
 		float4 ShadowCoords = mul(Pos, ShadowTrapMat);
 		float4 LightCoords = (IsOccluder) ? mul(Pos, ShadowOccProjMat) : mul(Pos, ShadowProjMat);
-
-		LightCoords.z += PR_DEPTHBIAS_OBJECT;
 		ShadowCoords.z = LightCoords.z / LightCoords.w;
-
 		return ShadowCoords;
 	}
 #endif
