@@ -125,8 +125,10 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.zw);
 
-	float3 BlendValue = saturate(smoothstep(_BlendMod, 1.0, abs(WorldNormal)));
+	float3 BlendModSat = saturate(_BlendMod);
+	float3 BlendValue = smoothstep(BlendModSat, 1.0, abs(WorldNormal));
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
+
 	float3 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor);
 	float ChartContribution = dot(Component.xyz, _ComponentSelector.xyz);
 
