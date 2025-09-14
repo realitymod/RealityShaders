@@ -71,7 +71,7 @@
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, -Texel.y, 0.0, 0.0)).r;
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, Texel.y, 0.0, 0.0)).r;
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, -Texel.y, 0.0, 0.0)).r;
-		float4 CMPBits = float4(Samples >= saturate(GetSlopedBasedBias(ShadowCoords.z)));
+		float4 CMPBits = float4(Samples >= ShadowCoords.z);
 		return dot(CMPBits, 0.25);
 	}
 
