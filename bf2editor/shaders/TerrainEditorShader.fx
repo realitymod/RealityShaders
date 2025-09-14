@@ -336,7 +336,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
 	float4 Component = tex2D(SampleTex2, Input.Tex0.zw);
-	float3 BlendValue = saturate(pow(abs(WorldNormal), _BlendMod));
+	float3 BlendValue = saturate(smoothstep(_BlendMod, 1.0, abs(WorldNormal)));
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 	float ChartContribution = dot(Component.xyz, _ComponentSelector.xyz);
 
@@ -402,7 +402,7 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
 	float4 Component = tex2D(SampleTex2, Input.Tex0.zw);
-	float3 BlendValue = saturate(pow(abs(WorldNormal), _BlendMod));
+	float3 BlendValue = saturate(smoothstep(_BlendMod, 1.0, abs(WorldNormal)));
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 	float ChartContribution = dot(Component.xyz, _ComponentSelector.xyz);
 
@@ -1132,7 +1132,7 @@ PS2FB PS_SET(VS2PS_SET Input)
 
 	float4 WorldPos = Input.Pos;
 	float3 WorldNormal = normalize(Input.Normal);
-	float3 BlendValue = saturate(pow(abs(WorldNormal), _BlendMod));
+	float3 BlendValue = saturate(smoothstep(_BlendMod, 1.0, abs(WorldNormal)));
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
