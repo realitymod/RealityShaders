@@ -45,13 +45,13 @@
 		---
 		NOTE: Make sure Pos and matrices are in same space!
 	*/
-	float4 GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat, out float LightDepth)
+	float4 GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat, out float2 LightDepth)
 	{
 		float4 LightCoords = mul(Pos, LightMat);
 		float4 ShadowCoords = mul(Pos, LightTrapezMat);
 
 		// Output LightDepth for non-NVIDIA GPUs
-		LightDepth = LightCoords.z / LightCoords.w;
+		LightDepth = LightCoords.zw;
 
 		// (Lz / Lw) * Sw -> Lz / Lw;
 		ShadowCoords.z = LightDepth * ShadowCoords.w;
@@ -65,10 +65,6 @@
 	float GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
 		float2 Texel = fwidth(ShadowCoords.xy);
-
-		#if NVIDIA
-			ShadowCoords.z *= ShadowCoords.w;
-		#endif
 
 		float4 Samples = 0.0;
 		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, Texel.y, 0.0, 0.0)).r;
