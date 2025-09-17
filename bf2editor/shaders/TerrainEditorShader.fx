@@ -31,7 +31,7 @@ float2 _SETBiFixTex : SETBIFIXTEX;
 float2 _SETBiFixTex2 : SETBIFIXTEX2;
 float2 _BiFixTex : BIFIXTEX;
 
-float3 _BlendMod : BLENDMOD = float3(1.0, 1.0, 1.0);
+float3 _BlendMod : BLENDMOD = float3(0.0, 0.0, 0.0);
 float _WaterHeight : WaterHeight;
 float4 _TerrainWaterColor : TerrainWaterColor;
 
@@ -335,8 +335,8 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
-	float3 BlendModSat = saturate(_BlendMod);
-	float3 BlendValue = smoothstep(BlendModSat, 1.0, abs(WorldNormal));
+	float3 BlendBias = abs(WorldNormal) - _BlendMod;
+	float3 BlendValue = smoothstep(0.0, 1.0, BlendBias);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 Component = tex2D(SampleTex2, Input.Tex0.zw);
@@ -355,7 +355,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g) * ScaledLerpValue;
+	float LowDetailMapBlend = smoothstep(0.0, 1.0, LowComponent.r + LowComponent.g) * ScaledLerpValue;
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
@@ -403,8 +403,8 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
-	float3 BlendModSat = saturate(_BlendMod);
-	float3 BlendValue = smoothstep(BlendModSat, 1.0, abs(WorldNormal));
+	float3 BlendBias = abs(WorldNormal) - _BlendMod;
+	float3 BlendValue = smoothstep(0.0, 1.0, BlendBias);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 Component = tex2D(SampleTex2, Input.Tex0.zw);
@@ -425,7 +425,7 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g) * ScaledLerpValue;
+	float LowDetailMapBlend = smoothstep(0.0, 1.0, LowComponent.r + LowComponent.g) * ScaledLerpValue;
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
@@ -1137,8 +1137,8 @@ PS2FB PS_SET(VS2PS_SET Input)
 	float4 WorldPos = Input.Pos;
 	float3 WorldNormal = normalize(Input.Normal);
 
-	float3 BlendModSat = saturate(_BlendMod);
-	float3 BlendValue = smoothstep(BlendModSat, 1.0, abs(WorldNormal));
+	float3 BlendBias = abs(WorldNormal) - _BlendMod;
+	float3 BlendValue = smoothstep(0.0, 1.0, BlendBias);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
