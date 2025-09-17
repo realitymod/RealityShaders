@@ -125,8 +125,8 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.zw);
 
-	float3 BlendModSat = saturate(_BlendMod);
-	float3 BlendValue = smoothstep(BlendModSat, 1.0, abs(WorldNormal));
+	float3 BlendBias = abs(WorldNormal) - _BlendMod;
+	float3 BlendValue = smoothstep(0.0, 1.0, BlendBias);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float3 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor);
@@ -158,7 +158,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		Blue += (YPlaneLowDetailmap.r * BlendValue.y);
 		Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
 
-		float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g) * ScaledLerpValue;
+		float LowDetailMapBlend = smoothstep(0.0, 1.0, LowComponent.r + LowComponent.g) * ScaledLerpValue;
 		float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 		LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 

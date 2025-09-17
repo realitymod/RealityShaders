@@ -175,6 +175,8 @@ PS2FB PS_Decals(VS2PS Input)
 	ZEnable = TRUE; \
 	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = FALSE; \
+	DepthBias = PR_DEPTHBIAS_DECAL; \
+	SlopeScaleDepthBias = PR_SLOPESCALE_OBJECT; \
 	AlphaTestEnable = FALSE; \
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCALPHA; \

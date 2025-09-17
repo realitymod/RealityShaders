@@ -95,7 +95,7 @@ VS2PS VS_RoadCompiled(APP2VS Input)
 	VS2PS Output = (VS2PS)0.0;
 
 	float4 WorldPos = Input.Pos;
-	WorldPos.y += 0.01;
+	WorldPos.y += 0.005;
 
 	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos.xyz = Input.Pos.xyz;
@@ -188,7 +188,7 @@ technique roadcompiledFull
 	{
 		ZEnable = FALSE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
-		DepthBias = PR_DEPTHBIAS_ROAD;
+		DepthBias = PR_DEPTHBIAS_ROAD_COMPILED;
 		SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
 
 		AlphaBlendEnable = FALSE;

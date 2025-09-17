@@ -243,8 +243,8 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float3 WorldPos = Input.Pos.xyz;
 	float3 Normals = normalize(Input.Normal);
 
-	float3 BlendModSat = saturate(_BlendMod);
-	float3 BlendValue = smoothstep(BlendModSat, 1.0, abs(Normals));
+	float3 BlendBias = abs(Normals) - _BlendMod;
+	float3 BlendValue = smoothstep(0.0, 1.0, BlendBias);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
@@ -268,7 +268,7 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g);
+	float LowDetailMapBlend = smoothstep(0.0, 1.0, LowComponent.r + LowComponent.g);
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 	float4 OutputColor = ColorMap * LowDetailMap * TerrainLights;
@@ -511,8 +511,8 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.Normal);
 
-	float3 BlendModSat = saturate(_BlendMod);
-	float3 BlendValue = smoothstep(BlendModSat, 1.0, abs(WorldNormal));
+	float3 BlendBias = abs(WorldNormal) - _BlendMod;
+	float3 BlendValue = smoothstep(0.0, 1.0, BlendBias);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
@@ -532,7 +532,7 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g);
+	float LowDetailMapBlend = smoothstep(0.0, 1.0, LowComponent.r + LowComponent.g);
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 	float4 OutputColor = ColorMap * LowDetailMap;

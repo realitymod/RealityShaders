@@ -84,7 +84,7 @@
 		// float4 _PlaneMapSel : PLANEMAPSEL;
 	*/
 
-	float3 _BlendMod : BLENDMOD = float3(1.0, 1.0, 1.0);
+	float3 _BlendMod : BLENDMOD = float3(0.0, 0.0, 0.0);
 
 	float _WaterHeight : WaterHeight;
 	float4 _TerrainWaterColor : TerrainWaterColor;
