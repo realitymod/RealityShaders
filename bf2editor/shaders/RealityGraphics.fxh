@@ -129,7 +129,6 @@
 	{
 		float X = 2.0;
 
-		[unroll]
 		for (int i = 0; i < 10; i++)
 		{
 			X = pow(1.0 + X, 1.0 / (D + 1.0));
