@@ -225,7 +225,9 @@
 		float4 Weight = 0.0;
 
 		// Get constants
-		const float Pi2 = acos(-1.0) * 2.0;
+		const float Pi2 = GetPi() * 2.0;
+		const int Taps = 4;
+		const int Sum = Taps - 1;
 
 		// Get texcoord data
 		float2 ScreenSize = GetScreenSize(Tex);
@@ -237,21 +239,21 @@
 		sincos(Random, Rotation.y, Rotation.x);
 		float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
 
-		float Shift = 0.0;
-		for(int i = 1; i < 4; ++i)
+		for (int i = 0; i < Taps ; i++)
 		{
-			for(int j = 0; j < 4 * i; ++j)
+			for (int j = 0; j < Taps ; j++)
 			{
-				Shift = (Pi2 / (4.0 * float(i))) * float(j);
-				float2 AngleShift = 0.0;
-				sincos(Shift, AngleShift.x, AngleShift.y);
-				AngleShift *= float(i);
+				float2 Shift = float2(i, j) / float(Sum);
+				Shift = (Shift * 2.0) - 1.0;
+				Shift = mul(Shift, RotationMatrix);
 
-				float2 Offset = (UseHash) ? mul(AngleShift, RotationMatrix) : AngleShift;
-				Offset.x *= AspectRatio;
-				Offset *= Bias;
-				OutputColor += SRGBToLinearEst(tex2D(Source, Tex + (Offset * 0.01)));
-				Weight++;
+				float2 DiskShift = MapUVtoConcentricDisk(Shift);
+				DiskShift.x *= AspectRatio;
+				DiskShift *= Bias;
+
+				float2 FetchTex = Tex + (DiskShift * 0.03);
+				OutputColor += tex2D(Source, FetchTex);
+				Weight += 1.0;
 			}
 		}
 
