@@ -194,7 +194,7 @@
 		float R;
 		float Theta;
 
-		if if (UV.x == 0.0 && UV.y == 0.0)
+		if ((UV.x == 0.0) && (UV.y == 0.0))
 		{
 			R = 0.0;
 			Theta = 0.0;
