@@ -1,4 +1,4 @@
-#line 2 "RealityFidelityFX.fxh"
+#line 2 "RealityEffects.fxh"
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityPixel.fxh"
@@ -112,7 +112,7 @@
 		in float GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
 	)
 	{
-		float2 RandomNumberFine = GetHash2(Pos, 0.0);
+		float2 RandomNumberFine = GetHash_FLT2(Pos, 0.0);
 		float2 GradientN = FFX_Lens_Simplex((Pos / GrainScaleValue) + RandomNumberFine);
 
 		const float GrainShape = 3.0;
@@ -172,6 +172,93 @@
 		Color = FFX_Lens_SampleWithChromaticAberration(Image, HPos, Tex, Center, RGMag.r, RGMag.g);
 		FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
 		FFX_Lens_ApplyFilmGrain(Tex, Color, GrainScale, GrainAmount, GrainSeed);
+	}
+
+#endif
+
+#if !defined(REALITY_EFFECTS)
+	#define REALITY_EFFECTS
+
+	/*
+		http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/
+		https://pbr-book.org/4ed/Sampling_Algorithms/Sampling_Multidimensional_Functions
+	*/
+
+	float2 MapUVtoConcentricDisk(
+		float2 UV // UV [-1, 1)
+	)
+	{
+		float Pi = GetPi();
+
+		// Check if the coordinates are in the first or second half of the square
+		float R;
+		float Theta;
+
+		if if (UV.x == 0.0 && UV.y == 0.0)
+		{
+			R = 0.0;
+			Theta = 0.0;
+		}
+		else if ((UV.x * UV.x) > (UV.y * UV.y))
+		{
+			R = UV.x;
+			Theta = (Pi / 4.0) * (UV.y / UV.x);
+		}
+		else
+		{
+			R = UV.y;
+			Theta = (Pi / 2.0) - (Pi / 4.0) * (UV.x / UV.y);
+		}
+
+		// Convert from polar to Cartesian coordinates
+		return R * float2(cos(Theta), sin(Theta));
+	}
+
+	/*
+		Convolutions
+	*/
+
+	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias, bool UseHash)
+	{
+		// Initialize values
+		float4 OutputColor = 0.0;
+		float4 Weight = 0.0;
+
+		// Get constants
+		const float Pi2 = acos(-1.0) * 2.0;
+
+		// Get texcoord data
+		float2 ScreenSize = GetScreenSize(Tex);
+		float2 Cells = Tex * (ScreenSize * 0.25);
+		float Random = Pi2 * GetGradientNoise_FLT1(Cells, 0.0, false);
+		float AspectRatio = GetAspectRatio(ScreenSize);
+
+		float2 Rotation = 0.0;
+		sincos(Random, Rotation.y, Rotation.x);
+		float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
+
+		float Shift = 0.0;
+		for(int i = 1; i < 4; ++i)
+		{
+			for(int j = 0; j < 4 * i; ++j)
+			{
+				Shift = (Pi2 / (4.0 * float(i))) * float(j);
+				float2 AngleShift = 0.0;
+				sincos(Shift, AngleShift.x, AngleShift.y);
+				AngleShift *= float(i);
+
+				float2 Offset = (UseHash) ? mul(AngleShift, RotationMatrix) : AngleShift;
+				Offset.x *= AspectRatio;
+				Offset *= Bias;
+				OutputColor += SRGBToLinearEst(tex2D(Source, Tex + (Offset * 0.01)));
+				Weight++;
+			}
+		}
+
+		OutputColor /= Weight;
+
+		LinearToSRGBEst(OutputColor);
+		return OutputColor;
 	}
 
 #endif
