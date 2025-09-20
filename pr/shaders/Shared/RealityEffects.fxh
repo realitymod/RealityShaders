@@ -247,11 +247,11 @@
 				Shift = (Shift * 2.0) - 1.0;
 
 				float2 DiskShift = MapUVtoConcentricDisk(Shift);
-				DiskShift = mul(DiskShift, RotationMatrix);
+				DiskShift = mul(DiskShift * 3.0, RotationMatrix);
 				DiskShift.x *= AspectRatio;
 				DiskShift *= Bias;
 
-				float2 FetchTex = Tex + (DiskShift * 0.03);
+				float2 FetchTex = Tex + (DiskShift * 0.01);
 				OutputColor += tex2D(Source, FetchTex);
 				Weight += 1.0;
 			}
