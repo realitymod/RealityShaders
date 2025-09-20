@@ -245,9 +245,9 @@
 			{
 				float2 Shift = float2(i, j) / float(Sum);
 				Shift = (Shift * 2.0) - 1.0;
-				Shift = mul(Shift, RotationMatrix);
 
 				float2 DiskShift = MapUVtoConcentricDisk(Shift);
+				DiskShift = mul(DiskShift, RotationMatrix);
 				DiskShift.x *= AspectRatio;
 				DiskShift *= Bias;
 
