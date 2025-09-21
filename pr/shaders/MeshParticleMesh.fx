@@ -63,11 +63,6 @@ struct VS2PS
 	float Altitude : TEXCOORD3;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-};
-
 VS2PS VS_Diffuse(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -104,9 +99,9 @@ VS2PS VS_Diffuse(APP2VS Input)
 }
 
 // Renders 3D debris found in explosions like in PRBot4/Num6
-PS2FB PS_Diffuse(VS2PS Input)
+PS2FB_NoDepth PS_Diffuse(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
 
 	// Textures
 	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
@@ -125,9 +120,9 @@ PS2FB PS_Diffuse(VS2PS Input)
 }
 
 // Renders circular shockwave found in explosions like in PRBot4/Num6
-PS2FB PS_Additive(VS2PS Input)
+PS2FB_NoDepth PS_Additive(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
 
 	// Textures
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0.xy) * Input.Color;

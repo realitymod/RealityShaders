@@ -7,11 +7,13 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
+	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -146,14 +148,6 @@ struct VS2PS
 	#endif
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS VS_Water(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -204,7 +198,7 @@ PS2FB PS_Water(in VS2PS Input)
 	float3 NWorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
 	#if defined(USE_LIGHTMAP)
-		float4 LightMap = tex2D(SampleLightMap, Input.LightMapTex);
+		float4 LightMap = SampleTexture2DCubic(SampleLightMap, Input.LightMapTex.xy, PR_LIGHTMAP_SIZE_TERRAIN);
 	#else
 		float4 LightMap = PointColor;
 	#endif

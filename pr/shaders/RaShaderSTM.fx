@@ -90,14 +90,6 @@ struct VS2PS
 	#endif
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 /*
 	Common vertex shader methods
 */
@@ -225,7 +217,7 @@ float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 float4 GetLightmap(VS2PS Input)
 {
 	#if _LIGHTMAP_
-		return tex2D(SampleLightMap, Input.LightMapTex.xy);
+		return SampleTexture2DCubic(SampleLightMap, Input.LightMapTex.xy, PR_LIGHTMAP_SIZE_OBJECTS);
 	#else
 		return 1.0;
 	#endif

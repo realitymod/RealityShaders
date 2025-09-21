@@ -7,11 +7,13 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
+	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -112,14 +114,6 @@ struct VS2PS
 	float4 LightTex : TEXCOORD2;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS VS_Road(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -156,7 +150,8 @@ PS2FB PS_Road(VS2PS Input)
 	float3 WorldPos = Input.Pos.xyz;
 	float ZFade = GetRoadZFade(WorldPos, WorldSpaceCamPos.xyz, RoadFadeOut);
 
-	float4 AccumLights = tex2Dproj(SampleAccumLightMap, Input.LightTex);
+	float2 LightTex = Input.LightTex.xy / Input.LightTex.w;
+	float4 AccumLights = SampleTexture2DCubic(SampleAccumLightMap, LightTex, PR_LIGHTMAP_SIZE_TERRAIN);
 	float4 Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if defined(USE_DETAIL)
 		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));

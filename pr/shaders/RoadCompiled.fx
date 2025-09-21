@@ -7,11 +7,13 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
+	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -72,14 +74,6 @@ struct VS2PS
 	float Alpha : TEXCOORD3;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 float4 ProjToLighting(float4 HPos)
 {
 	// tl: This has been rearranged optimally (I believe) into 1 MUL and 1 MAD,
@@ -120,7 +114,8 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	float3 LocalPos = Input.Pos.xyz;
 	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 
-	float4 AccumLights = tex2Dproj(SampleAccumLightMap, Input.LightTex);
+	float2 LightMapTex = Input.LightTex.xy / Input.LightTex.w;
+	float4 AccumLights = SampleTexture2DCubic(SampleAccumLightMap, LightMapTex, PR_LIGHTMAP_SIZE_TERRAIN);
 	float4 Detail0 = SRGBToLinearEst(tex2D(SampleDetailMap0, Input.Tex0.xy));
 	float4 Detail1 = SRGBToLinearEst(tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1));
 	float3 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor);

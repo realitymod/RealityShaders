@@ -17,6 +17,9 @@
 	// 16x is more or less the modern GPU standard
 	#define PR_MAX_ANISOTROPY 16
 
+	#define PR_LIGHTMAP_SIZE_TERRAIN float4(1.0 / 512, 1.0 / 512, 512, 512)
+	#define PR_LIGHTMAP_SIZE_OBJECTS float4(1.0 / 2048, 1.0 / 2048, 2048, 2048)
+
 	// This hardcoded value fixes a bug with undergrowth's alphatesting
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
 	#if PR_ALPHA2MASK || defined(HASHED_ALPHA)
@@ -75,6 +78,19 @@
 
 	// #define _USELINEARLIGHTING_
 	// #define _USETONEMAP_
+
+	struct PS2FB
+	{
+		float4 Color : COLOR0;
+		#if defined(LOG_DEPTH)
+			float Depth : DEPTH;
+		#endif
+	};
+
+	struct PS2FB_NoDepth
+	{
+		float4 Color : COLOR0;
+	};
 
 	float GetPi()
 	{

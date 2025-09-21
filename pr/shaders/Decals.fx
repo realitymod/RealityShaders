@@ -82,14 +82,6 @@ struct VS2PS
 	float4 ViewPortMap : TEXCOORD5;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 {
 	VS2PS Output = (VS2PS)0.0;

@@ -74,14 +74,6 @@ struct VS2PS
 	float2 Tex0 : TEXCOORD1;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS VS_Diffuse(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;

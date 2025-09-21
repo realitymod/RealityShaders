@@ -62,14 +62,6 @@ struct VS2PS
 	float3 Maps : TEXCOORD4; // [AlphaBlend, AnimBlend, LMOffset]
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 /*
 	[Vertex Shaders]
 */

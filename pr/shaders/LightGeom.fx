@@ -37,14 +37,6 @@ struct VS2PS
 	float4 Pos : TEXCOORD0;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS VS_PointLight(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;

@@ -54,14 +54,6 @@ struct VS2PS
 	float PointSize : PSIZE;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS VS_Point(APP2PS Input)
 {
 	VS2PS Output = (VS2PS)0.0;

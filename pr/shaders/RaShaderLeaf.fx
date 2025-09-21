@@ -142,14 +142,6 @@ struct VS2PS
 	#endif
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
 float3 GetWorldLightVec(float3 WorldPos)
 {

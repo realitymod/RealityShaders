@@ -391,4 +391,43 @@
 		AlphaChannel = (AlphaChannel - Cutoff) / max(fwidth(AlphaChannel), 1e-4) + 0.5;
 	}
 
+	/*
+		Bicubic sampling in 4 taps
+		
+		Thank you Felix Westin (Fewes)!
+	*/
+
+	float4 Cubic(float V)
+	{
+		float4 N = float4(1.0, 2.0, 3.0, 4.0) - V;
+		float4 S = N * N * N;
+		float X = S.x;
+		float Y = S.y - 4.0 * S.x;
+		float Z = S.z - 4.0 * S.y + 6.0 * S.x;
+		float W = 6.0 - X - Y - Z;
+		return float4(X, Y, Z, W) * (1.0 / 6.0);
+	}
+
+	float4 SampleTexture2DCubic(sampler2D Source, float2 Tex, float4 TexSize)
+	{
+		float2 Dx = ddx(Tex);
+		float2 Dy = ddy(Tex);
+
+		Tex = Tex * TexSize.zw - 0.5;
+		float2 Fxy = frac(Tex);
+		Tex -= Fxy;
+		float4 XCubic = Cubic(Fxy.x);
+		float4 YCubic = Cubic(Fxy.y);
+		float4 C = Tex.xxyy + float2(-0.5, +1.5).xyxy;
+		float4 S = float4(XCubic.xz + XCubic.yw, YCubic.xz + YCubic.yw);
+		float4 Offset = (C + float4(XCubic.yw, YCubic.yw) / S) * TexSize.xxyy;
+		float4 Sample0 = tex2Dgrad(Source, Offset.xz, Dx, Dy);
+		float4 Sample1 = tex2Dgrad(Source, Offset.yz, Dx, Dy);
+		float4 Sample2 = tex2Dgrad(Source, Offset.xw, Dx, Dy);
+		float4 Sample3 = tex2Dgrad(Source, Offset.yw, Dx, Dy);
+		float Sx = S.x / (S.x + S.y);
+		float Sy = S.z / (S.z + S.w);
+		return lerp(lerp(Sample3, Sample2, Sx), lerp(Sample1, Sample0, Sx), Sy);
+	}
+
 #endif

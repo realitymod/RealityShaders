@@ -160,14 +160,6 @@
 		float3 Normal : NORMAL;
 	};
 
-	struct PS2FB
-	{
-		float4 Color : COLOR;
-		#if defined(LOG_DEPTH)
-			float Depth : DEPTH;
-		#endif
-	};
-
 	float GetCameraDistance(float3 WorldPos, float3 CameraPos)
 	{
 		// tl: This is now based on squared values (besides camPos)

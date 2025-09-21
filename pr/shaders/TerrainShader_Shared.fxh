@@ -46,7 +46,7 @@ float4 ZFillLightMapColor : register(c0);
 PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 {
 	PS2FB Output = (PS2FB)0.0;
-	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
+	float4 LightMap = SampleTexture2DCubic(SampleTex0_Clamp, Input.Tex0.xy, PR_LIGHTMAP_SIZE_TERRAIN);
 
 	// Pack accumulated light
 	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
@@ -368,7 +368,7 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
+	float4 LightMap = SampleTexture2DCubic(SampleTex0_Clamp, Input.Tex0.xy, PR_LIGHTMAP_SIZE_TERRAIN);
 	#if HIGHTERRAIN || MIDTERRAIN
 		float AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
