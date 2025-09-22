@@ -172,7 +172,7 @@ float4 PS_Dummy() : COLOR0
 	return 0.0;
 }
 
-VS2PS_Blit PS_Blit_Magnified(APP2VS_Blit Input)
+VS2PS_Blit VS_Blit_Magnified(APP2VS_Blit Input)
 {
 	VS2PS_Blit Output = (VS2PS_Blit)0.0;
 	Output.HPos = float4(Input.Pos.xy * 1.1, 0.0, 1.0);
@@ -303,7 +303,7 @@ float4 PS_CheapGaussianBlur5x5(in VS2PS_Blit Input) : COLOR0
 	{
 		float2 Offset = _GaussianBlur5x5CheapSampleOffsets[i].xy;
 		float Weight = _GaussianBlur5x5CheapSampleWeights[i];
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset) * Weight;
+		OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * Weight;
 	}
 
 	LinearToSRGBEst(OutputColor);
@@ -318,7 +318,7 @@ float4 PS_Gaussian_Blur_5x5_Cheap_Filter_Blend(VS2PS_Blit Input) : COLOR0
 	{
 		float2 Offset = _GaussianBlur5x5CheapSampleOffsets[i].xy;
 		float Weight = _GaussianBlur5x5CheapSampleWeights[i];
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset) * Weight;
+		OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * Weight;
 	}
 
 	OutputColor.a = _BlurStrength;
@@ -666,7 +666,7 @@ technique Blit
 	pass ClearAlpha
 	{
 		ColorWriteEnable = ALPHA;
-		VertexShader = compile vs_3_0 PS_Blit_Magnified(); // is this needed? -mosq
+		VertexShader = compile vs_3_0 VS_Blit_Magnified(); // is this needed? -mosq
 		PixelShader = compile ps_3_0 PS_Clear();
 	}
 
