@@ -310,13 +310,13 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		float4 GI_TIS = GI; // M
 		GI = (GI_TIS.a < 0.01) ? 1.0 : GI;
 	#else
-		const float4 GI = 1.0;
+		float4 GI = 1.0;
 	#endif
 
 	#if _POINTLIGHT_
 		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 	#else
-		const float Attenuation = 1.0;
+		float Attenuation = 1.0;
 	#endif
 
 	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
