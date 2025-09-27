@@ -204,7 +204,7 @@
 			ShadowCoords.z = LightCoords.z / LightCoords.w;
 			ShadowCoords.z *= ShadowCoords.w;
 		#else
-			ShadowCoords.z = LightCoords.z;
+			ShadowCoords.z = LightCoords.z / LightCoords.w;
 		#endif
 
 		return ShadowCoords;

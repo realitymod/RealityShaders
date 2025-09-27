@@ -27,7 +27,7 @@
 	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = PR_SLOPESCALE_OBJECT, uniform float Bias = PR_DEPTHBIAS_OBJECT)
 	{
 		float M = fwidth(Depth);
-		return Depth + (M * SlopeScale) + Bias;
+		return Bias + (M * SlopeScale);
 	}
 
 	/*
@@ -65,14 +65,15 @@
 	float GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
 		float2 Texel = fwidth(ShadowCoords.xy);
+		float SlopedBias = GetSlopedBasedBias(ShadowCoords.z);
 
 		float4 Samples = 0.0;
 		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, Texel.y, 0.0, 0.0)).r;
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, -Texel.y, 0.0, 0.0)).r;
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, Texel.y, 0.0, 0.0)).r;
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, -Texel.y, 0.0, 0.0)).r;
-		float4 CMPBits = float4(Samples >= saturate(GetSlopedBasedBias(ShadowCoords.z)));
 
+		float4 CMPBits = float4(saturate(ShadowCoords.z - SlopedBias) <= Samples);
 		return dot(CMPBits, 0.25);
 	}
 
