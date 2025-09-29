@@ -16,8 +16,8 @@
 #if !defined(REALITY_DEPTH)
 	#define REALITY_DEPTH
 
-	static const float FarPlane = 10000.0;
-	static const float FCoef = 1.0 / log2(FarPlane + 1.0);
+	static float FarPlane = 10000.0;
+	static float FCoef = 1.0 / log2(FarPlane + 1.0);
 
 	/*
 		Gets slope-scaled shadow bias from depth

@@ -132,9 +132,14 @@ VS2PS_Blit VS_Blit_Custom(APP2VS_Blit Input)
 	return Output;
 }
 
-float4 PS_TR_OpticsSpiralBlur(VS2PS_Blit Input) : COLOR0
+float4 PS_TR_OpticsSpiralBlurI(VS2PS_Blit Input) : COLOR0
 {
-	return GetSpiralBlur(SampleTex0_Mirror, Input.TexCoord0, 1.0, true);
+	return GetSpiralBlur(SampleTex0_Mirror, Input.TexCoord0, 1.0, true, false);
+}
+
+float4 PS_TR_OpticsSpiralBlurII(VS2PS_Blit Input) : COLOR0
+{
+	return GetSpiralBlur(SampleTex0_Mirror, Input.TexCoord0, 1.0, true, true);
 }
 
 float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR0

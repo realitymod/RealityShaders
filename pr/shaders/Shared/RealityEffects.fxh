@@ -218,7 +218,7 @@
 		Convolutions
 	*/
 
-	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias, bool UseHash)
+	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias, bool UseHash, bool Alternate)
 	{
 		// Initialize values
 		float4 OutputColor = 0.0;
@@ -232,7 +232,8 @@
 		// Get texcoord data
 		float2 ScreenSize = GetScreenSize(Tex);
 		float2 Cells = Tex * (ScreenSize * 0.25);
-		float Random = Pi2 * GetGradientNoise_FLT1(Cells, 0.0, false);
+		float2 GradientNoise = Pi2 * GetGradientNoise_FLT2(Cells, 0.0, true);
+		float Random = Alternate ? GradientNoise.y : GradientNoise.x;
 		float AspectRatio = GetAspectRatio(ScreenSize);
 
 		float2 Rotation = 0.0;

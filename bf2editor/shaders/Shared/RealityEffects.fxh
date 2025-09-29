@@ -45,8 +45,8 @@
 	float2 FFX_Lens_Simplex(float2 P)
 	{
 		// Skew and unskew factors are a bit hairy for 2D, so define them as constants
-		const float F2 = (sqrt(3.0) - 1.0) / 2.0;  // 0.36602540378
-		const float G2 = (3.0 - sqrt(3.0)) / 6.0;  // 0.2113248654
+		float F2 = (sqrt(3.0) - 1.0) / 2.0;  // 0.36602540378
+		float G2 = (3.0 - sqrt(3.0)) / 6.0;  // 0.2113248654
 
 		// Skew the (x,y) space to determine which cell of 2 simplices we're in
 		float U = (P.x + P.y) * F2;
@@ -68,12 +68,12 @@
 		float ChromAbIntensity // Intensity constant value for the chromatic aberration effect.
 	)
 	{
-		const float A = 1.5220;
-		const float B = 0.00459 * ChromAbIntensity; // um^2
+		float A = 1.5220;
+		float B = 0.00459 * ChromAbIntensity; // um^2
 
-		const float3 WaveLengthUM = float3(0.612, 0.549, 0.464);
-		const float3 IdxRefraction = A + B / WaveLengthUM;
-		const float2 RedGreenMagnitude = (IdxRefraction.rg - 1.0) / (IdxRefraction.bb - 1.0);
+		float3 WaveLengthUM = float3(0.612, 0.549, 0.464);
+		float3 IdxRefraction = A + B / WaveLengthUM;
+		float2 RedGreenMagnitude = (IdxRefraction.rg - 1.0) / (IdxRefraction.bb - 1.0);
 
 		// float2 containing the red and green wavelength/channel magnitude values
 		return RedGreenMagnitude;
@@ -115,7 +115,7 @@
 		float2 RandomNumberFine = GetHash_FLT2(Pos, 0.0);
 		float2 GradientN = FFX_Lens_Simplex((Pos / GrainScaleValue) + RandomNumberFine);
 
-		const float GrainShape = 3.0;
+		float GrainShape = 3.0;
 		float Grain = exp2(-length(GradientN) * GrainShape);
 		Grain = 1.0 - 2.0 * Grain;
 		Color += Grain * min(Color, 1.0 - Color) * GrainAmountValue;
@@ -218,21 +218,22 @@
 		Convolutions
 	*/
 
-	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias, bool UseHash)
+	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias, bool UseHash, bool Alternate)
 	{
 		// Initialize values
 		float4 OutputColor = 0.0;
 		float4 Weight = 0.0;
 
 		// Get constants
-		const float Pi2 = GetPi() * 2.0;
-		const int Taps = 4;
-		const int Sum = Taps - 1;
+		float Pi2 = GetPi() * 2.0;
+		int Taps = 4;
+		int Sum = Taps - 1;
 
 		// Get texcoord data
 		float2 ScreenSize = GetScreenSize(Tex);
 		float2 Cells = Tex * (ScreenSize * 0.25);
-		float Random = Pi2 * GetGradientNoise_FLT1(Cells, 0.0, false);
+		float2 GradientNoise = Pi2 * GetGradientNoise_FLT2(Cells, 0.0, true);
+		float Random = Alternate ? GradientNoise.y : GradientNoise.x;
 		float AspectRatio = GetAspectRatio(ScreenSize);
 
 		float2 Rotation = 0.0;

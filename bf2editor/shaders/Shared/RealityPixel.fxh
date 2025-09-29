@@ -158,7 +158,7 @@
 	float GetGradient_FLT1(float2 I, float2 F, float2 O, float Bias)
 	{
 		// Get constants
-		const float TwoPi = acos(-1.0) * 2.0;
+		float TwoPi = acos(-1.0) * 2.0;
 
 		// Calculate random hash rotation
 		float Hash = GetHash_FLT1(I + O, Bias) * TwoPi;
@@ -172,7 +172,7 @@
 	float2 GetGradient_FLT2(float2 I, float2 F, float2 O, float Bias)
 	{
 		// Get constants
-		const float TwoPi = acos(-1.0) * 2.0;
+		float TwoPi = acos(-1.0) * 2.0;
 
 		// Calculate random hash rotation
 		float2 Hash = GetHash_FLT2(I + O, Bias) * TwoPi;
@@ -322,7 +322,7 @@
 	void SetHashedAlphaTest(float2 Tex, inout float AlphaChannel)
 	{
 		#if defined(HASHED_ALPHA)
-			const float HashScale = 1.0;
+			float HashScale = 1.0;
 			float2 DX = ddx(Tex);
 			float2 DY = ddy(Tex);
 			float2 AnisoDeriv = max(abs(DX), abs(DY));
@@ -387,7 +387,7 @@
 	*/
 	void RescaleAlpha(inout float AlphaChannel)
 	{
-		const float Cutoff = 0.5;
+		float Cutoff = 0.5;
 		AlphaChannel = (AlphaChannel - Cutoff) / max(fwidth(AlphaChannel), 1e-4) + 0.5;
 	}
 
