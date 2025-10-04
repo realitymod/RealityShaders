@@ -647,10 +647,10 @@ technique Blit
 	CREATE_NULL_PASS
 
 	// Pass 25: GlowHorizontalFilter
-	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlur())
+	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlurI())
 
 	// Pass 26: GlowVerticalFilter
-	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlur())
+	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlurII())
 
 	// Pass 27: GlowVerticalFilterAdditive
 	CREATE_NULL_PASS
