@@ -1155,7 +1155,7 @@ PS2FB PS_SET(VS2PS_SET Input)
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g);
+	float LowDetailMapBlend = smoothstep(0.0, 1.0, LowComponent.r + LowComponent.g);
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
