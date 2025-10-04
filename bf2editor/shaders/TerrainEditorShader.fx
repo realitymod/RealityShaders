@@ -335,8 +335,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
-	float3 BlendBias = abs(WorldNormal) - _BlendMod;
-	float3 BlendValue = smoothstep(0.0, 1.0, BlendBias);
+	float3 BlendValue = smoothstep(_BlendMod, 1.0, abs(WorldNormal));
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 Component = tex2D(SampleTex2, Input.Tex0.zw);
@@ -403,8 +402,7 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
 
-	float3 BlendBias = abs(WorldNormal) - _BlendMod;
-	float3 BlendValue = smoothstep(0.0, 1.0, BlendBias);
+	float3 BlendValue = smoothstep(_BlendMod, 1.0, abs(WorldNormal));
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 Component = tex2D(SampleTex2, Input.Tex0.zw);
@@ -1136,12 +1134,10 @@ PS2FB PS_SET(VS2PS_SET Input)
 
 	float4 WorldPos = Input.Pos;
 	float3 WorldNormal = normalize(Input.Normal);
-
-	float3 BlendBias = abs(WorldNormal) - _BlendMod;
-	float3 BlendValue = smoothstep(0.0, 1.0, BlendBias);
-	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
-
 	float WaterLerp = saturate((_WaterHeight - WorldPos.y) / 3.0);
+
+	float3 BlendValue = smoothstep(_BlendMod, 1.0, abs(WorldNormal));
+	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	SurroundingTerrain ST = GetSurroundingTerrain(WorldPos.xyz, Input.Tex0);
 	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0, Input.BiTex.zw));
