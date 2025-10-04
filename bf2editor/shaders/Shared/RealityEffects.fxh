@@ -225,14 +225,12 @@
 		float4 Weight = 0.0;
 
 		// Get constants
-		float Pi2 = GetPi() * 2.0;
-		int Taps = 4;
-		int Sum = Taps - 1;
+		const float Pi2 = acos(-1.0) * 2.0;
 
 		// Get texcoord data
 		float2 ScreenSize = GetScreenSize(Tex);
 		float2 Cells = Tex * (ScreenSize * 0.25);
-		float2 GradientNoise = Pi2 * GetGradientNoise_FLT2(Cells, 0.0, true);
+		float2 GradientNoise = Pi2 * GetGradientNoise_FLT2(Cells, 0.0, false);
 		float Random = Alternate ? GradientNoise.y : GradientNoise.x;
 		float AspectRatio = GetAspectRatio(ScreenSize);
 
@@ -240,21 +238,22 @@
 		sincos(Random, Rotation.y, Rotation.x);
 		float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
 
-		for (int i = 0; i < Taps ; i++)
+		float Shift = 0.0;
+		for (int i = 1; i < 4; ++i)
 		{
-			for (int j = 0; j < Taps ; j++)
+			for (int j = 0; j < 4 * i; ++j)
 			{
-				float2 Shift = float2(i, j) / float(Sum);
-				Shift = (Shift * 2.0) - 1.0;
+				Shift = (Pi2 / (4.0 * float(i))) * float(j);
+				float2 AngleShift = 0.0;
+				sincos(Shift, AngleShift.x, AngleShift.y);
+				AngleShift *= float(i);
 
-				float2 DiskShift = MapUVtoConcentricDisk(Shift);
-				DiskShift = mul(DiskShift * 3.0, RotationMatrix);
-				DiskShift.x *= AspectRatio;
-				DiskShift *= Bias;
+				float2 Offset = (UseHash) ? mul(AngleShift, RotationMatrix) : AngleShift;
+				Offset.x *= AspectRatio;
+				Offset *= Bias;
 
-				float2 FetchTex = Tex + (DiskShift * 0.01);
-				OutputColor += tex2D(Source, FetchTex);
-				Weight += 1.0;
+				OutputColor += SRGBToLinearEst(tex2D(Source, Tex + (Offset * 0.01)));
+				Weight++;
 			}
 		}
 
