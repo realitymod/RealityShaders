@@ -68,7 +68,7 @@ VS2PS_RoadEditable VS_RoadEditable(APP2VS_RoadEditable Input)
 {
 	VS2PS_RoadEditable Output = (VS2PS_RoadEditable)0.0;
 
-	Input.Pos.y +=  0.01;
+	Input.Pos.y += 0.01;
 	Output.HPos = mul(Input.Pos, _WorldViewProj);
 
 	Output.Pos = Output.HPos;
