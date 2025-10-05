@@ -75,3 +75,7 @@
 
     - Consultation and for sharing his [test of features for Battlefield 2 graphics enhancements](https://github.com/Fewes/RealityShaders)
     - Bicubic lightmapping implementation
+
+- [The Nations At War Team](https://www.moddb.com/mods/nations-at-war)
+
+    Lt. Fred for testing and suggestions!
