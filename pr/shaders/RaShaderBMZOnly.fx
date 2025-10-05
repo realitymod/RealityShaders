@@ -102,7 +102,7 @@ PS2FB PS_BM_ZOnly(VS2PS Input)
 	Output.Color = 0.0;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

@@ -88,11 +88,11 @@ VS2PS VS_Diffuse(APP2VS Input)
 
 	// Pass-through texcoords
 	Output.Tex0.xy = Input.TexCoord;
-	Output.Tex0.zw = GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, false);
+	Output.Tex0.zw = RPixel_GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, false);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
+		Output.HPos.z = RDepth_ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 	#endif
 
 	return Output;
@@ -104,8 +104,8 @@ PS2FB_NoDepth PS_Diffuse(VS2PS Input)
 	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
 
 	// Textures
-	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
-	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, Input.Tex0.zw));
+	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleLUT, Input.Tex0.zw));
 
 	// Lighting
 	float3 Lighting = GetParticleLighting(HemiMap.a, Input.Altitude, saturate(m_color1AndLightFactor.a));
@@ -114,7 +114,7 @@ PS2FB_NoDepth PS_Diffuse(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }
@@ -133,7 +133,7 @@ PS2FB_NoDepth PS_Additive(VS2PS Input)
 	float4 OutputColor = DiffuseMap;
 
 	Output.Color = OutputColor;
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	Output.Color *= float4(AlphaMask, 1.0);
 
 	return Output;

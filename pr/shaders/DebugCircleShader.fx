@@ -57,11 +57,11 @@ PS2FB PS_Debug_Circle(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = Input.Diffuse;
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

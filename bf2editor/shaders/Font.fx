@@ -64,20 +64,20 @@ VS2PS_REGULAR VS_Regular(APP2VS Input)
 float4 PS_Regular(VS2PS_REGULAR Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
-	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTexMap, Input.TexCoord));
+	float4 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTexMap, Input.TexCoord));
 	OutputColor = ColorMap * Input.Diffuse;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_Regular_Scaled(VS2PS_REGULAR Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
-	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTexMap_Linear, Input.TexCoord));
+	float4 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTexMap_Linear, Input.TexCoord));
 	OutputColor = ColorMap * Input.Diffuse;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 

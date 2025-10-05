@@ -138,10 +138,10 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float3 TerrainSunColor = _SunColor;
 
 	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
-	float4 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw));
+	float4 TerrainColor = RDirectXTK_SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw));
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale);
 	float4 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
-	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
+	float TerrainShadow = (ShadowMapEnable) ? RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
 	if (IsTisActive())
@@ -158,13 +158,13 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 		for (int i = 0; i < LightCount; i++)
 		{
 			LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
-			Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
+			Attenuation = RPixel_GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
 			Lights += (Attenuation * _PointLightColor[i]);
 		}
 	} else if (LightCount == 1)
 	{
 		LightVec = LocalPos.xyz - _PointLightPosAtten[0].xyz;
-		Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[0].w);
+		Attenuation = RPixel_GetLightAttenuation(LightVec, _PointLightPosAtten[0].w);
 		Lights += (Attenuation * _PointLightColor[0]);
 	}
 	else
@@ -187,11 +187,11 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	Output.Color = OutputColor;
 	Output.Color.a *= 2.0;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
-	TonemapAndLinearToSRGBEst(Output.Color);
-	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -285,12 +285,12 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	PS2FB Output = (PS2FB)0.0;
 
 	float4 LocalPos = Input.Pos;
-	float3 TerrainColor = SRGBToLinearEst(Input.TerrainColorMap);
+	float3 TerrainColor = RDirectXTK_SRGBToLinearEst(Input.TerrainColorMap);
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z);
 	float3 TerrainLightMap = Input.TerrainLightMap;
 
 	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
-	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
+	float TerrainShadow = (ShadowMapEnable) ? RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
 	if (IsTisActive())
@@ -307,13 +307,13 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 		for (int i = 0; i < LightCount; i++)
 		{
 			LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
-			Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
+			Attenuation = RPixel_GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
 			Lights += (Attenuation * _PointLightColor[i]);
 		}
 	} else if (LightCount == 1)
 	{
 		LightVec = LocalPos.xyz - _PointLightPosAtten[0].xyz;
-		Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[0].w);
+		Attenuation = RPixel_GetLightAttenuation(LightVec, _PointLightPosAtten[0].w);
 		Lights += (Attenuation * _PointLightColor[0]);
 	}
 	else
@@ -336,11 +336,11 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	Output.Color = OutputColor;
 	Output.Color.a *= 2.0;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
-	TonemapAndLinearToSRGBEst(Output.Color);
-	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -420,10 +420,10 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 
 	Output.Color = OutputColor;
 	Output.Color.a *= 2.0;
-	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

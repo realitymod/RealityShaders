@@ -20,6 +20,8 @@
 	#define PR_LIGHTMAP_SIZE_TERRAIN float4(1.0 / 512, 1.0 / 512, 512, 512)
 	#define PR_LIGHTMAP_SIZE_OBJECTS float4(1.0 / 2048, 1.0 / 2048, 2048, 2048)
 
+	#define PR_HARDCODED_PARALLAX_BIAS 0.08
+
 	// This hardcoded value fixes a bug with undergrowth's alphatesting
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
 	#if PR_ALPHA2MASK || defined(HASHED_ALPHA)
@@ -80,8 +82,9 @@
 		#define PR_SLOPESCALE_ROAD -0.0001
 	#endif
 
-	// #define _USELINEARLIGHTING_
-	// #define _USETONEMAP_
+	// #define PR_PARALLAX
+	// #define PR_LINEARLIGHTING
+	// #define PR_TONEMAPPING
 
 	struct PS2FB
 	{

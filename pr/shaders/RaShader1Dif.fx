@@ -98,12 +98,12 @@ PS2FB PS_Diffuse(VS2PS Input)
 
 	float3 WorldPos = Input.Pos.xyz;
 
-	Output.Color = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
+	Output.Color = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

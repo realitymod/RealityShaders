@@ -95,7 +95,7 @@
 		return Height * NViewVec.xy;
 	}
 
-	float3x3 GetTangentBasis(float3 Tangent, float3 Normal, float Flip)
+	float3x3 RVertex_GetTangentBasis(float3 Tangent, float3 Normal, float Flip)
 	{
 		// Get Tangent and Normal
 		// Cross product and flip to create Binormal

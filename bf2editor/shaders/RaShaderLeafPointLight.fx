@@ -103,8 +103,8 @@ VS2PS VS_Basic(APP2VS Input)
 	#endif
 
 	float3 LightVec = float3(Lights[0].pos.xyz - normalize(Input.Pos));
-	float HalfNL = GetHalfNL(Input.Normal, -normalize(LightVec));
-	float Attenuation = GetLightAttenuation(LightVec, Lights[0].attenuation);
+	float HalfNL = RDirectXTK_GetHalfNL(Input.Normal, -normalize(LightVec));
+	float Attenuation = RPixel_GetLightAttenuation(LightVec, Lights[0].attenuation);
 	Output.Color.rgb = Lights[0].color * (HalfNL * Attenuation);
 	Output.Color.a = Transparency;
 
@@ -115,15 +115,15 @@ PS2FB PS_Basic(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	float3 Color = DiffuseMap.rgb * Input.Color.rgb;
 
 	Output.Color = float4(Color, DiffuseMap.a);
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	Output.Color.rgb *= GetFogValue(Input.Tex0.z, 0.0);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

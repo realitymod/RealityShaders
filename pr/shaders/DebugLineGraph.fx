@@ -43,7 +43,7 @@ float4 PS_Debug_Linegraph(VS2PS Input) : COLOR0
 {
 	float4 OutputColor = Input.Color;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 

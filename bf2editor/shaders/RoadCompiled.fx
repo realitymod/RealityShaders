@@ -118,8 +118,8 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	float3 TerrainSunColor = _SunColor.rgb * 2.0;
 	float3 TerrainLights = ((TerrainSunColor * AccumLights.w) + AccumLights.rgb) * 2.0;
 
-	float4 Detail0 = SRGBToLinearEst(tex2D(SampleDetailMap0, Input.Tex0.xy));
-	float4 Detail1 = SRGBToLinearEst(tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1));
+	float4 Detail0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap0, Input.Tex0.xy));
+	float4 Detail1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1));
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
@@ -139,10 +139,10 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

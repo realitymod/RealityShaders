@@ -147,7 +147,7 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
 
 	// Get lighting
-	float HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
+	float HalfNL = RDirectXTK_GetHalfNL(WorldNormal, WorldLightDir);
 	Output.Lighting = Lights[0].color.rgb * HalfNL;
 
 	#if _HASSHADOW_
@@ -165,29 +165,29 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	float4 WorldPos = Input.Pos;
 
 	// Texture data
-	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if !defined(BASEDIFFUSEONLY)
-		float4 DetailMap = SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
+		float4 DetailMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
 		DiffuseMap *= DetailMap;
 	#endif
 
 	// Get diffuse lighting
 	#if _HASSHADOW_
-		float Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
+		float Shadow = RDepth_GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#else
 		float Shadow = 1.0;
 	#endif
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, OverGrowthAmbient.rgb, Input.Lighting * Shadow, 0.0) * 2.0;
+	OutputColor.rgb = RDirectXTK_CompositeLights(DiffuseMap.rgb, OverGrowthAmbient.rgb, Input.Lighting * Shadow, 0.0) * 2.0;
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

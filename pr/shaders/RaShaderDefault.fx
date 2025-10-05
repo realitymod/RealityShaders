@@ -64,7 +64,7 @@ PS2FB PS_Default(VS2PS Input)
 	Output.Color = float4(0.9, 0.4, 0.8, 1.0);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

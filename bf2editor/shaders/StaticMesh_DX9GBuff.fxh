@@ -345,7 +345,7 @@ VS2PS_GBuffBase VS_GBuffBase(APP2VS_GBuffBase Input)
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -360,7 +360,7 @@ VS2PS_GBuffBaseLM VS_GBuffBaseLM(APP2VS_GBuffBaseLM Input)
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -377,7 +377,7 @@ VS2PS_GBuffBaseLMAT VS_GBuffBaseLMAT(APP2VS_GBuffBaseLM Input)
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -420,7 +420,7 @@ VS2PS_GBuffBaseDetail VS_GBuffBaseDetail(APP2VS_GBuffBaseDetail Input)
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -436,7 +436,7 @@ VS2PS_GBuffBaseDetailParallax VS_GBuffBaseDetailParallax(APP2VS_GBuffBaseDetail 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 
@@ -453,7 +453,7 @@ VS2PS_GBuffBaseDetailLM VS_GBuffBaseDetailLM(APP2VS_GBuffBaseDetailLM Input)
   	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -469,7 +469,7 @@ VS2PS_GBuffBaseDetailLMParallax VS_GBuffBaseDetailLMParallax(APP2VS_GBuffBaseDet
   	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	Output.TanEyeVec = mul((_EyePosObjectSpace.xyz - Input.Pos.xyz), TangentBasis);
@@ -488,7 +488,7 @@ VS2PS_GBuffBaseDetailDirt VS_GBuffBaseDetailDirt(APP2VS_GBuffBaseDetailDirt Inpu
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -504,7 +504,7 @@ VS2PS_GBuffBaseDetailDirtParallax VS_GBuffBaseDetailDirtParallax(APP2VS_GBuffBas
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 
@@ -521,7 +521,7 @@ VS2PS_GBuffBaseDetailDirtLM VS_GBuffBaseDetailDirtLM(APP2VS_GBuffBaseDetailDirtL
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -538,7 +538,7 @@ VS2PS_GBuffBaseDetailDirtLMParallax VS_GBuffBaseDetailDirtLMParallax(APP2VS_GBuf
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 
@@ -556,7 +556,7 @@ VS2PS_GBuffBaseDetailCrack VS_GBuffBaseDetailCrack(APP2VS_GBuffBaseDetailCrack I
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -573,7 +573,7 @@ VS2PS_GBuffBaseDetailCrackParallax VS_GBuffBaseDetailCrackParallax(APP2VS_GBuffB
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 
@@ -591,7 +591,7 @@ VS2PS_GBuffBaseDetailCrackLM VS_GBuffBaseDetailCrackLM(APP2VS_GBuffBaseDetailCra
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -609,7 +609,7 @@ VS2PS_GBuffBaseDetailCrackLMParallax VS_GBuffBaseDetailCrackLMParallax(APP2VS_GB
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 
@@ -628,7 +628,7 @@ VS2PS_GBuffBaseDetailDirtCrack VS_GBuffBaseDetailDirtCrack(APP2VS_GBuffBaseDetai
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -645,7 +645,7 @@ VS2PS_GBuffBaseDetailDirtCrackParallax VS_GBuffBaseDetailDirtCrackParallax(APP2V
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 
@@ -663,7 +663,7 @@ VS2PS_GBuffBaseDetailDirtCrackLM VS_GBuffBaseDetailDirtCrackLM(APP2VS_GBuffBaseD
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 
 	// Pass-through texcoords
@@ -681,7 +681,7 @@ VS2PS_GBuffBaseDetailDirtCrackLMParallax VS_GBuffBaseDetailDirtCrackLMParallax(A
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	GetViewTangentBasis(TangentBasis, Output.Mat1, Output.Mat2, Output.Mat3);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 

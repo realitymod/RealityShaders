@@ -59,7 +59,7 @@ PS2FB PS_PointLight(VS2PS Input)
 	Output.Color = _LightColor;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -130,7 +130,7 @@ PS2FB PS_SpotLight(VS2PS_Spot Input)
 	Output.Color = _LightColor * ConicalAtt;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

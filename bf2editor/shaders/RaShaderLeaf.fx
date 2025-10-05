@@ -215,7 +215,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	WorldSpace WS = GetWorldSpaceData(Input.Pos.xyz, Input.Normal);
 
 	// Compute and pre-combine other lighting factors
-	Output.Tex0.w = GetHalfNL(WS.Normal, WS.LightDir);
+	Output.Tex0.w = RDirectXTK_GetHalfNL(WS.Normal, WS.LightDir);
 
 	// Calculate vertex position data
 	Output.Pos = float4(WS.Pos, Output.HPos.w);
@@ -239,9 +239,9 @@ PS2FB PS_Leaf(VS2PS Input)
 	float LodScale = Input.Tex0.z;
 	float4 WorldPos = Input.Pos;
 
-	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if _HASSHADOW_
-		float Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
+		float Shadow = RDepth_GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#else
 		float Shadow = 1.0;
 	#endif
@@ -252,8 +252,8 @@ PS2FB PS_Leaf(VS2PS Input)
 	float3 DiffuseRGB = (HalfNL * Shadow) * LightColor;
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, AmbientRGB, DiffuseRGB, 0.0);
-	OutputColor.a = (DiffuseMap.a * 2.0) * Transparency;
+	OutputColor.rgb = RDirectXTK_CompositeLights(DiffuseMap.rgb, AmbientRGB, DiffuseRGB, 0.0);
+	OutputColor.a = (DiffuseMap.a * 2.0) * Transparency.r;
 	#if defined(OVERGROWTH) && HASALPHA2MASK
 		OutputColor.a *= (DiffuseMap.a * 2.0);
 	#endif
@@ -262,16 +262,16 @@ PS2FB PS_Leaf(VS2PS Input)
 	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos);
 	#if _POINTLIGHT_
 		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos.xyz;
-		Output.Color.rgb *= GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
+		Output.Color.rgb *= RPixel_GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		Output.Color.rgb *= FogValue;
 	#else
 		ApplyFog(Output.Color.rgb, FogValue);
 	#endif
-	TonemapAndLinearToSRGBEst(Output.Color);
-	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

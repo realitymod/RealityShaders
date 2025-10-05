@@ -200,7 +200,7 @@ VS2PS_ZAndDiffusebasedetailparallax VS_ZAndDiffusebasedetailparallax(APP2VS_ZAnd
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 	Output.DiffuseTex = Input.DiffuseTex;
 	Output.DetailTex = Input.DetailTex;
@@ -227,7 +227,7 @@ VS2PS_ZAndDiffusebasedetaildirtparallax VS_ZAndDiffusebasedetaildirtparallax(APP
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 
 	Output.DiffuseTex = Input.DiffuseTex;
@@ -256,7 +256,7 @@ VS2PS_ZAndDiffusebasedetailcrackparallax VS_ZAndDiffusebasedetailcrackparallax(A
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 
 	Output.DiffuseTex = Input.DiffuseTex;
@@ -286,7 +286,7 @@ VS2PS_ZAndDiffusebasedetaildirtcrackparallax VS_ZAndDiffusebasedetaildirtcrackpa
 
 	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 
-	float3x3 TangentBasis = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 	Output.TanEyeVec = mul(_EyePosObjectSpace.xyz - Input.Pos.xyz, TangentBasis);
 
 	Output.DiffuseTex = Input.DiffuseTex;

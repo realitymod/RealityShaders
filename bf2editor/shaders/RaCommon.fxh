@@ -141,7 +141,7 @@
 
 	void ApplyFog(inout float3 Color, in float FogValue)
 	{
-		float3 Fog = FogColor;
+		float3 Fog = FogColor.rgb;
 
 		// Adjust fog for thermals same way as the sky in SkyDome
 		if (IsTisActive())

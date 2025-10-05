@@ -116,7 +116,7 @@ VS2PS VS_TrunkOG(APP2VS Input)
 	float3 WorldNormal = GetWorldNormal((Input.Normal * 2.0) - 1.0);
 	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
 
-	float HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
+	float HalfNL = RDirectXTK_GetHalfNL(WorldNormal, WorldLightDir);
 	float3 AmbientRGB = OverGrowthAmbient.rgb * LODScale;
 	float3 DiffuseRGB = HalfNL * (Lights[0].color.rgb * LODScale);
 	Output.Lighting = AmbientRGB + DiffuseRGB;
@@ -135,18 +135,18 @@ PS2FB PS_TrunkOG(VS2PS Input)
 	float4 WorldPos = Input.Pos;
 
 	// Get textures
-	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, Input.Lighting, 0.0, 0.0) * 2.0;
+	OutputColor.rgb = RDirectXTK_CompositeLights(DiffuseMap.rgb, Input.Lighting, 0.0, 0.0) * 2.0;
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

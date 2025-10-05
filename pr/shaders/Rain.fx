@@ -85,13 +85,13 @@ PS2FB PS_Point(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 ColorTex = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
+	float4 ColorTex = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
 
 	Output.Color = ColorTex  * Input.Color;
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;
@@ -157,7 +157,7 @@ PS2FB PS_Line(VS2PS_Line Input)
 	Output.Color = Input.Color;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;
@@ -219,7 +219,7 @@ PS2FB PS_Cells(VS2PS_Cell Input)
 	Output.Color = Input.Color;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

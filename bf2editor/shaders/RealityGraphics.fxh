@@ -20,6 +20,9 @@
 	// 16x is more or less the modern GPU standard
 	#define PR_MAX_ANISOTROPY 16
 
+	// From Forgotten Hope 2
+	#define PR_HARDCODED_PARALLAX_BIAS 0.1
+
 	// This hardcoded value fixes a bug with undergrowth's alphatesting
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
 	#if PR_ALPHA2MASK || defined(HASHED_ALPHA)
@@ -80,8 +83,9 @@
 		#define PR_SLOPESCALE_ROAD -0.0001
 	#endif
 
-	// #define _USELINEARLIGHTING_
-	// #define _USETONEMAP_
+	// #define PR_PARALLAX
+	// #define PR_LINEARLIGHTING
+	// #define PR_TONEMAPPING
 
 	float GetPi()
 	{

@@ -153,7 +153,7 @@ VS2PS_Specular VS_Lighting(APP2VS Input)
 	int IndexArray[4] = (int[4])IndexVector;
 
 	// Object-space data
-	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 ObjectTBN = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 
 	// World-space data
 	float4x3 SkinWorldMat = _MatOneBoneSkinning[IndexArray[0]];
@@ -201,7 +201,7 @@ float4 PS_Lighting(VS2PS_Specular Input) : COLOR0
 	WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 
 	// Get lighting data
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir);
+	RDirectXTK_ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir);
 	float3 Diffuse = DiffuseMap * (Ambient + Light.Diffuse);
 	float3 Specular = Light.Specular * Gloss;
 	float3 Lighting = saturate(Diffuse + Specular);
@@ -263,7 +263,7 @@ float4 PS_Diffuse(VS2PS_Diffuse Input) : COLOR0
 
 	// Get lighting data
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
-	float3 HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
+	float3 HalfNL = RDirectXTK_GetHalfNL(WorldNormal, WorldLightDir);
 	float4 Lighting = DiffuseMap * float4(Ambient.rgb + HalfNL, 1.0);
 
 	return Lighting;
@@ -358,7 +358,7 @@ VS2PS_EnvMap_Alpha VS_EnvMap_Alpha(APP2VS Input)
 	int IndexArray[4] = (int[4])IndexVector;
 
 	// Object-space data
-	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 ObjectTBN = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 
 	// World-space data
 	float4x3 SkinWorldMat = _MatOneBoneSkinning[IndexArray[0]];
@@ -463,7 +463,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	float4 WorldPos = float4(mul(UnpackPos, SkinWorldMat), 1.0);
 
 	// Output shadow coordinates & depth
-	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.LightZW);
+	Output.HPos = RDepth_GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.LightZW);
 
 	return Output;
 }
@@ -497,7 +497,7 @@ VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
 	float4 WorldPos = float4(mul(UnpackPos, SkinWorldMat), 1.0);
 
 	// Output shadow coordinates & depth
-	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.zw);
+	Output.HPos = RDepth_GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.zw);
 
 	// Texcoord data
 	Output.Tex0.xy = Input.TexCoord;

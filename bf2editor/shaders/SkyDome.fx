@@ -144,8 +144,8 @@ PS2FB PS_SkyDome(VS2PS_SkyDome Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float FadeOut = GetFadeOut(Input.Pos.xyz);
-	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
-	float4 Cloud1 = SRGBToLinearEst(GetProceduralTiles(SampleTex1, Input.Tex0.zw) * FadeOut);
+	float4 SkyDome = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
+	float4 Cloud1 = RDirectXTK_SRGBToLinearEst(RPixel_GetProceduralTiles(SampleTex1, Input.Tex0.zw) * FadeOut);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 
@@ -155,7 +155,7 @@ PS2FB PS_SkyDome(VS2PS_SkyDome Input)
 		Output.Color = ApplyTis(Output.Color);
 	}
 
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
@@ -164,8 +164,8 @@ PS2FB PS_SkyDome_Lit(VS2PS_SkyDome Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float FadeOut = GetFadeOut(Input.Pos.xyz);
-	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
-	float4 Cloud1 = SRGBToLinearEst(GetProceduralTiles(SampleTex1, Input.Tex0.zw)) * FadeOut;
+	float4 SkyDome = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
+	float4 Cloud1 = RDirectXTK_SRGBToLinearEst(RPixel_GetProceduralTiles(SampleTex1, Input.Tex0.zw)) * FadeOut;
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
@@ -176,7 +176,7 @@ PS2FB PS_SkyDome_Lit(VS2PS_SkyDome Input)
 		Output.Color = ApplyTis(Output.Color);
 	}
 
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
@@ -211,9 +211,9 @@ PS2FB PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float FadeOut = GetFadeOut(Input.Pos.xyz);
-	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.SkyTex));
-	float4 Cloud1 = SRGBToLinearEst(GetProceduralTiles(SampleTex1, Input.CloudTex.xy)) * _CloudLerpFactors.x;
-	float4 Cloud2 = SRGBToLinearEst(GetProceduralTiles(SampleTex2, Input.CloudTex.zw)) * _CloudLerpFactors.y;
+	float4 SkyDome = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.SkyTex));
+	float4 Cloud1 = RDirectXTK_SRGBToLinearEst(RPixel_GetProceduralTiles(SampleTex1, Input.CloudTex.xy)) * _CloudLerpFactors.x;
+	float4 Cloud2 = RDirectXTK_SRGBToLinearEst(RPixel_GetProceduralTiles(SampleTex2, Input.CloudTex.zw)) * _CloudLerpFactors.y;
 	float4 Temp = (Cloud1 + Cloud2) * FadeOut;
 
 	Output.Color = lerp(SkyDome, Temp, Temp.a);
@@ -224,7 +224,7 @@ PS2FB PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
 		Output.Color = ApplyTis(Output.Color);
 	}
 
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
@@ -256,7 +256,7 @@ PS2FB PS_SkyDome_NoClouds(VS2PS_NoClouds Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	Output.Color = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	Output.Color = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 
 	// If thermals make it dark
 	if (IsTisActive())
@@ -264,7 +264,7 @@ PS2FB PS_SkyDome_NoClouds(VS2PS_NoClouds Input)
 		Output.Color = ApplyTis(Output.Color);
 	}
 
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
@@ -272,7 +272,7 @@ PS2FB PS_SkyDome_NoClouds_Lit(VS2PS_NoClouds Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	float4 SkyDome = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = SkyDome;
@@ -283,7 +283,7 @@ PS2FB PS_SkyDome_NoClouds_Lit(VS2PS_NoClouds Input)
 		Output.Color = ApplyTis(Output.Color);
 	}
 
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
@@ -306,10 +306,10 @@ PS2FB PS_SkyDome_SunFlare(VS2PS_NoClouds Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	float4 SkyDome = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 	Output.Color = float4(SkyDome.rgb * _FlareParams[0], 1.0);
 
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 

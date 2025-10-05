@@ -117,18 +117,18 @@ PS2FB PS_Basic(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float3 WorldNormal = normalize(Input.Normal);
-	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex.xy));
-	float4 DetailMap = SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex.zw));
+	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex.xy));
+	float4 DetailMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex.zw));
 
-	float HalfNL = GetHalfNL(WorldNormal, -Lights[0].dir);
+	float HalfNL = RDirectXTK_GetHalfNL(WorldNormal, -Lights[0].dir);
 	float3 Diffuse = (Lights[0].color.rgb * HalfNL) + LIGHT_ADD;
 
 	Output.Color.rgb = (DiffuseMap.rgb * DetailMap.rgb) * Diffuse;
 	Output.Color.a = DiffuseMap.a;
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

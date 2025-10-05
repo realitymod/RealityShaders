@@ -88,8 +88,8 @@ PS2FB PS_RoadEditable(VS2PS_RoadEditable Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 ColorMap0 = SRGBToLinearEst(tex2D(SampleDetailTex0, Input.Tex0.xy));
-	float4 ColorMap1 = SRGBToLinearEst(tex2D(SampleDetailTex1, Input.Tex0.zw));
+	float4 ColorMap0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailTex0, Input.Tex0.xy));
+	float4 ColorMap1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailTex1, Input.Tex0.zw));
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = lerp(ColorMap1.rgb, ColorMap0.rgb, saturate(_BlendFactor));
@@ -97,10 +97,10 @@ PS2FB PS_RoadEditable(VS2PS_RoadEditable Input)
 
 	Output.Color = OutputColor;
 	Output.Color = lerp(_RoadFogColor, Output.Color, GetFogValue(Input.Pos, 0.0));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -142,7 +142,7 @@ PS2FB PS_RoadEditable_DrawMaterial(VS2PS_DrawMaterial Input)
 	Output.Color = lerp(_RoadFogColor, Output.Color, GetFogValue(Input.Pos, 0.0));
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

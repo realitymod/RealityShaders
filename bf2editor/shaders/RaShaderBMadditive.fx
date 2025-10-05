@@ -101,14 +101,14 @@ PS2FB PS_BM_Additive(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 OutputColor = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 OutputColor = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	OutputColor.rgb *= Transparency;
 
 	Output.Color = OutputColor;
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

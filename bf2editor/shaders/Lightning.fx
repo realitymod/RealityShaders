@@ -82,14 +82,14 @@ PS2FB PS_Lightning(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 ColorTex = SRGBToLinearEst(tex2D(SampleLightning, Input.Tex0.xy));
+	float4 ColorTex = RDirectXTK_SRGBToLinearEst(tex2D(SampleLightning, Input.Tex0.xy));
 
 	Output.Color = ColorTex * _LightningColor;
 	Output.Color.a *= Input.Color.a;
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;
