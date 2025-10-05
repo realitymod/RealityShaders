@@ -150,13 +150,27 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	}
 
 	float3 Lights = 0.0;
-	for (int i = 0; i < LightCount; i++)
+	float LightVec = 0.0;
+	float Attenuation = 0.0;
+
+	if (LightCount > 1)
 	{
-		float3 LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
-		float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
-		Lights += (Attenuation * _PointLightColor[i]);
+		for (int i = 0; i < LightCount; i++)
+		{
+			LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
+			Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
+			Lights += (Attenuation * _PointLightColor[i]);
+		}
+	} else if (LightCount == 1)
+	{
+		LightVec = LocalPos.xyz - _PointLightPosAtten[0].xyz;
+		Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[0].w);
+		Lights += (Attenuation * _PointLightColor[0]);
 	}
-	Lights = saturate(Lights);
+	else
+	{
+		Lights = 0.0;
+	}
 
 	float3 TerrainLight = TerrainLightMap.y * _SunColor * TerrainShadow + Lights;
 	TerrainLight = (TerrainLight * 2.0) + (TerrainLightMap.z * _GIColor.rgb);
@@ -285,13 +299,27 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	}
 
 	float3 Lights = 0.0;
-	for (int i = 0; i < LightCount; i++)
+	float LightVec = 0.0;
+	float Attenuation = 0.0;
+
+	if (LightCount > 1)
 	{
-		float3 LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
-		float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
-		Lights += (Attenuation * _PointLightColor[i]);
+		for (int i = 0; i < LightCount; i++)
+		{
+			LightVec = LocalPos.xyz - _PointLightPosAtten[i].xyz;
+			Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
+			Lights += (Attenuation * _PointLightColor[i]);
+		}
+	} else if (LightCount == 1)
+	{
+		LightVec = LocalPos.xyz - _PointLightPosAtten[0].xyz;
+		Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[0].w);
+		Lights += (Attenuation * _PointLightColor[0]);
 	}
-	Lights = saturate(Lights);
+	else
+	{
+		Lights = 0.0;
+	}
 
 	float3 TerrainLight = TerrainLightMap.y * _SunColor * TerrainShadow + Lights;
 	TerrainLight = (TerrainLight * 2.0) + (TerrainLightMap.z * _GIColor.rgb);
