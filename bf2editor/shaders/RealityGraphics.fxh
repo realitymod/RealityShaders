@@ -87,47 +87,47 @@
 	// #define PR_LINEARLIGHTING
 	// #define PR_TONEMAPPING
 
-	float GetPi()
+	float RGraphics_GetPi()
 	{
 		return acos(-1.0);
 	}
 
-	float ConvertSNORMtoUNORM_FLT1(float X)
+	float RGraphics_ConvertSNORMtoUNORM_FLT1(float X)
 	{
 		return (X * 0.5) + 0.5;
 	}
 
-	float2 ConvertSNORMtoUNORM_FLT2(float2 X)
+	float2 RGraphics_ConvertSNORMtoUNORM_FLT2(float2 X)
 	{
 		return (X * 0.5) + 0.5;
 	}
 
-	float3 ConvertSNORMtoUNORM_FLT3(float3 X)
+	float3 RGraphics_ConvertSNORMtoUNORM_FLT3(float3 X)
 	{
 		return (X * 0.5) + 0.5;
 	}
 
-	float4 ConvertSNORMtoUNORM_FLT4(float4 X)
+	float4 RGraphics_ConvertSNORMtoUNORM_FLT4(float4 X)
 	{
 		return (X * 0.5) + 0.5;
 	}
 
-	float ConvertUNORMtoSNORM_FLT1(float X)
+	float RGraphics_ConvertUNORMtoSNORM_FLT1(float X)
 	{
 		return (X * 2.0) - 1.0;
 	}
 
-	float2 ConvertUNORMtoSNORM_FLT2(float2 X)
+	float2 RGraphics_ConvertUNORMtoSNORM_FLT2(float2 X)
 	{
 		return (X * 2.0) - 1.0;
 	}
 
-	float3 ConvertUNORMtoSNORM_FLT3(float3 X)
+	float3 RGraphics_ConvertUNORMtoSNORM_FLT3(float3 X)
 	{
 		return (X * 2.0) - 1.0;
 	}
 
-	float4 ConvertUNORMtoSNORM_FLT4(float4 X)
+	float4 RGraphics_ConvertUNORMtoSNORM_FLT4(float4 X)
 	{
 		return (X * 2.0) - 1.0;
 	}
@@ -137,7 +137,7 @@
 		https://pbr-book.org/4ed/Sampling_Algorithms/Sampling_Multidimensional_Functions
 	*/
 
-	float GetPhi(int D)
+	float RGraphics_GetPhi(int D)
 	{
 		float X = 2.0;
 

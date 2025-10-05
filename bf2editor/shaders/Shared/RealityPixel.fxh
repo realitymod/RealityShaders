@@ -95,7 +95,7 @@
 
 	float RPixel_GetGoldenRatioNoise(float2 Position)
 	{
-		float P2 = GetPhi(2);
+		float P2 = RGraphics_GetPhi(2);
 		return frac(dot(Position, 1.0 / float2(P2, P2 * P2)));
 	}
 
