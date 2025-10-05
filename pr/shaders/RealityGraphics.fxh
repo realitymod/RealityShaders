@@ -20,7 +20,7 @@
 	#define PR_LIGHTMAP_SIZE_TERRAIN float4(1.0 / 512, 1.0 / 512, 512, 512)
 	#define PR_LIGHTMAP_SIZE_OBJECTS float4(1.0 / 2048, 1.0 / 2048, 2048, 2048)
 
-	#define PR_HARDCODED_PARALLAX_BIAS 0.08
+	#define PR_HARDCODED_PARALLAX_BIAS 0.075
 
 	// This hardcoded value fixes a bug with undergrowth's alphatesting
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2

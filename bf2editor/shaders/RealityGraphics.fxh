@@ -21,7 +21,7 @@
 	#define PR_MAX_ANISOTROPY 16
 
 	// From Forgotten Hope 2
-	#define PR_HARDCODED_PARALLAX_BIAS 0.1
+	#define PR_HARDCODED_PARALLAX_BIAS 0.075
 
 	// This hardcoded value fixes a bug with undergrowth's alphatesting
 	// NOTE: We compensate for this change by multiplying the texture's alpha by ~2
