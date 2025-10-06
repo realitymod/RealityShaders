@@ -131,7 +131,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 
 	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
 	float3 TerrainColor = RDirectXTK_SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw)).rgb;
-	float4 TerrainLightMap = SampleTexture2DCubic(SampleTerrainLightMap, Input.Tex0.zw, PR_LIGHTMAP_SIZE_TERRAIN);
+	float4 TerrainLightMap = RPixel_SampleTexture2DCubic(SampleTerrainLightMap, Input.Tex0.zw, PR_LIGHTMAP_SIZE_TERRAIN);
 	float TerrainShadow = (ShadowMapEnable) ? RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale * 0.5);

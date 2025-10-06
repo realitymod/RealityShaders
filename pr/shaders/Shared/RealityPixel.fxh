@@ -427,7 +427,7 @@
 		Thank you Felix Westin (Fewes)!
 	*/
 
-	float4 Cubic(float V)
+	float4 RPixel_Cubic(float V)
 	{
 		float4 N = float4(1.0, 2.0, 3.0, 4.0) - V;
 		float4 S = N * N * N;
@@ -438,7 +438,7 @@
 		return float4(X, Y, Z, W) * (1.0 / 6.0);
 	}
 
-	float4 SampleTexture2DCubic(sampler2D Source, float2 Tex, float4 TexSize)
+	float4 RPixel_SampleTexture2DCubic(sampler2D Source, float2 Tex, float4 TexSize)
 	{
 		float2 Dx = ddx(Tex);
 		float2 Dy = ddy(Tex);
@@ -446,8 +446,8 @@
 		Tex = Tex * TexSize.zw - 0.5;
 		float2 Fxy = frac(Tex);
 		Tex -= Fxy;
-		float4 XCubic = Cubic(Fxy.x);
-		float4 YCubic = Cubic(Fxy.y);
+		float4 XCubic = RPixel_Cubic(Fxy.x);
+		float4 YCubic = RPixel_Cubic(Fxy.y);
 		float4 C = Tex.xxyy + float2(-0.5, +1.5).xyxy;
 		float4 S = float4(XCubic.xz + XCubic.yw, YCubic.xz + YCubic.yw);
 		float4 Offset = (C + float4(XCubic.yw, YCubic.yw) / S) * TexSize.xxyy;
