@@ -27,7 +27,7 @@
 - **Modernized Post-Processing:** This shader package includes updated thermal and suppression effects.
 - **Procedural Sampling:** No more visible texture repetition off-map terrain.
 - **Sharpened Filtering:** Support for 16x anisotropic filtering.
-- **Bicubic Lightmapping:** A smoother interpolation method to eliminate blockiness and noticeable seams in baked lighting. Credit to [Felix Westin](https://github.com/Fewes).
+- **Optional Bicubic Lightmapping:** A smoother interpolation method to eliminate blockiness and noticeable seams in baked lighting. Credit to [Felix Westin](https://github.com/Fewes).
 
 ## Coding Convention
 

@@ -282,18 +282,18 @@
 
 			float LayerDepth = 1.0 / NumLayers;
 			float CurrentLayerDepth = 0.0;
-			
+
 			// Calculate the amount to shift the texture coordinates per layer.
 			float2 P = ViewDir.xy * (HeightScale * PR_HARDCODED_PARALLAX_BIAS);
 			float2 DeltaTex = P / NumLayers;
 
 			float2 CurrentTex = Tex;
-			
-			// The derivatives of the original UV are used for correct MIP level selection 
+
+			// The derivatives of the original UV are used for correct MIP level selection
 			// during the ray march (though simple tex2D is often used for performance).
 			float2 TexIx = ddx(Tex);
 			float2 TexIy = ddy(Tex);
-			
+
 			// Get initial height value.
 			float CurrentDepthValue = tex2Dgrad(HeightMap, CurrentTex, TexIx, TexIy).a;
 
@@ -304,13 +304,13 @@
 			while (CurrentDepthValue > CurrentLayerDepth)
 			{
 				// Advance the ray's depth
-				CurrentLayerDepth += LayerDepth; 
-				
+				CurrentLayerDepth += LayerDepth;
+
 				// Shift texture coordinates along the direction of P
 				CurrentTex -= DeltaTex;
-				
+
 				// Get heightmap value at new texture coordinates
-				CurrentDepthValue = tex2Dgrad(HeightMap, CurrentTex, TexIx, TexIy).a; 
+				CurrentDepthValue = tex2Dgrad(HeightMap, CurrentTex, TexIx, TexIy).a;
 			}
 
 			// --- Linear Interpolation (Refined for clarity and robustness) ---
@@ -325,13 +325,13 @@
 			// H_Miss is the height before the step that caused the collision (previous step)
 			float H_Miss = tex2Dgrad(HeightMap, PreviousTex, TexIx, TexIy).a;
 			// D_Miss is the layer depth before the step that caused the collision
-			float D_Miss = CurrentLayerDepth - LayerDepth; 
+			float D_Miss = CurrentLayerDepth - LayerDepth;
 
 			// M: The 'miss' distance (surface is above the ray). Should be positive.
-			float M = H_Miss - D_Miss; 
-			
+			float M = H_Miss - D_Miss;
+
 			// I: The 'hit' distance (surface is below the ray). Should be negative.
-			float I = CurrentDepthValue - CurrentLayerDepth; 
+			float I = CurrentDepthValue - CurrentLayerDepth;
 
 			// The weight 'w' is the interpolation factor from the MISS point to the HIT point.
 			// w = Miss distance / Total distance
@@ -423,7 +423,7 @@
 
 	/*
 		Bicubic sampling in 4 taps
-		
+
 		Thank you Felix Westin (Fewes)!
 	*/
 
@@ -440,24 +440,28 @@
 
 	float4 RPixel_SampleTexture2DCubic(sampler2D Source, float2 Tex, float4 TexSize)
 	{
-		float2 Dx = ddx(Tex);
-		float2 Dy = ddy(Tex);
+		#if defined(PR_BICUBIC_LIGHTMAPPING)
+			float2 Dx = ddx(Tex);
+			float2 Dy = ddy(Tex);
 
-		Tex = Tex * TexSize.zw - 0.5;
-		float2 Fxy = frac(Tex);
-		Tex -= Fxy;
-		float4 XCubic = RPixel_Cubic(Fxy.x);
-		float4 YCubic = RPixel_Cubic(Fxy.y);
-		float4 C = Tex.xxyy + float2(-0.5, +1.5).xyxy;
-		float4 S = float4(XCubic.xz + XCubic.yw, YCubic.xz + YCubic.yw);
-		float4 Offset = (C + float4(XCubic.yw, YCubic.yw) / S) * TexSize.xxyy;
-		float4 Sample0 = tex2Dgrad(Source, Offset.xz, Dx, Dy);
-		float4 Sample1 = tex2Dgrad(Source, Offset.yz, Dx, Dy);
-		float4 Sample2 = tex2Dgrad(Source, Offset.xw, Dx, Dy);
-		float4 Sample3 = tex2Dgrad(Source, Offset.yw, Dx, Dy);
-		float Sx = S.x / (S.x + S.y);
-		float Sy = S.z / (S.z + S.w);
-		return lerp(lerp(Sample3, Sample2, Sx), lerp(Sample1, Sample0, Sx), Sy);
+			Tex = Tex * TexSize.zw - 0.5;
+			float2 Fxy = frac(Tex);
+			Tex -= Fxy;
+			float4 XCubic = RPixel_Cubic(Fxy.x);
+			float4 YCubic = RPixel_Cubic(Fxy.y);
+			float4 C = Tex.xxyy + float2(-0.5, +1.5).xyxy;
+			float4 S = float4(XCubic.xz + XCubic.yw, YCubic.xz + YCubic.yw);
+			float4 Offset = (C + float4(XCubic.yw, YCubic.yw) / S) * TexSize.xxyy;
+			float4 Sample0 = tex2Dgrad(Source, Offset.xz, Dx, Dy);
+			float4 Sample1 = tex2Dgrad(Source, Offset.yz, Dx, Dy);
+			float4 Sample2 = tex2Dgrad(Source, Offset.xw, Dx, Dy);
+			float4 Sample3 = tex2Dgrad(Source, Offset.yw, Dx, Dy);
+			float Sx = S.x / (S.x + S.y);
+			float Sy = S.z / (S.z + S.w);
+			return lerp(lerp(Sample3, Sample2, Sx), lerp(Sample1, Sample0, Sx), Sy);
+		#else
+			return Tex;
+		#endif
 	}
 
 #endif

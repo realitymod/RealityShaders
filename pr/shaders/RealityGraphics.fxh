@@ -82,6 +82,7 @@
 		#define PR_SLOPESCALE_ROAD -0.0001
 	#endif
 
+	// #define PR_BICUBIC_LIGHTMAPPING
 	// #define PR_PARALLAX
 	// #define PR_LINEARLIGHTING
 	// #define PR_TONEMAPPING
