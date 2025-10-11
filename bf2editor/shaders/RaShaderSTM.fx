@@ -297,18 +297,19 @@ PS2FB PS_StaticMesh(VS2PS Input)
 			Lightmap.g *= RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
-		// We divide N.L by 5 to prevent complete darkness for surfaces facing away from the sun
-		float IHalfNL = saturate((1.0 - (Light.Diffuse / 5.0)) * 0.65);
-
 		// We add ambient to get correct ambient for surfaces parallel to the sun
-		float3 Ambient = (StaticSkyColor.rgb * IHalfNL) * Lightmap.b;
+		// We divide N.L by 5 to prevent complete darkness for surfaces facing away from the sun
+		float IDotNL = saturate((1.0 - (Light.DotNL / 5.0)) * 0.65);
+		float3 Ambient = StaticSkyColor.rgb * (Lightmap.b * IDotNL);
 		float3 BumpedDiffuse = DiffuseRGB + Ambient;
-
 		DiffuseRGB = lerp(Ambient, BumpedDiffuse, Lightmap.g);
 		DiffuseRGB += (SinglePointColor.rgb * Lightmap.r);
+		DiffuseRGB *= 2.0;
+
+		// Compute Specular
 		SpecularRGB *= Lightmap.g;
 
-		OutputColor.rgb = RDirectXTK_CompositeLights(ColorMap.rgb * 2.0, 0.0, DiffuseRGB, SpecularRGB);
+		OutputColor.rgb = RDirectXTK_CompositeLights(ColorMap.rgb, 0.0, DiffuseRGB, SpecularRGB);
 	#endif
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);

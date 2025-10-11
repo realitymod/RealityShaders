@@ -460,7 +460,7 @@
 			float Sy = S.z / (S.z + S.w);
 			return lerp(lerp(Sample3, Sample2, Sx), lerp(Sample1, Sample0, Sx), Sy);
 		#else
-			return Tex;
+			return tex2D(Source, Tex);
 		#endif
 	}
 

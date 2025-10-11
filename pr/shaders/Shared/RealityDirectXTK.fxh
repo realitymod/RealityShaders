@@ -107,6 +107,7 @@
 	{
 		float Diffuse;
 		float Specular;
+		float DotNL;
 	};
 
 	/*
@@ -143,6 +144,7 @@
 
 		Output.Diffuse = RDirectXTK_ToHalfNL(DotNL);
 		Output.Specular = N * pow(abs(DotNH), SpecPower) * DotNL_Clamped;
+		Output.DotNL = DotNL;
 		return Output;
 	}
 
