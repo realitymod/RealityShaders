@@ -45,7 +45,6 @@ float TexUnpack;
 float2 NormalUnpack;
 
 // Common BundledMesh samplers
-
 #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, ADDRESS) \
 	sampler SAMPLER_NAME = sampler_state \
 	{ \
@@ -59,6 +58,22 @@ float2 NormalUnpack;
 		AddressW = ADDRESS; \
 	}; \
 
+#define CREATE_SAMPLER_ANISOTROPIC(SAMPLER_NAME, TEXTURE, ADDRESS) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = FILTER_BM_DIFF_MIN; \
+		MagFilter = FILTER_BM_DIFF_MAG; \
+		MipFilter = LINEAR; \
+		MaxAnisotropy = PR_MAX_ANISOTROPY; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		AddressW = ADDRESS; \
+	}; \
+
+texture DiffuseMap;
+CREATE_SAMPLER_ANISOTROPIC(SampleDiffuseMap, DiffuseMap, CLAMP)
+
 texture HemiMap;
 CREATE_SAMPLER(SampleHemiMap, HemiMap, CLAMP)
 
@@ -67,9 +82,6 @@ CREATE_SAMPLER(SampleGIMap, GIMap, CLAMP)
 
 texture CubeMap;
 CREATE_SAMPLER(SampleCubeMap, CubeMap, WRAP)
-
-texture DiffuseMap;
-CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap, CLAMP)
 
 texture NormalMap;
 CREATE_SAMPLER(SampleNormalMap, NormalMap, CLAMP)

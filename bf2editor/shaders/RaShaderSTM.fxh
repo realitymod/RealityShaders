@@ -45,23 +45,34 @@ float4 ParallaxScaleBias;
 		AddressV = WRAP; \
 	}; \
 
-texture LightMap;
-CREATE_SAMPLER(SampleLightMap, LightMap)
+#define CREATE_SAMPLER_ANISOTROPIC(SAMPLER_NAME, TEXTURE) \
+	sampler SAMPLER_NAME = sampler_state \
+	{ \
+		Texture = (TEXTURE); \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = WRAP; \
+		AddressV = WRAP; \
+	}; \
+
+texture DiffuseMap;
+CREATE_SAMPLER_ANISOTROPIC(SampleDiffuseMap, DiffuseMap)
 
 texture DetailMap;
-CREATE_SAMPLER(SampleDetailMap, DetailMap)
+CREATE_SAMPLER_ANISOTROPIC(SampleDetailMap, DetailMap)
 
 texture DirtMap;
-CREATE_SAMPLER(SampleDirtMap, DirtMap)
+CREATE_SAMPLER_ANISOTROPIC(SampleDirtMap, DirtMap)
 
 texture CrackMap;
-CREATE_SAMPLER(SampleCrackMap, CrackMap)
+CREATE_SAMPLER_ANISOTROPIC(SampleCrackMap, CrackMap)
+
+texture LightMap;
+CREATE_SAMPLER_ANISOTROPIC(SampleLightMap, LightMap)
 
 texture CrackNormalMap;
 CREATE_SAMPLER(SampleCrackNormalMap, CrackNormalMap)
-
-texture DiffuseMap;
-CREATE_SAMPLER(SampleDiffuseMap, DiffuseMap)
 
 texture NormalMap;
 CREATE_SAMPLER(SampleNormalMap, NormalMap)
