@@ -84,6 +84,7 @@
 	// #define PR_PARALLAX
 	// #define PR_LINEARLIGHTING
 	// #define PR_TONEMAPPING
+	// #define PR_TERRAIN_POINTLIGHT
 
 	struct PS2FB
 	{
