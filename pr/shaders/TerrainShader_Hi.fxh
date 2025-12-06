@@ -16,27 +16,11 @@
 	Terrainmapping shader
 */
 
-float GetAdjustedNear()
-{
-	float NoLOD = _NearFarMorphLimits.x * 62500.0; // No-Lod: 250x normal -> 62500x
-	#if HIGHTERRAIN
-		float LOD = _NearFarMorphLimits.x * 16.0; // High-Lod: 4x normal -> 16x
-	#else
-		float LOD = _NearFarMorphLimits.x * 9.0; // Med-Lod: 3x normal -> 9x
-	#endif
-
-	// Only the near distance changes due to increased LOD distance. This needs to be multiplied by
-	// the square of the factor by which we increased. Assuming 200m base lod this turns out to
-	// If no-lods is enabled, then near limit is really low
-	float AdjustedNear = (_NearFarMorphLimits.x < 0.00000001) ? NoLOD : LOD;
-	return AdjustedNear;
-}
-
 float GetLerpValue(float3 WorldPos, float3 CameraPos)
 {
-	float CameraDistance = GetCameraDistance(WorldPos, CameraPos);
-	float AdjustedNear = GetAdjustedNear();
-	return saturate(CameraDistance * AdjustedNear - _NearFarMorphLimits.y);
+	float Boundary = 200.0;
+	float CameraDistance = length(WorldPos - CameraPos);
+	return smoothstep(Boundary, 0.0, CameraDistance);
 }
 
 struct VS2PS_FullDetail_Hi

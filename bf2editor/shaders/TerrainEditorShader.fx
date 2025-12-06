@@ -319,10 +319,11 @@ float4 GetTerrainLights(sampler SampleLightMap, float2 Tex, float4 Color)
 	return (Color * LightMap.r) + (_SunColor * (LightMap.g * 4.0)) + (_GIColor * (LightMap.b * 2.0));
 }
 
-float GetLerpValue(float3 WorldPos)
+float GetLerpValue(float3 WorldPos, float3 CameraPos)
 {
-	float CameraDist = distance(WorldPos.xz, _CameraPos.xz) + _CameraPos.w;
-	return saturate(CameraDist * _NearFarMorphLimits.x - _NearFarMorphLimits.y);
+	float Boundary = 200.0;
+	float CameraDistance = length(WorldPos - CameraPos);
+	return smoothstep(Boundary, 0.0, CameraDistance);
 }
 
 PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool ColorOnly)
