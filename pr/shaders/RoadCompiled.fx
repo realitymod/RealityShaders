@@ -88,8 +88,9 @@ VS2PS VS_RoadCompiled(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
+	float RoadHeightBias = 1e-2; 
 	float4 WorldPos = Input.Pos;
-	WorldPos.y += 0.005;
+	WorldPos.y += RoadHeightBias;
 
 	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos.xyz = Input.Pos.xyz;
@@ -114,8 +115,8 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	float3 LocalPos = Input.Pos.xyz;
 	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 
-	float2 LightMapTex = Input.LightTex.xy / Input.LightTex.w;
-	float4 AccumLights = RPixel_SampleTexture2DCubic(SampleAccumLightMap, LightMapTex, PR_LIGHTMAP_SIZE_TERRAIN);
+	float2 LightMapTex = saturate(Input.LightTex.xy / Input.LightTex.w);
+	float4 AccumLights = RPixel_SampleLightMap(SampleAccumLightMap, LightMapTex, PR_LIGHTMAP_SIZE_TERRAIN);
 	float4 Detail0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap0, Input.Tex0.xy));
 	float4 Detail1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1));
 	float3 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor);
@@ -183,7 +184,7 @@ technique roadcompiledFull
 	{
 		ZEnable = FALSE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
-		DepthBias = PR_DEPTHBIAS_ROAD_COMPILED;
+		DepthBias = PR_DEPTHBIAS_ROAD;
 		SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
 
 		AlphaBlendEnable = FALSE;

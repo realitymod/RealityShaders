@@ -20,7 +20,7 @@ float GetLerpValue(float3 WorldPos, float3 CameraPos)
 {
 	float Boundary = 200.0;
 	float CameraDistance = length(WorldPos - CameraPos);
-	return smoothstep(Boundary, 0.0, CameraDistance);
+	return smoothstep(0.0, Boundary, CameraDistance);
 }
 
 struct VS2PS_FullDetail_Hi
@@ -165,7 +165,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		{
 			float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), WorldNormal.xyz);
 			float3 EnvMapColor = RDirectXTK_SRGBToLinearEst(texCUBE(SamplerTex6_Cube, Reflection)).rgb;
-			OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue));
+			OutputColor = lerp(EnvMapColor, OutputColor, EnvMapScale * LerpValue);
 		}
 
 		OutputColor *= TerrainLights;

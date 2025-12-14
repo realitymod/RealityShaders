@@ -67,8 +67,8 @@
 
 	float3 RDirectXTK_TonemapAMDResolve(float3 x)
 	{
-		float3 WhiteAMDResolve = 1.0 / RDirectXTK_AMDResolve(1.0);
-		return RDirectXTK_AMDResolve(x) * WhiteAMDResolve;
+		float3 WhitePoint = 1.0 / RDirectXTK_AMDResolve(1.0);
+		return RDirectXTK_AMDResolve(x) * WhitePoint;
 	}
 
 	// ACES Filmic tonemap operator
@@ -83,10 +83,10 @@
 		return saturate((x*(a*x+b))/(x*(c*x+d)+e));
 	}
 
-	float3 RDirectXTK_ToneMapACESFilmic(float3 x)
+	float3 RDirectXTK_TonemapACESFilmic(float3 x)
 	{
-		float3 WhiteACES = 1.0 / RDirectXTK_ACESFilmic(1.0);
-		return RDirectXTK_ACESFilmic(x) * WhiteACES;
+		float3 WhitePoint = 1.0 / RDirectXTK_ACESFilmic(1.0);
+		return RDirectXTK_ACESFilmic(x) * WhitePoint;
 	}
 
 	// Apply the (approximate) sRGB curve to linear values

@@ -150,8 +150,8 @@ PS2FB PS_Road(VS2PS Input)
 	float3 WorldPos = Input.Pos.xyz;
 	float ZFade = GetRoadZFade(WorldPos, WorldSpaceCamPos.xyz, RoadFadeOut);
 
-	float2 LightTex = Input.LightTex.xy / Input.LightTex.w;
-	float4 AccumLights = RPixel_SampleTexture2DCubic(SampleAccumLightMap, LightTex, PR_LIGHTMAP_SIZE_TERRAIN);
+	float2 LightTex = saturate(Input.LightTex.xy / Input.LightTex.w);
+	float4 AccumLights = RPixel_SampleLightMap(SampleAccumLightMap, LightTex, PR_LIGHTMAP_SIZE_TERRAIN);
 	float4 Diffuse = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if defined(USE_DETAIL)
 		float4 Detail = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
@@ -201,8 +201,8 @@ technique defaultTechnique
 		ZEnable = TRUE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
-		DepthBias = PR_DEPTHBIAS_ROAD;
-		SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
+		// DepthBias = PR_DEPTHBIAS_ROAD;
+		// SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
 
 		AlphaTestEnable = FALSE;
 		AlphaBlendEnable = TRUE;
