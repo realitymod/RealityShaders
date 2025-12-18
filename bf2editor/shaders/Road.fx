@@ -96,7 +96,7 @@ PS2FB PS_RoadEditable(VS2PS_RoadEditable Input)
 	OutputColor.a = ColorMap0.a * Input.Alpha;
 
 	Output.Color = OutputColor;
-	Output.Color = lerp(_RoadFogColor, Output.Color, GetFogValue(Input.Pos, 0.0));
+	Output.Color = lerp(_RoadFogColor, Output.Color, Ra_GetFogValue(Input.Pos, 0.0));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -139,7 +139,7 @@ PS2FB PS_RoadEditable_DrawMaterial(VS2PS_DrawMaterial Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = float4((float3)_Material, 1.0);
-	Output.Color = lerp(_RoadFogColor, Output.Color, GetFogValue(Input.Pos, 0.0));
+	Output.Color = lerp(_RoadFogColor, Output.Color, Ra_GetFogValue(Input.Pos, 0.0));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);

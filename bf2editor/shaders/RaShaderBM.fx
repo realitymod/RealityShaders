@@ -222,10 +222,10 @@ VS2PS VS_BundledMesh(APP2VS Input)
 		Output.Tex0 = Input.TexDiffuse * TexUnpack; // pass-through texcoord
 	#endif
 	#if _HASSHADOW_
-		Output.ShadowTex = GetShadowProjection(WorldPos);
+		Output.ShadowTex = Ra_GetShadowProjection(WorldPos);
 	#endif
 	#if _HASSHADOWOCCLUSION_
-		Output.ShadowOccTex = GetShadowProjection(WorldPos, true);
+		Output.ShadowOccTex = Ra_GetShadowProjection(WorldPos, true);
 	#endif
 
 	// Special data
@@ -373,11 +373,11 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	*/
 
 	#if _POINTLIGHT_
-		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos) * Attenuation;
+		OutputColor.rgb *= Ra_GetFogValue(WorldPos, WorldSpaceCamPos) * Attenuation;
 	#endif
 
 	// Thermals
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		#if _HASGIMAP_
 			float Cold = lerp(0.43, 0.17, ColorTex.b);
@@ -419,7 +419,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	Output.Color.rgb = OutputColor.rgb;
 	Output.Color.a *= Transparency.a;
 	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+		Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 

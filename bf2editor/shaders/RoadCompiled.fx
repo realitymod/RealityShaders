@@ -112,7 +112,7 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float4 LocalPos = Input.Pos;
-	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
+	float ZFade = Ra_GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 
 	float4 AccumLights = tex2Dproj(SampleLightMap, Input.LightTex);
 	float3 TerrainSunColor = _SunColor.rgb * 2.0;
@@ -126,7 +126,7 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	OutputColor.a = Detail0.a * saturate(ZFade * Input.Alpha);
 
 	// On thermals no shadows
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		TerrainLights = (TerrainSunColor + AccumLights.rgb) * 2.0;
 		OutputColor.rgb *= TerrainLights;
@@ -138,7 +138,7 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	}
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(LocalPos, _LocalEyePos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)

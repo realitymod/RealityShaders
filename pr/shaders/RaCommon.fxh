@@ -84,22 +84,22 @@
 		Shared transformation code
 	*/
 
-	float3 GetWorldPos(float3 ObjectPos)
+	float3 Ra_GetWorldPos(float3 ObjectPos)
 	{
 		return mul(float4(ObjectPos, 1.0), World).xyz;
 	}
 
-	float3 GetWorldNormal(float3 ObjectNormal)
+	float3 Ra_GetWorldNormal(float3 ObjectNormal)
 	{
 		return normalize(mul(ObjectNormal, (float3x3)World));
 	}
 
-	float3 GetWorldLightPos(float3 ObjectLightPos)
+	float3 Ra_GetWorldLightPos(float3 ObjectLightPos)
 	{
 		return mul(float4(ObjectLightPos, 1.0), World).xyz;
 	}
 
-	float3 GetWorldLightDir(float3 ObjectLightDir)
+	float3 Ra_GetWorldLightDir(float3 ObjectLightDir)
 	{
 		return mul(ObjectLightDir, (float3x3)World);
 	}
@@ -108,7 +108,7 @@
 		Shared thermal code
 	*/
 
-	bool IsTisActive()
+	bool Ra_IsTisActive()
 	{
 		#if defined(_EDITOR_)
 			return false;
@@ -121,7 +121,7 @@
 		Shared fogging and fading functions
 	*/
 
-	float GetFogValue(float3 ObjectPos, float3 CameraPos)
+	float Ra_GetFogValue(float3 ObjectPos, float3 CameraPos)
 	{
 		float FogDistance = length(ObjectPos.xyz - CameraPos.xyz);
 		float2 FogValues = (FogDistance * FogRange.xy) + FogRange.zw;
@@ -130,12 +130,12 @@
 		return smoothstep(0.0, 1.0, Close - Far);
 	}
 
-	void ApplyFog(inout float3 Color, in float FogValue)
+	void Ra_ApplyFog(inout float3 Color, in float FogValue)
 	{
 		float3 Fog = FogColor.rgb;
 
 		// Adjust fog for thermals same way as the sky in SkyDome
-		if (IsTisActive())
+		if (Ra_IsTisActive())
 		{
 			// TIS uses Green + Red channel to determine heat
 			Fog.r = 0.0;
@@ -147,7 +147,7 @@
 		Color = lerp(Fog, Color, FogValue);
 	}
 
-	float GetRoadZFade(float3 ObjectPos, float3 CameraPos, float2 FadeValues)
+	float Ra_GetRoadZFade(float3 ObjectPos, float3 CameraPos, float2 FadeValues)
 	{
 		return saturate(1.0 - saturate((distance(ObjectPos.xyz, CameraPos.xyz) * FadeValues.x) - FadeValues.y));
 	}
@@ -185,7 +185,7 @@
 
 	// Description: Transforms the vertex position's depth from World/Object space to light space
 	// tl: Make sure Pos and matrices are in same space!
-	float4 GetShadowProjection(float4 Pos, uniform bool IsOccluder = false)
+	float4 Ra_GetShadowProjection(float4 Pos, uniform bool IsOccluder = false)
 	{
 		float4 ShadowCoords = mul(Pos, ShadowTrapMat);
 		float4 LightCoords = (IsOccluder) ? mul(Pos, ShadowOccProjMat) : mul(Pos, ShadowProjMat);
@@ -201,7 +201,7 @@
 		return ShadowCoords;
 	}
 
-	float4 SetPackedAccumulatedLight(float4 LightMap, float3 GIColor, float3 PointColor)
+	float4 Ra_SetPackedAccumulatedLight(float4 LightMap, float3 GIColor, float3 PointColor)
 	{
 		float4 PackedAccumulatedLight = 0.0;
 		PackedAccumulatedLight.rgb += (GIColor * LightMap.b);
@@ -213,7 +213,7 @@
 		return PackedAccumulatedLight;
 	}
 
-	float4 GetUnpackedAccumulatedLight(float4 LightMap, float3 SunColor)
+	float4 Ra_GetUnpackedAccumulatedLight(float4 LightMap, float3 SunColor)
 	{
 		float4 AccumulatedLight = LightMap;
 		#if defined(PR_TERRAIN_POINTLIGHT)
@@ -224,7 +224,7 @@
 		return AccumulatedLight;
 	}
 
-	float4 GetTerrainLight(float4 LightMap, float4 SunColor, float4 GIColor, float4 StaticPointColor)
+	float4 Ra_GetTerrainLight(float4 LightMap, float4 SunColor, float4 GIColor, float4 StaticPointColor)
 	{
 		float4 TerrainLight = 0.0;
 		#if defined(PR_TERRAIN_POINTLIGHT)

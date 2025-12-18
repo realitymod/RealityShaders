@@ -113,8 +113,8 @@ VS2PS VS_TrunkOG(APP2VS Input)
 
 	// Get lighting
 	float LODScale = DECODE_SHORT(Input.Pos.w);
-	float3 WorldNormal = GetWorldNormal((Input.Normal * 2.0) - 1.0);
-	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
+	float3 WorldNormal = Ra_GetWorldNormal((Input.Normal * 2.0) - 1.0);
+	float3 WorldLightDir = normalize(Ra_GetWorldLightDir(-Lights[0].dir));
 
 	float HalfNL = RDirectXTK_GetHalfNL(WorldNormal, WorldLightDir);
 	float3 AmbientRGB = OverGrowthAmbient.rgb * LODScale;
@@ -142,7 +142,7 @@ PS2FB PS_TrunkOG(VS2PS Input)
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)

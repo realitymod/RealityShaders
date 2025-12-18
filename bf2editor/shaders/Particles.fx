@@ -178,7 +178,7 @@ PS2FB PS_Particle_Low(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.ViewPos, 0.0));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
@@ -202,7 +202,7 @@ PS2FB PS_Particle_Medium(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.ViewPos, 0.0));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
@@ -229,7 +229,7 @@ PS2FB PS_Particle_High(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.ViewPos, 0.0));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
@@ -250,7 +250,7 @@ PS2FB PS_Particle_Low_Additive(VS2PS Input)
 
 	Output.Color = OutputColor;
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
-	Output.Color.a *= GetFogValue(Input.ViewPos, 0.0);
+	Output.Color.a *= Ra_GetFogValue(Input.ViewPos, 0.0);
 
 	return Output;
 }
@@ -272,7 +272,7 @@ PS2FB PS_Particle_High_Additive(VS2PS Input)
 
 	Output.Color = OutputColor;
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
-	Output.Color.a *= GetFogValue(Input.ViewPos, 0.0);
+	Output.Color.a *= Ra_GetFogValue(Input.ViewPos, 0.0);
 
 	return Output;
 }

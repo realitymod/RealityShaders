@@ -123,7 +123,7 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 
 	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
 	Output.Tex0.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
-	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
+	Output.ShadowTex = (ShadowMapEnable) ? Ra_GetShadowProjection(Pos) : 0.0;
 
 	Output.Scale = Input.Packed.w * 0.5;
 
@@ -144,7 +144,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 	float TerrainShadow = (ShadowMapEnable) ? RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		TerrainColor = 1.0 / 3.0;
 	}
@@ -186,7 +186,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform bool PointLightEnable, uniform int Lig
 
 	Output.Color = OutputColor;
 	Output.Color.a *= 2.0;
-	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
@@ -272,7 +272,7 @@ VS2PS_Simple VS_Undergrowth_Simple(APP2VS_Simple Input, uniform bool ShadowMapEn
 
 	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
 	Output.Tex0.z = Input.Packed.w * 0.5;
-	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
+	Output.ShadowTex = (ShadowMapEnable) ? Ra_GetShadowProjection(Pos) : 0.0;
 
 	Output.TerrainColorMap = saturate(Input.TerrainColorMap);
 	Output.TerrainLightMap = saturate(Input.TerrainLightMap);
@@ -293,7 +293,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 	float TerrainShadow = (ShadowMapEnable) ? RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	// If thermals assume gray color
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		TerrainColor = 1.0 / 3.0;
 	}
@@ -335,7 +335,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform bool PointLightEnable, u
 
 	Output.Color = OutputColor;
 	Output.Color.a *= 2.0;
-	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(LocalPos, float4(_CameraPos, 0.0)));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 

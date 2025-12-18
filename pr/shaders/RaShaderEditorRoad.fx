@@ -150,10 +150,10 @@ PS2FB PS_Editor_Road(VS2PS Input)
 	#else
 		float4 OutputColor = Diffuse;
 	#endif
-	OutputColor.a *= GetRoadZFade(Input.Pos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
+	OutputColor.a *= Ra_GetRoadZFade(Input.Pos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos.xyz, WorldSpaceCamPos.xyz));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos.xyz, WorldSpaceCamPos.xyz));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)

@@ -438,7 +438,32 @@
 		return float4(X, Y, Z, W) * (1.0 / 6.0);
 	}
 
-	float4 RPixel_SampleTexture2DCubic(sampler2D Source, float2 Tex, float4 TexSize)
+	struct RPixel_ProjTex
+	{
+		float2 UV;
+		float2 Dx;
+		float2 Dy;
+	};
+
+	RPixel_ProjTex RPixel_GetProjTex(float4 Tex)
+	{
+		RPixel_ProjTex Output;
+
+		// 1. Calculate the projected UV coordinates
+		Output.UV = Tex.xy / Tex.w;
+
+		// 2. Compute explicit derivatives using the Quotient Rule: 
+		// d(u/w) = (w * du - u * dw) / w^2
+		float3 Ix = ddx(Tex.xyw);
+		float3 Iy = ddy(Tex.xyw);
+		float W2 = 1.0 / (Tex.w * Tex.w);
+		Output.Dx = (Ix.xy * Tex.w - Tex.xy * Ix.z) * W2;
+		Output.Dy = (Iy.xy * Tex.w - Tex.xy * Iy.z) * W2;
+
+		return Output;
+	}
+
+	float4 RPixel_SampleCubicTex2D(sampler2D Source, float2 Tex, float4 TexSize)
 	{
 		float2 Dx = ddx(Tex);
 		float2 Dy = ddy(Tex);
@@ -463,9 +488,42 @@
 	float4 RPixel_SampleLightMap(sampler2D Source, float2 Tex, float4 TexSize)
 	{
 		#if defined(PR_BICUBIC_LIGHTMAPPING)
-			return RPixel_SampleTexture2DCubic(Source, Tex, TexSize);
+			return RPixel_SampleCubicTex2D(Source, Tex, TexSize);
 		#else
 			return tex2D(Source, Tex);
+		#endif
+	}
+
+	float4 RPixel_SampleCubicTex2DProj(sampler2D Source, float4 Tex, float4 TexSize)
+	{
+		RPixel_ProjTex ProjTex = RPixel_GetProjTex(Tex);
+		float2 UV = ProjTex.UV;
+		float2 Dx = ProjTex.Dx;
+		float2 Dy = ProjTex.Dy;
+
+		UV = UV * TexSize.zw - 0.5;
+		float2 Fxy = frac(UV);
+		UV -= Fxy;
+		float4 XCubic = RPixel_Cubic(Fxy.x);
+		float4 YCubic = RPixel_Cubic(Fxy.y);
+		float4 C = UV.xxyy + float2(-0.5, +1.5).xyxy;
+		float4 S = float4(XCubic.xz + XCubic.yw, YCubic.xz + YCubic.yw);
+		float4 Offset = (C + float4(XCubic.yw, YCubic.yw) / S) * TexSize.xxyy;
+		float4 Sample0 = tex2Dgrad(Source, Offset.xz, Dx, Dy);
+		float4 Sample1 = tex2Dgrad(Source, Offset.yz, Dx, Dy);
+		float4 Sample2 = tex2Dgrad(Source, Offset.xw, Dx, Dy);
+		float4 Sample3 = tex2Dgrad(Source, Offset.yw, Dx, Dy);
+		float Sx = S.x / (S.x + S.y);
+		float Sy = S.z / (S.z + S.w);
+		return lerp(lerp(Sample3, Sample2, Sx), lerp(Sample1, Sample0, Sx), Sy);
+	}
+
+	float4 RPixel_SampleLightMapProj(sampler2D Source, float4 Tex, float4 TexSize)
+	{
+		#if defined(PR_BICUBIC_LIGHTMAPPING)
+			return RPixel_SampleCubicTex2DProj(Source, Tex, TexSize);
+		#else
+			return tex2Dproj(Source, Tex);
 		#endif
 	}
 

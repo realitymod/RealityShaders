@@ -185,7 +185,7 @@ PS2FB PS_Trail_Low(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -213,7 +213,7 @@ PS2FB PS_Trail_Medium(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -244,7 +244,7 @@ PS2FB PS_Trail_High(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)

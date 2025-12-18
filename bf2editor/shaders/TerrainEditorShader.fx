@@ -198,7 +198,7 @@ struct PS2FB
 	#endif
 };
 
-float4 GetWorldPos(float2 Pos0, float2 Pos1)
+float4 Ra_GetWorldPos(float2 Pos0, float2 Pos1)
 {
 	float4 WorldPos = 0.0;
 	WorldPos.xz = (Pos0 * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
@@ -260,7 +260,7 @@ EditorDetail GetEditorDetail(float4 Pos0, float4 Pos1, float2 Tex0, float3 Norma
 	EditorDetail Output = (EditorDetail)0.0;
 
 	// tl: output HPos as early as possible.
-	float4 MorphedWorldPos = GetWorldPos(Pos0.xy, Pos1.xw);
+	float4 MorphedWorldPos = Ra_GetWorldPos(Pos0.xy, Pos1.xw);
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
 	Output.Pos = float4(MorphedWorldPos.xyz, Output.HPos.w);
 
@@ -380,7 +380,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 
 	Output.Color = OutputColor * Lights;
 	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	Output.Color.a = 1.0;
@@ -452,7 +452,7 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 
 	Output.Color = OutputColor * Lights;
 	Output.Color = lerp(Output.Color, _TerrainWaterColor, WaterLerp);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	Output.Color.a = 1.0;
@@ -512,7 +512,7 @@ VS2PS VS_Basic(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0;
 
-	float4 WorldPos = float4(GetWorldPos(Input.Pos0.xy, Input.Pos1.xw).xyz, 1.0);
+	float4 WorldPos = float4(Ra_GetWorldPos(Input.Pos0.xy, Input.Pos1.xw).xyz, 1.0);
 	Output.HPos = mul(WorldPos, _ViewProj);
 
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
@@ -540,7 +540,7 @@ PS2FB PS_Basic(VS2PS Input)
 	float4 OutputColor = float4(ColorMap.rgb * Light.rgb, 1.0);
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -558,7 +558,7 @@ PS2FB PS_Basic_LightOnly(VS2PS Input)
 	Light.a = 1.0;
 
 	Output.Color = Light * 0.5;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
@@ -575,7 +575,7 @@ PS2FB PS_Basic_HemimapLightOnly(VS2PS Input)
 	LightMap.a = 1.0;
 
 	Output.Color = pow(LightMap.g * 2.0, 2.0);
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -593,7 +593,7 @@ PS2FB PS_Basic_ColorOnly(VS2PS Input)
 	ColorMap.a = 1.0;
 
 	Output.Color = ColorMap;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -611,7 +611,7 @@ PS2FB PS_Basic_ColorOnlyPointFilter(VS2PS Input)
 	ColorMap.a = 1.0;
 
 	Output.Color = ColorMap;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -690,7 +690,7 @@ VS2PS_EditorGrid VS_EditorGrid(APP2VS Input)
 {
 	VS2PS_EditorGrid Output = (VS2PS_EditorGrid)0;
 
-	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	float4 WorldPos = Ra_GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
@@ -709,7 +709,7 @@ VS2PS_EditorTopoGrid VS_EditorTopoGrid(APP2VS Input)
 {
 	VS2PS_EditorTopoGrid Output = (VS2PS_EditorTopoGrid)0;
 
-	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	float4 WorldPos = Ra_GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
@@ -732,7 +732,7 @@ PS2FB PS_EditorGrid(VS2PS_EditorGrid Input)
 	float4 Grid = RDirectXTK_SRGBToLinearEst(tex2Dbias(SampleTex1Wrap, float4(Input.Tex0.zw, 0.0, -1.5)));
 
 	Output.Color = ColorMap * Grid;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -753,7 +753,7 @@ PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 	Color *= Grid;
 
 	Output.Color = Color;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -788,7 +788,7 @@ VS2PS_ZFill VS_EditorZFill(APP2VS_VS_EditorZFill Input)
 {
 	VS2PS_ZFill Output = (VS2PS_ZFill)0;
 
-	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	float4 WorldPos = Ra_GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
@@ -836,7 +836,7 @@ VS2PS_EditorFoliage VS_EditorGrowth(APP2VS Input)
 {
 	VS2PS_EditorFoliage Output = (VS2PS_EditorFoliage)0;
 
-	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	float4 WorldPos = Ra_GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
@@ -855,7 +855,7 @@ PS2FB PS_EditorGrowth(VS2PS_EditorFoliage Input)
 	PS2FB Output = (PS2FB)0;
 
 	Output.Color = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0Point, Input.Tex0));
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -893,7 +893,7 @@ VS2PS_EditorFoliage VS_EditorHemimap(APP2VS Input)
 {
 	VS2PS_EditorFoliage Output = (VS2PS_EditorFoliage)0;
 
-	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	float4 WorldPos = Ra_GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
@@ -915,7 +915,7 @@ PS2FB PS_EditorHemimap(VS2PS_EditorFoliage Input)
 	float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 
 	Output.Color = float4(HemiMap.rgb, 1.0);
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -932,7 +932,7 @@ PS2FB PS_EditorHemimapAlpha(VS2PS_EditorFoliage Input)
 	float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 
 	Output.Color = float4(HemiMap.aaa, 1.0);
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -977,7 +977,7 @@ VS2PS_LightmapGeneration VS_LightmapGeneration_QP(APP2VS Input)
 {
 	VS2PS_LightmapGeneration Output = (VS2PS_LightmapGeneration)0;
 
-	float4 WorldPos = GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
+	float4 WorldPos = Ra_GetWorldPos(Input.Pos0.xy, Input.Pos1.xw);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
@@ -1161,7 +1161,7 @@ PS2FB PS_SET(VS2PS_SET Input)
 	OutputColor = lerp(OutputColor, _TerrainWaterColor, WaterLerp);
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -1185,7 +1185,7 @@ PS2FB PS_SET_ColorLightingOnly(VS2PS_SET_ColorLightingOnly Input)
 	OutputColor = lerp(OutputColor, _TerrainWaterColor, WaterLerp);
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)

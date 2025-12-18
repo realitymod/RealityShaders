@@ -75,7 +75,7 @@ float GetFadeOut(float3 Pos)
 	return saturate(FadeOut * (Pos.y > 0.0));
 }
 
-bool IsTisActive()
+bool Ra_IsTisActive()
 {
 	return _UnderwaterFog.r == 0;
 }
@@ -118,7 +118,7 @@ PS2FB_NoDepth PS_SkyDome_UnderWater(VS2PS_SkyDome Input)
 {
 	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
 
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		Output.Color = 0;
 	}
@@ -141,7 +141,7 @@ PS2FB_NoDepth PS_SkyDome(VS2PS_SkyDome Input)
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 
 	// If thermals make it dark
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		Output.Color = ApplyTis(Output.Color);
 	}
@@ -162,7 +162,7 @@ PS2FB_NoDepth PS_SkyDome_Lit(VS2PS_SkyDome Input)
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 
 	// If thermals make it dark
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		Output.Color = ApplyTis(Output.Color);
 	}
@@ -210,7 +210,7 @@ PS2FB_NoDepth PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
 	Output.Color = lerp(SkyDome, Temp, Temp.a);
 
 	// If thermals make it dark
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		Output.Color = ApplyTis(Output.Color);
 	}
@@ -250,7 +250,7 @@ PS2FB_NoDepth PS_SkyDome_NoClouds(VS2PS_NoClouds Input)
 	Output.Color = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 
 	// If thermals make it dark
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		Output.Color = ApplyTis(Output.Color);
 	}
@@ -269,7 +269,7 @@ PS2FB_NoDepth PS_SkyDome_NoClouds_Lit(VS2PS_NoClouds Input)
 	Output.Color = SkyDome;
 
 	// If thermals make it dark
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		Output.Color = ApplyTis(Output.Color);
 	}

@@ -49,7 +49,7 @@ PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 	float4 LightMap = RPixel_SampleLightMap(SampleTex0_Clamp, Input.Tex0.xy, PR_LIGHTMAP_SIZE_TERRAIN);
 
 	// Pack accumulated light
-	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
+	Output.Color = Ra_SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
@@ -252,12 +252,12 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
 	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XZPlaneTex.xy);
 	float4 ZPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XZPlaneTex.zw);
-	float4 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor.rgb);
+	float4 TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, _SunColor.rgb);
 
 	// If thermals assume no shadows and gray color
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
-		TerrainLights = GetUnpackedAccumulatedLight(AccumLights, 0.0);
+		TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, 0.0);
 		TerrainLights += (_SunColor * 2.0);
 		ColorMap.rgb = 1.0 / 3.0;
 	}
@@ -283,7 +283,7 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	#endif
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos.xyz));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -307,7 +307,7 @@ VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
 {
 	VS2PS_Shared_DynamicShadowmap Output = (VS2PS_Shared_DynamicShadowmap)0.0;
 
-	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
+	float4 WorldPos = Ra_GetWorldPos(Input.Pos0, Input.Pos1);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.ShadowTex = mul(WorldPos, _LightViewProj);
 	Output.ShadowTex.z = Output.ShadowTex.w;
@@ -376,7 +376,7 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 
 	// Pack accumulated light
 	LightMap.g = min(LightMap.g, AvgShadowValue);
-	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
+	Output.Color = Ra_SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
@@ -420,7 +420,7 @@ PS2FB PS_Shared_UnderWater(VS2PS_Shared_UnderWater Input)
 	float WaterLerp = saturate((WorldPos.y / -3.0) + _WaterHeight);
 
 	Output.Color = float4(OutputColor, WaterLerp);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos.xyz));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -520,7 +520,7 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	float4 ZPlaneLowDetailmap = RPixel_GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.zw);
 
 	// If thermals assume gray color
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		ColorMap.rgb = 1.0 / 3.0;
 	}
@@ -542,7 +542,7 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	}
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos.xyz));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
@@ -593,7 +593,7 @@ VS2PS_HI_OccluderShadow VS_Hi_OccluderShadow(APP2VS_HI_OccluderShadow Input)
 {
 	VS2PS_HI_OccluderShadow Output = (VS2PS_HI_OccluderShadow)0.0;
 
-	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
+	float4 WorldPos = Ra_GetWorldPos(Input.Pos0, Input.Pos1);
 	Output.HPos = RDepth_GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.DepthPos);
 
 	return Output;

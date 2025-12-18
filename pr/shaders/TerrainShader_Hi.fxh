@@ -112,7 +112,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float3 BlendValue = smoothstep(_BlendMod, 1.0, abs(WorldNormal));
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	float3 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor);
+	float3 TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, _SunColor);
 	float ChartContribution = dot(Component.xyz, _ComponentSelector.xyz);
 
 	#if defined(LIGHTONLY)
@@ -129,9 +129,9 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color
-		if (IsTisActive())
+		if (Ra_IsTisActive())
 		{
-			TerrainLights = GetUnpackedAccumulatedLight(AccumLights, 0.0);
+			TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, 0.0);
 			TerrainLights += (_SunColor.rgb * 2.0);
 			ColorMap.rgb = 1.0 / 3.0;
 		}
@@ -172,7 +172,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#endif
 
 	Output.Color = float4(OutputColor, ChartContribution);
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos.xyz));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos.xyz, _CameraPos.xyz));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	Output.Color.rgb *= ChartContribution;
 

@@ -80,7 +80,7 @@ VS2PS VS_Diffuse(APP2VS Input)
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 	// World-space data
-	Output.Pos.xyz = GetWorldPos(Input.Pos.xyz);
+	Output.Pos.xyz = Ra_GetWorldPos(Input.Pos.xyz);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -99,7 +99,7 @@ PS2FB PS_Diffuse(VS2PS Input)
 	float3 WorldPos = Input.Pos.xyz;
 
 	Output.Color = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)

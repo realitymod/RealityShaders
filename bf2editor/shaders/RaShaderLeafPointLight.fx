@@ -120,7 +120,7 @@ PS2FB PS_Basic(VS2PS Input)
 
 	Output.Color = float4(Color, DiffuseMap.a);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
-	Output.Color.rgb *= GetFogValue(Input.Tex0.z, 0.0);
+	Output.Color.rgb *= Ra_GetFogValue(Input.Tex0.z, 0.0);
 
 	#if defined(LOG_DEPTH)
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);

@@ -146,9 +146,9 @@ struct VS2PS
 float3 GetWorldLightVec(float3 WorldPos)
 {
 	#if _POINTLIGHT_
-		return GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
+		return Ra_GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 	#else
-		return GetWorldLightDir(-Lights[0].dir.xyz);
+		return Ra_GetWorldLightDir(-Lights[0].dir.xyz);
 	#endif
 }
 
@@ -167,7 +167,7 @@ WorldSpace GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 	Output.LightVec = GetWorldLightVec(Output.Pos);
 	Output.LightDir = normalize(Output.LightVec);
 	Output.ViewDir = normalize(WorldSpaceCamPos.xyz - Output.Pos);
-	Output.Normal = GetWorldNormal(ObjectNormal);
+	Output.Normal = Ra_GetWorldNormal(ObjectNormal);
 
 	return Output;
 }
@@ -217,7 +217,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	#endif
 
 	#if _HASSHADOW_
-		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
+		Output.TexShadow = Ra_GetShadowProjection(float4(Input.Pos.xyz, 1.0));
 	#endif
 
 	return Output;
@@ -250,13 +250,13 @@ PS2FB PS_Leaf(VS2PS Input)
 	#endif
 
 	Output.Color = OutputColor;
-	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos);
+	float FogValue = Ra_GetFogValue(WorldPos, WorldSpaceCamPos);
 	#if _POINTLIGHT_
-		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos.xyz;
+		float3 WorldLightVec = Ra_GetWorldLightPos(Lights[0].pos.xyz) - WorldPos.xyz;
 		Output.Color.rgb *= RPixel_GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		Output.Color.rgb *= FogValue;
 	#else
-		ApplyFog(Output.Color.rgb, FogValue);
+		Ra_ApplyFog(Output.Color.rgb, FogValue);
 	#endif
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);

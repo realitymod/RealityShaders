@@ -148,10 +148,10 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	// Texture-space data
 	Output.Tex0 = Input.TexCoord0;
 	#if _HASSHADOW_
-		Output.ShadowTex = GetShadowProjection(SkinWorldPos);
+		Output.ShadowTex = Ra_GetShadowProjection(SkinWorldPos);
 	#endif
 	#if _HASSHADOWOCCLUSION_
-		Output.ShadowOccTex = GetShadowProjection(SkinWorldPos, true);
+		Output.ShadowOccTex = Ra_GetShadowProjection(SkinWorldPos, true);
 	#endif
 
 	return Output;
@@ -223,7 +223,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	#endif
 
 	#if _POINTLIGHT_
-		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
+		float3 WorldLightVec = Ra_GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 		float Attenuation = RPixel_GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 	#else
 		float Attenuation = 1.0;
@@ -240,7 +240,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	OutputColor.a = ColorMap.a * Transparency.a;
 
 	// Thermals
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		#if _HASENVMAP_ // If EnvMap enabled, then should be hot on thermals
 			OutputColor.rgb = float3(lerp(0.60, 0.30, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
@@ -251,7 +251,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	Output.Color = OutputColor;
 	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+		Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 

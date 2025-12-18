@@ -121,7 +121,7 @@ VS2PS VS_StaticMesh(APP2VS Input)
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
 
 	// Output world-space data
-	Output.Pos = float4(GetWorldPos(ObjectPos.xyz), Output.HPos.w);
+	Output.Pos = float4(Ra_GetWorldPos(ObjectPos.xyz), Output.HPos.w);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -151,7 +151,7 @@ VS2PS VS_StaticMesh(APP2VS Input)
 		Output.LightMapTex.xy = Input.TexSets[LightMapTexID].xy * TexUnpack * LightMapOffset.xy + LightMapOffset.zw;
 	#endif
 	#if _SHADOW_ && _LIGHTMAP_
-		Output.ShadowTex = GetShadowProjection(ObjectPos);
+		Output.ShadowTex = Ra_GetShadowProjection(ObjectPos);
 	#endif
 
 	return Output;
@@ -235,9 +235,9 @@ float3 GetLightmap(VS2PS Input)
 float3 GetWorldLightVec(float3 WorldPos)
 {
 	#if _POINTLIGHT_
-		return GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
+		return Ra_GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 	#else
-		return GetWorldLightDir(-Lights[0].dir.xyz);
+		return Ra_GetWorldLightDir(-Lights[0].dir.xyz);
 	#endif
 }
 
@@ -289,7 +289,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		DiffuseRGB *= Attenuation;
 		SpecularRGB *= Attenuation;
 		OutputColor.rgb = (ColorMap.rgb * DiffuseRGB) + SpecularRGB;
-		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
+		OutputColor.rgb *= Ra_GetFogValue(WorldPos, WorldSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float3 Lightmap = GetLightmap(Input);
@@ -314,7 +314,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);
 	#if !_POINTLIGHT_
-		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+		Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos));
 	#endif
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 

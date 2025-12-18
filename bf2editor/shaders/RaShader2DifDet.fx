@@ -99,7 +99,7 @@ VS2PS VS_Basic(APP2VS Input)
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 
 	// World-space data
-	Output.Pos.xyz = GetWorldPos(Input.Pos.xyz);
+	Output.Pos.xyz = Ra_GetWorldPos(Input.Pos.xyz);
 	Output.Normal = mul(Input.Normal, (float3x3)World);
 	Output.Tex = float4(Input.Tex0, Input.Tex1);
 
