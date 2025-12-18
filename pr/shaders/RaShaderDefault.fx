@@ -42,6 +42,14 @@ struct VS2PS
 	float4 Pos : TEXCOORD0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_Default(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -64,7 +72,7 @@ PS2FB PS_Default(VS2PS Input)
 	Output.Color = float4(0.9, 0.4, 0.8, 1.0);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

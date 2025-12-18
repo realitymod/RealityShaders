@@ -7,13 +7,11 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
-#include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
-	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -148,6 +146,14 @@ struct VS2PS
 	#endif
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_Water(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -167,7 +173,7 @@ VS2PS VS_Water(APP2VS Input)
 		Output.LightMapTex = (Input.LightMap * LightMapOffset.xy) + LightMapOffset.zw;
 	#endif
 	#if defined(USE_SHADOWS)
-		Output.ShadowTex = Ra_GetShadowProjection(WorldPos);
+		Output.ShadowTex = GetShadowProjection(WorldPos);
 	#endif
 
 	return Output;
@@ -198,14 +204,14 @@ PS2FB PS_Water(in VS2PS Input)
 	float3 NWorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
 	#if defined(USE_LIGHTMAP)
-		float4 LightMap = RPixel_SampleLightMap(SampleLightMap, Input.LightMapTex.xy, PR_LIGHTMAP_SIZE_TERRAIN);
+		float4 LightMap = tex2D(SampleLightMap, Input.LightMapTex);
 	#else
 		float4 LightMap = PointColor;
 	#endif
 
 	float Shadow = LightMap.g;
 	#if defined(USE_SHADOWS)
-		Shadow *= RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+		Shadow *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#endif
 
 	#if defined(USE_3DTEXTURE)
@@ -228,24 +234,24 @@ PS2FB PS_Water(in VS2PS Input)
 
 	// Generate water color
 	float3 Reflection = reflect(-WorldViewDir, TangentNormal);
-	float3 EnvColor = RDirectXTK_SRGBToLinearEst(texCUBE(SampleCubeMap, Reflection));
+	float3 EnvColor = SRGBToLinearEst(texCUBE(SampleCubeMap, Reflection));
 	float LerpMod = -(1.0 - saturate(Shadow + SHADOW_FACTOR));
 	float3 WaterLerp = lerp(_WaterColor.rgb, EnvColor, COLOR_ENVMAP_RATIO + LerpMod);
 
 	// Composite light on water color
 	float3 LightColors = SpecularColor.rgb * (SpecularColor.a * Shadow);
-	RDirectXTK_ColorPair Light = ComputeLights(TangentNormal, WorldLightDir, NWorldViewDir, SpecularPower);
+	ColorPair Light = ComputeLights(TangentNormal, WorldLightDir, NWorldViewDir, SpecularPower);
 	OutputColor.rgb = WaterLerp + (Light.Specular * LightColors.rgb);
 
 	// Thermals
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
 		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
 
 	// Compute Fresnel
 	#if defined(USE_FRESNEL)
-		float Fresnel = RDirectXTK_ComputeFresnelFactor(TangentNormal, NWorldViewDir, POW_TRANSPARENCY);
+		float Fresnel = ComputeFresnelFactor(TangentNormal, NWorldViewDir, POW_TRANSPARENCY);
 	#else
 		float Fresnel = 1.0;
 	#endif
@@ -253,11 +259,11 @@ PS2FB PS_Water(in VS2PS Input)
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.a);
 
 	Output.Color = OutputColor;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

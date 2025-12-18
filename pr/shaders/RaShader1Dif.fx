@@ -74,13 +74,21 @@ struct VS2PS
 	float2 Tex0 : TEXCOORD1;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_Diffuse(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(World, ViewProjection));
 	// World-space data
-	Output.Pos.xyz = Ra_GetWorldPos(Input.Pos.xyz);
+	Output.Pos.xyz = GetWorldPos(Input.Pos.xyz);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -98,12 +106,12 @@ PS2FB PS_Diffuse(VS2PS Input)
 
 	float3 WorldPos = Input.Pos.xyz;
 
-	Output.Color = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	Output.Color = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

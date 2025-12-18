@@ -53,6 +53,14 @@ struct VS2PS
 	float4 Color : TEXCOORD1;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_Lightning(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -74,14 +82,14 @@ PS2FB PS_Lightning(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 ColorTex = RDirectXTK_SRGBToLinearEst(tex2D(SampleLightning, Input.Tex0.xy));
+	float4 ColorTex = SRGBToLinearEst(tex2D(SampleLightning, Input.Tex0.xy));
 
 	Output.Color = ColorTex * _LightningColor;
 	Output.Color.a *= Input.Color.a;
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

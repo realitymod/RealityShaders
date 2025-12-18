@@ -7,13 +7,11 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
-#include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
-	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -74,6 +72,14 @@ struct VS2PS
 	float Alpha : TEXCOORD3;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 float4 ProjToLighting(float4 HPos)
 {
 	// tl: This has been rearranged optimally (I believe) into 1 MUL and 1 MAD,
@@ -88,9 +94,8 @@ VS2PS VS_RoadCompiled(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
-	float RoadHeightBias = 1e-2; 
 	float4 WorldPos = Input.Pos;
-	WorldPos.y += RoadHeightBias;
+	WorldPos.y += 0.01;
 
 	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos.xyz = Input.Pos.xyz;
@@ -113,21 +118,21 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float3 LocalPos = Input.Pos.xyz;
-	float ZFade = Ra_GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
+	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 
-	float4 AccumLights = RPixel_SampleLightMapProj(SampleAccumLightMap, Input.LightTex, PR_LIGHTMAP_SIZE_TERRAIN);
-	float4 Detail0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap0, Input.Tex0.xy));
-	float4 Detail1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1));
-	float3 TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, _SunColor);
+	float4 AccumLights = tex2Dproj(SampleAccumLightMap, Input.LightTex);
+	float4 Detail0 = SRGBToLinearEst(tex2D(SampleDetailMap0, Input.Tex0.xy));
+	float4 Detail1 = SRGBToLinearEst(tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1));
+	float3 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor);
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = lerp(Detail1, Detail0, _TexBlendFactor);
 	OutputColor.a = Detail0.a * saturate(ZFade * Input.Alpha);
 
 	// On thermals no shadows
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
-		TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, 0.0);
+		TerrainLights = GetUnpackedAccumulatedLight(AccumLights, 0.0);
 		TerrainLights += (_SunColor.rgb * 2.0);
 		OutputColor.rgb *= TerrainLights;
 		OutputColor.g = clamp(OutputColor.g, 0.0, 0.5);
@@ -138,11 +143,11 @@ PS2FB PS_RoadCompiled(VS2PS Input)
 	}
 
 	Output.Color = OutputColor;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(LocalPos, _LocalEyePos.xyz));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _LocalEyePos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

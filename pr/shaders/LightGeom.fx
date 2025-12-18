@@ -37,6 +37,14 @@ struct VS2PS
 	float4 Pos : TEXCOORD0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_PointLight(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -59,7 +67,7 @@ PS2FB PS_PointLight(VS2PS Input)
 	Output.Color = _LightColor;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -130,7 +138,7 @@ PS2FB PS_SpotLight(VS2PS_Spot Input)
 	Output.Color = _LightColor * ConicalAtt;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

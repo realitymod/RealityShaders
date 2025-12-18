@@ -16,11 +16,27 @@
 	Terrainmapping shader
 */
 
+float GetAdjustedNear()
+{
+	float NoLOD = _NearFarMorphLimits.x * 62500.0; // No-Lod: 250x normal -> 62500x
+	#if HIGHTERRAIN
+		float LOD = _NearFarMorphLimits.x * 16.0; // High-Lod: 4x normal -> 16x
+	#else
+		float LOD = _NearFarMorphLimits.x * 9.0; // Med-Lod: 3x normal -> 9x
+	#endif
+
+	// Only the near distance changes due to increased LOD distance. This needs to be multiplied by
+	// the square of the factor by which we increased. Assuming 200m base lod this turns out to
+	// If no-lods is enabled, then near limit is really low
+	float AdjustedNear = (_NearFarMorphLimits.x < 0.00000001) ? NoLOD : LOD;
+	return AdjustedNear;
+}
+
 float GetLerpValue(float3 WorldPos, float3 CameraPos)
 {
-	float Boundary = 200.0;
-	float CameraDistance = length(WorldPos - CameraPos);
-	return smoothstep(0.0, Boundary, CameraDistance);
+	float CameraDistance = GetCameraDistance(WorldPos, CameraPos);
+	float AdjustedNear = GetAdjustedNear();
+	return saturate(CameraDistance * AdjustedNear - _NearFarMorphLimits.y);
 }
 
 struct VS2PS_FullDetail_Hi
@@ -109,16 +125,15 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.zw);
 
-	float3 BlendValue = smoothstep(_BlendMod, 1.0, abs(WorldNormal));
+	float3 BlendValue = saturate(abs(WorldNormal.xyz) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
-
-	float3 TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, _SunColor);
+	float3 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, _SunColor);
 	float ChartContribution = dot(Component.xyz, _ComponentSelector.xyz);
 
 	#if defined(LIGHTONLY)
 		float3 OutputColor = TerrainLights;
 	#else
-		float3 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
+		float3 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
 		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy);
 		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy);
@@ -129,9 +144,9 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		float EnvMapScale = YPlaneDetailmap.a;
 
 		// If thermals assume no shadows and gray color
-		if (Ra_IsTisActive())
+		if (IsTisActive())
 		{
-			TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, 0.0);
+			TerrainLights = GetUnpackedAccumulatedLight(AccumLights, 0.0);
 			TerrainLights += (_SunColor.rgb * 2.0);
 			ColorMap.rgb = 1.0 / 3.0;
 		}
@@ -141,7 +156,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		Blue += (YPlaneLowDetailmap.r * BlendValue.y);
 		Blue += (ZPlaneLowDetailmap.g * BlendValue.z);
 
-		float LowDetailMapBlend = smoothstep(0.0, 1.0, LowComponent.r + LowComponent.g) * ScaledLerpValue;
+		float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g) * ScaledLerpValue;
 		float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 		LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 
@@ -164,20 +179,20 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		if (UseEnvMap)
 		{
 			float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), WorldNormal.xyz);
-			float3 EnvMapColor = RDirectXTK_SRGBToLinearEst(texCUBE(SamplerTex6_Cube, Reflection)).rgb;
-			OutputColor = lerp(EnvMapColor, OutputColor, EnvMapScale * LerpValue);
+			float3 EnvMapColor = SRGBToLinearEst(texCUBE(SamplerTex6_Cube, Reflection)).rgb;
+			OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue));
 		}
 
 		OutputColor *= TerrainLights;
 	#endif
 
 	Output.Color = float4(OutputColor, ChartContribution);
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos.xyz, _CameraPos.xyz));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 	Output.Color.rgb *= ChartContribution;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Depth);
+		Output.Depth = ApplyLogarithmicDepth(Depth);
 	#endif
 
 	return Output;

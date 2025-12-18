@@ -7,13 +7,11 @@
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDepth.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
-#include "shaders/shared/RealityPixel.fxh"
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
-	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 #endif
 
@@ -114,6 +112,14 @@ struct VS2PS
 	float4 LightTex : TEXCOORD2;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_Road(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -135,7 +141,8 @@ VS2PS VS_Road(APP2VS Input)
 	#endif
 
 	Output.LightTex.xy = Output.HPos.xy / Output.HPos.w;
-	Output.LightTex.xy = (Output.LightTex.xy * float2(0.5, -0.5)) + float2(0.5, 0.5);
+	Output.LightTex.xy = (Output.LightTex.xy * 0.5) + 0.5;
+	Output.LightTex.y = 1.0 - Output.LightTex.y;
 	Output.LightTex.xy = Output.LightTex.xy * Output.HPos.w;
 	Output.LightTex.zw = Output.HPos.zw;
 
@@ -147,20 +154,20 @@ PS2FB PS_Road(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	float3 WorldPos = Input.Pos.xyz;
-	float ZFade = Ra_GetRoadZFade(WorldPos, WorldSpaceCamPos.xyz, RoadFadeOut);
+	float ZFade = GetRoadZFade(WorldPos, WorldSpaceCamPos.xyz, RoadFadeOut);
 
-	float4 AccumLights = RPixel_SampleLightMapProj(SampleAccumLightMap, Input.LightTex, PR_LIGHTMAP_SIZE_TERRAIN);
-	float4 Diffuse = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 AccumLights = tex2Dproj(SampleAccumLightMap, Input.LightTex);
+	float4 Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if defined(USE_DETAIL)
-		float4 Detail = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
+		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
 		Diffuse *= Detail;
 	#endif
-	float3 TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, TerrainSunColor);
+	float3 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, TerrainSunColor);
 
 	// On thermals no shadows
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
-		TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, 0.0);
+		TerrainLights = GetUnpackedAccumulatedLight(AccumLights, 0.0);
 		TerrainLights += (TerrainSunColor * 2.0);
 		Diffuse.rgb *= TerrainLights;
 		Diffuse.g = clamp(Diffuse.g, 0.0, 0.5);
@@ -177,11 +184,11 @@ PS2FB PS_Road(VS2PS Input)
 	#endif
 
 	Output.Color = Diffuse;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -199,8 +206,8 @@ technique defaultTechnique
 		ZEnable = TRUE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
-		// DepthBias = PR_DEPTHBIAS_ROAD;
-		// SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
+		DepthBias = PR_DEPTHBIAS_ROAD;
+		SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
 
 		AlphaTestEnable = FALSE;
 		AlphaBlendEnable = TRUE;

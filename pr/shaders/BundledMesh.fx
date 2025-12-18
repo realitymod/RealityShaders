@@ -153,7 +153,7 @@ VS2PS_Specular VS_Lighting(APP2VS Input)
 	int IndexArray[4] = (int[4])IndexVector;
 
 	// Object-space data
-	float3x3 ObjectTBN = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 
 	// World-space data
 	float4x3 SkinWorldMat = _MatOneBoneSkinning[IndexArray[0]];
@@ -173,7 +173,7 @@ VS2PS_Specular VS_Lighting(APP2VS Input)
 
 float4 PS_Lighting(VS2PS_Specular Input) : COLOR0
 {
-	float4 Ambient = float4(0.4, 0.4, 0.4, 1.0);
+	const float4 Ambient = float4(0.4, 0.4, 0.4, 1.0);
 
 	// Texture data
 	// What should we do with DiffuseMap.a now?
@@ -201,7 +201,7 @@ float4 PS_Lighting(VS2PS_Specular Input) : COLOR0
 	WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 
 	// Get lighting data
-	RDirectXTK_ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir);
 	float3 Diffuse = DiffuseMap * (Ambient + Light.Diffuse);
 	float3 Specular = Light.Specular * Gloss;
 	float3 Lighting = saturate(Diffuse + Specular);
@@ -254,8 +254,8 @@ VS2PS_Diffuse VS_Diffuse(APP2VS Input)
 float4 PS_Diffuse(VS2PS_Diffuse Input) : COLOR0
 {
 	// Constants
-	float4 Ambient = 0.8;
-	float3 MatsLightDir = float3(0.2, 0.8, -0.2);
+	const float4 Ambient = 0.8;
+	const float3 MatsLightDir = float3(0.2, 0.8, -0.2);
 
 	// World-space data
 	float3 WorldNormal = normalize(Input.WorldNormal);
@@ -263,7 +263,7 @@ float4 PS_Diffuse(VS2PS_Diffuse Input) : COLOR0
 
 	// Get lighting data
 	float4 DiffuseMap = tex2D(SampleDiffuseMap, Input.Tex0);
-	float3 HalfNL = RDirectXTK_GetHalfNL(WorldNormal, WorldLightDir);
+	float3 HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
 	float4 Lighting = DiffuseMap * float4(Ambient.rgb + HalfNL, 1.0);
 
 	return Lighting;
@@ -358,7 +358,7 @@ VS2PS_EnvMap_Alpha VS_EnvMap_Alpha(APP2VS Input)
 	int IndexArray[4] = (int[4])IndexVector;
 
 	// Object-space data
-	float3x3 ObjectTBN = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
+	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, 1.0);
 
 	// World-space data
 	float4x3 SkinWorldMat = _MatOneBoneSkinning[IndexArray[0]];
@@ -447,7 +447,7 @@ technique Alpha
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float2 LightZW : TEXCOORD0;
+	float ShadowMapDepth : TEXCOORD0;
 };
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
@@ -463,24 +463,20 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	float4 WorldPos = float4(mul(UnpackPos, SkinWorldMat), 1.0);
 
 	// Output shadow coordinates & depth
-	Output.HPos = RDepth_GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.LightZW);
+	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.ShadowMapDepth);
 
 	return Output;
 }
 
 float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
-	#if NVIDIA
-		return 0.0;
-	#else
-		return Input.LightZW.x / Input.LightZW.y;
-	#endif
+	return Input.ShadowMapDepth;
 }
 
 struct VS2PS_ShadowMap_Alpha
 {
 	float4 HPos : POSITION;
-	float4 Tex0 : TEXCOORD0; // .xy = Tex0; .zw = LightZW;
+	float3 Tex0 : TEXCOORD0; // .xy = Tex0; .zw = ShadowMapDepth;
 };
 
 VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
@@ -497,7 +493,7 @@ VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
 	float4 WorldPos = float4(mul(UnpackPos, SkinWorldMat), 1.0);
 
 	// Output shadow coordinates & depth
-	Output.HPos = RDepth_GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.zw);
+	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.z);
 
 	// Texcoord data
 	Output.Tex0.xy = Input.TexCoord;
@@ -507,13 +503,9 @@ VS2PS_ShadowMap_Alpha VS_ShadowMap_Alpha(APP2VS Input)
 
 float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap_Alpha Input) : COLOR0
 {
-	float Alpha = tex2D(SampleTex0, Input.Tex0).a - _ShadowAlphaThreshold;
-	#if NVIDIA
-		return Alpha;
-	#else
-		clip(Alpha);
-		return Input.Tex0.z / Input.Tex0.w;
-	#endif
+	float Alpha = tex2D(SampleTex0, Input.Tex0.xy).a - _ShadowAlphaThreshold;
+	clip(Alpha);
+	return Input.Tex0.z;
 }
 
 #define GET_RENDERSTATES_SHADOWMAP \

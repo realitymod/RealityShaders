@@ -82,6 +82,14 @@ struct VS2PS
 	float4 ViewPortMap : TEXCOORD5;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -137,8 +145,8 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 		Shadow = dot(Samples, 0.25);
 	}
 
-	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
-	float HalfNL = RDirectXTK_GetHalfNL(Normals, -_SunDirection.xyz);
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	float HalfNL = GetHalfNL(Normals, -_SunDirection.xyz);
 	float3 Diffuse = (HalfNL * _SunColor) * Shadow;
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
@@ -152,11 +160,11 @@ PS2FB PS_Decals(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = GetPixelDecals(Input, false);
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, 0.0));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

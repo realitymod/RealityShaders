@@ -113,6 +113,14 @@ struct VS2PS
 	#endif
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 float4x3 GetSkinnedWorldMatrix(APP2VS Input)
 {
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
@@ -160,7 +168,7 @@ VS2PS VS_BundledMesh(APP2VS Input)
 	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y;
 	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
 	// Create object-space TBN
-	float3x3 ObjectTBN = RVertex_GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
+	float3x3 ObjectTBN = GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
 
 	// Get world-space data
 	float4x3 SkinnedWorldMatrix = GetSkinnedWorldMatrix(Input);
@@ -192,10 +200,10 @@ VS2PS VS_BundledMesh(APP2VS Input)
 		Output.Tex0 = Input.TexDiffuse * TexUnpack; // pass-through texcoord
 	#endif
 	#if _HASSHADOW_
-		Output.ShadowTex = Ra_GetShadowProjection(WorldPos);
+		Output.ShadowTex = GetShadowProjection(WorldPos);
 	#endif
 	#if _HASSHADOWOCCLUSION_
-		Output.ShadowOccTex = Ra_GetShadowProjection(WorldPos, true);
+		Output.ShadowOccTex = GetShadowProjection(WorldPos, true);
 	#endif
 
 	// Special data
@@ -255,17 +263,17 @@ PS2FB PS_BundledMesh(VS2PS Input)
 
 	// Get color texture data
 	// We copy ColorMap to ColorTex to preserve original alpha data
-	float4 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
 	float4 ColorTex = ColorMap;
 
 	// Get shadow texture data
 	#if _HASSHADOW_
-		float Shadow = RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+		float Shadow = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
 		float Shadow = 1.0;
 	#endif
 	#if _HASSHADOWOCCLUSION_
-		float ShadowOcc = RDepth_GetShadowFactor(SampleShadowOccluderMap, Input.ShadowOccTex);
+		float ShadowOcc = GetShadowFactor(SampleShadowOccluderMap, Input.ShadowOccTex);
 	#else
 		float ShadowOcc = 1.0;
 	#endif
@@ -285,7 +293,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 
 	#if _HASENVMAP_
 		float3 Reflection = -reflect(WorldViewDir, WorldNormal);
-		float3 EnvMapColor = RDirectXTK_SRGBToLinearEst(texCUBE(SampleCubeMap, Reflection)).rgb;
+		float3 EnvMapColor = SRGBToLinearEst(texCUBE(SampleCubeMap, Reflection)).rgb;
 		ColorMap.rgb = lerp(ColorMap.rgb, EnvMapColor, Gloss / 4.0);
 	#endif
 
@@ -295,10 +303,10 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 HemiTex = RPixel_GetHemiTex(WorldPos, 0.0, HemiMapConstants.rgb, true);
-			float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleHemiMap, HemiTex));
+			float2 HemiTex = GetHemiTex(WorldPos, 0.0, HemiMapConstants.rgb, true);
+			float4 HemiMap = SRGBToLinearEst(tex2D(SampleHemiMap, HemiTex));
 			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
-			float3 Ambient = lerp(HemiMap.rgb, HemiMapSkyColor.rgb, HemiLerp);
+			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 			// HemiLight = lerp(HemiMap.a, 1.0, saturate(HeightOverTerrain - 1.0));
 		#else
 			float3 Ambient = Lights[0].color.a;
@@ -306,26 +314,26 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#endif
 
 	#if _HASGIMAP_
-		float4 GI = RDirectXTK_SRGBToLinearEst(tex2D(SampleGIMap, Input.Tex0));
+		float4 GI = SRGBToLinearEst(tex2D(SampleGIMap, Input.Tex0));
 		float4 GI_TIS = GI; // M
 		GI = (GI_TIS.a < 0.01) ? 1.0 : GI;
 	#else
-		float4 GI = 1.0;
+		const float4 GI = 1.0;
 	#endif
 
 	#if _POINTLIGHT_
-		float Attenuation = RPixel_GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
+		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 	#else
-		float Attenuation = 1.0;
+		const float Attenuation = 1.0;
 	#endif
 
-	RDirectXTK_ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * TotalLights;
 	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].specularColor.rgb) * TotalLights;
 
 	#if _HASSTATICGLOSS_
-		SpecularRGB = clamp(SpecularRGB, 0.0, StaticGloss.rgb);
+		SpecularRGB = clamp(SpecularRGB, 0.0, StaticGloss);
 	#endif
 
 	// There is no Gloss map, so alpha means transparency
@@ -334,18 +342,18 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	#endif
 
 	float4 OutputColor = 1.0;
-	OutputColor.rgb = RDirectXTK_CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB) * GI.rgb;
+	OutputColor.rgb = CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB) * GI.rgb;
 
 	/*
 		Calculate fogging and other occluders
 	*/
 
 	#if _POINTLIGHT_
-		OutputColor.rgb *= Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz) * Attenuation;
+		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos.xyz) * Attenuation;
 	#endif
 
 	// Thermals
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
 		#if _HASGIMAP_
 			float Cold = lerp(0.43, 0.17, ColorTex.b);
@@ -363,7 +371,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	*/
 
 	#if _HASENVMAP_
-		float FresnelFactor = RDirectXTK_ComputeFresnelFactor(WorldNormal, WorldViewDir, 1.0);
+		float FresnelFactor = ComputeFresnelFactor(WorldNormal, WorldViewDir, 1.0);
 		ColorMap.a = lerp(ColorMap.a, 1.0, FresnelFactor);
 	#endif
 
@@ -387,12 +395,12 @@ PS2FB PS_BundledMesh(VS2PS Input)
 	Output.Color.rgb = OutputColor.rgb;
 	Output.Color.a *= Transparency.a;
 	#if !_POINTLIGHT_
-		Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

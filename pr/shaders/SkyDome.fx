@@ -68,6 +68,11 @@ struct APP2VS_NoClouds
 	float2 Tex0 : TEXCOORD0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+};
+
 float GetFadeOut(float3 Pos)
 {
 	float Dist = length(Pos);
@@ -75,7 +80,7 @@ float GetFadeOut(float3 Pos)
 	return saturate(FadeOut * (Pos.y > 0.0));
 }
 
-bool Ra_IsTisActive()
+bool IsTisActive()
 {
 	return _UnderwaterFog.r == 0;
 }
@@ -114,11 +119,11 @@ VS2PS_SkyDome VS_SkyDome(APP2VS Input)
 	return Output;
 }
 
-PS2FB_NoDepth PS_SkyDome_UnderWater(VS2PS_SkyDome Input)
+PS2FB PS_SkyDome_UnderWater(VS2PS_SkyDome Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
 		Output.Color = 0;
 	}
@@ -130,44 +135,44 @@ PS2FB_NoDepth PS_SkyDome_UnderWater(VS2PS_SkyDome Input)
 	return Output;
 }
 
-PS2FB_NoDepth PS_SkyDome(VS2PS_SkyDome Input)
+PS2FB PS_SkyDome(VS2PS_SkyDome Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
 	float FadeOut = GetFadeOut(Input.Pos.xyz);
-	float4 SkyDome = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
-	float4 Cloud1 = RDirectXTK_SRGBToLinearEst(RPixel_GetProceduralTiles(SampleTex1, Input.Tex0.zw) * FadeOut);
+	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
+	float4 Cloud1 = SRGBToLinearEst(GetProceduralTiles(SampleTex1, Input.Tex0.zw) * FadeOut);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 
 	// If thermals make it dark
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
 		Output.Color = ApplyTis(Output.Color);
 	}
 
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
-PS2FB_NoDepth PS_SkyDome_Lit(VS2PS_SkyDome Input)
+PS2FB PS_SkyDome_Lit(VS2PS_SkyDome Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
 	float FadeOut = GetFadeOut(Input.Pos.xyz);
-	float4 SkyDome = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
-	float4 Cloud1 = RDirectXTK_SRGBToLinearEst(RPixel_GetProceduralTiles(SampleTex1, Input.Tex0.zw)) * FadeOut;
+	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
+	float4 Cloud1 = SRGBToLinearEst(GetProceduralTiles(SampleTex1, Input.Tex0.zw)) * FadeOut;
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = float4(lerp(SkyDome.rgb, Cloud1.rgb, Cloud1.a), 1.0);
 
 	// If thermals make it dark
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
 		Output.Color = ApplyTis(Output.Color);
 	}
 
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
@@ -197,25 +202,25 @@ VS2PS_DualClouds VS_SkyDome_DualClouds(APP2VS Input)
 	return Output;
 }
 
-PS2FB_NoDepth PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
+PS2FB PS_SkyDome_DualClouds(VS2PS_DualClouds Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
 	float FadeOut = GetFadeOut(Input.Pos.xyz);
-	float4 SkyDome = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.SkyTex));
-	float4 Cloud1 = RDirectXTK_SRGBToLinearEst(RPixel_GetProceduralTiles(SampleTex1, Input.CloudTex.xy)) * _CloudLerpFactors.x;
-	float4 Cloud2 = RDirectXTK_SRGBToLinearEst(RPixel_GetProceduralTiles(SampleTex2, Input.CloudTex.zw)) * _CloudLerpFactors.y;
+	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.SkyTex));
+	float4 Cloud1 = SRGBToLinearEst(GetProceduralTiles(SampleTex1, Input.CloudTex.xy)) * _CloudLerpFactors.x;
+	float4 Cloud2 = SRGBToLinearEst(GetProceduralTiles(SampleTex2, Input.CloudTex.zw)) * _CloudLerpFactors.y;
 	float4 Temp = (Cloud1 + Cloud2) * FadeOut;
 
 	Output.Color = lerp(SkyDome, Temp, Temp.a);
 
 	// If thermals make it dark
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
 		Output.Color = ApplyTis(Output.Color);
 	}
 
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
@@ -243,38 +248,38 @@ VS2PS_NoClouds VS_SkyDome_NoClouds(APP2VS_NoClouds Input)
 	return Output;
 }
 
-PS2FB_NoDepth PS_SkyDome_NoClouds(VS2PS_NoClouds Input)
+PS2FB PS_SkyDome_NoClouds(VS2PS_NoClouds Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
-	Output.Color = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	Output.Color = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 
 	// If thermals make it dark
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
 		Output.Color = ApplyTis(Output.Color);
 	}
 
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
-PS2FB_NoDepth PS_SkyDome_NoClouds_Lit(VS2PS_NoClouds Input)
+PS2FB PS_SkyDome_NoClouds_Lit(VS2PS_NoClouds Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
-	float4 SkyDome = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 	SkyDome.rgb += _LightingColor.rgb * (SkyDome.a * _LightingBlend);
 
 	Output.Color = SkyDome;
 
 	// If thermals make it dark
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
 		Output.Color = ApplyTis(Output.Color);
 	}
 
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
@@ -293,20 +298,20 @@ VS2PS_NoClouds VS_SkyDome_SunFlare(APP2VS_NoClouds Input)
 	return Output;
 }
 
-PS2FB_NoDepth PS_SkyDome_SunFlare(VS2PS_NoClouds Input)
+PS2FB PS_SkyDome_SunFlare(VS2PS_NoClouds Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
-	float4 SkyDome = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	float4 SkyDome = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
 	Output.Color = float4(SkyDome.rgb * _FlareParams[0], 1.0);
 
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 	return Output;
 }
 
-PS2FB_NoDepth PS_SkyDome_Flare_Occlude(VS2PS_NoClouds Input)
+PS2FB PS_SkyDome_Flare_Occlude(VS2PS_NoClouds Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
 	float4 Value = tex2D(SampleTex0, Input.Tex0);
 

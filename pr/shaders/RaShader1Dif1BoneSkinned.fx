@@ -67,6 +67,14 @@ struct VS2PS
 	float3 Tex0 : TEXCOORD0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_DiffuseBone(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -95,7 +103,7 @@ PS2FB PS_DiffuseBone(VS2PS Input)
 	Output.Color = ColorTex * float4(1.0, 0.0, 1.0, 1.0);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

@@ -142,13 +142,21 @@ struct VS2PS
 	#endif
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
 float3 GetWorldLightVec(float3 WorldPos)
 {
 	#if _POINTLIGHT_
-		return Ra_GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
+		return GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 	#else
-		return Ra_GetWorldLightDir(-Lights[0].dir.xyz);
+		return GetWorldLightDir(-Lights[0].dir.xyz);
 	#endif
 }
 
@@ -167,7 +175,7 @@ WorldSpace GetWorldSpaceData(float3 ObjectPos, float3 ObjectNormal)
 	Output.LightVec = GetWorldLightVec(Output.Pos);
 	Output.LightDir = normalize(Output.LightVec);
 	Output.ViewDir = normalize(WorldSpaceCamPos.xyz - Output.Pos);
-	Output.Normal = Ra_GetWorldNormal(ObjectNormal);
+	Output.Normal = GetWorldNormal(ObjectNormal);
 
 	return Output;
 }
@@ -206,7 +214,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	WorldSpace WS = GetWorldSpaceData(Input.Pos.xyz, Input.Normal);
 
 	// Compute and pre-combine other lighting factors
-	Output.Tex0.w = RDirectXTK_GetHalfNL(WS.Normal, WS.LightDir);
+	Output.Tex0.w = GetHalfNL(WS.Normal, WS.LightDir);
 
 	// Calculate vertex position data
 	Output.Pos = float4(WS.Pos, Output.HPos.w);
@@ -217,7 +225,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	#endif
 
 	#if _HASSHADOW_
-		Output.TexShadow = Ra_GetShadowProjection(float4(Input.Pos.xyz, 1.0));
+		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
 	#endif
 
 	return Output;
@@ -230,9 +238,9 @@ PS2FB PS_Leaf(VS2PS Input)
 	float LodScale = Input.Tex0.z;
 	float4 WorldPos = Input.Pos;
 
-	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if _HASSHADOW_
-		float Shadow = RDepth_GetShadowFactor(SampleShadowMap, Input.TexShadow);
+		float Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#else
 		float Shadow = 1.0;
 	#endif
@@ -243,26 +251,26 @@ PS2FB PS_Leaf(VS2PS Input)
 	float3 DiffuseRGB = (HalfNL * Shadow) * LightColor;
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = RDirectXTK_CompositeLights(DiffuseMap.rgb, AmbientRGB, DiffuseRGB, 0.0);
-	OutputColor.a = (DiffuseMap.a * 2.0) * Transparency.r;
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, AmbientRGB, DiffuseRGB, 0.0);
+	OutputColor.a = (DiffuseMap.a * 2.0) * Transparency;
 	#if defined(OVERGROWTH) && HASALPHA2MASK
 		OutputColor.a *= (DiffuseMap.a * 2.0);
 	#endif
 
 	Output.Color = OutputColor;
-	float FogValue = Ra_GetFogValue(WorldPos, WorldSpaceCamPos);
+	float FogValue = GetFogValue(WorldPos, WorldSpaceCamPos);
 	#if _POINTLIGHT_
-		float3 WorldLightVec = Ra_GetWorldLightPos(Lights[0].pos.xyz) - WorldPos.xyz;
-		Output.Color.rgb *= RPixel_GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
+		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos.xyz;
+		Output.Color.rgb *= GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		Output.Color.rgb *= FogValue;
 	#else
-		Ra_ApplyFog(Output.Color.rgb, FogValue);
+		ApplyFog(Output.Color.rgb, FogValue);
 	#endif
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
-	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+	TonemapAndLinearToSRGBEst(Output.Color);
+	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

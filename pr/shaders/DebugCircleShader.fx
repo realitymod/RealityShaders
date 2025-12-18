@@ -35,6 +35,14 @@ struct VS2PS
 	float4 Diffuse : TEXCOORD1;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_Debug_Circle(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -57,11 +65,11 @@ PS2FB PS_Debug_Circle(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = Input.Diffuse;
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

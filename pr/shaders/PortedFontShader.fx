@@ -61,13 +61,13 @@ VS2PS VS_HPos(APP2VS Input)
 
 float4 PS_HPos(VS2PS Input) : COLOR0
 {
-	float4 OutputColor = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord));
+	float4 OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord));
 
 	float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
 	OutputColor = dot(OutputColor, NoAlpha);
 	OutputColor.rgb = OutputColor.rgb * Input.Color;
 
-	RDirectXTK_LinearToSRGBEst(OutputColor);
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 

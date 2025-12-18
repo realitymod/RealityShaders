@@ -84,7 +84,7 @@
 		// float4 _PlaneMapSel : PLANEMAPSEL;
 	*/
 
-	float3 _BlendMod : BLENDMOD = float3(0.0, 0.0, 0.0);
+	float3 _BlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
 
 	float _WaterHeight : WaterHeight;
 	float4 _TerrainWaterColor : TerrainWaterColor;
@@ -160,6 +160,14 @@
 		float3 Normal : NORMAL;
 	};
 
+	struct PS2FB
+	{
+		float4 Color : COLOR;
+		#if defined(LOG_DEPTH)
+			float Depth : DEPTH;
+		#endif
+	};
+
 	float GetCameraDistance(float3 WorldPos, float3 CameraPos)
 	{
 		// tl: This is now based on squared values (besides camPos)
@@ -191,7 +199,7 @@
 		return HPos * _TexProjScale + (_TexProjOffset * HPos.w);
 	}
 
-	float4 Ra_GetWorldPos(float4 Pos0, float4 Pos1)
+	float4 GetWorldPos(float4 Pos0, float4 Pos1)
 	{
 		float4 WorldPos = 0.0;
 		WorldPos.xz = (Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
@@ -201,7 +209,7 @@
 
 	float4 GetMorphedWorldPos(APP2VS_Shared Input)
 	{
-		float4 WorldPos = Ra_GetWorldPos(Input.Pos0, Input.Pos1);
+		float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
 		return MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z);
 	}
 

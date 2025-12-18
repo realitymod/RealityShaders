@@ -133,7 +133,7 @@ SkinnedData SkinSoldier(in APP2VS Input)
 	Transforms object-space attributes into world-space
 */
 
-float3 Ra_GetWorldLightDir(float3 ObjectLightVec)
+float3 GetWorldLightDir(float3 ObjectLightVec)
 {
 	return mul(ObjectLightVec, (float3x3)_World);
 }
@@ -156,7 +156,7 @@ WorldSpace GetWorldSpaceData(float3 WorldPos, float3 TangentNormal)
 	WorldSpace Output = (WorldSpace)0.0;
 
 	Output.Pos = WorldPos;
-	Output.LightDir = normalize(Ra_GetWorldLightDir(-_SunLightDirection.xyz));
+	Output.LightDir = normalize(GetWorldLightDir(-_SunLightDirection.xyz));
 	Output.ViewDir = normalize(GetWorldViewVec(WorldPos));
 
 	Output.Normal = normalize((TangentNormal * 2.0) - 1.0);
@@ -237,7 +237,7 @@ float4 PS_PreSkin(VS2PS_PreSkin Input) : COLOR0
 	WorldSpace WS = GetWorldSpaceData(Input.WorldPos.xyz, TangentNormal.xyz);
 
 	// Get hemi data
-	float2 HemiTex = RPixel_GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo.xyz, true);
+	float2 HemiTex = GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo.xyz, true);
 	float4 HemiMap = tex2D(SampleTex1, HemiTex);
 
 	// Get diffuse
@@ -352,7 +352,7 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR0
 
 	// Hemi-mapping
 	float HemiLerp = GetHemiLerp(WS);
-	float2 HemiTex = RPixel_GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo.xyz, true);
+	float2 HemiTex = GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo.xyz, true);
 	float4 HemiMap = tex2D(SampleTex0, HemiTex);
 	float4 HemiColor = lerp(HemiMap, _SkyColor, HemiLerp);
 
@@ -363,7 +363,7 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR0
 	float ShadowIntensity = pow(saturate(DiffuseLight.g), 2.0);
 
 	// Composite diffuse lighting
-	RDirectXTK_ColorPair Light = ComputeLights(WS.Normal.xyz, WS.LightDir, WS.ViewDir);
+	ColorPair Light = ComputeLights(WS.Normal.xyz, WS.LightDir, WS.ViewDir);
 	Light.Specular *= DiffuseMap.a * ShadowIntensity;
 	float3 Lighting = saturate((DiffuseMap * (Ambient + Diffuse)) + Light.Specular);
 
@@ -409,7 +409,7 @@ technique humanskin
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float4 Tex0 : TEXCOORD0; // .xy = Tex0; .zw = LightZW;
+	float3 Tex0 : TEXCOORD0; // .xy = Tex0; .z = ShadowMapDepth;
 };
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
@@ -427,7 +427,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	float4 BonePos = float4(mul(Input.Pos, BoneMat), 1.0);
 
 	// Output shadow coordinates & depth
-	Output.HPos = RDepth_GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.zw);
+	Output.HPos = GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.z);
 
 	// Texcoord data
 	Output.Tex0.xy = Input.TexCoord0;
@@ -437,22 +437,14 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 
 float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
-	#if NVIDIA
-		return 0.0;
-	#else
-		return Input.Tex0.z / Input.Tex0.w;
-	#endif
+	return Input.Tex0.z;
 }
 
 float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
 {
-	float Alpha = tex2D(SampleTex0, Input.Tex0).a - _ShadowAlphaThreshold;
-	#if NVIDIA
-		return Alpha;
-	#else
-		clip(Alpha);
-		return Input.Tex0.z / Input.Tex0.w;
-	#endif
+	float Alpha = tex2D(SampleTex0, Input.Tex0.xy).a - _ShadowAlphaThreshold;
+	clip(Alpha);
+	return Input.Tex0.z;
 }
 
 #define GET_RENDERSTATES_SHADOWMAP \

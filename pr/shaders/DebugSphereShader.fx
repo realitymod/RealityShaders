@@ -55,6 +55,14 @@ struct VS2PS
 	float4 Diffuse : TEXCOORD1;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 /*
 	Debug basic shaders
 */
@@ -89,12 +97,12 @@ PS2FB PS_Debug_Basic(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 BaseTex = RDirectXTK_SRGBToLinearEst(tex2D(SampleBaseTex, Input.Tex0.xy));
+	float4 BaseTex = SRGBToLinearEst(tex2D(SampleBaseTex, Input.Tex0.xy));
 	Output.Color = BaseTex * Input.Diffuse;
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;
@@ -104,12 +112,12 @@ PS2FB PS_Debug_Marked(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 BaseTex = RDirectXTK_SRGBToLinearEst(tex2D(SampleBaseTex, Input.Tex0.xy));
+	float4 BaseTex = SRGBToLinearEst(tex2D(SampleBaseTex, Input.Tex0.xy));
 	Output.Color = (BaseTex * Input.Diffuse) + float4(1.0, 0.0, 0.0, 0.0);
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;
@@ -203,10 +211,10 @@ PS2FB PS_Debug_LightSource(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	Output.Color = Input.Diffuse;
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

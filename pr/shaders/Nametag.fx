@@ -118,10 +118,10 @@ VS2PS VS_Nametag(APP2VS Input)
 
 float4 PS_Nametag(VS2PS Input) : COLOR0
 {
-	float4 Tex0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
+	float4 Tex0 = SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
 	float4 OutputColor = Tex0 * Input.Color0;
 	
-	RDirectXTK_LinearToSRGBEst(OutputColor);
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -179,10 +179,10 @@ VS2PS VS_Nametag_Arrow(APP2VS Input)
 
 float4 PS_Nametag_Arrow(VS2PS Input) : COLOR0
 {
-	float4 Tex0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
+	float4 Tex0 = SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
 	float4 OutputColor = Tex0 * Input.Color0;
 
-	RDirectXTK_LinearToSRGBEst(OutputColor);
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -241,11 +241,11 @@ VS2PS_2TEX VS_Nametag_Healthbar(APP2VS Input)
 
 float4 PS_Nametag_Healthbar(VS2PS_2TEX Input) : COLOR0
 {
-	float4 Tex0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
-	float4 Tex1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetail1, Input.TexCoord1));
+	float4 Tex0 = SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
+	float4 Tex1 = SRGBToLinearEst(tex2D(SampleDetail1, Input.TexCoord1));
 	float4 OutputColor = lerp(Tex0, Tex1, _HealthValue < Input.Color0.b) * Input.Color0.a * Input.Color1;
 
-	RDirectXTK_LinearToSRGBEst(OutputColor);
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -325,11 +325,11 @@ VS2PS VS_Nametag_Vehicle_Icons(APP2VS Input)
 
 float4 PS_Nametag_Vehicle_Icons(VS2PS Input) : COLOR0
 {
-	float4 Tex0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
-	float4 Tex1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetail1, Input.TexCoord1));
+	float4 Tex0 = SRGBToLinearEst(tex2D(SampleDetail0, Input.TexCoord0));
+	float4 Tex1 = SRGBToLinearEst(tex2D(SampleDetail1, Input.TexCoord1));
 	float4 OutputColor = lerp(Tex0, Tex1, _CrossFadeValue) * Input.Color0;
 
-	RDirectXTK_LinearToSRGBEst(OutputColor);
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 

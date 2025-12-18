@@ -42,38 +42,38 @@
 	*/
 
 	// (Approximate) sRGB to linear
-	float4 RDirectXTK_SRGBToLinearEst(float4 ColorMap)
+	float4 SRGBToLinearEst(float4 ColorMap)
 	{
-		#if defined(PR_LINEARLIGHTING)
+		#if defined(_USELINEARLIGHTING_)
 			ColorMap.rgb = (ColorMap <= 0.04045) ? ColorMap / 12.92 : pow((ColorMap + 0.055) / 1.055, 2.4);
 		#endif
 		return ColorMap;
 	}
 
 	// Apply the (approximate) sRGB curve to linear values
-	void RDirectXTK_LinearToSRGBEst(inout float4 Color)
+	void LinearToSRGBEst(inout float4 Color)
 	{
-		#if defined(PR_LINEARLIGHTING)
+		#if defined(_USELINEARLIGHTING_)
 			Color = (Color <= 0.0031308) ? 12.92 * Color : 1.055 * pow(Color, 1.0 / 2.4) - 0.055;
 		#endif
 	}
 
 	// AMD resolve tonemap
 	// https://gpuopen.com/learn/optimized-reversible-tonemapper-for-resolve/
-	float3 RDirectXTK_AMDResolve(float3 x)
+	float3 AMDResolve(float3 x)
 	{
 		return x / (max(max(x.r, x.g), x.b) + 1.0);
 	}
 
-	float3 RDirectXTK_TonemapAMDResolve(float3 x)
+	float3 TonemapAMDResolve(float3 x)
 	{
-		float3 WhitePoint = 1.0 / RDirectXTK_AMDResolve(1.0);
-		return RDirectXTK_AMDResolve(x) * WhitePoint;
+		float3 WhiteAMDResolve = 1.0 / AMDResolve(1.0);
+		return AMDResolve(x) * WhiteAMDResolve;
 	}
 
 	// ACES Filmic tonemap operator
 	// https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
-	float3 RDirectXTK_ACESFilmic(float3 x)
+	float3 ACESFilmic(float3 x)
 	{
 		float a = 2.51;
 		float b = 0.03;
@@ -83,31 +83,30 @@
 		return saturate((x*(a*x+b))/(x*(c*x+d)+e));
 	}
 
-	float3 RDirectXTK_TonemapACESFilmic(float3 x)
+	float3 ToneMapACESFilmic(float3 x)
 	{
-		float3 WhitePoint = 1.0 / RDirectXTK_ACESFilmic(1.0);
-		return RDirectXTK_ACESFilmic(x) * WhitePoint;
+		float3 WhiteACES = 1.0 / ACESFilmic(1.0);
+		return ACESFilmic(x) * WhiteACES;
 	}
 
 	// Apply the (approximate) sRGB curve to linear values
 	// Tonemapping through seperation of Max and RGB Ratio
 	// https://gpuopen.com/wp-content/uploads/2016/03/GdcVdrLottes.pdf
-	void RDirectXTK_TonemapAndLinearToSRGBEst(inout float4 Color)
+	void TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
-		#if defined(PR_TONEMAPPING)
-			Color.rgb = RDirectXTK_TonemapAMDResolve(Color.rgb);
+		#if defined(_USETONEMAP_)
+			Color.rgb = TonemapAMDResolve(Color.rgb);
 		#endif
 
-		#if defined(PR_LINEARLIGHTING)
-			RDirectXTK_LinearToSRGBEst(Color);
+		#if defined(_USELINEARLIGHTING_)
+			LinearToSRGBEst(Color);
 		#endif
 	}
 
-	struct RDirectXTK_ColorPair
+	struct ColorPair
 	{
 		float Diffuse;
 		float Specular;
-		float DotNL;
 	};
 
 	/*
@@ -116,25 +115,25 @@
 		https://developer.valvesoftware.com/wiki/Half_Lambert
 	*/
 
-	float RDirectXTK_ToHalfNL(float DotNL)
+	float ToHalfNL(float DotNL)
 	{
 		DotNL = saturate((DotNL * 0.5) + 0.5);
 		return DotNL * DotNL;
 	}
 
-	float RDirectXTK_GetHalfNL(float3 Normal, float3 LightDir)
+	float GetHalfNL(float3 Normal, float3 LightDir)
 	{
 		float DotNL = dot(Normal, LightDir);
-		return RDirectXTK_ToHalfNL(DotNL);
+		return ToHalfNL(DotNL);
 	}
 
-	RDirectXTK_ColorPair ComputeLights
+	ColorPair ComputeLights
 	(
 		float3 Normal, float3 LightDir, float3 ViewDir,
 		uniform float SpecPower = 32.0, uniform bool Normalized = false
 	)
 	{
-		RDirectXTK_ColorPair Output = (RDirectXTK_ColorPair)0.0;
+		ColorPair Output = (ColorPair)0.0;
 
 		float3 HalfVec = normalize(LightDir + ViewDir);
 		float DotNH = saturate(dot(Normal, HalfVec));
@@ -142,18 +141,17 @@
 		float DotNL_Clamped = saturate(DotNL);
 		float N = (Normalized) ? (SpecPower + 8.0) / 8.0 : 1.0;
 
-		Output.Diffuse = RDirectXTK_ToHalfNL(DotNL);
+		Output.Diffuse = ToHalfNL(DotNL);
 		Output.Specular = N * pow(abs(DotNH), SpecPower) * DotNL_Clamped;
-		Output.DotNL = DotNL;
 		return Output;
 	}
 
-	float3 RDirectXTK_CompositeLights(float3 Color, float3 Ambient, float3 Diffuse, float3 Specular)
+	float3 CompositeLights(float3 Color, float3 Ambient, float3 Diffuse, float3 Specular)
 	{
 		return (Color * (Ambient + Diffuse)) + Specular;
 	}
 
-	float RDirectXTK_ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewDir, float Exponent)
+	float ComputeFresnelFactor(float3 WorldNormal, float3 WorldViewDir, float Exponent)
 	{
 		float ViewAngle = 1.0 - saturate(dot(WorldNormal, WorldViewDir));
 		return saturate(pow(abs(ViewAngle), Exponent));
@@ -164,7 +162,7 @@
 		---
 		See also follow-up blog post: http://www.thetenthplanet.de/archives/1180
 	*/
-	float3x3 RDirectXTK_CalculateTBN(float3 Pos, float2 Tex, float3 Normal)
+	float3x3 CalculateTBN(float3 Pos, float2 Tex, float3 Normal)
 	{
 		// Get edge vectors of the pixel triangle
 		float3 DP1 = ddx(Pos);
@@ -183,9 +181,9 @@
 		return float3x3(Tangent * InvMax, BiTangent * InvMax, Normal);
 	}
 
-	float3 RDirectXTK_PeturbNormal(float3 LocalNormal, float3 Pos, float3 Normal, float2 Tex)
+	float3 PeturbNormal(float3 LocalNormal, float3 Pos, float3 Normal, float2 Tex)
 	{
-		float3x3 TBN = RDirectXTK_CalculateTBN(Pos, Tex, Normal);
+		float3x3 TBN = CalculateTBN(Pos, Tex, Normal);
 		return normalize(mul(LocalNormal, TBN));
 	}
 #endif

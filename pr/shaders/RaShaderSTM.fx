@@ -90,6 +90,14 @@ struct VS2PS
 	#endif
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 /*
 	Common vertex shader methods
 */
@@ -107,12 +115,12 @@ VS2PS VS_StaticMesh(APP2VS Input)
 	float4 ObjectPos = float4(Input.Pos.xyz, 1.0) * PosUnpack;
 	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
 	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
-	float3x3 ObjectTBN = RVertex_GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
+	float3x3 ObjectTBN = GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
 
 	// Output HPos
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
 	// Output world-space data
-	Output.Pos.xyz = Ra_GetWorldPos(ObjectPos.xyz);
+	Output.Pos.xyz = GetWorldPos(ObjectPos.xyz);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
@@ -142,7 +150,7 @@ VS2PS VS_StaticMesh(APP2VS Input)
 		Output.LightMapTex.xy = Input.TexSets[LightMapTexID].xy * TexUnpack * LightMapOffset.xy + LightMapOffset.zw;
 	#endif
 	#if _SHADOW_ && _LIGHTMAP_
-		Output.ShadowTex = Ra_GetShadowProjection(ObjectPos);
+		Output.ShadowTex = GetShadowProjection(ObjectPos);
 	#endif
 
 	return Output;
@@ -154,14 +162,13 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 	DiffuseGloss = StaticGloss;
 
 	#if _BASE_
-		Diffuse = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy));
+		Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy));
 	#endif
 
 	// TODO: Fix parallax mapping
-	#if _PARALLAXDETAIL_
-		float4 Detail = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, ParallaxTex));
-	#elif _DETAIL_
-		float4 Detail = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.BaseAndDetail.zw));
+	#if (_DETAIL_ || _PARALLAXDETAIL_)
+		// float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, ParallaxTex));
+		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.BaseAndDetail.zw));
 	#endif
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
@@ -178,12 +185,12 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 	#endif
 
 	#if _DIRT_
-		float4 DirtMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDirtMap, Input.DirtAndCrack.xy));
+		float4 DirtMap = SRGBToLinearEst(tex2D(SampleDirtMap, Input.DirtAndCrack.xy));
 		Diffuse.rgb *= DirtMap.rgb;
 	#endif
 
 	#if _CRACK_
-		float4 Crack = RDirectXTK_SRGBToLinearEst(tex2D(SampleCrackMap, Input.DirtAndCrack.zw));
+		float4 Crack = SRGBToLinearEst(tex2D(SampleCrackMap, Input.DirtAndCrack.zw));
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
 
@@ -198,7 +205,8 @@ float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 		TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
 	#endif
 	#if _PARALLAXDETAIL_
-		TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
+		// TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
+		TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 	#elif _NDETAIL_
 		TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 	#endif
@@ -217,7 +225,7 @@ float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 float4 GetLightmap(VS2PS Input)
 {
 	#if _LIGHTMAP_
-		return RPixel_SampleLightMap(SampleLightMap, Input.LightMapTex.xy, PR_LIGHTMAP_SIZE_OBJECTS);
+		return tex2D(SampleLightMap, Input.LightMapTex.xy);
 	#else
 		return 1.0;
 	#endif
@@ -226,9 +234,9 @@ float4 GetLightmap(VS2PS Input)
 float3 GetWorldLightVec(float3 WorldPos)
 {
 	#if _POINTLIGHT_
-		return Ra_GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
+		return GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 	#else
-		return Ra_GetWorldLightDir(-Lights[0].dir.xyz);
+		return GetWorldLightDir(-Lights[0].dir.xyz);
 	#endif
 }
 
@@ -250,9 +258,10 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		normalize(Input.WorldNormal)
 	};
 
-	// Get parallax data
-	float3 TanViewDir = normalize(mul(WorldViewDir, transpose(WorldTBN)));
-	float2 ParallaxTex = RPixel_GetParallaxTex(SampleNormalMap, Input.BaseAndDetail.zw, TanViewDir, ParallaxScaleBias.xy);
+	// Tangent-space data
+	// mul(mat, vec) == mul(vec, transpose(mat))
+	float3 TanViewDir = normalize(mul(WorldTBN, WorldViewDir));
+	float2 ParallaxTex = GetParallaxTex(SampleNormalMap, Input.BaseAndDetail.zw, TanViewDir, ParallaxScaleBias.xy * PARALLAX_BIAS, ParallaxScaleBias.wz);
 
 	// Prepare texture data
 	float Gloss = 0.0;
@@ -271,46 +280,45 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	#endif
 
 	// Prepare lighting data
-	RDirectXTK_ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb);
 	float3 SpecularRGB = (Light.Specular * Gloss) * StaticSpecularColor.rgb;
 
 	#if _POINTLIGHT_
-		float Attenuation = RPixel_GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
+		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		DiffuseRGB *= Attenuation;
 		SpecularRGB *= Attenuation;
 		OutputColor.rgb = (ColorMap.rgb * DiffuseRGB) + SpecularRGB;
-		OutputColor.rgb *= Ra_GetFogValue(WorldPos, WorldSpaceCamPos);
+		OutputColor.rgb *= GetFogValue(WorldPos, WorldSpaceCamPos);
 	#else
 		// Directional light + Lightmap etc
 		float4 Lightmap = GetLightmap(Input);
 		#if _SHADOW_ && _LIGHTMAP_
-			Lightmap.g *= RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
-		// We add ambient to get correct ambient for surfaces parallel to the sun
 		// We divide N.L by 5 to prevent complete darkness for surfaces facing away from the sun
-		float IDotNL = saturate((1.0 - (Light.DotNL / 5.0)) * 0.65);
-		float3 Ambient = StaticSkyColor.rgb * (Lightmap.b * IDotNL);
-		float3 BumpedDiffuse = DiffuseRGB + Ambient;
-		DiffuseRGB = lerp(Ambient, BumpedDiffuse, Lightmap.g);
-		DiffuseRGB += (SinglePointColor.rgb * Lightmap.r);
-		DiffuseRGB *= 2.0;
+		float IHalfNL = saturate((1.0 - (Light.Diffuse / 5.0)) * 0.65);
 
-		// Compute Specular
+		// We add ambient to get correct ambient for surfaces parallel to the sun
+		float3 Ambient = (StaticSkyColor * IHalfNL) * Lightmap.b;
+		float3 BumpedDiffuse = DiffuseRGB + Ambient;
+
+		DiffuseRGB = lerp(Ambient, BumpedDiffuse, Lightmap.g);
+		DiffuseRGB += (Lightmap.r * SinglePointColor);
 		SpecularRGB *= Lightmap.g;
 
-		OutputColor.rgb = RDirectXTK_CompositeLights(ColorMap.rgb, 0.0, DiffuseRGB, SpecularRGB);
+		OutputColor.rgb = CompositeLights(ColorMap.rgb * 2.0, 0.0, DiffuseRGB, SpecularRGB);
 	#endif
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);
 	#if !_POINTLIGHT_
-		Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

@@ -46,6 +46,14 @@ struct VS2PS
 	float3 Tex0 : TEXCOORD0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_Shader(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -68,7 +76,7 @@ PS2FB PS_Shader(VS2PS Input)
 	Output.Color = tex2D(SampleBaseTex, Input.Tex0.xy);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

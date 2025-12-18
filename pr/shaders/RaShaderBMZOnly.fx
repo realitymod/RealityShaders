@@ -68,6 +68,14 @@ struct VS2PS
 	float4 Pos : TEXCOORD0;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 float4x3 GetSkinnedWorldMatrix(APP2VS Input)
 {
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
@@ -75,7 +83,7 @@ float4x3 GetSkinnedWorldMatrix(APP2VS Input)
 	return GeomBones[IndexArray[0]];
 }
 
-float4 Ra_GetWorldPos(APP2VS Input)
+float4 GetWorldPos(APP2VS Input)
 {
 	float4 unpackedPos = Input.Pos * PosUnpack;
 	return float4(mul(unpackedPos, GetSkinnedWorldMatrix(Input)), 1.0);
@@ -85,7 +93,7 @@ VS2PS VS_BM_ZOnly(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
-	Output.HPos = mul(Ra_GetWorldPos(Input), ViewProjection);
+	Output.HPos = mul(GetWorldPos(Input), ViewProjection);
 	Output.Pos = Output.HPos;
 
 	// Output Depth
@@ -102,7 +110,7 @@ PS2FB PS_BM_ZOnly(VS2PS Input)
 	Output.Color = 0.0;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

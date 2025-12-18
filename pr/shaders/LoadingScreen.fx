@@ -58,13 +58,13 @@ VS2PS VS_Screen(APP2VS Input)
 
 float4 PS_Screen(VS2PS Input) : COLOR0
 {
-	float4 InputTexture0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleTexMap, Input.Tex));
+	float4 InputTexture0 = SRGBToLinearEst(tex2D(SampleTexMap, Input.Tex));
 
 	float4 OutputColor = 0.0;
 	OutputColor.rgb = InputTexture0.rgb * Input.Color.rgb;
 	OutputColor.a = Input.Color.a;
 
-	RDirectXTK_LinearToSRGBEst(OutputColor);
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 

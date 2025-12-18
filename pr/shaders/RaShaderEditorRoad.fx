@@ -111,6 +111,14 @@ struct VS2PS
 	float4 LightTex : TEXCOORD2;
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_Editor_Road(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -143,21 +151,21 @@ PS2FB PS_Editor_Road(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 Diffuse = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy));
+	float4 Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy));
 	#if defined(USE_DETAIL)
-		float4 Detail = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw));
+		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw));
 		float4 OutputColor = Diffuse * Detail;
 	#else
 		float4 OutputColor = Diffuse;
 	#endif
-	OutputColor.a *= Ra_GetRoadZFade(Input.Pos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
+	OutputColor.a *= GetRoadZFade(Input.Pos.xyz, WorldSpaceCamPos.xyz, RoadFadeOut);
 
 	Output.Color = OutputColor;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos.xyz, WorldSpaceCamPos.xyz));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos.xyz, WorldSpaceCamPos.xyz));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

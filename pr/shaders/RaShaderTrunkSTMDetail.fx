@@ -116,6 +116,14 @@ struct VS2PS
 	#endif
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_TrunkSTMDetail(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -127,7 +135,7 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 	// Output HPos
 	Output.HPos = mul(float4(ObjectPos.xyz, 1.0), WorldViewProjection);
 	// World-space data
-	float3 WorldPos = Ra_GetWorldPos(ObjectPos.xyz);
+	float3 WorldPos = GetWorldPos(ObjectPos.xyz);
 	Output.Pos = float4(WorldPos, Output.HPos.w);
 
 	// Output Depth
@@ -142,16 +150,16 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 	#endif
 
 	// Get lighting
-	float3 WorldNormal = Ra_GetWorldNormal(ObjectNormal);
-	float3 WorldLightDir = normalize(Ra_GetWorldLightDir(-Lights[0].dir));
+	float3 WorldNormal = GetWorldNormal(ObjectNormal);
+	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
 	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
 
 	// Get lighting
-	float HalfNL = RDirectXTK_GetHalfNL(WorldNormal, WorldLightDir);
+	float HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
 	Output.Lighting = Lights[0].color.rgb * HalfNL;
 
 	#if _HASSHADOW_
-		Output.TexShadow = Ra_GetShadowProjection(float4(ObjectPos.xyz, 1.0));
+		Output.TexShadow = GetShadowProjection(float4(ObjectPos.xyz, 1.0));
 	#endif
 
 	return Output;
@@ -165,29 +173,29 @@ PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	float4 WorldPos = Input.Pos;
 
 	// Texture data
-	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if !defined(BASEDIFFUSEONLY)
-		float4 DetailMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
+		float4 DetailMap = SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
 		DiffuseMap *= DetailMap;
 	#endif
 
 	// Get diffuse lighting
 	#if _HASSHADOW_
-		float Shadow = RDepth_GetShadowFactor(SampleShadowMap, Input.TexShadow);
+		float Shadow = GetShadowFactor(SampleShadowMap, Input.TexShadow);
 	#else
 		float Shadow = 1.0;
 	#endif
 
 	float4 OutputColor = 0.0;
-	OutputColor.rgb = RDirectXTK_CompositeLights(DiffuseMap.rgb, OverGrowthAmbient.rgb, Input.Lighting * Shadow, 0.0) * 2.0;
+	OutputColor.rgb = CompositeLights(DiffuseMap.rgb, OverGrowthAmbient.rgb, Input.Lighting * Shadow, 0.0) * 2.0;
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

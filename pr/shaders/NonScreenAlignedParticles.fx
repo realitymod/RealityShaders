@@ -60,6 +60,14 @@ struct VS2PS
 	float4 Maps : TEXCOORD5; // [LightFactor, Alpha, BlendFactor, LMOffset]
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 VS2PS VS_Particle(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -121,7 +129,7 @@ VS2PS VS_Particle(APP2VS Input)
 
 	// Offset texcoords for particle diffuse
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
-	Output.HemiTex = RPixel_GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, true);
+	Output.HemiTex = GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, true);
 
 	return Output;
 }
@@ -153,7 +161,7 @@ PS2FB PS_Particle_ShowFill(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 	Output.Color = _EffectSunColor.rrrr;
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.ViewPos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.ViewPos.w);
 	#endif
 	return Output;
 }
@@ -166,16 +174,16 @@ PS2FB PS_Particle_Low(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Lighting
-	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	float4 LightColor = float4(Input.Color.rgb, VF.AlphaBlend);
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.ViewPos, 0.0));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.ViewPos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.ViewPos.w);
 	#endif
 
 	return Output;
@@ -189,8 +197,8 @@ PS2FB PS_Particle_Medium(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Texture data
-	float4 TDiffuse1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
-	float4 TDiffuse2 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
+	float4 TDiffuse1 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.IntensityBlend);
 
 	// Lighting
@@ -199,11 +207,11 @@ PS2FB PS_Particle_Medium(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.ViewPos, 0.0));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.ViewPos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.ViewPos.w);
 	#endif
 
 	return Output;
@@ -217,12 +225,12 @@ PS2FB PS_Particle_High(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Get diffuse map
-	float4 TDiffuse1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
-	float4 TDiffuse2 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
+	float4 TDiffuse1 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.IntensityBlend);
 
 	// Get hemi map
-	float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleLUT, Input.HemiTex));
+	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, Input.HemiTex));
 
 	// Apply lighting
 	float3 Lighting = GetParticleLighting(HemiMap.a, VF.LightMapOffset, VF.LightMapBlend);
@@ -230,11 +238,11 @@ PS2FB PS_Particle_High(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.ViewPos, 0.0));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.ViewPos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.ViewPos.w);
 	#endif
 
 	return Output;

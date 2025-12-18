@@ -76,6 +76,14 @@ struct VS2PS
 	#endif
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+	#if defined(LOG_DEPTH)
+		float Depth : DEPTH;
+	#endif
+};
+
 float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 {
 	// Compensate for lack of UBYTE4 on Geforce3
@@ -114,7 +122,7 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	// Get skinned object-space data
 	float4x3 BoneMatrix = GetBlendedBoneMatrix(Input);
 	float4 ObjectPos = float4(mul(Input.Pos, BoneMatrix), 1.0);
-	float3x3 ObjectTBN = RVertex_GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
+	float3x3 ObjectTBN = GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
 
 	// Output HPos data
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
@@ -148,10 +156,10 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	// Texture-space data
 	Output.Tex0 = Input.TexCoord0;
 	#if _HASSHADOW_
-		Output.ShadowTex = Ra_GetShadowProjection(SkinWorldPos);
+		Output.ShadowTex = GetShadowProjection(SkinWorldPos);
 	#endif
 	#if _HASSHADOWOCCLUSION_
-		Output.ShadowOccTex = Ra_GetShadowProjection(SkinWorldPos, true);
+		Output.ShadowOccTex = GetShadowProjection(SkinWorldPos, true);
 	#endif
 
 	return Output;
@@ -171,7 +179,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 
 	// Texture-space data
-	float4 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
+	float4 ColorMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
 	#if _HASNORMALMAP_
 		float3x3 WorldTBN =
 		{
@@ -196,12 +204,12 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
 
 	#if _HASSHADOW_
-		float Shadow = RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+		float Shadow = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
 		float Shadow = 1.0;
 	#endif
 	#if _HASSHADOWOCCLUSION_
-		float ShadowOcc = RDepth_GetShadowFactor(SampleShadowOccluderMap, Input.ShadowOccTex);
+		float ShadowOcc = GetShadowFactor(SampleShadowOccluderMap, Input.ShadowOccTex);
 	#else
 		float ShadowOcc = 1.0;
 	#endif
@@ -212,8 +220,8 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	#else
 		#if _USEHEMIMAP_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 HemiTex = RPixel_GetHemiTex(WorldPos, 0.0, HemiMapConstants, true);
-			float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleHemiMap, HemiTex));
+			float2 HemiTex = GetHemiTex(WorldPos, 0.0, HemiMapConstants, true);
+			float4 HemiMap = SRGBToLinearEst(tex2D(SampleHemiMap, HemiTex));
 			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
 			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
 			// HemiLight = HemiMap.a;
@@ -223,24 +231,24 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 	#endif
 
 	#if _POINTLIGHT_
-		float3 WorldLightVec = Ra_GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
-		float Attenuation = RPixel_GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
+		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
+		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 	#else
-		float Attenuation = 1.0;
+		const float Attenuation = 1.0;
 	#endif
 
 	float4 OutputColor = 1.0;
 
 	// Calculate lighting
-	RDirectXTK_ColorPair Light = ComputeLights(WorldNormal.xyz, WorldLightDir, WorldViewDir, SpecularPower);
+	ColorPair Light = ComputeLights(WorldNormal.xyz, WorldLightDir, WorldViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb) * TotalLights;
 	float3 SpecularRGB = ((Light.Specular * NormalMap.a) * GetSpecularColor()) * TotalLights;
-	OutputColor.rgb = RDirectXTK_CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB);
+	OutputColor.rgb = CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB);
 	OutputColor.a = ColorMap.a * Transparency.a;
 
 	// Thermals
-	if (Ra_IsTisActive())
+	if (IsTisActive())
 	{
 		#if _HASENVMAP_ // If EnvMap enabled, then should be hot on thermals
 			OutputColor.rgb = float3(lerp(0.60, 0.30, ColorMap.b), 1.0, 0.0); // M // 0.61, 0.25
@@ -251,12 +259,12 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	Output.Color = OutputColor;
 	#if !_POINTLIGHT_
-		Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

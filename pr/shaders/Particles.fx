@@ -60,6 +60,11 @@ struct VS2PS
 	float4 Maps : TEXCOORD4; // [LightMapBlend, Alpha, IntensityBlend, LightMapOffset]
 };
 
+struct PS2FB
+{
+	float4 Color : COLOR0;
+};
+
 /*
 	[Vertex Shaders]
 */
@@ -119,11 +124,11 @@ VS2PS VS_Particle(APP2VS Input)
 
 	// Offset texcoords
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
-	Output.HemiTex = RPixel_GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, true);
+	Output.HemiTex = GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, true);
 
 	// Output Depth
 	#if defined(LOG_DEPTH)
-		Output.HPos.z = RDepth_ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
+		Output.HPos.z = ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 	#endif
 
 	return Output;
@@ -151,44 +156,44 @@ VFactors GetVFactors(VS2PS Input)
 	return Output;
 }
 
-PS2FB_NoDepth PS_Particle_ShowFill(VS2PS Input)
+PS2FB PS_Particle_ShowFill(VS2PS Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 	Output.Color = _EffectSunColor.rrrr;
 	return Output;
 }
 
-PS2FB_NoDepth PS_Particle_Low(VS2PS Input)
+PS2FB PS_Particle_Low(VS2PS Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
 
 	// Get diffuse map
-	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 
 	// Apply lighting
 	float4 LightColor = float4(Input.Color.rgb * _EffectSunColor.rgb, VF.AlphaBlend);
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.ViewPos, 0.0));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }
 
-PS2FB_NoDepth PS_Particle_Medium(VS2PS Input)
+PS2FB PS_Particle_Medium(VS2PS Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
 
 	// Get diffuse map
-	float4 TDiffuse1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
-	float4 TDiffuse2 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
+	float4 TDiffuse1 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.IntensityBlend);
 
 	// Apply lighting
@@ -197,26 +202,26 @@ PS2FB_NoDepth PS_Particle_Medium(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.ViewPos, 0.0));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }
 
-PS2FB_NoDepth PS_Particle_High(VS2PS Input)
+PS2FB PS_Particle_High(VS2PS Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
 
 	// Get diffuse map
-	float4 TDiffuse1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
-	float4 TDiffuse2 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
+	float4 TDiffuse1 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.IntensityBlend);
 
 	// Get hemi map
-	float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleLUT, Input.HemiTex));
+	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, Input.HemiTex));
 
 	// Apply lighting
 	float3 Lighting = GetParticleLighting(HemiMap.a, VF.LightMapOffset, VF.LightMapBlend);
@@ -224,50 +229,50 @@ PS2FB_NoDepth PS_Particle_High(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.ViewPos, 0.0));
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;
 }
 
-PS2FB_NoDepth PS_Particle_Low_Additive(VS2PS Input)
+PS2FB PS_Particle_Low_Additive(VS2PS Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
 
 	// Textures
-	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 
 	// Lighting | Mask with alpha since were doing an add
 	float4 OutputColor = DiffuseMap * float4(Input.Color.rgb, VF.AlphaBlend);
 
 	Output.Color = OutputColor;
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
-	Output.Color.a *= Ra_GetFogValue(Input.ViewPos, 0.0);
+	TonemapAndLinearToSRGBEst(Output.Color);
+	Output.Color.a *= GetFogValue(Input.ViewPos, 0.0);
 
 	return Output;
 }
 
-PS2FB_NoDepth PS_Particle_High_Additive(VS2PS Input)
+PS2FB PS_Particle_High_Additive(VS2PS Input)
 {
-	PS2FB_NoDepth Output = (PS2FB_NoDepth)0.0;
+	PS2FB Output = (PS2FB)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
 
 	// Textures
-	float4 TDiffuse1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
-	float4 TDiffuse2 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
+	float4 TDiffuse1 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.IntensityBlend);
 
 	// Lighting | Mask with alpha since were doing an add
 	float4 OutputColor = DiffuseMap * float4(Input.Color.rgb, VF.AlphaBlend);
 
 	Output.Color = OutputColor;
-	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
-	Output.Color.a *= Ra_GetFogValue(Input.ViewPos, 0.0);
+	TonemapAndLinearToSRGBEst(Output.Color);
+	Output.Color.a *= GetFogValue(Input.ViewPos, 0.0);
 
 	return Output;
 }

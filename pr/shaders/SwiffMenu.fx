@@ -85,24 +85,24 @@ VS2PS_ShapeTexture VS_ShapeTexture(float3 Position : POSITION)
 float4 PS_RegularWrap(VS2PS_ShapeTexture Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
-	float4 Tex = RDirectXTK_SRGBToLinearEst(tex2D(SampleTexMap_Wrap, Input.TexCoord));
+	float4 Tex = SRGBToLinearEst(tex2D(SampleTexMap_Wrap, Input.TexCoord));
 
 	OutputColor.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
 	OutputColor.a = Tex.a * Input.Diffuse.a;
 
-	RDirectXTK_LinearToSRGBEst(OutputColor);
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_RegularClamp(VS2PS_ShapeTexture Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
-	float4 Tex = RDirectXTK_SRGBToLinearEst(tex2D(SampleTexMap_Clamp, Input.TexCoord));
+	float4 Tex = SRGBToLinearEst(tex2D(SampleTexMap_Clamp, Input.TexCoord));
 
 	OutputColor.rgb = lerp(Input.Diffuse, Tex * Input.Diffuse, Input.Selector);
 	OutputColor.a = Tex.a * Input.Diffuse.a;
 
-	RDirectXTK_LinearToSRGBEst(OutputColor);
+	LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
