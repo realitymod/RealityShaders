@@ -363,7 +363,7 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR0
 	float ShadowIntensity = pow(saturate(DiffuseLight.g), 2.0);
 
 	// Composite diffuse lighting
-	RDirectXTK_ColorPair Light = ComputeLights(WS.Normal.xyz, WS.LightDir, WS.ViewDir);
+	RDirectXTK_ColorPair Light = RDirectXTK_ComputeLights(WS.Normal.xyz, WS.LightDir, WS.ViewDir);
 	Light.Specular *= DiffuseMap.a * ShadowIntensity;
 	float3 Lighting = saturate((DiffuseMap * (Ambient + Diffuse)) + Light.Specular);
 

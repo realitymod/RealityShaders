@@ -240,7 +240,7 @@ PS2FB PS_Water(in VS2PS Input)
 
 	// Composite light on water color
 	float3 LightColors = SpecularColor.rgb * (SpecularColor.a * Shadow);
-	RDirectXTK_ColorPair Light = ComputeLights(TangentNormal, WorldLightDir, NWorldViewDir, SpecularPower);
+	RDirectXTK_ColorPair Light = RDirectXTK_ComputeLights(TangentNormal, WorldLightDir, NWorldViewDir, SpecularPower);
 	OutputColor.rgb = WaterLerp + (Light.Specular * LightColors.rgb);
 
 	// Thermals

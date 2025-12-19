@@ -280,7 +280,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	#endif
 
 	// Prepare lighting data
-	RDirectXTK_ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	RDirectXTK_ColorPair Light = RDirectXTK_ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb);
 	float3 SpecularRGB = (Light.Specular * Gloss) * StaticSpecularColor.rgb;
 

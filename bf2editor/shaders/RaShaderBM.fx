@@ -351,7 +351,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 		float Attenuation = 1.0;
 	#endif
 
-	RDirectXTK_ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	RDirectXTK_ColorPair Light = RDirectXTK_ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 DiffuseRGB = (Light.Diffuse * LC.Diffuse.rgb) * TotalLights;
 	float3 SpecularRGB = ((Light.Specular * Gloss) * LC.Specular.rgb) * TotalLights;

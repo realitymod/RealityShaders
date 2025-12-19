@@ -128,7 +128,7 @@
 		return RDirectXTK_ToHalfNL(DotNL);
 	}
 
-	RDirectXTK_ColorPair ComputeLights
+	RDirectXTK_ColorPair RDirectXTK_ComputeLights
 	(
 		float3 Normal, float3 LightDir, float3 ViewDir,
 		uniform float SpecPower = 32.0, uniform bool Normalized = false

@@ -263,7 +263,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	// Calculate lighting
 	LightColors LC = GetLightColors();
-	RDirectXTK_ColorPair Lighting = ComputeLights(WorldNormal.xyz, WorldLightDir, WorldViewDir, SpecularPower);
+	RDirectXTK_ColorPair Lighting = RDirectXTK_ComputeLights(WorldNormal.xyz, WorldLightDir, WorldViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
 	float3 DiffuseRGB = (Lighting.Diffuse * LC.Diffuse) * TotalLights;
 	float3 SpecularRGB = ((Lighting.Specular * NormalMap.a) * LC.Specular) * TotalLights;

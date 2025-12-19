@@ -201,7 +201,7 @@ float4 PS_Lighting(VS2PS_Specular Input) : COLOR0
 	WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 
 	// Get lighting data
-	RDirectXTK_ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir);
+	RDirectXTK_ColorPair Light = RDirectXTK_ComputeLights(WorldNormal, WorldLightDir, WorldViewDir);
 	float3 Diffuse = DiffuseMap * (Ambient + Light.Diffuse);
 	float3 Specular = Light.Specular * Gloss;
 	float3 Lighting = saturate(Diffuse + Specular);
