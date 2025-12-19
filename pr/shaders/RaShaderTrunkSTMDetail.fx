@@ -151,7 +151,7 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 	Output.Lighting = Lights[0].color.rgb * HalfNL;
 
 	#if _HASSHADOW_
-		Output.TexShadow = GetShadowProjection(float4(ObjectPos.xyz, 1.0));
+		Output.TexShadow = RDepth_GetShadowProjection(float4(ObjectPos.xyz, 1.0));
 	#endif
 
 	return Output;

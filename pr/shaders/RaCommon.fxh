@@ -185,7 +185,7 @@
 
 	// Description: Transforms the vertex position's depth from World/Object space to light space
 	// tl: Make sure Pos and matrices are in same space!
-	float4 GetShadowProjection(float4 Pos, uniform bool IsOccluder = false)
+	float4 RDepth_GetShadowProjection(float4 Pos, uniform bool IsOccluder = false)
 	{
 		float4 ShadowCoords = mul(Pos, ShadowTrapMat);
 		float4 LightCoords = (IsOccluder) ? mul(Pos, ShadowOccProjMat) : mul(Pos, ShadowProjMat);

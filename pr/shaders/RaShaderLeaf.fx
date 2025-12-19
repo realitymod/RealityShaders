@@ -217,7 +217,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	#endif
 
 	#if _HASSHADOW_
-		Output.TexShadow = GetShadowProjection(float4(Input.Pos.xyz, 1.0));
+		Output.TexShadow = RDepth_GetShadowProjection(float4(Input.Pos.xyz, 1.0));
 	#endif
 
 	return Output;

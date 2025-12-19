@@ -116,7 +116,7 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 
 	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
 	Output.Tex0.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
-	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
+	Output.ShadowTex = (ShadowMapEnable) ? RDepth_GetShadowProjection(Pos) : 0.0;
 
 	Output.Scale = Input.Packed.w;
 
@@ -245,7 +245,7 @@ VS2PS_Simple VS_Undergrowth_Simple(APP2VS_Simple Input, uniform bool ShadowMapEn
 
 	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
 	Output.Tex0.z = Input.Packed.w;
-	Output.ShadowTex = (ShadowMapEnable) ? GetShadowProjection(Pos) : 0.0;
+	Output.ShadowTex = (ShadowMapEnable) ? RDepth_GetShadowProjection(Pos) : 0.0;
 
 	Output.TerrainColorMap = saturate(Input.TerrainColorMap);
 	Output.TerrainLightMap = saturate(Input.TerrainLightMap);
