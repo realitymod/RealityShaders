@@ -173,7 +173,7 @@ VS2PS_Specular VS_Lighting(APP2VS Input)
 
 float4 PS_Lighting(VS2PS_Specular Input) : COLOR0
 {
-	const float4 Ambient = float4(0.4, 0.4, 0.4, 1.0);
+	float4 Ambient = float4(0.4, 0.4, 0.4, 1.0);
 
 	// Texture data
 	// What should we do with DiffuseMap.a now?
@@ -254,8 +254,8 @@ VS2PS_Diffuse VS_Diffuse(APP2VS Input)
 float4 PS_Diffuse(VS2PS_Diffuse Input) : COLOR0
 {
 	// Constants
-	const float4 Ambient = 0.8;
-	const float3 MatsLightDir = float3(0.2, 0.8, -0.2);
+	float4 Ambient = 0.8;
+	float3 MatsLightDir = float3(0.2, 0.8, -0.2);
 
 	// World-space data
 	float3 WorldNormal = normalize(Input.WorldNormal);

@@ -6,10 +6,12 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
+#include "shaders/shared/RealityEffects.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDirectXTK.fxh"
+	#include "shared/RealityEffects.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
 
@@ -130,9 +132,14 @@ VS2PS_Blit VS_Blit_Custom(APP2VS_Blit Input)
 	return Output;
 }
 
-float4 PS_TR_OpticsSpiralBlur(VS2PS_Blit Input) : COLOR0
+float4 PS_TR_OpticsSpiralBlurI(VS2PS_Blit Input) : COLOR0
 {
-	return RPixel_GetSpiralBlur(SampleTex0_Mirror, Input.TexCoord0, 1.0, true);
+	return REffects_GetSpiralBlur(SampleTex0_Mirror, Input.TexCoord0, 1.0, true, false);
+}
+
+float4 PS_TR_OpticsSpiralBlurII(VS2PS_Blit Input) : COLOR0
+{
+	return REffects_GetSpiralBlur(SampleTex0_Mirror, Input.TexCoord0, 1.0, true, true);
 }
 
 float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR0
@@ -170,7 +177,7 @@ float4 PS_Dummy() : COLOR0
 	return 0.0;
 }
 
-VS2PS_Blit PS_Blit_Magnified(APP2VS_Blit Input)
+VS2PS_Blit VS_Blit_Magnified(APP2VS_Blit Input)
 {
 	VS2PS_Blit Output = (VS2PS_Blit)0.0;
 	Output.HPos = float4(Input.Pos.xy * 1.1, 0.0, 1.0);
@@ -301,7 +308,7 @@ float4 PS_CheapGaussianBlur5x5(in VS2PS_Blit Input) : COLOR0
 	{
 		float2 Offset = _GaussianBlur5x5CheapSampleOffsets[i].xy;
 		float Weight = _GaussianBlur5x5CheapSampleWeights[i];
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset) * Weight;
+		OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * Weight;
 	}
 
 	RDirectXTK_LinearToSRGBEst(OutputColor);
@@ -316,7 +323,7 @@ float4 PS_Gaussian_Blur_5x5_Cheap_Filter_Blend(VS2PS_Blit Input) : COLOR0
 	{
 		float2 Offset = _GaussianBlur5x5CheapSampleOffsets[i].xy;
 		float Weight = _GaussianBlur5x5CheapSampleWeights[i];
-		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset) * Weight;
+		OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * Weight;
 	}
 
 	OutputColor.a = _BlurStrength;
@@ -640,10 +647,10 @@ technique Blit
 	CREATE_NULL_PASS
 
 	// Pass 25: GlowHorizontalFilter
-	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlur())
+	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlurI())
 
 	// Pass 26: GlowVerticalFilter
-	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlur())
+	CREATE_PASS(VS_Blit(), PS_TR_OpticsSpiralBlurII())
 
 	// Pass 27: GlowVerticalFilterAdditive
 	CREATE_NULL_PASS
@@ -664,7 +671,7 @@ technique Blit
 	pass ClearAlpha
 	{
 		ColorWriteEnable = ALPHA;
-		VertexShader = compile vs_3_0 PS_Blit_Magnified(); // is this needed? -mosq
+		VertexShader = compile vs_3_0 VS_Blit_Magnified(); // is this needed? -mosq
 		PixelShader = compile ps_3_0 PS_Clear();
 	}
 

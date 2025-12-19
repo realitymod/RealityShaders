@@ -234,7 +234,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 		float3 WorldLightVec = GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
 		float Attenuation = RPixel_GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 	#else
-		const float Attenuation = 1.0;
+		float Attenuation = 1.0;
 	#endif
 
 	float4 OutputColor = 1.0;

@@ -162,7 +162,7 @@ float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 
 	SpreadFactor = 1.0 - saturate(SpreadFactor);
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
-	float4 BlurColor = RPixel_GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor.r, true);
+	float4 BlurColor = REffects_GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor.r, true, false);
 
 	// Vignette BlurColor
 	float VignetteRadius = min(VIGNETTE_RADIUS, 2.0) * LerpBias;
