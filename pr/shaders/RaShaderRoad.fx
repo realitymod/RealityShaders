@@ -141,7 +141,7 @@ VS2PS VS_Road(APP2VS Input)
 	#endif
 
 	Output.LightTex.xy = Output.HPos.xy / Output.HPos.w;
-	Output.LightTex.xy = (Output.LightTex.xy * 0.5) + 0.5;
+	Output.LightTex.xy = RGraphics_ConvertSNORMtoUNORM_FLT2(Output.LightTex.xy);
 	Output.LightTex.y = 1.0 - Output.LightTex.y;
 	Output.LightTex.xy = Output.LightTex.xy * Output.HPos.w;
 	Output.LightTex.zw = Output.HPos.zw;

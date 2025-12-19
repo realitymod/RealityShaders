@@ -197,7 +197,7 @@ float4 PS_Lighting(VS2PS_Specular Input) : COLOR0
 	// Transform vectors from world space to tangent space
 	float3 WorldLightDir = normalize(MatsLightDir);
 	float3 WorldViewDir = normalize(WorldEyeVec);
-	float3 WorldNormal = normalize((TangentNormal * 2.0) - 1.0);
+	float3 WorldNormal = normalize(RGraphics_ConvertUNORMtoSNORM_FLT3(TangentNormal));
 	WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 
 	// Get lighting data
@@ -400,7 +400,7 @@ float4 PS_EnvMap_Alpha(VS2PS_EnvMap_Alpha Input) : COLOR0
 		normalize(Input.WorldNormal)
 	};
 
-	float3 WorldNormal = normalize((TangentNormal * 2.0) - 1.0);
+	float3 WorldNormal = normalize(RGraphics_ConvertUNORMtoSNORM_FLT3(TangentNormal));
 	WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 
 	// Get reflection data

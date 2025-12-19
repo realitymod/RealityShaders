@@ -153,7 +153,7 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 {
 	// LocalHeight scale, 1 for top and 0 for bottom
 	float LocalHeight = (WorldPos.y - GeomBones[0][3][1]) * InvHemiHeightScale;
-	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
+	float Offset = (RGraphics_ConvertUNORMtoSNORM_FLT1(LocalHeight)) + HeightOverTerrain;
 	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
 	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
 }
@@ -251,7 +251,7 @@ PS2FB PS_BundledMesh(VS2PS Input)
 			normalize(Input.WorldNormal)
 		};
 		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
-		float3 WorldNormal = normalize((NormalMap.xyz * 2.0) - 1.0);
+		float3 WorldNormal = normalize(RGraphics_ConvertUNORMtoSNORM_FLT3(NormalMap.xyz));
 		WorldNormal = normalize(mul(WorldNormal, WorldTBN));
 	#else
 		float3 WorldNormal = normalize(Input.WorldNormal);

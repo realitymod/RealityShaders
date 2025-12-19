@@ -265,7 +265,7 @@ struct TV
 TV GetTV(float2 Tex)
 {
 	TV Output;
-	Tex = (Tex * 2.0) - 1.0;
+	Tex = RGraphics_ConvertUNORMtoSNORM_FLT2(Tex);
 	Output.Random = (Tex * _Granularity) + _Displacement;
 	Output.Noise = (Tex * 0.25) - (0.35 * _SinFracTime);
 	return Output;

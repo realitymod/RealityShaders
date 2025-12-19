@@ -498,7 +498,7 @@ VS2PS_Grid VS_Debug_Grid(APP2VS Input)
 
 	float3 Pos = mul(Input.Pos, _World);
 	Output.HPos = mul(float4(Pos.xyz, 1.0), _WorldViewProj);
-	Output.Tex0.xy = (Input.Pos.xz * 0.5) + 0.5;
+	Output.Tex0.xy = RGraphics_ConvertSNORMtoUNORM_FLT2(Input.Pos.xz);
 	Output.Tex0.xy *= _TextureScale;
 
 	// Output Depth

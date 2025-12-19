@@ -118,7 +118,7 @@
 
 	float RDirectXTK_ToHalfNL(float DotNL)
 	{
-		DotNL = saturate((DotNL * 0.5) + 0.5);
+		DotNL = saturate(RGraphics_ConvertSNORMtoUNORM_FLT1(DotNL));
 		return DotNL * DotNL;
 	}
 

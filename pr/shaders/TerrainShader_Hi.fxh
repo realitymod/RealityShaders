@@ -77,7 +77,7 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 	Output.Pos = MorphedWorldPos;
 
 	// tl: uncompress normal
-	Output.Normal.xyz = (Input.Normal * 2.0) - 1.0;
+	Output.Normal.xyz = RGraphics_ConvertUNORMtoSNORM_FLT3(Input.Normal);
 	Output.Tex0.xy = (YPlaneTex * _ColorLightTex.x) + _ColorLightTex.y;
 	Output.Tex0.zw = (YPlaneTex * _DetailTex.x) + _DetailTex.y;
 	Output.LightTex = ProjToLighting(Output.HPos);
@@ -104,7 +104,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	float Depth = Input.Normal.w;
 
 	float LerpValue = GetLerpValue(WorldPos.xwz, _CameraPos.xwz);
-	float ScaledLerpValue = saturate((LerpValue * 0.5) + 0.5);
+	float ScaledLerpValue = saturate(RGraphics_ConvertSNORMtoUNORM_FLT1(LerpValue));
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
 	float4 Component = tex2D(SampleTex2_Clamp, Input.Tex0.zw);

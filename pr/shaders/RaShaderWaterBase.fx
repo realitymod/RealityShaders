@@ -224,9 +224,9 @@ PS2FB PS_Water(in VS2PS Input)
 
 	#if defined(TANGENTSPACE_NORMALS)
 		// We flip the Y and Z components because the water-plane faces at the Y direction in world-space
-		TangentNormal.xzy = normalize((TangentNormal.xyz * 2.0) - 1.0);
+		TangentNormal.xzy = normalize(RGraphics_ConvertUNORMtoSNORM_FLT3(TangentNormal.xyz));
 	#else
-		TangentNormal.xyz = normalize((TangentNormal.xyz * 2.0) - 1.0);
+		TangentNormal.xyz = normalize(RGraphics_ConvertUNORMtoSNORM_FLT3(TangentNormal.xyz));
 	#endif
 
 	// Initialize output factor

@@ -217,7 +217,7 @@ float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 	#endif
 
 	// [tangent-space] -> [object-space] -> [world-space]
-	TangentNormal = normalize((TangentNormal * 2.0) - 1.0);
+	TangentNormal = normalize(RGraphics_ConvertUNORMtoSNORM_FLT3(TangentNormal));
 	float3 WorldNormal = normalize(mul(TangentNormal, WorldTBN));
 	return WorldNormal;
 }

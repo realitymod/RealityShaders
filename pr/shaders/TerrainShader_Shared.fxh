@@ -100,7 +100,7 @@ VS2PS_Shared_PointLight_PerVertex VS_Shared_PointLight_PerVertex(APP2VS_Shared I
 	float4 MorphedWorldPos = GetMorphedWorldPos(Input);
 
 	// Uncompress normal
-	float3 WorldNormal = (Input.Normal * 2.0) - 1.0;
+	float3 WorldNormal = RGraphics_ConvertUNORMtoSNORM_FLT3(Input.Normal);
 	float Lighting = GetLighting(MorphedWorldPos.xyz, WorldNormal);
 
 	Output.HPos = mul(MorphedWorldPos, _ViewProj);
@@ -150,7 +150,7 @@ VS2PS_Shared_PointLight_PerPixel VS_Shared_PointLight_PerPixel(APP2VS_Shared Inp
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
-	Output.Normal = (Input.Normal * 2.0) - 1.0;
+	Output.Normal = RGraphics_ConvertUNORMtoSNORM_FLT3(Input.Normal);
 
 	return Output;
 }
@@ -224,7 +224,7 @@ VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
-	Output.Normal = (Input.Normal * 2.0) - 1.0;
+	Output.Normal = RGraphics_ConvertUNORMtoSNORM_FLT3(Input.Normal);
 	Output.Tex0.xy = ((Input.Pos0.xy * _ScaleBaseUV) * _ColorLightTex.x) + _ColorLightTex.y;
 	Output.Tex0.zw = ((Input.Pos0.xy * _TexScale.xz) * _DetailTex.x) + _DetailTex.y;
 	Output.LightTex = ProjToLighting(Output.HPos);

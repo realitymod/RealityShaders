@@ -193,7 +193,7 @@
 		float D = RPixel_GetGradient_FLT1(I, F, float2(1.0, 1.0), Bias);
 		float2 UV = RPixel_GetQuintic(F);
 		float Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-		Noise = (NormalizeOutput) ? saturate((Noise * 0.5) + 0.5) : Noise;
+		Noise = (NormalizeOutput) ? saturate(RGraphics_ConvertSNORMtoUNORM_FLT1(Noise)) : Noise;
 		return Noise;
 	}
 
@@ -207,7 +207,7 @@
 		float2 D = RPixel_GetGradient_FLT2(I, F, float2(1.0, 1.0), Bias);
 		float2 UV = RPixel_GetQuintic(F);
 		float2 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-		Noise = (NormalizeOutput) ? saturate((Noise * 0.5) + 0.5) : Noise;
+		Noise = (NormalizeOutput) ? saturate(RGraphics_ConvertSNORMtoUNORM_FLT2(Noise)) : Noise;
 		return Noise;
 	}
 

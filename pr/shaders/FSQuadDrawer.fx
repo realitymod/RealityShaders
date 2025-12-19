@@ -238,7 +238,7 @@ float4 PS_PosTo8Bit(VS2PS_Blit Input) : COLOR0
 {
 	float4 ViewPosition = tex2D(SampleTex0_Clamp, Input.TexCoord0);
 	ViewPosition /= 50.0;
-	ViewPosition = (ViewPosition * 0.5) + 0.5;
+	ViewPosition = RGraphics_ConvertSNORMtoUNORM_FLT4(ViewPosition);
 	return ViewPosition;
 }
 

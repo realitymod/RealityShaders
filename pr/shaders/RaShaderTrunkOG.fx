@@ -113,7 +113,7 @@ VS2PS VS_TrunkOG(APP2VS Input)
 
 	// Get lighting
 	float LODScale = DECODE_SHORT(Input.Pos.w);
-	float3 WorldNormal = GetWorldNormal((Input.Normal * 2.0) - 1.0);
+	float3 WorldNormal = GetWorldNormal(RGraphics_ConvertUNORMtoSNORM_FLT3(Input.Normal));
 	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
 
 	float HalfNL = RDirectXTK_GetHalfNL(WorldNormal, WorldLightDir);

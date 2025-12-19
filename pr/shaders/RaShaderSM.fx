@@ -110,7 +110,7 @@ float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
 {
 	// LocalHeight scale, 1 for top and 0 for bottom
 	float LocalHeight = (WorldPos.y - (World[3][1] - 0.5)) * 0.5;
-	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
+	float Offset = (RGraphics_ConvertUNORMtoSNORM_FLT1(LocalHeight)) + HeightOverTerrain;
 	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
 	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
 }
@@ -190,7 +190,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 		// NormalMap.a stores the glossmap
 		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
-		NormalMap.xyz = normalize((NormalMap.xyz * 2.0) - 1.0);
+		NormalMap.xyz = normalize(RGraphics_ConvertUNORMtoSNORM_FLT3(NormalMap.xyz));
 		float3 WorldNormal = mul(NormalMap.xyz, WorldTBN);
 	#else
 		float4 NormalMap = float4(0.0, 0.0, 1.0, 0.0);

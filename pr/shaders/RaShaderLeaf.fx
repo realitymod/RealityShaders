@@ -196,7 +196,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	// Calculate texture surface data
 	Output.Tex0.xy = Input.Tex0;
 	#if defined(OVERGROWTH)
-		Input.Normal = normalize((Input.Normal * 2.0) - 1.0);
+		Input.Normal = normalize(RGraphics_ConvertUNORMtoSNORM_FLT3(Input.Normal));
 		Output.Tex0.xy = DECODE_SHORT(Output.Tex0.xy);
 	#else
 		Input.Normal = normalize((Input.Normal * NormalUnpack.x) + NormalUnpack.y);

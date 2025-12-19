@@ -159,7 +159,7 @@ WorldSpace GetWorldSpaceData(float3 WorldPos, float3 TangentNormal)
 	Output.LightDir = normalize(GetWorldLightDir(-_SunLightDirection.xyz));
 	Output.ViewDir = normalize(GetWorldViewVec(WorldPos));
 
-	Output.Normal = normalize((TangentNormal * 2.0) - 1.0);
+	Output.Normal = normalize(RGraphics_ConvertUNORMtoSNORM_FLT3(TangentNormal));
 	Output.Normal = normalize(mul(Output.Normal, (float3x3)_World));
 
 	return Output;
@@ -194,7 +194,7 @@ Lighting GetLighting(WorldSpace WS)
 
 float GetHemiLerp(WorldSpace WS)
 {
-	return ((WS.Normal.y * 0.5) + 0.5) - _HemiMapInfo.w;
+	return (RGraphics_ConvertSNORMtoUNORM_FLT1(WS.Normal.y)) - _HemiMapInfo.w;
 }
 
 /*
