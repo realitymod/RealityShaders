@@ -192,10 +192,10 @@ VS2PS VS_BundledMesh(APP2VS Input)
 		Output.Tex0 = Input.TexDiffuse * TexUnpack; // pass-through texcoord
 	#endif
 	#if _HASSHADOW_
-		Output.ShadowTex = RDepth_GetShadowProjection(WorldPos);
+		Output.ShadowTex = RDepth_GetMeshShadowProjection(WorldPos);
 	#endif
 	#if _HASSHADOWOCCLUSION_
-		Output.ShadowOccTex = RDepth_GetShadowProjection(WorldPos, true);
+		Output.ShadowOccTex = RDepth_GetMeshShadowProjection(WorldPos, true);
 	#endif
 
 	// Special data

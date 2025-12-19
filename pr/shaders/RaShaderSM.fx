@@ -148,10 +148,10 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 	// Texture-space data
 	Output.Tex0 = Input.TexCoord0;
 	#if _HASSHADOW_
-		Output.ShadowTex = RDepth_GetShadowProjection(SkinWorldPos);
+		Output.ShadowTex = RDepth_GetMeshShadowProjection(SkinWorldPos);
 	#endif
 	#if _HASSHADOWOCCLUSION_
-		Output.ShadowOccTex = RDepth_GetShadowProjection(SkinWorldPos, true);
+		Output.ShadowOccTex = RDepth_GetMeshShadowProjection(SkinWorldPos, true);
 	#endif
 
 	return Output;

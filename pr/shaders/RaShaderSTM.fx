@@ -142,7 +142,7 @@ VS2PS VS_StaticMesh(APP2VS Input)
 		Output.LightMapTex.xy = Input.TexSets[LightMapTexID].xy * TexUnpack * LightMapOffset.xy + LightMapOffset.zw;
 	#endif
 	#if _SHADOW_ && _LIGHTMAP_
-		Output.ShadowTex = RDepth_GetShadowProjection(ObjectPos);
+		Output.ShadowTex = RDepth_GetMeshShadowProjection(ObjectPos);
 	#endif
 
 	return Output;

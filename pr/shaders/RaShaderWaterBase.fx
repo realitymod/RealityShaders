@@ -165,7 +165,7 @@ VS2PS VS_Water(APP2VS Input)
 		Output.LightMapTex = (Input.LightMap * LightMapOffset.xy) + LightMapOffset.zw;
 	#endif
 	#if defined(USE_SHADOWS)
-		Output.ShadowTex = RDepth_GetShadowProjection(WorldPos);
+		Output.ShadowTex = RDepth_GetMeshShadowProjection(WorldPos);
 	#endif
 
 	return Output;
