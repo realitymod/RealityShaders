@@ -133,7 +133,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	#if defined(LIGHTONLY)
 		float3 OutputColor = TerrainLights;
 	#else
-		float3 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
+		float3 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 		float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
 		float4 YPlaneDetailmap = tex2D(SampleTex3_Wrap, Input.YPlaneTex.xy);
 		float4 XPlaneDetailmap = tex2D(SampleTex6_Wrap, Input.XPlaneTex.xy);
@@ -179,7 +179,7 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 		if (UseEnvMap)
 		{
 			float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), WorldNormal.xyz);
-			float3 EnvMapColor = SRGBToLinearEst(texCUBE(SamplerTex6_Cube, Reflection)).rgb;
+			float3 EnvMapColor = RDirectXTK_SRGBToLinearEst(texCUBE(SamplerTex6_Cube, Reflection)).rgb;
 			OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * (1.0 - LerpValue));
 		}
 
@@ -188,11 +188,11 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 
 	Output.Color = float4(OutputColor, ChartContribution);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos.xyz, _CameraPos.xyz));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	Output.Color.rgb *= ChartContribution;
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Depth);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Depth);
 	#endif
 
 	return Output;

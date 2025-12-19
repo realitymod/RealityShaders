@@ -151,9 +151,9 @@ PS2FB PS_Editor_Road(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
-	float4 Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy));
+	float4 Diffuse = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy));
 	#if defined(USE_DETAIL)
-		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw));
+		float4 Detail = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.P_Tex0_Tex1.zw));
 		float4 OutputColor = Diffuse * Detail;
 	#else
 		float4 OutputColor = Diffuse;
@@ -162,10 +162,10 @@ PS2FB PS_Editor_Road(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos.xyz, WorldSpaceCamPos.xyz));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

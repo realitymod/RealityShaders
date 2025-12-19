@@ -24,7 +24,7 @@
 		---
 		Source: https://download.nvidia.com/developer/presentations/2004/GPU_Jackpot/Shadow_Mapping.pdf
 	*/
-	float GetSlopedBasedBias(float Depth, uniform float SlopeScale = PR_SLOPESCALE_OBJECT, uniform float Bias = PR_DEPTHBIAS_OBJECT)
+	float RDepth_GetSlopedBasedBias(float Depth, uniform float SlopeScale = PR_SLOPESCALE_OBJECT, uniform float Bias = PR_DEPTHBIAS_OBJECT)
 	{
 		float M = fwidth(Depth);
 		return Depth + (M * SlopeScale) + Bias;
@@ -35,7 +35,7 @@
 		---
 		Source: https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
 	*/
-	float ApplyLogarithmicDepth(float Depth)
+	float RDepth_ApplyLogarithmicDepth(float Depth)
 	{
 		return saturate(log2(Depth) * FCoef);
 	}
@@ -45,7 +45,7 @@
 		---
 		NOTE: Make sure Pos and matrices are in same space!
 	*/
-	float4 GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat, out float Depth)
+	float4 RDepth_GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat, out float Depth)
 	{
 		float4 LightCoords = mul(Pos, LightMat);
 		float4 ShadowCoords = mul(Pos, LightTrapezMat);
@@ -62,7 +62,7 @@
 	/*
 		Compares the depth between the shadowmap's depth (ShadowSampler) and the vertex position's transformed, light-space depth (ShadowCoords.z)
 	*/
-	float GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
+	float RDepth_GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
 		float2 Texel = fwidth(ShadowCoords.xy);
 
@@ -71,11 +71,11 @@
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, -Texel.y, 0.0, 0.0)).r;
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, Texel.y, 0.0, 0.0)).r;
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, -Texel.y, 0.0, 0.0)).r;
-		float4 CMPBits = float4(Samples >= saturate(GetSlopedBasedBias(ShadowCoords.z)));
+		float4 CMPBits = float4(Samples >= saturate(RDepth_GetSlopedBasedBias(ShadowCoords.z)));
 		return dot(CMPBits, 0.25);
 	}
 
-	void ReverseDepth(inout float4 HPos)
+	void RDepth_ReverseDepth(inout float4 HPos)
 	{
 		// HPos.z = (1.0 - (HPos.z / HPos.w)) * HPos.w;
 	}

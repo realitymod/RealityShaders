@@ -138,9 +138,9 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 	float3 LocalPos = Input.Pos.xyz;
 
 	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
-	float3 TerrainColor = SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw)).rgb;
+	float3 TerrainColor = RDirectXTK_SRGBToLinearEst(tex2D(SampleTerrainColorMap, Input.Tex0.zw)).rgb;
 	float4 TerrainLightMap = tex2D(SampleTerrainLightMap, Input.Tex0.zw);
-	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
+	float TerrainShadow = (ShadowMapEnable) ? RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale * 0.5);
 	float3 TerrainLight = GetTerrainLight(TerrainLightMap, _SunColor * TerrainShadow, _GIColor, _StaticPointColor).rgb;
@@ -156,7 +156,7 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 		for (int i = 0; i < LightCount; i++)
 		{
 			float3 LightVec = LocalPos - _PointLightPosAtten[i].xyz;
-			float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
+			float Attenuation = RPixel_GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
 			TerrainLight += (Attenuation * _PointLightColor[i].rgb);
 		}
 	}
@@ -168,11 +168,11 @@ PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMap
 	Output.Color = OutputColor;
 	Output.Color.a *= 2.0;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
-	TonemapAndLinearToSRGBEst(Output.Color);
-	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -269,8 +269,8 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	float4 TerrainLightMap = Input.TerrainLightMap;
 
 	float4 Base = tex2D(SampleColorMap, Input.Tex0.xy);
-	float3 TerrainColor = SRGBToLinearEst(Input.TerrainColorMap).rgb;
-	float TerrainShadow = (ShadowMapEnable) ? GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
+	float3 TerrainColor = RDirectXTK_SRGBToLinearEst(Input.TerrainColorMap).rgb;
+	float TerrainShadow = (ShadowMapEnable) ? RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z * 0.5);
 	float3 TerrainLight = GetTerrainLight(TerrainLightMap, _SunColor * TerrainShadow, _GIColor, _StaticPointColor).rgb;
@@ -286,7 +286,7 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 		for (int i = 0; i < LightCount; i++)
 		{
 			float3 LightVec = LocalPos - _PointLightPosAtten[i].xyz;
-			float Attenuation = GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
+			float Attenuation = RPixel_GetLightAttenuation(LightVec, _PointLightPosAtten[i].w);
 			TerrainLight += (Attenuation * _PointLightColor[i].rgb);
 		}
 	}
@@ -298,11 +298,11 @@ PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform 
 	Output.Color = OutputColor;
 	Output.Color.a *= 2.0;
 	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
-	TonemapAndLinearToSRGBEst(Output.Color);
-	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
+	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -382,10 +382,10 @@ PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 
 	Output.Color = OutputColor;
 	Output.Color.a *= 2.0;
-	SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
+	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

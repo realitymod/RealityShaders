@@ -52,7 +52,7 @@ PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;
@@ -65,7 +65,7 @@ PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
 	Output.Color = saturate(ZFillLightMapColor);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;
@@ -82,8 +82,8 @@ float GetLighting(float3 WorldPos, float3 WorldNormal)
 	float3 WorldLightDir = normalize(WorldLightVec);
 
 	// Calculate lighting
-	float Attenuation = GetLightAttenuation(WorldLightVec, _PointLight.attSqrInv);
-	float HalfNL = GetHalfNL(WorldNormal, WorldLightDir);
+	float Attenuation = RPixel_GetLightAttenuation(WorldLightVec, _PointLight.attSqrInv);
+	float HalfNL = RDirectXTK_GetHalfNL(WorldNormal, WorldLightDir);
 
 	return HalfNL * Attenuation;
 }
@@ -121,10 +121,10 @@ PS2FB PS_Shared_PointLight_PerVertex(VS2PS_Shared_PointLight_PerVertex Input)
 	float DotNL = Input.Tex0.x;
 
 	Output.Color = float4(_PointLight.col * DotNL, 0.0);
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.y);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.y);
 	#endif
 
 	return Output;
@@ -163,10 +163,10 @@ PS2FB PS_Shared_PointLight_PerPixel(VS2PS_Shared_PointLight_PerPixel Input)
 	float Lighting = GetLighting(WorldPos, Input.Normal);
 
 	Output.Color = float4(Lighting * _PointLight.col, 0.0);
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -246,7 +246,7 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
-	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
+	float4 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
 	float4 YPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.YPlaneTex);
 	float4 XPlaneLowDetailmap = tex2D(SampleTex4_Wrap, Input.XZPlaneTex.xy);
@@ -283,10 +283,10 @@ PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -368,9 +368,9 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 	#if HIGHTERRAIN || MIDTERRAIN
-		float AvgShadowValue = GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+		float AvgShadowValue = RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 	#else
-		float AvgShadowValue = GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
+		float AvgShadowValue = RDepth_GetShadowFactor(SampleTex2_Clamp, Input.ShadowTex);
 	#endif
 
 	// Pack accumulated light
@@ -378,7 +378,7 @@ PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Inp
 	Output.Color = SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -420,10 +420,10 @@ PS2FB PS_Shared_UnderWater(VS2PS_Shared_UnderWater Input)
 
 	Output.Color = float4(OutputColor, WaterLerp);
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;
@@ -511,11 +511,11 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
-	float4 ColorMap = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
+	float4 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
 	float4 LowComponent = tex2D(SampleTex5_Clamp, Input.Tex0.zw);
-	float4 YPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, Input.YPlaneTex);
-	float4 XPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.xy);
-	float4 ZPlaneLowDetailmap = GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.zw);
+	float4 YPlaneLowDetailmap = RPixel_GetProceduralTiles(SampleTex4_Wrap, Input.YPlaneTex);
+	float4 XPlaneLowDetailmap = RPixel_GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.xy);
+	float4 ZPlaneLowDetailmap = RPixel_GetProceduralTiles(SampleTex4_Wrap, Input.XZPlaneTex.zw);
 
 	// If thermals assume gray color
 	if (IsTisActive())
@@ -541,10 +541,10 @@ PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, _CameraPos.xyz));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

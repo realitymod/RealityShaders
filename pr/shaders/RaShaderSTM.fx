@@ -115,7 +115,7 @@ VS2PS VS_StaticMesh(APP2VS Input)
 	float4 ObjectPos = float4(Input.Pos.xyz, 1.0) * PosUnpack;
 	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y; // Unpack object-space tangent
 	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y; // Unpack object-space normal
-	float3x3 ObjectTBN = GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
+	float3x3 ObjectTBN = RVertex_GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
 
 	// Output HPos
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
@@ -162,13 +162,13 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 	DiffuseGloss = StaticGloss;
 
 	#if _BASE_
-		Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy));
+		Diffuse = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.BaseAndDetail.xy));
 	#endif
 
 	// TODO: Fix parallax mapping
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
-		// float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, ParallaxTex));
-		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.BaseAndDetail.zw));
+		// float4 Detail = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, ParallaxTex));
+		float4 Detail = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.BaseAndDetail.zw));
 	#endif
 
 	#if (_DETAIL_ || _PARALLAXDETAIL_)
@@ -185,12 +185,12 @@ float4 GetDiffuseMap(VS2PS Input, float2 ParallaxTex, out float DiffuseGloss)
 	#endif
 
 	#if _DIRT_
-		float4 DirtMap = SRGBToLinearEst(tex2D(SampleDirtMap, Input.DirtAndCrack.xy));
+		float4 DirtMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDirtMap, Input.DirtAndCrack.xy));
 		Diffuse.rgb *= DirtMap.rgb;
 	#endif
 
 	#if _CRACK_
-		float4 Crack = SRGBToLinearEst(tex2D(SampleCrackMap, Input.DirtAndCrack.zw));
+		float4 Crack = RDirectXTK_SRGBToLinearEst(tex2D(SampleCrackMap, Input.DirtAndCrack.zw));
 		Diffuse.rgb = lerp(Diffuse.rgb, Crack.rgb, Crack.a);
 	#endif
 
@@ -261,7 +261,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	// Tangent-space data
 	// mul(mat, vec) == mul(vec, transpose(mat))
 	float3 TanViewDir = normalize(mul(WorldTBN, WorldViewDir));
-	float2 ParallaxTex = GetParallaxTex(SampleNormalMap, Input.BaseAndDetail.zw, TanViewDir, ParallaxScaleBias.xy * PARALLAX_BIAS, ParallaxScaleBias.wz);
+	float2 ParallaxTex = RPixel_GetParallaxTex(SampleNormalMap, Input.BaseAndDetail.zw, TanViewDir, ParallaxScaleBias.xy * PARALLAX_BIAS, ParallaxScaleBias.wz);
 
 	// Prepare texture data
 	float Gloss = 0.0;
@@ -280,12 +280,12 @@ PS2FB PS_StaticMesh(VS2PS Input)
 	#endif
 
 	// Prepare lighting data
-	ColorPair Light = ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
+	RDirectXTK_ColorPair Light = RDirectXTK_ComputeLights(WorldNormal, WorldLightDir, WorldViewDir, SpecularPower);
 	float3 DiffuseRGB = (Light.Diffuse * Lights[0].color.rgb);
 	float3 SpecularRGB = (Light.Specular * Gloss) * StaticSpecularColor.rgb;
 
 	#if _POINTLIGHT_
-		float Attenuation = GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
+		float Attenuation = RPixel_GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
 		DiffuseRGB *= Attenuation;
 		SpecularRGB *= Attenuation;
 		OutputColor.rgb = (ColorMap.rgb * DiffuseRGB) + SpecularRGB;
@@ -294,7 +294,7 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		// Directional light + Lightmap etc
 		float4 Lightmap = GetLightmap(Input);
 		#if _SHADOW_ && _LIGHTMAP_
-			Lightmap.g *= GetShadowFactor(SampleShadowMap, Input.ShadowTex);
+			Lightmap.g *= RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
 		// We divide N.L by 5 to prevent complete darkness for surfaces facing away from the sun
@@ -308,17 +308,17 @@ PS2FB PS_StaticMesh(VS2PS Input)
 		DiffuseRGB += (Lightmap.r * SinglePointColor);
 		SpecularRGB *= Lightmap.g;
 
-		OutputColor.rgb = CompositeLights(ColorMap.rgb * 2.0, 0.0, DiffuseRGB, SpecularRGB);
+		OutputColor.rgb = RDirectXTK_CompositeLights(ColorMap.rgb * 2.0, 0.0, DiffuseRGB, SpecularRGB);
 	#endif
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);
 	#if !_POINTLIGHT_
 		ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

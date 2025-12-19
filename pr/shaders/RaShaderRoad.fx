@@ -157,9 +157,9 @@ PS2FB PS_Road(VS2PS Input)
 	float ZFade = GetRoadZFade(WorldPos, WorldSpaceCamPos.xyz, RoadFadeOut);
 
 	float4 AccumLights = tex2Dproj(SampleAccumLightMap, Input.LightTex);
-	float4 Diffuse = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 Diffuse = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if defined(USE_DETAIL)
-		float4 Detail = SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
+		float4 Detail = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
 		Diffuse *= Detail;
 	#endif
 	float3 TerrainLights = GetUnpackedAccumulatedLight(AccumLights, TerrainSunColor);
@@ -185,10 +185,10 @@ PS2FB PS_Road(VS2PS Input)
 
 	Output.Color = Diffuse;
 	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

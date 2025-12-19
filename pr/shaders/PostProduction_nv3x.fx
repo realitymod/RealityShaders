@@ -6,12 +6,12 @@
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
-#include "shaders/shared/RealityFidelityFX.fxh"
+#include "shaders/shared/RealityEffects.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDirectXTK.fxh"
-	#include "shared/RealityFidelityFX.fxh"
+	#include "shared/RealityEffects.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
 
@@ -158,15 +158,15 @@ float4 PS_Tinnitus(VS2PS_Quad Input) : COLOR0
 
 	// Spread the blur as you go lower on the screen
 	float3 SpreadFactor = 1.0;
-	FFX_Lens_ApplyVignette(VignetteTex * 2.0, float2(0.0, 1.0), SpreadFactor, LerpBias);
+	REffects_FFX_Lens_ApplyVignette(VignetteTex * 2.0, float2(0.0, 1.0), SpreadFactor, LerpBias);
 
 	SpreadFactor = 1.0 - saturate(SpreadFactor);
 	SpreadFactor *= TINNITUS_BLUR_RADIUS;
-	float4 BlurColor = GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor.r, true);
+	float4 BlurColor = RPixel_GetSpiralBlur(SampleTex0_Mirror, Input.Tex0, SpreadFactor.r, true);
 
 	// Vignette BlurColor
 	float VignetteRadius = min(VIGNETTE_RADIUS, 2.0) * LerpBias;
-	FFX_Lens_ApplyVignette(VignetteTex * float2(2.0, 1.0), float2(0.0, 0.5), BlurColor.rgb, VignetteRadius);
+	REffects_FFX_Lens_ApplyVignette(VignetteTex * float2(2.0, 1.0), float2(0.0, 0.5), BlurColor.rgb, VignetteRadius);
 
 	return float4(BlurColor.rgb, LerpBias);
 }
@@ -310,19 +310,19 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 	if (_Interference < 0) // Thermals
 	{
 		// Calculate thermal image
-		float4 Image = SRGBToLinearEst(tex2Dlod(SampleTex0_Point, float4(GetPixelation(Input.Tex0), 0.0, 0.0)));
+		float4 Image = RDirectXTK_SRGBToLinearEst(tex2Dlod(SampleTex0_Point, float4(GetPixelation(Input.Tex0), 0.0, 0.0)));
 
 		// OutputColor.r = lerp(lerp(lerp(0.43, 0.17, Image.g), lerp(0.75, 0.50, Image.b), Image.b), Image.r, Image.r); // M
 		OutputColor.r = lerp(0.43, 0.0, Image.g) + Image.r; // Terrain max light mod should be 0.608
 		OutputColor.r = saturate(OutputColor.r - (_Interference * Random)); // Add -_Interference
-		OutputColor = float4(QuantizeRGB(_TVColor * OutputColor.r, 32.0), Image.a);
+		OutputColor = float4(RPixel_QuantizeRGB(_TVColor * OutputColor.r, 32.0), Image.a);
 
-		LinearToSRGBEst(OutputColor);
+		RDirectXTK_LinearToSRGBEst(OutputColor);
 	}
 	else if (_Interference > 0 && _Interference <= 1) // BF2 TV
 	{
-		Color = SRGBToLinearEst(Color);
-		float Gray = Desaturate(Color.rgb);
+		Color = RDirectXTK_SRGBToLinearEst(Color);
+		float Gray = RPixel_Desaturate(Color.rgb);
 
 		// Distort texture coordinates
 		float Distort = frac(Tex.Random.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
@@ -332,9 +332,9 @@ float4 PS_ThermalVision(VS2PS_Quad Input) : COLOR0
 
 		// Fetch image
 		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
-		OutputColor = float4(QuantizeRGB(_TVColor, 32.0), 1.0) * TVFactor;
+		OutputColor = float4(RPixel_QuantizeRGB(_TVColor, 32.0), 1.0) * TVFactor;
 
-		LinearToSRGBEst(OutputColor);
+		RDirectXTK_LinearToSRGBEst(OutputColor);
 	}
 	else // Passthrough
 	{
@@ -382,13 +382,13 @@ float4 PS_ThermalVision_Gradient(VS2PS_Quad Input) : COLOR0
 		ImageTex.x += _DistortionScale * Noise * Distort;
 
 		// Fetch image
-		float4 Color = SRGBToLinearEst(tex2D(SampleTex0, ImageTex));
-		float Gray = Desaturate(Color.rgb);
+		float4 Color = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, ImageTex));
+		float Gray = RPixel_Desaturate(Color.rgb);
 
 		float TVFactor = lerp(Gray, 1.0, _TVAmbient) + (_Interference * Random);
 		float4 GradientColor = tex2D(SampleTex3, float2(TVFactor, 0.0));
-		OutputColor = float4(QuantizeRGB(GradientColor.rgb, 32.0), TVFactor);
-		LinearToSRGBEst(OutputColor);
+		OutputColor = float4(RPixel_QuantizeRGB(GradientColor.rgb, 32.0), TVFactor);
+		RDirectXTK_LinearToSRGBEst(OutputColor);
 	}
 	else
 	{
@@ -466,17 +466,17 @@ technique WaveDistortion
 
 float4 PS_Flashbang(VS2PS_Quad Input) : COLOR0
 {
-	float4 Sample0 = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
-	float4 Sample1 = SRGBToLinearEst(tex2D(SampleTex1, Input.Tex0));
-	float4 Sample2 = SRGBToLinearEst(tex2D(SampleTex2, Input.Tex0));
-	float4 Sample3 = SRGBToLinearEst(tex2D(SampleTex3, Input.Tex0));
+	float4 Sample0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	float4 Sample1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex1, Input.Tex0));
+	float4 Sample2 = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex2, Input.Tex0));
+	float4 Sample3 = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex3, Input.Tex0));
 
 	float4 OutputColor = Sample0 * 0.5;
 	OutputColor += Sample1 * 0.25;
 	OutputColor += Sample2 * 0.15;
 	OutputColor += Sample3 * 0.10;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return float4(OutputColor.rgb, _BackBufferLerpBias);
 }
 

@@ -237,7 +237,7 @@ float4 PS_PreSkin(VS2PS_PreSkin Input) : COLOR0
 	WorldSpace WS = GetWorldSpaceData(Input.WorldPos.xyz, TangentNormal.xyz);
 
 	// Get hemi data
-	float2 HemiTex = GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo.xyz, true);
+	float2 HemiTex = RPixel_GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo.xyz, true);
 	float4 HemiMap = tex2D(SampleTex1, HemiTex);
 
 	// Get diffuse
@@ -352,7 +352,7 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR0
 
 	// Hemi-mapping
 	float HemiLerp = GetHemiLerp(WS);
-	float2 HemiTex = GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo.xyz, true);
+	float2 HemiTex = RPixel_GetHemiTex(WS.Pos, WS.Normal, _HemiMapInfo.xyz, true);
 	float4 HemiMap = tex2D(SampleTex0, HemiTex);
 	float4 HemiColor = lerp(HemiMap, _SkyColor, HemiLerp);
 
@@ -363,7 +363,7 @@ float4 PS_ApplySkin(VS2PS_ApplySkin Input) : COLOR0
 	float ShadowIntensity = pow(saturate(DiffuseLight.g), 2.0);
 
 	// Composite diffuse lighting
-	ColorPair Light = ComputeLights(WS.Normal.xyz, WS.LightDir, WS.ViewDir);
+	RDirectXTK_ColorPair Light = RDirectXTK_ComputeLights(WS.Normal.xyz, WS.LightDir, WS.ViewDir);
 	Light.Specular *= DiffuseMap.a * ShadowIntensity;
 	float3 Lighting = saturate((DiffuseMap * (Ambient + Diffuse)) + Light.Specular);
 

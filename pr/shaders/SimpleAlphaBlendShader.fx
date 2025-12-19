@@ -76,7 +76,7 @@ PS2FB PS_Shader(VS2PS Input)
 	Output.Color = tex2D(SampleBaseTex, Input.Tex0.xy);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

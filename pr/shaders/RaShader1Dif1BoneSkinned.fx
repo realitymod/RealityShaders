@@ -103,7 +103,7 @@ PS2FB PS_DiffuseBone(VS2PS Input)
 	Output.Color = ColorTex * float4(1.0, 0.0, 1.0, 1.0);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Tex0.z);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
 	return Output;

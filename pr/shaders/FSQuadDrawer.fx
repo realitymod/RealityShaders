@@ -132,13 +132,13 @@ VS2PS_Blit VS_Blit_Custom(APP2VS_Blit Input)
 
 float4 PS_TR_OpticsSpiralBlur(VS2PS_Blit Input) : COLOR0
 {
-	return GetSpiralBlur(SampleTex0_Mirror, Input.TexCoord0, 1.0, true);
+	return RPixel_GetSpiralBlur(SampleTex0_Mirror, Input.TexCoord0, 1.0, true);
 }
 
 float4 PS_TR_OpticsMask(VS2PS_Blit Input) : COLOR0
 {
 	// Get distance from the Center of the screen
-	float AspectRatio = GetAspectRatio(GetScreenSize(Input.TexCoord0).yx);
+	float AspectRatio = RPixel_GetAspectRatio(RPixel_GetScreenSize(Input.TexCoord0).yx);
 
 	// Get blur mask
 	float2 BlendTex = Input.TexCoord0 - 0.5;
@@ -259,12 +259,12 @@ float4 PS_ScaleUp4x4(VS2PS_Blit Input) : COLOR0
 float4 PS_ScaleDown2x2(VS2PS_Blit Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
-	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[0].xy)) * 0.25;
-	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[1].xy)) * 0.25;
-	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[2].xy)) * 0.25;
-	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[3].xy)) * 0.25;
+	OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[0].xy)) * 0.25;
+	OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[1].xy)) * 0.25;
+	OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[2].xy)) * 0.25;
+	OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + _ScaleDown2x2SampleOffsets[3].xy)) * 0.25;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -275,22 +275,22 @@ float4 PS_ScaleDown4x4(in VS2PS_Blit Input) : COLOR0
 	for(int i = 0; i < 16; i++)
 	{
 		float2 Offset = _ScaleDown4x4SampleOffsets[i].xy;
-		OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * 0.0625;
+		OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * 0.0625;
 	}
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_ScaleDown4x4Linear(VS2PS_4Tap Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
-	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy)) * 0.25;
-	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy)) * 0.25;
-	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[2].xy)) * 0.25;
-	OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[3].xy)) * 0.25;
+	OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy)) * 0.25;
+	OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy)) * 0.25;
+	OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[2].xy)) * 0.25;
+	OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[3].xy)) * 0.25;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -304,7 +304,7 @@ float4 PS_CheapGaussianBlur5x5(in VS2PS_Blit Input) : COLOR0
 		OutputColor += tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset) * Weight;
 	}
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -321,7 +321,7 @@ float4 PS_Gaussian_Blur_5x5_Cheap_Filter_Blend(VS2PS_Blit Input) : COLOR0
 
 	OutputColor.a = _BlurStrength;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -333,10 +333,10 @@ float4 PS_GaussianBlur15x15H(VS2PS_Blit Input) : COLOR0
 	{
 		float2 Offset = _GaussianBlur15x15HorizontalSampleOffsets[i].xy;
 		float Weight = _GaussianBlur15x15HorizontalSampleWeights[i];
-		OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * Weight;
+		OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * Weight;
 	}
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -348,10 +348,10 @@ float4 PS_GaussianBlur15x15V(VS2PS_Blit Input) : COLOR0
 	{
 		float2 Offset = _GaussianBlur15x15VerticalSampleOffsets[i].xy;
 		float Weight = _GaussianBlur15x15VerticalSampleWeights[i];
-		OutputColor += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * Weight; 
+		OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + Offset)) * Weight; 
 	}
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -360,13 +360,13 @@ float4 PS_Poisson13Blur(VS2PS_Blit Input) : COLOR0
 	float4 OutputColor = 0.0;
 	float Samples = 1.0;
 
-	OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
+	OutputColor = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 
 	for(int i = 0; i < 11; i++)
 	{
 		// float4 V = tex2D(SampleTex0_Clamp, Input.TexCoord0 + _GrowablePoisson13SampleOffsets[i]);
 		float2 TexOffset = _GrowablePoisson13SampleOffsets[i].xy * 0.1 * OutputColor.a;
-		float4 V = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + TexOffset));
+		float4 V = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + TexOffset));
 
 		if(V.a > 0)
 		{
@@ -377,7 +377,7 @@ float4 PS_Poisson13Blur(VS2PS_Blit Input) : COLOR0
 
 	OutputColor /= Samples;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -385,7 +385,7 @@ float4 PS_Poisson13AndDilation(VS2PS_Blit Input) : COLOR0
 {
 	float4 OutputColor = 0.0;
 
-	float4 Center = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
+	float4 Center = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 	OutputColor = (Center.a > 0) ? float4(Center.rgb, 1.0) : OutputColor;
 
 	for(int i = 0; i < 11; i++)
@@ -394,7 +394,7 @@ float4 PS_Poisson13AndDilation(VS2PS_Blit Input) : COLOR0
 		Scale = (Scale == 0) ? 1.5 : Scale;
 
 		float2 TexOffset = _GrowablePoisson13SampleOffsets[i].xy * Scale;
-		float4 V = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + TexOffset));
+		float4 V = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0 + TexOffset));
 
 		if(V.a > 0)
 		{
@@ -405,39 +405,39 @@ float4 PS_Poisson13AndDilation(VS2PS_Blit Input) : COLOR0
 
 	OutputColor /= OutputColor.a;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_GlowFilter(VS2PS_5Tap Input, uniform float Weights[5], uniform bool Horizontal) : COLOR0
 {
-	float4 OutputColor = Weights[0] * SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy));
-	OutputColor += Weights[1] * SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[0].zw));
-	OutputColor += Weights[2] * SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy));
-	OutputColor += Weights[3] * SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[1].zw));
-	OutputColor += Weights[4] * SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
+	float4 OutputColor = Weights[0] * RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[0].xy));
+	OutputColor += Weights[1] * RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[0].zw));
+	OutputColor += Weights[2] * RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[1].xy));
+	OutputColor += Weights[3] * RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[1].zw));
+	OutputColor += Weights[4] * RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_HighPassFilter(VS2PS_Blit Input) : COLOR0
 {
-	float4 OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
+	float4 OutputColor = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 	OutputColor -= _HighPassGate;
 	OutputColor = max(0.0, OutputColor);
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_HighPassFilterFade(VS2PS_Blit Input) : COLOR0
 {
-	float4 OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
+	float4 OutputColor = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 	OutputColor.rgb = saturate(OutputColor.rgb - _HighPassGate);
 	OutputColor.a = _BlurStrength;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -456,21 +456,21 @@ float4 PS_ExtractGlowFilter(VS2PS_Blit Input) : COLOR0
 
 float4 PS_ExtractHDRFilterFade(VS2PS_Blit Input) : COLOR0
 {
-	float4 OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
+	float4 OutputColor = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 	OutputColor.rgb = saturate(OutputColor.a - _HighPassGate);
 	OutputColor.a = _BlurStrength;
 
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
 float4 PS_LumaAndBrightPass(VS2PS_Blit Input) : COLOR0
 {
-	float4 OutputColor = SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
+	float4 OutputColor = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0));
 	OutputColor *= _HighPassGate;
 	// float luminance = dot(OutputColor, float3(0.299f, 0.587f, 0.114f));
 	
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 	return OutputColor;
 }
 
@@ -479,16 +479,16 @@ float4 PS_BloomFilter(VS2PS_5Tap Input, uniform bool Is_Blur) : COLOR0
 	float4 OutputColor = 0.0;
 	OutputColor.a = (Is_Blur) ? _BlurStrength : OutputColor.a;
 
-	OutputColor.rgb += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0.xy));
+	OutputColor.rgb += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.TexCoord0.xy));
 
 	for(int i = 0; i < 2; i++)
 	{
-		OutputColor.rgb += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[i].xy));
-		OutputColor.rgb += SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[i].zw));
+		OutputColor.rgb += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[i].xy));
+		OutputColor.rgb += RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.FilterCoords[i].zw));
 	}
 
 	OutputColor.rgb /= 5.0;
-	LinearToSRGBEst(OutputColor);
+	RDirectXTK_LinearToSRGBEst(OutputColor);
 
 	return OutputColor;
 }

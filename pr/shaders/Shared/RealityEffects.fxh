@@ -1,4 +1,4 @@
-#line 2 "RealityFidelityFX.fxh"
+#line 2 "RealityEffects.fxh"
 
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityPixel.fxh"
@@ -42,7 +42,7 @@
 
 	// Simplex noise, transforms given position onto triangle grid
 	// This logic should be kept at 32-bit floating point precision. 16 bits causes artifacting.
-	float2 FFX_Lens_Simplex(float2 P)
+	float2 REffects_FFX_Lens_Simplex(float2 P)
 	{
 		// Skew and unskew factors are a bit hairy for 2D, so define them as constants
 		const float F2 = (sqrt(3.0) - 1.0) / 2.0;  // 0.36602540378
@@ -58,13 +58,13 @@
 		return float2(Pf0);
 	}
 
-	float2 ToFloat16(float2 InputValue)
+	float2 REffects_ToFloat16(float2 InputValue)
 	{
 		return float2(int2(InputValue) * (1.0 / 65536.0) - 0.5);
 	}
 
 	// Function call to calculate the red and green wavelength/channel sample offset values.
-	float2 FFX_Lens_GetRGMag(
+	float2 REffects_FFX_Lens_GetRGMag(
 		float ChromAbIntensity // Intensity constant value for the chromatic aberration effect.
 	)
 	{
@@ -80,7 +80,7 @@
 	}
 
 	// Function call to apply chromatic aberration effect when sampling the Color input texture.
-	float3 FFX_Lens_SampleWithChromaticAberration(
+	float3 REffects_FFX_Lens_SampleWithChromaticAberration(
 		sampler2D Image,
 		float2 HPos, // The input window coordinate [0, widthPixels), [0, heightPixels).
 		float2 Tex, // The input window coordinate [0, 1), [0, 1).
@@ -104,7 +104,7 @@
 	}
 
 	// Function call to apply film grain effect to inout Color. This call could be skipped entirely as the choice to use the film grain is optional.
-	void FFX_Lens_ApplyFilmGrain(
+	void REffects_FFX_Lens_ApplyFilmGrain(
 		in float2 Pos, // The input window coordinate [0, Width), [0, Height).
 		inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration function.
 		in float GrainScaleValue, // Scaling constant value for the grain's noise frequency.
@@ -112,8 +112,8 @@
 		in float GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
 	)
 	{
-		float2 RandomNumberFine = GetHash2(Pos, 0.0);
-		float2 GradientN = FFX_Lens_Simplex((Pos / GrainScaleValue) + RandomNumberFine);
+		float2 RandomNumberFine = RPixel_GetHash2(Pos, 0.0);
+		float2 GradientN = REffects_FFX_Lens_Simplex((Pos / GrainScaleValue) + RandomNumberFine);
 
 		const float GrainShape = 3.0;
 		float Grain = exp2(-length(GradientN) * GrainShape);
@@ -121,7 +121,7 @@
 		Color += Grain * min(Color, 1.0 - Color) * GrainAmountValue;
 	}
 
-	float FFX_Lens_GetVignetteMask(
+	float REffects_FFX_Lens_GetVignetteMask(
 		in float2 Coord, // The input window coordinate [-0.5, 0.5), [-0.5, 0.5).
 		in float2 CenterCoord, // The center window coordinate of the screen.
 		in float VignetteAmount // Intensity constant value of the vignette effect.
@@ -140,19 +140,19 @@
 	}
 
 	// Function call to apply vignette effect to inout Color. This call could be skipped entirely as the choice to use the vignette is optional.
-	void FFX_Lens_ApplyVignette(
+	void REffects_FFX_Lens_ApplyVignette(
 		in float2 Coord, // The input window coordinate [-0.5, 0.5), [-0.5, 0.5).
 		in float2 CenterCoord, // The center window coordinate of the screen.
 		inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration and film grain functions.
 		in float VignetteAmount // Intensity constant value of the vignette effect.
 	)
 	{
-		float VignetteMask = FFX_Lens_GetVignetteMask(Coord, CenterCoord, VignetteAmount);
+		float VignetteMask = REffects_FFX_Lens_GetVignetteMask(Coord, CenterCoord, VignetteAmount);
 		Color *= VignetteMask;
 	}
 
 	// Lens pass entry point.
-	void FFX_Lens(
+	void REffects_FFX_Lens(
 		inout float3 Color,
 		in sampler2D Image,
 		in float2 HPos,
@@ -164,14 +164,14 @@
 		in float GrainSeed
 	)
 	{
-		float2 RGMag = FFX_Lens_GetRGMag(ChromAb);
-		float2 Center = GetScreenSize(Tex) / 2.0;
+		float2 RGMag = REffects_FFX_Lens_GetRGMag(ChromAb);
+		float2 Center = RPixel_GetScreenSize(Tex) / 2.0;
 		float2 UNormTex = Tex - 0.5;
 
 		// Run Lens
-		Color = FFX_Lens_SampleWithChromaticAberration(Image, HPos, Tex, Center, RGMag.r, RGMag.g);
-		FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
-		FFX_Lens_ApplyFilmGrain(Tex, Color, GrainScale, GrainAmount, GrainSeed);
+		Color = REffects_FFX_Lens_SampleWithChromaticAberration(Image, HPos, Tex, Center, RGMag.r, RGMag.g);
+		REffects_FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
+		REffects_FFX_Lens_ApplyFilmGrain(Tex, Color, GrainScale, GrainAmount, GrainSeed);
 	}
 
 #endif

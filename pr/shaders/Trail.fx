@@ -137,7 +137,7 @@ VS2PS VS_Trail(APP2VS Input)
 	// Offset texcoords
 	float4 UVOffsets = DECODE_SHORT(Input.UVOffsets);
 	Output.Tex0 = RotatedTexCoords.xyxy + UVOffsets.xyzw;
-	Output.HemiTex = GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, true);
+	Output.HemiTex = RPixel_GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, true);
 
 	return Output;
 }
@@ -167,7 +167,7 @@ PS2FB PS_Trail_ShowFill(VS2PS Input)
 	PS2FB Output = (PS2FB)0.0;
 	Output.Color = _EffectSunColor.rrrr;
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
 	return Output;
 }
@@ -180,16 +180,16 @@ PS2FB PS_Trail_Low(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Lighting
-	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	float4 LightColor = float4(Input.Color.rgb, VF.AlphaBlend);
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
 
 	return Output;
@@ -203,8 +203,8 @@ PS2FB PS_Trail_Medium(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Texture data
-	float4 TDiffuse1 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
-	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
+	float4 TDiffuse1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 TDiffuse2 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.AnimationBlend);
 
 	// Lighting
@@ -214,10 +214,10 @@ PS2FB PS_Trail_Medium(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
 
 	return Output;
@@ -231,12 +231,12 @@ PS2FB PS_Trail_High(VS2PS Input)
 	VFactors VF = GetVFactors(Input);
 
 	// Get diffuse map
-	float4 TDiffuse1 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
-	float4 TDiffuse2 = SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
+	float4 TDiffuse1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
+	float4 TDiffuse2 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.zw));
 	float4 DiffuseMap = lerp(TDiffuse1, TDiffuse2, VF.AnimationBlend);
 
 	// Get hemi map
-	float4 HemiMap = SRGBToLinearEst(tex2D(SampleLUT, Input.HemiTex));
+	float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleLUT, Input.HemiTex));
 
 	// Apply lighting
 	float3 Lighting = GetParticleLighting(HemiMap.a, VF.LightMapOffset, saturate(Template.m_color1AndLightFactor.a));
@@ -245,10 +245,10 @@ PS2FB PS_Trail_High(VS2PS Input)
 
 	Output.Color = OutputColor;
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.WorldPos, float4(_EyePos, 1.0)));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.WorldPos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
 
 	return Output;

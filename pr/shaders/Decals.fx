@@ -145,8 +145,8 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 		Shadow = dot(Samples, 0.25);
 	}
 
-	float4 DiffuseMap = SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
-	float HalfNL = GetHalfNL(Normals, -_SunDirection.xyz);
+	float4 DiffuseMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0));
+	float HalfNL = RDirectXTK_GetHalfNL(Normals, -_SunDirection.xyz);
 	float3 Diffuse = (HalfNL * _SunColor) * Shadow;
 
 	float3 Lighting = (_AmbientColor.rgb + Diffuse) * Input.Color.rgb;
@@ -161,10 +161,10 @@ PS2FB PS_Decals(VS2PS Input)
 
 	Output.Color = GetPixelDecals(Input, false);
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
-	TonemapAndLinearToSRGBEst(Output.Color);
+	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
-		Output.Depth = ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
 	return Output;

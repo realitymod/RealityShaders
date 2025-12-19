@@ -16,27 +16,27 @@
 #if !defined(REALITY_PIXEL)
 	#define REALITY_PIXEL
 
-	float GetMax3(float3 Input)
+	float RPixel_GetMax3(float3 Input)
 	{
 		return max(Input.x, max(Input.y, Input.z));
 	}
 
-	float GetMin3(float3 Input)
+	float RPixel_GetMin3(float3 Input)
 	{
 		return max(Input.x, max(Input.y, Input.z));
 	}
 
-	float GetMean3(float3 Input)
+	float RPixel_GetMean3(float3 Input)
 	{
 		return dot(Input, 1.0 / 3.0);
 	}
 
-	float Desaturate(float3 Input)
+	float RPixel_Desaturate(float3 Input)
 	{
-		return lerp(GetMin3(Input), GetMax3(Input), 1.0 / 2.0);
+		return lerp(RPixel_GetMin3(Input), RPixel_GetMax3(Input), 1.0 / 2.0);
 	}
 
-	float3 QuantizeRGB(float3 Color, float Depth)
+	float3 RPixel_QuantizeRGB(float3 Color, float Depth)
 	{
 		return floor(Color * Depth) / Depth;
 	}
@@ -54,21 +54,21 @@
 
 	*/
 
-	float GetHash1(float2 P, float Bias)
+	float RPixel_GetHash1(float2 P, float Bias)
 	{
 		float3 P3 = frac(P.xyx * 0.1031);
 		P3 += dot(P3, P3.yzx + 33.33);
 		return frac(((P3.x + P3.y) * P3.z) + Bias);
 	}
 
-	float2 GetHash2(float2 P, float2 Bias)
+	float2 RPixel_GetHash2(float2 P, float2 Bias)
 	{
 		float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
 		P3 += dot(P3, P3.yzx + 33.33);
 		return frac(((P3.xx + P3.yz) * P3.zy) + Bias);
 	}
 
-	float3 GetHash3(float2 P, float3 Bias)
+	float3 RPixel_GetHash3(float2 P, float3 Bias)
 	{
 		float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
 		P3 += dot(P3, P3.yxz + 33.33);
@@ -77,8 +77,8 @@
 
 	/*
 		GetGradientNoise(): https://iquilezles.org/articles/gradientnoise/
-		GetProceduralTiles(): https://iquilezles.org/articles/texturerepetition
-		GetQuintic(): https://iquilezles.org/articles/texture/
+		RPixel_GetProceduralTiles(): https://iquilezles.org/articles/texturerepetition
+		RPixel_GetQuintic(): https://iquilezles.org/articles/texture/
 
 		The MIT License (MIT)
 
@@ -102,42 +102,42 @@
 		OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	*/
 
-	float2 GetQuintic(float2 X)
+	float2 RPixel_GetQuintic(float2 X)
 	{
 		return X * X * X * (X * (X * 6.0 - 15.0) + 10.0);
 	}
 
-	float GetValueNoise1(float2 Tex, float Bias)
+	float RPixel_GetValueNoise1(float2 Tex, float Bias)
 	{
 		float2 I = floor(Tex);
 		float2 F = frac(Tex);
-		float A = GetHash1(I + float2(0.0, 0.0), Bias);
-		float B = GetHash1(I + float2(1.0, 0.0), Bias);
-		float C = GetHash1(I + float2(0.0, 1.0), Bias);
-		float D = GetHash1(I + float2(1.0, 1.0), Bias);
-		float2 UV = GetQuintic(F);
+		float A = RPixel_GetHash1(I + float2(0.0, 0.0), Bias);
+		float B = RPixel_GetHash1(I + float2(1.0, 0.0), Bias);
+		float C = RPixel_GetHash1(I + float2(0.0, 1.0), Bias);
+		float D = RPixel_GetHash1(I + float2(1.0, 1.0), Bias);
+		float2 UV = RPixel_GetQuintic(F);
 		return lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
 	}
 
-	float2 GetValueNoise2(float2 Tex, float Bias)
+	float2 RPixel_GetValueNoise2(float2 Tex, float Bias)
 	{
 		float2 I = floor(Tex);
 		float2 F = frac(Tex);
-		float2 A = GetHash2(I + float2(0.0, 0.0), Bias);
-		float2 B = GetHash2(I + float2(1.0, 0.0), Bias);
-		float2 C = GetHash2(I + float2(0.0, 1.0), Bias);
-		float2 D = GetHash2(I + float2(1.0, 1.0), Bias);
-		float2 UV = GetQuintic(F);
+		float2 A = RPixel_GetHash2(I + float2(0.0, 0.0), Bias);
+		float2 B = RPixel_GetHash2(I + float2(1.0, 0.0), Bias);
+		float2 C = RPixel_GetHash2(I + float2(0.0, 1.0), Bias);
+		float2 D = RPixel_GetHash2(I + float2(1.0, 1.0), Bias);
+		float2 UV = RPixel_GetQuintic(F);
 		return lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
 	}
 
-	float GetGradient1(float2 I, float2 F, float2 O, float Bias)
+	float RPixel_GetGradient1(float2 I, float2 F, float2 O, float Bias)
 	{
 		// Get constants
 		const float TwoPi = acos(-1.0) * 2.0;
 
 		// Calculate random hash rotation
-		float Hash = GetHash1(I + O, Bias) * TwoPi;
+		float Hash = RPixel_GetHash1(I + O, Bias) * TwoPi;
 		float2 HashSinCos = float2(sin(Hash), cos(Hash));
 		float2 Gradient = F - O;
 
@@ -145,13 +145,13 @@
 		return dot(HashSinCos, Gradient);
 	}
 
-	float2 GetGradient2(float2 I, float2 F, float2 O, float Bias)
+	float2 RPixel_GetGradient2(float2 I, float2 F, float2 O, float Bias)
 	{
 		// Get constants
 		const float TwoPi = acos(-1.0) * 2.0;
 
 		// Calculate random hash rotation
-		float2 Hash = GetHash2(I + O, Bias) * TwoPi;
+		float2 Hash = RPixel_GetHash2(I + O, Bias) * TwoPi;
 		float4 HashSinCos = float4(sin(Hash), cos(Hash));
 		float2 Gradient = F - O;
 
@@ -159,38 +159,38 @@
 		return float2(dot(HashSinCos.xz, Gradient), dot(HashSinCos.yw, Gradient));
 	}
 
-	float GetGradientNoise1(float2 Input, float Bias, bool NormalizeOutput)
+	float RPixel_GetGradientNoise1(float2 Input, float Bias, bool NormalizeOutput)
 	{
 		float2 I = floor(Input);
 		float2 F = frac(Input);
-		float A = GetGradient1(I, F, float2(0.0, 0.0), Bias);
-		float B = GetGradient1(I, F, float2(1.0, 0.0), Bias);
-		float C = GetGradient1(I, F, float2(0.0, 1.0), Bias);
-		float D = GetGradient1(I, F, float2(1.0, 1.0), Bias);
-		float2 UV = GetQuintic(F);
+		float A = RPixel_GetGradient1(I, F, float2(0.0, 0.0), Bias);
+		float B = RPixel_GetGradient1(I, F, float2(1.0, 0.0), Bias);
+		float C = RPixel_GetGradient1(I, F, float2(0.0, 1.0), Bias);
+		float D = RPixel_GetGradient1(I, F, float2(1.0, 1.0), Bias);
+		float2 UV = RPixel_GetQuintic(F);
 		float Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
 		Noise = (NormalizeOutput) ? saturate((Noise * 0.5) + 0.5) : Noise;
 		return Noise;
 	}
 
-	float2 GetGradientNoise2(float2 Input, float Bias, bool NormalizeOutput)
+	float2 RPixel_GetGradientNoise2(float2 Input, float Bias, bool NormalizeOutput)
 	{
 		float2 I = floor(Input);
 		float2 F = frac(Input);
-		float2 A = GetGradient2(I, F, float2(0.0, 0.0), Bias);
-		float2 B = GetGradient2(I, F, float2(1.0, 0.0), Bias);
-		float2 C = GetGradient2(I, F, float2(0.0, 1.0), Bias);
-		float2 D = GetGradient2(I, F, float2(1.0, 1.0), Bias);
-		float2 UV = GetQuintic(F);
+		float2 A = RPixel_GetGradient2(I, F, float2(0.0, 0.0), Bias);
+		float2 B = RPixel_GetGradient2(I, F, float2(1.0, 0.0), Bias);
+		float2 C = RPixel_GetGradient2(I, F, float2(0.0, 1.0), Bias);
+		float2 D = RPixel_GetGradient2(I, F, float2(1.0, 1.0), Bias);
+		float2 UV = RPixel_GetQuintic(F);
 		float2 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
 		Noise = (NormalizeOutput) ? saturate((Noise * 0.5) + 0.5) : Noise;
 		return Noise;
 	}
 
-	float4 GetProceduralTiles(sampler2D Source, float2 Tex)
+	float4 RPixel_GetProceduralTiles(sampler2D Source, float2 Tex)
 	{
 		// Sample variation pattern
-		float Variation = GetValueNoise1(Tex, 0.0);
+		float Variation = RPixel_GetValueNoise1(Tex, 0.0);
 
 		// Compute index
 		float Index = Variation * 8.0;
@@ -211,17 +211,17 @@
 		return lerp(Color1, Color2, smoothstep(0.2, 0.8, F - (0.1 * Blend)));
 	}
 
-	int2 GetScreenSize(float2 Tex)
+	int2 RPixel_GetScreenSize(float2 Tex)
 	{
 		return max(round(1.0 / fwidth(Tex)), 1.0);
 	}
 
-	float2 GetPixelSize(float2 Tex)
+	float2 RPixel_GetPixelSize(float2 Tex)
 	{
-		return 1.0 / GetScreenSize(Tex);
+		return 1.0 / RPixel_GetScreenSize(Tex);
 	}
 
-	float GetAspectRatio(float2 ScreenSize)
+	float RPixel_GetAspectRatio(float2 ScreenSize)
 	{
 		return float(ScreenSize.y) / float(ScreenSize.x);
 	}
@@ -230,7 +230,7 @@
 		Convolutions
 	*/
 
-	float4 GetSpiralBlur(sampler Source, float2 Tex, float Bias, bool UseHash)
+	float4 RPixel_GetSpiralBlur(sampler Source, float2 Tex, float Bias, bool UseHash)
 	{
 		// Initialize values
 		float4 OutputColor = 0.0;
@@ -240,10 +240,10 @@
 		const float Pi2 = acos(-1.0) * 2.0;
 
 		// Get texcoord data
-		float2 ScreenSize = GetScreenSize(Tex);
+		float2 ScreenSize = RPixel_GetScreenSize(Tex);
 		float2 Cells = Tex * (ScreenSize * 0.25);
-		float Random = Pi2 * GetGradientNoise1(Cells, 0.0, false);
-		float AspectRatio = GetAspectRatio(ScreenSize);
+		float Random = Pi2 * RPixel_GetGradientNoise1(Cells, 0.0, false);
+		float AspectRatio = RPixel_GetAspectRatio(ScreenSize);
 
 		float2 Rotation = 0.0;
 		sincos(Random, Rotation.y, Rotation.x);
@@ -262,18 +262,18 @@
 				float2 Offset = (UseHash) ? mul(AngleShift, RotationMatrix) : AngleShift;
 				Offset.x *= AspectRatio;
 				Offset *= Bias;
-				OutputColor += SRGBToLinearEst(tex2D(Source, Tex + (Offset * 0.01)));
+				OutputColor += RDirectXTK_SRGBToLinearEst(tex2D(Source, Tex + (Offset * 0.01)));
 				Weight++;
 			}
 		}
 
 		OutputColor /= Weight;
 
-		LinearToSRGBEst(OutputColor);
+		RDirectXTK_LinearToSRGBEst(OutputColor);
 		return OutputColor;
 	}
 
-	float2 GetHemiTex(float3 WorldPos, float3 WorldNormal, float3 HemiInfo, bool InvertY)
+	float2 RPixel_GetHemiTex(float3 WorldPos, float3 WorldNormal, float3 HemiInfo, bool InvertY)
 	{
 		// HemiInfo: Offset x/y heightmapsize z / hemilerpbias w
 		float2 HemiTex = 0.0;
@@ -283,7 +283,7 @@
 	}
 
 	// Gets radial light attenuation value for pointlights
-	float GetLightAttenuation(float3 LightVec, float Attenuation)
+	float RPixel_GetLightAttenuation(float3 LightVec, float Attenuation)
 	{
 		return saturate(1.0 - dot(LightVec, LightVec) * Attenuation);
 	}
@@ -295,7 +295,7 @@
 		---
 		License: CC BY-NC 4.0
 	*/
-	float2 GetParallaxTex(sampler HeightMap, float2 Tex, float3 ViewDir, float2 Scale, float2 Bias)
+	float2 RPixel_GetParallaxTex(sampler HeightMap, float2 Tex, float3 ViewDir, float2 Scale, float2 Bias)
 	{
 		// Caculate number of laters
 		float Layers = 16.0;
@@ -342,7 +342,7 @@
 		---
 		https://cwyman.org/papers/tvcg17_hashedAlphaExtended.pdf
 	*/
-	void SetHashedAlphaTest(float2 Tex, inout float AlphaChannel)
+	void RPixel_SetHashedAlphaTest(float2 Tex, inout float AlphaChannel)
 	{
 		#if defined(HASHED_ALPHA)
 			const float HashScale = 1.0;
@@ -358,8 +358,8 @@
 
 			// Compute alpha Thresholds at our 2 noise scales
 			float2 Alpha = 0.0;
-			Alpha.x = GetHash1(floor(ScaleFloor * Tex), 0.0);
-			Alpha.y = GetHash1(floor(ScaleCeil * Tex), 0.0);
+			Alpha.x = RPixel_GetHash1(floor(ScaleFloor * Tex), 0.0);
+			Alpha.y = RPixel_GetHash1(floor(ScaleCeil * Tex), 0.0);
 
 			// Factor to linearly interpolate with
 			float2 FracLoc = frac(ScaleLog);
@@ -408,7 +408,7 @@
 		Source: Anti-aliased Alpha Test: The Esoteric Alpha To Coverage
 		https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f
 	*/
-	void RescaleAlpha(inout float AlphaChannel)
+	void RPixel_RescaleAlpha(inout float AlphaChannel)
 	{
 		const float Cutoff = 0.5;
 		AlphaChannel = (AlphaChannel - Cutoff) / max(fwidth(AlphaChannel), 1e-4) + 0.5;
