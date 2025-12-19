@@ -306,7 +306,7 @@ VS2PS_Shared_DynamicShadowmap VS_Shared_DynamicShadowmap(APP2VS_Shared Input)
 {
 	VS2PS_Shared_DynamicShadowmap Output = (VS2PS_Shared_DynamicShadowmap)0.0;
 
-	float4 WorldPos = Ra_GetWorldPos(Input.Pos0, Input.Pos1);
+	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
 	Output.HPos = mul(WorldPos, _ViewProj);
 	Output.ShadowTex = mul(WorldPos, _LightViewProj);
 	Output.ShadowTex.z = Output.ShadowTex.w;
@@ -591,7 +591,7 @@ VS2PS_HI_OccluderShadow VS_Hi_OccluderShadow(APP2VS_HI_OccluderShadow Input)
 {
 	VS2PS_HI_OccluderShadow Output = (VS2PS_HI_OccluderShadow)0.0;
 
-	float4 WorldPos = Ra_GetWorldPos(Input.Pos0, Input.Pos1);
+	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
 	Output.HPos = RDepth_GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.DepthPos);
 
 	return Output;
