@@ -165,7 +165,7 @@ VS2PS VS_Water(APP2VS Input)
 		Output.LightMapTex = (Input.LightMap * LightMapOffset.xy) + LightMapOffset.zw;
 	#endif
 	#if defined(USE_SHADOWS)
-		Output.ShadowTex = RDepth_GetMeshShadowProjection(WorldPos);
+		Output.ShadowTex = Ra_GetMeshShadowProjection(WorldPos);
 	#endif
 
 	return Output;
@@ -236,7 +236,7 @@ RGraphics_PS2FB PS_Water(in VS2PS Input)
 	OutputColor.rgb = WaterLerp + (Light.Specular * LightColors.rgb);
 
 	// Thermals
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		OutputColor.rgb = float3(lerp(0.3, 0.1, TangentNormal.r), 1.0, 0.0);
 	}
@@ -251,7 +251,7 @@ RGraphics_PS2FB PS_Water(in VS2PS Input)
 	OutputColor.a = saturate((LightMap.r * Fresnel) + _WaterColor.a);
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)

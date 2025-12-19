@@ -113,7 +113,7 @@ RGraphics_PS2FB_NoDepth PS_Diffuse(VS2PS Input)
 	float4 OutputColor = DiffuseMap * LightColor;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.ViewPos, 0.0));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.ViewPos, 0.0));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	return Output;

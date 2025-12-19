@@ -133,7 +133,7 @@ SkinnedData SkinSoldier(in APP2VS Input)
 	Transforms object-space attributes into world-space
 */
 
-float3 GetWorldLightDir(float3 ObjectLightVec)
+float3 Ra_GetWorldLightDir(float3 ObjectLightVec)
 {
 	return mul(ObjectLightVec, (float3x3)_World);
 }
@@ -156,7 +156,7 @@ WorldSpace GetWorldSpaceData(float3 WorldPos, float3 TangentNormal)
 	WorldSpace Output = (WorldSpace)0.0;
 
 	Output.Pos = WorldPos;
-	Output.LightDir = normalize(GetWorldLightDir(-_SunLightDirection.xyz));
+	Output.LightDir = normalize(Ra_GetWorldLightDir(-_SunLightDirection.xyz));
 	Output.ViewDir = normalize(GetWorldViewVec(WorldPos));
 
 	Output.Normal = normalize(RGraphics_ConvertUNORMtoSNORM_FLT3(TangentNormal));

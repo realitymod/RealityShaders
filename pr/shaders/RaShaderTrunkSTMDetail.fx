@@ -127,7 +127,7 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 	// Output HPos
 	Output.HPos = mul(float4(ObjectPos.xyz, 1.0), WorldViewProjection);
 	// World-space data
-	float3 WorldPos = GetWorldPos(ObjectPos.xyz);
+	float3 WorldPos = Ra_GetWorldPos(ObjectPos.xyz);
 	Output.Pos = float4(WorldPos, Output.HPos.w);
 
 	// Output Depth
@@ -142,8 +142,8 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 	#endif
 
 	// Get lighting
-	float3 WorldNormal = GetWorldNormal(ObjectNormal);
-	float3 WorldLightDir = normalize(GetWorldLightDir(-Lights[0].dir));
+	float3 WorldNormal = Ra_GetWorldNormal(ObjectNormal);
+	float3 WorldLightDir = normalize(Ra_GetWorldLightDir(-Lights[0].dir));
 	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
 
 	// Get lighting
@@ -151,7 +151,7 @@ VS2PS VS_TrunkSTMDetail(APP2VS Input)
 	Output.Lighting = Lights[0].color.rgb * HalfNL;
 
 	#if _HASSHADOW_
-		Output.TexShadow = RDepth_GetMeshShadowProjection(float4(ObjectPos.xyz, 1.0));
+		Output.TexShadow = Ra_GetMeshShadowProjection(float4(ObjectPos.xyz, 1.0));
 	#endif
 
 	return Output;
@@ -183,7 +183,7 @@ RGraphics_PS2FB PS_TrunkSTMDetail(VS2PS Input)
 	OutputColor.a = Transparency.a * 2.0;
 
 	Output.Color = OutputColor;
-	ApplyFog(Output.Color.rgb, GetFogValue(WorldPos, WorldSpaceCamPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)

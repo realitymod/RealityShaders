@@ -75,7 +75,7 @@ float4x3 GetSkinnedWorldMatrix(APP2VS Input)
 	return GeomBones[IndexArray[0]];
 }
 
-float4 GetWorldPos(APP2VS Input)
+float4 Ra_GetWorldPos(APP2VS Input)
 {
 	float4 unpackedPos = Input.Pos * PosUnpack;
 	return float4(mul(unpackedPos, GetSkinnedWorldMatrix(Input)), 1.0);
@@ -85,7 +85,7 @@ VS2PS VS_BM_ZOnly(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
-	Output.HPos = mul(GetWorldPos(Input), ViewProjection);
+	Output.HPos = mul(Ra_GetWorldPos(Input), ViewProjection);
 	Output.Pos = Output.HPos;
 
 	// Output Depth

@@ -191,7 +191,7 @@
 		return HPos * _TexProjScale + (_TexProjOffset * HPos.w);
 	}
 
-	float4 GetWorldPos(float4 Pos0, float4 Pos1)
+	float4 Ra_GetWorldPos(float4 Pos0, float4 Pos1)
 	{
 		float4 WorldPos = 0.0;
 		WorldPos.xz = (Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
@@ -201,7 +201,7 @@
 
 	float4 GetMorphedWorldPos(APP2VS_Shared Input)
 	{
-		float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
+		float4 WorldPos = Ra_GetWorldPos(Input.Pos0, Input.Pos1);
 		return MorphPosition(WorldPos, Input.MorphDelta, Input.Pos0.z);
 	}
 

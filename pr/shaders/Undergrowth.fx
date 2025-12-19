@@ -116,7 +116,7 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 
 	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
 	Output.Tex0.zw = (Pos.xz * _TerrainTexCoordScaleAndOffset.xy) + _TerrainTexCoordScaleAndOffset.zw;
-	Output.ShadowTex = (ShadowMapEnable) ? RDepth_GetMeshShadowProjection(Pos) : 0.0;
+	Output.ShadowTex = (ShadowMapEnable) ? Ra_GetMeshShadowProjection(Pos) : 0.0;
 
 	Output.Scale = Input.Packed.w;
 
@@ -135,10 +135,10 @@ RGraphics_PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool
 	float TerrainShadow = (ShadowMapEnable) ? RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Scale * 0.5);
-	float3 TerrainLight = GetTerrainLight(TerrainLightMap, _SunColor * TerrainShadow, _GIColor, _StaticPointColor).rgb;
+	float3 TerrainLight = Ra_GetTerrainLight(TerrainLightMap, _SunColor * TerrainShadow, _GIColor, _StaticPointColor).rgb;
 
 	// If thermals assume gray color
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		TerrainColor = 1.0 / 3.0;
 	}
@@ -159,7 +159,7 @@ RGraphics_PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool
 
 	Output.Color = OutputColor;
 	Output.Color.a *= 2.0;
-	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(LocalPos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
@@ -245,7 +245,7 @@ VS2PS_Simple VS_Undergrowth_Simple(APP2VS_Simple Input, uniform bool ShadowMapEn
 
 	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
 	Output.Tex0.z = Input.Packed.w;
-	Output.ShadowTex = (ShadowMapEnable) ? RDepth_GetMeshShadowProjection(Pos) : 0.0;
+	Output.ShadowTex = (ShadowMapEnable) ? Ra_GetMeshShadowProjection(Pos) : 0.0;
 
 	Output.TerrainColorMap = saturate(Input.TerrainColorMap);
 	Output.TerrainLightMap = saturate(Input.TerrainLightMap);
@@ -265,10 +265,10 @@ RGraphics_PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount
 	float TerrainShadow = (ShadowMapEnable) ? RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex) : 1.0;
 
 	TerrainColor = lerp(TerrainColor, 1.0, Input.Tex0.z * 0.5);
-	float3 TerrainLight = GetTerrainLight(TerrainLightMap, _SunColor * TerrainShadow, _GIColor, _StaticPointColor).rgb;
+	float3 TerrainLight = Ra_GetTerrainLight(TerrainLightMap, _SunColor * TerrainShadow, _GIColor, _StaticPointColor).rgb;
 
 	// If thermals assume gray color
-	if (IsTisActive())
+	if (Ra_IsTisActive())
 	{
 		TerrainColor = 1.0 / 3.0;
 	}
@@ -289,7 +289,7 @@ RGraphics_PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount
 
 	Output.Color = OutputColor;
 	Output.Color.a *= 2.0;
-	ApplyFog(Output.Color.rgb, GetFogValue(LocalPos, _CameraPos));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(LocalPos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 

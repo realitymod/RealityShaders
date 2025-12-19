@@ -152,7 +152,7 @@ RGraphics_PS2FB PS_Decals(VS2PS Input)
 	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = GetPixelDecals(Input, false);
-	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));
+	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, 0.0));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if defined(LOG_DEPTH)
