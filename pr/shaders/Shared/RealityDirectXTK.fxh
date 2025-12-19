@@ -44,7 +44,7 @@
 	// (Approximate) sRGB to linear
 	float4 RDirectXTK_SRGBToLinearEst(float4 ColorMap)
 	{
-		#if defined(_USELINEARLIGHTING_)
+		#if defined(PR_LINEARLIGHTING)
 			ColorMap.rgb = (ColorMap <= 0.04045) ? ColorMap / 12.92 : pow((ColorMap + 0.055) / 1.055, 2.4);
 		#endif
 		return ColorMap;
@@ -53,7 +53,7 @@
 	// Apply the (approximate) sRGB curve to linear values
 	void RDirectXTK_LinearToSRGBEst(inout float4 Color)
 	{
-		#if defined(_USELINEARLIGHTING_)
+		#if defined(PR_LINEARLIGHTING)
 			Color = (Color <= 0.0031308) ? 12.92 * Color : 1.055 * pow(Color, 1.0 / 2.4) - 0.055;
 		#endif
 	}
@@ -67,13 +67,13 @@
 
 	float3 RDirectXTK_TonemapAMDResolve(float3 x)
 	{
-		float3 WhiteAMDResolve = 1.0 / RDirectXTK_AMDResolve(1.0);
-		return RDirectXTK_AMDResolve(x) * WhiteAMDResolve;
+		float3 WhitePoint = 1.0 / RDirectXTK_AMDResolve(1.0);
+		return RDirectXTK_AMDResolve(x) * WhitePoint;
 	}
 
 	// ACES Filmic tonemap operator
 	// https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
-	float3 ACESFilmic(float3 x)
+	float3 RDirectXTK_ACESFilmic(float3 x)
 	{
 		float a = 2.51;
 		float b = 0.03;
@@ -83,10 +83,10 @@
 		return saturate((x*(a*x+b))/(x*(c*x+d)+e));
 	}
 
-	float3 RDirectXTK_ToneMapACESFilmic(float3 x)
+	float3 RDirectXTK_TonemapACESFilmic(float3 x)
 	{
-		float3 WhiteACES = 1.0 / ACESFilmic(1.0);
-		return ACESFilmic(x) * WhiteACES;
+		float3 WhitePoint = 1.0 / RDirectXTK_ACESFilmic(1.0);
+		return RDirectXTK_ACESFilmic(x) * WhitePoint;
 	}
 
 	// Apply the (approximate) sRGB curve to linear values
@@ -94,11 +94,11 @@
 	// https://gpuopen.com/wp-content/uploads/2016/03/GdcVdrLottes.pdf
 	void RDirectXTK_TonemapAndLinearToSRGBEst(inout float4 Color)
 	{
-		#if defined(_USETONEMAP_)
+		#if defined(PR_TONEMAPPING)
 			Color.rgb = RDirectXTK_TonemapAMDResolve(Color.rgb);
 		#endif
 
-		#if defined(_USELINEARLIGHTING_)
+		#if defined(PR_LINEARLIGHTING)
 			RDirectXTK_LinearToSRGBEst(Color);
 		#endif
 	}
@@ -107,6 +107,7 @@
 	{
 		float Diffuse;
 		float Specular;
+		float DotNL;
 	};
 
 	/*
@@ -143,6 +144,7 @@
 
 		Output.Diffuse = RDirectXTK_ToHalfNL(DotNL);
 		Output.Specular = N * pow(abs(DotNH), SpecPower) * DotNL_Clamped;
+		Output.DotNL = DotNL;
 		return Output;
 	}
 

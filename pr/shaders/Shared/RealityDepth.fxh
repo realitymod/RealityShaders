@@ -16,8 +16,8 @@
 #if !defined(REALITY_DEPTH)
 	#define REALITY_DEPTH
 
-	static const float FarPlane = 10000.0;
-	static const float FCoef = 1.0 / log2(FarPlane + 1.0);
+	static float FarPlane = 10000.0;
+	static float FCoef = 1.0 / log2(FarPlane + 1.0);
 
 	/*
 		Gets slope-scaled shadow bias from depth
@@ -27,7 +27,7 @@
 	float RDepth_GetSlopedBasedBias(float Depth, uniform float SlopeScale = PR_SLOPESCALE_OBJECT, uniform float Bias = PR_DEPTHBIAS_OBJECT)
 	{
 		float M = fwidth(Depth);
-		return Depth + (M * SlopeScale) + Bias;
+		return Bias + (M * SlopeScale);
 	}
 
 	/*
@@ -65,13 +65,15 @@
 	float RDepth_GetShadowFactor(sampler ShadowSampler, float4 ShadowCoords)
 	{
 		float2 Texel = fwidth(ShadowCoords.xy);
+		float SlopedBias = RDepth_GetSlopedBasedBias(ShadowCoords.z);
 
 		float4 Samples = 0.0;
 		Samples.x = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, Texel.y, 0.0, 0.0)).r;
 		Samples.y = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, -Texel.y, 0.0, 0.0)).r;
 		Samples.z = tex2Dproj(ShadowSampler, ShadowCoords + float4(-Texel.x, Texel.y, 0.0, 0.0)).r;
 		Samples.w = tex2Dproj(ShadowSampler, ShadowCoords + float4(Texel.x, -Texel.y, 0.0, 0.0)).r;
-		float4 CMPBits = float4(Samples >= saturate(RDepth_GetSlopedBasedBias(ShadowCoords.z)));
+
+		float4 CMPBits = float4(saturate(ShadowCoords.z - SlopedBias) <= Samples);
 		return dot(CMPBits, 0.25);
 	}
 
