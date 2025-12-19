@@ -76,14 +76,6 @@ struct VS2PS
 	#endif
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 {
 	// Compensate for lack of UBYTE4 on Geforce3
@@ -174,9 +166,9 @@ float3 GetSpecularColor()
 	#endif
 }
 
-PS2FB PS_SkinnedMesh(VS2PS Input)
+RGraphics_PS2FB PS_SkinnedMesh(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	// Texture-space data
 	float4 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));

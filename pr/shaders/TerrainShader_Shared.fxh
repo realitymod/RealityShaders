@@ -43,9 +43,9 @@ VS2PS_Shared_ZFillLightMap VS_Shared_ZFillLightMap(APP2VS_Shared Input)
 
 float4 ZFillLightMapColor : register(c0);
 
-PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
+RGraphics_PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 
 	// Pack accumulated light
@@ -58,9 +58,9 @@ PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 	return Output;
 }
 
-PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
+RGraphics_PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = saturate(ZFillLightMapColor);
 
@@ -114,9 +114,9 @@ VS2PS_Shared_PointLight_PerVertex VS_Shared_PointLight_PerVertex(APP2VS_Shared I
 	return Output;
 }
 
-PS2FB PS_Shared_PointLight_PerVertex(VS2PS_Shared_PointLight_PerVertex Input)
+RGraphics_PS2FB PS_Shared_PointLight_PerVertex(VS2PS_Shared_PointLight_PerVertex Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float DotNL = Input.Tex0.x;
 
@@ -155,9 +155,9 @@ VS2PS_Shared_PointLight_PerPixel VS_Shared_PointLight_PerPixel(APP2VS_Shared Inp
 	return Output;
 }
 
-PS2FB PS_Shared_PointLight_PerPixel(VS2PS_Shared_PointLight_PerPixel Input)
+RGraphics_PS2FB PS_Shared_PointLight_PerPixel(VS2PS_Shared_PointLight_PerPixel Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 WorldPos = Input.Pos.xyz;
 	float Lighting = GetLighting(WorldPos, Input.Normal);
@@ -236,9 +236,9 @@ VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 	return Output;
 }
 
-PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
+RGraphics_PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 Normals = normalize(Input.Normal);
@@ -362,9 +362,9 @@ VS2PS_Shared_DirectionalLightShadows VS_Shared_DirectionalLightShadows(APP2VS_Sh
 	return Output;
 }
 
-PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Input)
+RGraphics_PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightShadows Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float4 LightMap = tex2D(SampleTex0_Clamp, Input.Tex0.xy);
 	#if HIGHTERRAIN || MIDTERRAIN
@@ -410,9 +410,9 @@ VS2PS_Shared_UnderWater VS_Shared_UnderWater(APP2VS_Shared Input)
 	return Output;
 }
 
-PS2FB PS_Shared_UnderWater(VS2PS_Shared_UnderWater Input)
+RGraphics_PS2FB PS_Shared_UnderWater(VS2PS_Shared_UnderWater Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 OutputColor = _TerrainWaterColor.rgb;
@@ -502,9 +502,9 @@ VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
 	return Output;
 }
 
-PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
+RGraphics_PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.Normal);

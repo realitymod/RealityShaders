@@ -95,9 +95,9 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 	return Output;
 }
 
-PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform bool UseEnvMap)
+RGraphics_PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform bool UseEnvMap)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float4 WorldPos = Input.Pos;
 	float3 WorldNormal = normalize(Input.Normal.xyz);
@@ -183,17 +183,17 @@ PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten, uniform 
 	return Output;
 }
 
-PS2FB PS_FullDetail_Hi(VS2PS_FullDetail_Hi Input)
+RGraphics_PS2FB PS_FullDetail_Hi(VS2PS_FullDetail_Hi Input)
 {
 	return FullDetail_Hi(Input, false, false);
 }
 
-PS2FB PS_FullDetail_Hi_Mounten(VS2PS_FullDetail_Hi Input)
+RGraphics_PS2FB PS_FullDetail_Hi_Mounten(VS2PS_FullDetail_Hi Input)
 {
 	return FullDetail_Hi(Input, true, false);
 }
 
-PS2FB PS_FullDetail_Hi_EnvMap(VS2PS_FullDetail_Hi Input)
+RGraphics_PS2FB PS_FullDetail_Hi_EnvMap(VS2PS_FullDetail_Hi Input)
 {
 	return FullDetail_Hi(Input, false, true);
 }

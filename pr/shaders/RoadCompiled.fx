@@ -72,14 +72,6 @@ struct VS2PS
 	float Alpha : TEXCOORD3;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 float4 ProjToLighting(float4 HPos)
 {
 	// tl: This has been rearranged optimally (I believe) into 1 MUL and 1 MAD,
@@ -113,9 +105,9 @@ VS2PS VS_RoadCompiled(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_RoadCompiled(VS2PS Input)
+RGraphics_PS2FB PS_RoadCompiled(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 LocalPos = Input.Pos.xyz;
 	float ZFade = GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);

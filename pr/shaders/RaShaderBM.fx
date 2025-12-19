@@ -113,14 +113,6 @@ struct VS2PS
 	#endif
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 float4x3 GetSkinnedWorldMatrix(APP2VS Input)
 {
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
@@ -230,9 +222,9 @@ float3 GetWorldLightVec(VS2PS Input, float3 WorldPos)
 	#endif
 }
 
-PS2FB PS_BundledMesh(VS2PS Input)
+RGraphics_PS2FB PS_BundledMesh(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	/*
 		World-space data

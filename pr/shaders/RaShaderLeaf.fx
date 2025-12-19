@@ -142,14 +142,6 @@ struct VS2PS
 	#endif
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
 float3 GetWorldLightVec(float3 WorldPos)
 {
@@ -231,9 +223,9 @@ VS2PS VS_Leaf(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_Leaf(VS2PS Input)
+RGraphics_PS2FB PS_Leaf(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float LodScale = Input.Tex0.z;
 	float4 WorldPos = Input.Pos;

@@ -83,14 +83,6 @@ struct VS2PS
 	float Scale : TEXCOORD3;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 float4 GetUndergrowthPos(float4 InputPos, float4 InputPacked)
 {
 	float3 PosOffset = _PosOffsetAndScale.xyz;
@@ -131,9 +123,9 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 	return Output;
 }
 
-PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMapEnable)
+RGraphics_PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool ShadowMapEnable)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 LocalPos = Input.Pos.xyz;
 
@@ -261,9 +253,9 @@ VS2PS_Simple VS_Undergrowth_Simple(APP2VS_Simple Input, uniform bool ShadowMapEn
 	return Output;
 }
 
-PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform bool ShadowMapEnable)
+RGraphics_PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount, uniform bool ShadowMapEnable)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 LocalPos = Input.Pos.xyz;
 	float4 TerrainLightMap = Input.TerrainLightMap;
@@ -373,9 +365,9 @@ VS2PS_ZOnly VS_Undergrowth_ZOnly(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
+RGraphics_PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float4 OutputColor = tex2D(SampleColorMap, Input.Tex0.xy);
 	OutputColor.a *= (_Transparency_x8.a * 8.0);

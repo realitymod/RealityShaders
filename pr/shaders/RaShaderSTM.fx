@@ -90,14 +90,6 @@ struct VS2PS
 	#endif
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 /*
 	Common vertex shader methods
 */
@@ -240,11 +232,11 @@ float3 GetWorldLightVec(float3 WorldPos)
 	#endif
 }
 
-PS2FB PS_StaticMesh(VS2PS Input)
+RGraphics_PS2FB PS_StaticMesh(VS2PS Input)
 {
 	// Initialize variables
 	float4 OutputColor = 1.0;
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	// World-space data
 	float3 WorldPos = Input.Pos.xyz;

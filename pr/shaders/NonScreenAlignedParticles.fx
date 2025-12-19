@@ -60,14 +60,6 @@ struct VS2PS
 	float4 Maps : TEXCOORD5; // [LightFactor, Alpha, BlendFactor, LMOffset]
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS VS_Particle(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -156,9 +148,9 @@ VFactors GetVFactors(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Particle_ShowFill(VS2PS Input)
+RGraphics_PS2FB PS_Particle_ShowFill(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 	Output.Color = _EffectSunColor.rrrr;
 	#if defined(LOG_DEPTH)
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.ViewPos.w);
@@ -166,9 +158,9 @@ PS2FB PS_Particle_ShowFill(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Particle_Low(VS2PS Input)
+RGraphics_PS2FB PS_Particle_Low(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	// Vertex attributes
 	VFactors VF = GetVFactors(Input);
@@ -189,9 +181,9 @@ PS2FB PS_Particle_Low(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Particle_Medium(VS2PS Input)
+RGraphics_PS2FB PS_Particle_Medium(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	// Vertex attributes
 	VFactors VF = GetVFactors(Input);
@@ -217,9 +209,9 @@ PS2FB PS_Particle_Medium(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Particle_High(VS2PS Input)
+RGraphics_PS2FB PS_Particle_High(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);

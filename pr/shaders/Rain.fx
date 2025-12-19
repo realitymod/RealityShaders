@@ -54,14 +54,6 @@ struct VS2PS
 	float PointSize : PSIZE;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS VS_Point(APP2PS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -89,9 +81,9 @@ VS2PS VS_Point(APP2PS Input)
 	return Output;
 }
 
-PS2FB PS_Point(VS2PS Input)
+RGraphics_PS2FB PS_Point(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float4 ColorTex = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0, Input.Tex0.xy));
 
@@ -158,9 +150,9 @@ VS2PS_Line VS_Line(APP2PS Input)
 	return Output;
 }
 
-PS2FB PS_Line(VS2PS_Line Input)
+RGraphics_PS2FB PS_Line(VS2PS_Line Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = Input.Color;
 
@@ -220,9 +212,9 @@ VS2PS_Cell VS_Cells(APP2PS Input)
 	return Output;
 }
 
-PS2FB PS_Cells(VS2PS_Cell Input)
+RGraphics_PS2FB PS_Cells(VS2PS_Cell Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = Input.Color;
 

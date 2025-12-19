@@ -55,14 +55,6 @@ struct VS2PS
 	float4 Diffuse : TEXCOORD1;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 /*
 	Debug basic shaders
 */
@@ -93,9 +85,9 @@ VS2PS VS_Debug_Basic(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_Debug_Basic(VS2PS Input)
+RGraphics_PS2FB PS_Debug_Basic(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float4 BaseTex = RDirectXTK_SRGBToLinearEst(tex2D(SampleBaseTex, Input.Tex0.xy));
 	Output.Color = BaseTex * Input.Diffuse;
@@ -108,9 +100,9 @@ PS2FB PS_Debug_Basic(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Debug_Marked(VS2PS Input)
+RGraphics_PS2FB PS_Debug_Marked(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float4 BaseTex = RDirectXTK_SRGBToLinearEst(tex2D(SampleBaseTex, Input.Tex0.xy));
 	Output.Color = (BaseTex * Input.Diffuse) + float4(1.0, 0.0, 0.0, 0.0);
@@ -206,9 +198,9 @@ VS2PS VS_Debug_LightSource(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_Debug_LightSource(VS2PS Input)
+RGraphics_PS2FB PS_Debug_LightSource(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = Input.Diffuse;
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);

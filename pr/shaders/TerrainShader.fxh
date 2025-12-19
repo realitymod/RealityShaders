@@ -160,7 +160,7 @@
 		float3 Normal : NORMAL;
 	};
 
-	struct PS2FB
+	struct RGraphics_PS2FB
 	{
 		float4 Color : COLOR;
 		#if defined(LOG_DEPTH)

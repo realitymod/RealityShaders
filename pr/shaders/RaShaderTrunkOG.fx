@@ -83,14 +83,6 @@ struct VS2PS
 	float3 Lighting : TEXCOORD2;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS VS_TrunkOG(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -127,9 +119,9 @@ VS2PS VS_TrunkOG(APP2VS Input)
 // There will be small differences between this lighting and the one produced by the static mesh shader,
 // not enough to worry about, ambient is added here and lerped in the static mesh, etc
 // NOTE: could be an issue at some point.
-PS2FB PS_TrunkOG(VS2PS Input)
+RGraphics_PS2FB PS_TrunkOG(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	// World-space data
 	float4 WorldPos = Input.Pos;

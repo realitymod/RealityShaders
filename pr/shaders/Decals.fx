@@ -82,14 +82,6 @@ struct VS2PS
 	float4 ViewPortMap : TEXCOORD5;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -155,9 +147,9 @@ float4 GetPixelDecals(VS2PS Input, bool UseShadow)
 	return OutputColor;
 }
 
-PS2FB PS_Decals(VS2PS Input)
+RGraphics_PS2FB PS_Decals(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = GetPixelDecals(Input, false);
 	ApplyFog(Output.Color.rgb, GetFogValue(Input.Pos, 0.0));

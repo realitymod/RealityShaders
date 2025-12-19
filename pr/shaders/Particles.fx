@@ -60,11 +60,6 @@ struct VS2PS
 	float4 Maps : TEXCOORD4; // [LightMapBlend, Alpha, IntensityBlend, LightMapOffset]
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-};
-
 /*
 	[Vertex Shaders]
 */
@@ -156,16 +151,16 @@ VFactors GetVFactors(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Particle_ShowFill(VS2PS Input)
+RGraphics_PS2FB_NoDepth PS_Particle_ShowFill(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB_NoDepth Output = (RGraphics_PS2FB_NoDepth)0.0;
 	Output.Color = _EffectSunColor.rrrr;
 	return Output;
 }
 
-PS2FB PS_Particle_Low(VS2PS Input)
+RGraphics_PS2FB_NoDepth PS_Particle_Low(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB_NoDepth Output = (RGraphics_PS2FB_NoDepth)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
@@ -184,9 +179,9 @@ PS2FB PS_Particle_Low(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Particle_Medium(VS2PS Input)
+RGraphics_PS2FB_NoDepth PS_Particle_Medium(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB_NoDepth Output = (RGraphics_PS2FB_NoDepth)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
@@ -208,9 +203,9 @@ PS2FB PS_Particle_Medium(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Particle_High(VS2PS Input)
+RGraphics_PS2FB_NoDepth PS_Particle_High(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB_NoDepth Output = (RGraphics_PS2FB_NoDepth)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
@@ -235,9 +230,9 @@ PS2FB PS_Particle_High(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Particle_Low_Additive(VS2PS Input)
+RGraphics_PS2FB_NoDepth PS_Particle_Low_Additive(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB_NoDepth Output = (RGraphics_PS2FB_NoDepth)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);
@@ -255,9 +250,9 @@ PS2FB PS_Particle_Low_Additive(VS2PS Input)
 	return Output;
 }
 
-PS2FB PS_Particle_High_Additive(VS2PS Input)
+RGraphics_PS2FB_NoDepth PS_Particle_High_Additive(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB_NoDepth Output = (RGraphics_PS2FB_NoDepth)0.0;
 
 	// Get vertex attributes
 	VFactors VF = GetVFactors(Input);

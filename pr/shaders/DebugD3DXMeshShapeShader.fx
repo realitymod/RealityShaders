@@ -57,14 +57,6 @@ struct VS2PS
 	float4 Pos : TEXCOORD0;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 /*
 	Basic debug shaders
 */
@@ -112,9 +104,9 @@ VS2PS VS_Debug_Cone(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_Debug_Basic_1(VS2PS_Basic Input)
+RGraphics_PS2FB PS_Debug_Basic_1(VS2PS_Basic Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 Normal = normalize(Input.Normal);
 
@@ -132,9 +124,9 @@ PS2FB PS_Debug_Basic_1(VS2PS_Basic Input)
 	return Output;
 }
 
-PS2FB PS_Debug_Basic_2(VS2PS_Basic Input)
+RGraphics_PS2FB PS_Debug_Basic_2(VS2PS_Basic Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = float4(_MaterialAmbient.rgb, 0.3);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
@@ -146,9 +138,9 @@ PS2FB PS_Debug_Basic_2(VS2PS_Basic Input)
 	return Output;
 }
 
-PS2FB PS_Debug_Object(VS2PS Input)
+RGraphics_PS2FB PS_Debug_Object(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = _MaterialAmbient;
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
@@ -204,9 +196,9 @@ VS2PS VS_Debug_Occluder(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_Debug_Occluder(VS2PS Input)
+RGraphics_PS2FB PS_Debug_Occluder(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = float4(1.0, 0.5, 0.5, 0.5);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
@@ -250,9 +242,9 @@ technique occluder
 	Debug editor shaders
 */
 
-PS2FB PS_Debug_Editor(VS2PS Input, uniform float AmbientColorFactor = 1.0)
+RGraphics_PS2FB PS_Debug_Editor(VS2PS Input, uniform float AmbientColorFactor = 1.0)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = float4(_MaterialAmbient.rgb * AmbientColorFactor, _MaterialAmbient.a);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
@@ -330,9 +322,9 @@ VS2PS_CollisionMesh VS_Debug_CollisionMesh(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_Debug_CollisionMesh(VS2PS_CollisionMesh Input, uniform float MaterialFactor = 1.0)
+RGraphics_PS2FB PS_Debug_CollisionMesh(VS2PS_CollisionMesh Input, uniform float MaterialFactor = 1.0)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 Normal = normalize(Input.Normal);
 	float3 LightDir = normalize(float3(-1.0, -1.0, 1.0));
@@ -511,9 +503,9 @@ VS2PS_Grid VS_Debug_Grid(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_Debug_Grid(VS2PS_Grid Input)
+RGraphics_PS2FB PS_Debug_Grid(VS2PS_Grid Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 Normal = normalize(Input.Normal);
 
@@ -761,9 +753,9 @@ VS2PS_Frustum VS_Debug_Frustum(APP2VS_Frustum Input)
 	return Output;
 }
 
-PS2FB PS_Debug_Frustum(VS2PS_Frustum Input, uniform float AlphaValue)
+RGraphics_PS2FB PS_Debug_Frustum(VS2PS_Frustum Input, uniform float AlphaValue)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	Output.Color = float4(Input.Color.rgb, Input.Color.a * AlphaValue);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);

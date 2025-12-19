@@ -111,14 +111,6 @@ struct VS2PS
 	float4 LightTex : TEXCOORD2;
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS VS_Editor_Road(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -147,9 +139,9 @@ VS2PS VS_Editor_Road(APP2VS Input)
 	return Output;
 }
 
-PS2FB PS_Editor_Road(VS2PS Input)
+RGraphics_PS2FB PS_Editor_Road(VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float4 Diffuse = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.P_Tex0_Tex1.xy));
 	#if defined(USE_DETAIL)

@@ -146,14 +146,6 @@ struct VS2PS
 	#endif
 };
 
-struct PS2FB
-{
-	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
-		float Depth : DEPTH;
-	#endif
-};
-
 VS2PS VS_Water(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
@@ -193,9 +185,9 @@ float3 GetWaterTex(float3 WorldPos)
 	return WaterTex;
 }
 
-PS2FB PS_Water(in VS2PS Input)
+RGraphics_PS2FB PS_Water(in VS2PS Input)
 {
-	PS2FB Output = (PS2FB)0.0;
+	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WaterTex = GetWaterTex(WorldPos);
