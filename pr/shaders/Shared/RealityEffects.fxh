@@ -130,8 +130,8 @@
 		float2 VignetteMask = 0.0;
 		float2 CoordFromCenter = abs(Coord - CenterCoord);
 
-		float PiOver2 = GetPi() * 0.5;
-		float PiOver4 = GetPi() * 0.25;
+		float PiOver2 = RGraphics_GetPi() * 0.5;
+		float PiOver4 = RGraphics_GetPi() * 0.25;
 		VignetteMask = cos(min(CoordFromCenter * VignetteAmount * PiOver4, PiOver2));
 		VignetteMask *= VignetteMask;
 		VignetteMask *= VignetteMask;

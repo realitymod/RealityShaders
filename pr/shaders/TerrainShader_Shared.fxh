@@ -592,7 +592,7 @@ VS2PS_HI_OccluderShadow VS_Hi_OccluderShadow(APP2VS_HI_OccluderShadow Input)
 	VS2PS_HI_OccluderShadow Output = (VS2PS_HI_OccluderShadow)0.0;
 
 	float4 WorldPos = GetWorldPos(Input.Pos0, Input.Pos1);
-	Output.HPos = GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.DepthPos);
+	Output.HPos = RDepth_GetMeshShadowProjection(WorldPos, _vpLightTrapezMat, _vpLightMat, Output.DepthPos);
 
 	return Output;
 }
