@@ -45,7 +45,7 @@ VS2PS VS_PointLight(APP2VS Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -58,7 +58,7 @@ RGraphics_PS2FB PS_PointLight(VS2PS Input)
 
 	Output.Color = _LightColor;
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -109,7 +109,7 @@ VS2PS_Spot VS_SpotLight(APP2VS Input)
 	Output.Pos.xyz = -normalize(VertPos);
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -129,7 +129,7 @@ RGraphics_PS2FB PS_SpotLight(VS2PS_Spot Input)
 
 	Output.Color = _LightColor * ConicalAtt;
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

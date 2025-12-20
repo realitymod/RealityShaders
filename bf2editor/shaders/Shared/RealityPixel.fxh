@@ -351,7 +351,7 @@
 	*/
 	void RPixel_SetHashedAlphaTest(float2 Tex, inout float AlphaChannel)
 	{
-		#if defined(HASHED_ALPHA)
+		#if PR_HASHED_ALPHA
 			float HashScale = 1.0;
 			float2 DX = ddx(Tex);
 			float2 DY = ddy(Tex);
@@ -487,7 +487,7 @@
 
 	float4 RPixel_SampleLightMap(sampler2D Source, float2 Tex, float4 TexSize)
 	{
-		#if defined(PR_BICUBIC_LIGHTMAPPING)
+		#if PR_BICUBIC_LIGHTMAPPING
 			return RPixel_SampleCubicTex2D(Source, Tex, TexSize);
 		#else
 			return tex2D(Source, Tex);
@@ -520,7 +520,7 @@
 
 	float4 RPixel_SampleLightMapProj(sampler2D Source, float4 Tex, float4 TexSize)
 	{
-		#if defined(PR_BICUBIC_LIGHTMAPPING)
+		#if PR_BICUBIC_LIGHTMAPPING
 			return RPixel_SampleCubicTex2DProj(Source, Tex, TexSize);
 		#else
 			return tex2Dproj(Source, Tex);

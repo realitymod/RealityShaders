@@ -49,7 +49,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		float Depth : DEPTH;
 	#endif
 };
@@ -62,7 +62,7 @@ VS2PS VS_Shader(APP2VS Input)
 	Output.Tex0.xy = Input.Tex0;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
@@ -75,7 +75,7 @@ PS2FB PS_Shader(VS2PS Input)
 
 	Output.Color = tex2D(SampleBaseTex, Input.Tex0.xy);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 

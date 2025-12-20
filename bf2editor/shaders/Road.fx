@@ -43,7 +43,7 @@ sampler SampleDetailTex1 = sampler_state
 struct PS2FB
 {
 	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		float Depth : DEPTH;
 	#endif
 };
@@ -74,7 +74,7 @@ VS2PS_RoadEditable VS_RoadEditable(APP2VS_RoadEditable Input)
 	Output.Pos = Output.HPos;
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -99,7 +99,7 @@ PS2FB PS_RoadEditable(VS2PS_RoadEditable Input)
 	Output.Color = lerp(_RoadFogColor, Output.Color, Ra_GetFogValue(Input.Pos, 0.0));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -127,7 +127,7 @@ VS2PS_DrawMaterial VS_RoadEditable_DrawMaterial(APP2VS_DrawMaterial Input)
 	Output.Pos = Output.HPos;
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -141,7 +141,7 @@ PS2FB PS_RoadEditable_DrawMaterial(VS2PS_DrawMaterial Input)
 	Output.Color = float4((float3)_Material, 1.0);
 	Output.Color = lerp(_RoadFogColor, Output.Color, Ra_GetFogValue(Input.Pos, 0.0));
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

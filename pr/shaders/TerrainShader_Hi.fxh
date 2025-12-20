@@ -88,7 +88,7 @@ VS2PS_FullDetail_Hi VS_FullDetail_Hi(APP2VS_Shared Input)
 	Output.ZPlaneTex = float4(FD.NearZPlane, FD.FarZPlane);
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Normal.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -176,7 +176,7 @@ RGraphics_PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	Output.Color.rgb *= ChartContribution;
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Depth);
 	#endif
 

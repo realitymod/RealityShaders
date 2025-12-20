@@ -94,7 +94,7 @@ VS2PS GetVertexDecals(APP2VS Input, bool UseShadow)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -155,7 +155,7 @@ RGraphics_PS2FB PS_Decals(VS2PS Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, 0.0));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

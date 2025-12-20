@@ -149,7 +149,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		float Depth : DEPTH;
 	#endif
 };
@@ -164,7 +164,7 @@ VS2PS VS_Water(APP2VS Input)
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -261,7 +261,7 @@ PS2FB PS_Water(in VS2PS Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

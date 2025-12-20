@@ -45,7 +45,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		float Depth : DEPTH;
 	#endif
 };
@@ -58,7 +58,7 @@ VS2PS VS_Default(APP2VS Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -71,7 +71,7 @@ PS2FB PS_Default(VS2PS Input)
 
 	Output.Color = float4(0.9, 0.4, 0.8, 1.0);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

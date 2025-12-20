@@ -43,7 +43,7 @@ VS2PS VS_Debug_Circle(APP2VS Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -60,7 +60,7 @@ RGraphics_PS2FB PS_Debug_Circle(VS2PS Input)
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

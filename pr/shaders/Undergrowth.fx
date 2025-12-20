@@ -110,7 +110,7 @@ VS2PS VS_Undergrowth(APP2VS Input, uniform bool ShadowMapEnable)
 	Output.Pos = Pos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -163,7 +163,7 @@ RGraphics_PS2FB PS_Undergrowth(VS2PS Input, uniform int LightCount, uniform bool
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -239,7 +239,7 @@ VS2PS_Simple VS_Undergrowth_Simple(APP2VS_Simple Input, uniform bool ShadowMapEn
 	Output.Pos = Pos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -293,7 +293,7 @@ RGraphics_PS2FB PS_Undergrowth_Simple(VS2PS_Simple Input, uniform int LightCount
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -358,7 +358,7 @@ VS2PS_ZOnly VS_Undergrowth_ZOnly(APP2VS Input)
 	Output.Tex0.xy = DECODE_SHORT(Input.Tex0);
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
@@ -376,7 +376,7 @@ RGraphics_PS2FB PS_Undergrowth_ZOnly(VS2PS_ZOnly Input)
 	Output.Color.a *= 2.0;
 	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 

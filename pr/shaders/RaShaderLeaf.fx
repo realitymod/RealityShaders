@@ -212,7 +212,7 @@ VS2PS VS_Leaf(APP2VS Input)
 	Output.Pos = float4(WS.Pos, Output.HPos.w);
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -261,7 +261,7 @@ RGraphics_PS2FB PS_Leaf(VS2PS Input)
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	RPixel_SetHashedAlphaTest(Input.Tex0.xy, Output.Color.a);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

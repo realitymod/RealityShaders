@@ -1,5 +1,5 @@
 #line 2 "SettingsDefines.fxh"
 
-#define LOG_DEPTH
-// #define PR_BICUBIC_LIGHTMAPPING
-// #define HASHED_ALPHA
+#define PR_LOG_DEPTH 1
+#define PR_BICUBIC_LIGHTMAPPING 0
+#define PR_HASHED_ALPHA 0

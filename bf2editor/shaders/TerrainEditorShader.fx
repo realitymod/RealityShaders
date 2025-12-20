@@ -193,7 +193,7 @@ struct VS2PS_SET_ColorLightingOnly
 struct PS2FB
 {
 	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		float Depth : DEPTH;
 	#endif
 };
@@ -265,7 +265,7 @@ EditorDetail GetEditorDetail(float4 Pos0, float4 Pos1, float2 Tex0, float3 Norma
 	Output.Pos = float4(MorphedWorldPos.xyz, Output.HPos.w);
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -386,7 +386,7 @@ PS2FB GetEditorDetailTextured(VS2PS_EditorDetail Input, bool UseEnvMap, bool Col
 	Output.Color.a = 1.0;
 	Output.Color *= ChartContribution;
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -458,7 +458,7 @@ PS2FB GetEditorDetailTexturedPlaneMapping(VS2PS_EditorDetailPlaneMapping Input, 
 	Output.Color.a = 1.0;
 	Output.Color *= ChartContribution;
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -518,7 +518,7 @@ VS2PS VS_Basic(APP2VS Input)
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -543,7 +543,7 @@ PS2FB PS_Basic(VS2PS Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -560,7 +560,7 @@ PS2FB PS_Basic_LightOnly(VS2PS Input)
 	Output.Color = Light * 0.5;
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -578,7 +578,7 @@ PS2FB PS_Basic_HemimapLightOnly(VS2PS Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -596,7 +596,7 @@ PS2FB PS_Basic_ColorOnly(VS2PS Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -614,7 +614,7 @@ PS2FB PS_Basic_ColorOnlyPointFilter(VS2PS Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -695,7 +695,7 @@ VS2PS_EditorGrid VS_EditorGrid(APP2VS Input)
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -714,7 +714,7 @@ VS2PS_EditorTopoGrid VS_EditorTopoGrid(APP2VS Input)
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -735,7 +735,7 @@ PS2FB PS_EditorGrid(VS2PS_EditorGrid Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -756,7 +756,7 @@ PS2FB PS_EditorTopoGrid(VS2PS_EditorTopoGrid Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -793,7 +793,7 @@ VS2PS_ZFill VS_EditorZFill(APP2VS_VS_EditorZFill Input)
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -806,7 +806,7 @@ PS2FB PS_EditorZFill(VS2PS_ZFill Input)
 
 	Output.Color = 0.0;
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -841,7 +841,7 @@ VS2PS_EditorFoliage VS_EditorGrowth(APP2VS Input)
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -858,7 +858,7 @@ PS2FB PS_EditorGrowth(VS2PS_EditorFoliage Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -898,7 +898,7 @@ VS2PS_EditorFoliage VS_EditorHemimap(APP2VS Input)
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -918,7 +918,7 @@ PS2FB PS_EditorHemimap(VS2PS_EditorFoliage Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -935,7 +935,7 @@ PS2FB PS_EditorHemimapAlpha(VS2PS_EditorFoliage Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(Input.Pos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -982,7 +982,7 @@ VS2PS_LightmapGeneration VS_LightmapGeneration_QP(APP2VS Input)
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -1002,7 +1002,7 @@ VS2PS_LightmapGeneration VS_LightmapGeneration_SP(APP2VS Input)
 	Output.Pos = WorldPos;
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -1018,7 +1018,7 @@ PS2FB PS_LightmapGeneration(VS2PS Input)
 	// Output pure black.
 	Output.Color = float4(0.0, 0.0, 0.0, 1.0);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -1071,7 +1071,7 @@ VS2PS_SET VS_SET(APP2VS_SET Input)
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -1095,7 +1095,7 @@ VS2PS_SET_ColorLightingOnly VS_SET_ColorLightingOnly(APP2VS_SET Input)
 	Output.Pos = float4(WorldPos.xyz, Output.HPos.w);
 
 	// Output depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -1164,7 +1164,7 @@ PS2FB PS_SET(VS2PS_SET Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -1188,7 +1188,7 @@ PS2FB PS_SET_ColorLightingOnly(VS2PS_SET_ColorLightingOnly Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

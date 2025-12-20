@@ -57,7 +57,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		float Depth : DEPTH;
 	#endif
 };
@@ -79,7 +79,7 @@ VS2PS VS_Point(APP2PS Input)
 	Output.Tex0.xy = Input.Tex0;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
@@ -98,7 +98,7 @@ PS2FB PS_Point(VS2PS Input)
 	Output.Color = ColorTex  * Input.Color;
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
@@ -151,7 +151,7 @@ VS2PS_Line VS_Line(APP2PS Input)
 	Output.Tex0.xy = Input.Tex0;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
@@ -164,7 +164,7 @@ PS2FB PS_Line(VS2PS_Line Input)
 
 	Output.Color = Input.Color;
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
@@ -213,7 +213,7 @@ VS2PS_Cell VS_Cells(APP2PS Input)
 	Output.Tex0.xy = Input.Tex0;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
@@ -226,7 +226,7 @@ PS2FB PS_Cells(VS2PS_Cell Input)
 
 	Output.Color = Input.Color;
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 

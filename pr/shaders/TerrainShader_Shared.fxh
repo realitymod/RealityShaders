@@ -34,7 +34,7 @@ VS2PS_Shared_ZFillLightMap VS_Shared_ZFillLightMap(APP2VS_Shared Input)
 	Output.Tex0.xy = (Input.Pos0.xy * _ScaleBaseUV * _ColorLightTex.x) + _ColorLightTex.y;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
@@ -51,7 +51,7 @@ RGraphics_PS2FB PS_Shared_ZFillLightMap_1(VS2PS_Shared_ZFillLightMap Input)
 	// Pack accumulated light
 	Output.Color = Ra_SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
@@ -64,7 +64,7 @@ RGraphics_PS2FB PS_Shared_ZFillLightMap_2(VS2PS_Shared_ZFillLightMap Input)
 
 	Output.Color = saturate(ZFillLightMapColor);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
@@ -107,7 +107,7 @@ VS2PS_Shared_PointLight_PerVertex VS_Shared_PointLight_PerVertex(APP2VS_Shared I
 	Output.Tex0.x = Lighting;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Tex0.y = Output.HPos.w + 1.0;
 	#endif
 
@@ -123,7 +123,7 @@ RGraphics_PS2FB PS_Shared_PointLight_PerVertex(VS2PS_Shared_PointLight_PerVertex
 	Output.Color = float4(_PointLight.col * DotNL, 0.0);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.y);
 	#endif
 
@@ -146,7 +146,7 @@ VS2PS_Shared_PointLight_PerPixel VS_Shared_PointLight_PerPixel(APP2VS_Shared Inp
 	Output.Pos = MorphedWorldPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -165,7 +165,7 @@ RGraphics_PS2FB PS_Shared_PointLight_PerPixel(VS2PS_Shared_PointLight_PerPixel I
 	Output.Color = float4(Lighting * _PointLight.col, 0.0);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -220,7 +220,7 @@ VS2PS_Shared_LowDetail VS_Shared_LowDetail(APP2VS_Shared Input)
 	Output.Pos = MorphedWorldPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -286,7 +286,7 @@ RGraphics_PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos.xyz));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -346,7 +346,7 @@ VS2PS_Shared_DirectionalLightShadows VS_Shared_DirectionalLightShadows(APP2VS_Sh
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -378,7 +378,7 @@ RGraphics_PS2FB PS_Shared_DirectionalLightShadows(VS2PS_Shared_DirectionalLightS
 	LightMap.g = min(LightMap.g, AvgShadowValue);
 	Output.Color = Ra_SetPackedAccumulatedLight(LightMap, _GIColor.rgb, _PointColor.rgb);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -404,7 +404,7 @@ VS2PS_Shared_UnderWater VS_Shared_UnderWater(APP2VS_Shared Input)
 	Output.Pos = MorphedWorldPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -423,7 +423,7 @@ RGraphics_PS2FB PS_Shared_UnderWater(VS2PS_Shared_UnderWater Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos.xyz));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -488,7 +488,7 @@ VS2PS_Shared_ST_Normal VS_Shared_ST_Normal(APP2VS_Shared_ST_Normal Input)
 	Output.Pos = WorldPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -545,7 +545,7 @@ RGraphics_PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, _CameraPos.xyz));
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

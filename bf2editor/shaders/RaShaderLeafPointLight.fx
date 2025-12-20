@@ -78,7 +78,7 @@ struct VS2PS
 struct PS2FB
 {
 	float4 Color : COLOR0;
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		float Depth : DEPTH;
 	#endif
 };
@@ -98,7 +98,7 @@ VS2PS VS_Basic(APP2VS Input)
 	Output.Tex0 = float3(Input.Tex0 * TexUnpack, Output.HPos.w);
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
@@ -122,7 +122,7 @@ PS2FB PS_Basic(VS2PS Input)
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 	Output.Color.rgb *= Ra_GetFogValue(Input.Tex0.z, 0.0);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 

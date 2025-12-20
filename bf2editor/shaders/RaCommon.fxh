@@ -124,7 +124,7 @@
 	float Ra_GetFogValue(float4 ObjectPos, float4 CameraPos)
 	{
 		#if defined(_EDITOR_)
-			#if defined(LOG_DEPTH)
+			#if PR_LOG_DEPTH
 				float FogDistance = ObjectPos.w - 1.0;
 			#else
 				float FogDistance = ObjectPos.w;

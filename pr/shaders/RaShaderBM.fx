@@ -173,7 +173,7 @@ VS2PS VS_BundledMesh(APP2VS Input)
 	Output.Pos.xyz = WorldPos.xyz;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -391,7 +391,7 @@ RGraphics_PS2FB PS_BundledMesh(VS2PS Input)
 	#endif
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

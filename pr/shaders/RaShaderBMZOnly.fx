@@ -89,7 +89,7 @@ VS2PS VS_BM_ZOnly(APP2VS Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 	
@@ -101,7 +101,7 @@ RGraphics_PS2FB PS_BM_ZOnly(VS2PS Input)
 	RGraphics_PS2FB Output = (RGraphics_PS2FB)0.0;
 	Output.Color = 0.0;
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

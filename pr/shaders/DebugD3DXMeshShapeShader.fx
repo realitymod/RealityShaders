@@ -77,7 +77,7 @@ VS2PS_Basic VS_Debug_Basic(APP2VS Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -97,7 +97,7 @@ VS2PS VS_Debug_Cone(APP2VS Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -117,7 +117,7 @@ RGraphics_PS2FB PS_Debug_Basic_1(VS2PS_Basic Input)
 	Output.Color = float4(OutputColor, Ambient.a);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -131,7 +131,7 @@ RGraphics_PS2FB PS_Debug_Basic_2(VS2PS_Basic Input)
 	Output.Color = float4(_MaterialAmbient.rgb, 0.3);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -145,7 +145,7 @@ RGraphics_PS2FB PS_Debug_Object(VS2PS Input)
 	Output.Color = _MaterialAmbient;
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -189,7 +189,7 @@ VS2PS VS_Debug_Occluder(APP2VS Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -203,7 +203,7 @@ RGraphics_PS2FB PS_Debug_Occluder(VS2PS Input)
 	Output.Color = float4(1.0, 0.5, 0.5, 0.5);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -249,7 +249,7 @@ RGraphics_PS2FB PS_Debug_Editor(VS2PS Input, uniform float AmbientColorFactor = 
 	Output.Color = float4(_MaterialAmbient.rgb * AmbientColorFactor, _MaterialAmbient.a);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -313,7 +313,7 @@ VS2PS_CollisionMesh VS_Debug_CollisionMesh(APP2VS Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -336,7 +336,7 @@ RGraphics_PS2FB PS_Debug_CollisionMesh(VS2PS_CollisionMesh Input, uniform float 
 	Output.Color = float4(Ambient + Diffuse, 0.8);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 
@@ -494,7 +494,7 @@ VS2PS_Grid VS_Debug_Grid(APP2VS Input)
 	Output.Tex0.xy *= _TextureScale;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Tex0.z = Output.HPos.w + 1.0;
 	#endif
 
@@ -519,7 +519,7 @@ RGraphics_PS2FB PS_Debug_Grid(VS2PS_Grid Input)
 	Output.Color = OutputColor;
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Tex0.z);
 	#endif
 
@@ -570,7 +570,7 @@ VS2PS VS_Debug_SpotLight(APP2VS Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -632,7 +632,7 @@ VS2PS VS_Debug_PivotBox(APP2VS Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -744,7 +744,7 @@ VS2PS_Frustum VS_Debug_Frustum(APP2VS_Frustum Input)
 	Output.Pos = Output.HPos;
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Pos.w = Output.HPos.w + 1.0;
 	#endif
 
@@ -760,7 +760,7 @@ RGraphics_PS2FB PS_Debug_Frustum(VS2PS_Frustum Input, uniform float AlphaValue)
 	Output.Color = float4(Input.Color.rgb, Input.Color.a * AlphaValue);
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
 	#endif
 

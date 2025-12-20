@@ -91,7 +91,7 @@ VS2PS VS_Diffuse(APP2VS Input)
 	Output.Tex0.zw = RPixel_GetHemiTex(WorldPos, 0.0, _HemiMapInfo.xyz, false);
 
 	// Output Depth
-	#if defined(LOG_DEPTH)
+	#if PR_LOG_DEPTH
 		Output.HPos.z = RDepth_ApplyLogarithmicDepth(Output.HPos.w + 1.0) * Output.HPos.w;
 	#endif
 

@@ -1,3 +1,3 @@
 #line 2 "SettingsDefines.fxh"
 
-// #define LOG_DEPTH
+// #define PR_LOG_DEPTH
