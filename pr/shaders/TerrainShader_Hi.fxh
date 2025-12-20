@@ -18,7 +18,7 @@
 
 float GetLerpValue(float3 WorldPos, float3 CameraPos)
 {
-	float Boundary = 200.0;
+	float Boundary = 100.0;
 	float CameraDistance = length(WorldPos - CameraPos);
 	return smoothstep(0.0, Boundary, CameraDistance);
 }
