@@ -216,7 +216,7 @@ float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 float4 GetLightmap(VS2PS Input)
 {
 	#if _LIGHTMAP_
-		return tex2D(SampleLightMap, Input.LightMapTex.xy);
+		return RPixel_SampleLightMap(SampleLightMap, Input.LightMapTex.xy, PR_LIGHTMAP_SIZE_OBJECTS);
 	#else
 		return 1.0;
 	#endif

@@ -196,7 +196,7 @@ RGraphics_PS2FB PS_Water(in VS2PS Input)
 	float3 NWorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
 	#if defined(USE_LIGHTMAP)
-		float4 LightMap = tex2D(SampleLightMap, Input.LightMapTex);
+		float4 LightMap = RPixel_SampleLightMap(SampleLightMap, Input.LightMapTex.xy, PR_LIGHTMAP_SIZE_TERRAIN);
 	#else
 		float4 LightMap = PointColor;
 	#endif

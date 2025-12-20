@@ -112,7 +112,7 @@ RGraphics_PS2FB PS_RoadCompiled(VS2PS Input)
 	float3 LocalPos = Input.Pos.xyz;
 	float ZFade = Ra_GetRoadZFade(LocalPos.xyz, _LocalEyePos.xyz, _FadeoutValues);
 
-	float4 AccumLights = tex2Dproj(SampleAccumLightMap, Input.LightTex);
+	float4 AccumLights = RPixel_SampleLightMapProj(SampleAccumLightMap, LightMapTex, PR_LIGHTMAP_SIZE_TERRAIN);
 	float4 Detail0 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap0, Input.Tex0.xy));
 	float4 Detail1 = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap1, Input.Tex0.zw * 0.1));
 	float3 TerrainLights = Ra_GetUnpackedAccumulatedLight(AccumLights, _SunColor);

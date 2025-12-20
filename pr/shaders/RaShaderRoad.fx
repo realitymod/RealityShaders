@@ -148,7 +148,7 @@ RGraphics_PS2FB PS_Road(VS2PS Input)
 	float3 WorldPos = Input.Pos.xyz;
 	float ZFade = Ra_GetRoadZFade(WorldPos, WorldSpaceCamPos.xyz, RoadFadeOut);
 
-	float4 AccumLights = tex2Dproj(SampleAccumLightMap, Input.LightTex);
+	float4 AccumLights = RPixel_SampleLightMapProj(SampleAccumLightMap, Input.LightTex, PR_LIGHTMAP_SIZE_TERRAIN);
 	float4 Diffuse = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0.xy));
 	#if defined(USE_DETAIL)
 		float4 Detail = RDirectXTK_SRGBToLinearEst(tex2D(SampleDetailMap, Input.Tex0.zw));
