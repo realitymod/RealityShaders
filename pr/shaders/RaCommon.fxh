@@ -197,8 +197,10 @@
 	{
 		float4 PackedAccumulatedLight = 0.0;
 		PackedAccumulatedLight.rgb += (GIColor * LightMap.b);
-		// PackedAccumulatedLight.rgb += ((PointColor * LightMap.r) * 0.5);
-		// PackedAccumulatedLight.rgb = saturate(PackedAccumulatedLight.rgb / 1.5);
+		#if defined(PR_TERRAIN_POINTLIGHT)
+			PackedAccumulatedLight.rgb += ((PointColor * LightMap.r) * 0.5);
+			PackedAccumulatedLight.rgb = saturate(PackedAccumulatedLight.rgb / 1.5);
+		#endif
 		PackedAccumulatedLight.a = LightMap.g;
 		return PackedAccumulatedLight;
 	}
@@ -206,7 +208,9 @@
 	float4 Ra_GetUnpackedAccumulatedLight(float4 LightMap, float3 SunColor)
 	{
 		float4 AccumulatedLight = LightMap;
-		// AccumulatedLight.rgb *= 1.5;
+		#if defined(PR_TERRAIN_POINTLIGHT)
+			AccumulatedLight.rgb *= 1.5;
+		#endif
 		AccumulatedLight.rgb = (AccumulatedLight.rgb * 2.0);
 		AccumulatedLight.rgb += (SunColor * (AccumulatedLight.a * 4.0));
 		return AccumulatedLight;
@@ -215,7 +219,9 @@
 	float4 Ra_GetTerrainLight(float4 LightMap, float4 SunColor, float4 GIColor, float4 StaticPointColor)
 	{
 		float4 TerrainLight = 0.0;
-		// TerrainLight += (LightMap.r * StaticPointColor);
+		#if defined(PR_TERRAIN_POINTLIGHT)
+			TerrainLight += (LightMap.r * StaticPointColor);
+		#endif
 		TerrainLight += (GIColor * (LightMap.b * 2.0));
 		TerrainLight += (SunColor * (LightMap.g * 4.0));
 		return TerrainLight;

@@ -298,7 +298,7 @@ RGraphics_PS2FB PS_BundledMesh(VS2PS Input)
 			float2 HemiTex = RPixel_GetHemiTex(WorldPos, 0.0, HemiMapConstants.rgb, true);
 			float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleHemiMap, HemiTex));
 			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
-			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
+			float3 Ambient = lerp(HemiMap.rgb, HemiMapSkyColor.rgb, HemiLerp);
 			// HemiLight = lerp(HemiMap.a, 1.0, saturate(HeightOverTerrain - 1.0));
 		#else
 			float3 Ambient = Lights[0].color.a;
@@ -325,7 +325,7 @@ RGraphics_PS2FB PS_BundledMesh(VS2PS Input)
 	float3 SpecularRGB = ((Light.Specular * Gloss) * Lights[0].specularColor.rgb) * TotalLights;
 
 	#if _HASSTATICGLOSS_
-		SpecularRGB = clamp(SpecularRGB, 0.0, StaticGloss);
+		SpecularRGB = clamp(SpecularRGB, 0.0, StaticGloss.rgb);
 	#endif
 
 	// There is no Gloss map, so alpha means transparency

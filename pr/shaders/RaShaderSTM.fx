@@ -197,8 +197,7 @@ float3 GetNormalMap(VS2PS Input, float2 ParallaxTex, float3x3 WorldTBN)
 		TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.xy).xyz;
 	#endif
 	#if _PARALLAXDETAIL_
-		// TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
-		TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
+		TangentNormal = tex2D(SampleNormalMap, ParallaxTex).xyz;
 	#elif _NDETAIL_
 		TangentNormal = tex2D(SampleNormalMap, Input.BaseAndDetail.zw).xyz;
 	#endif
@@ -253,7 +252,7 @@ RGraphics_PS2FB PS_StaticMesh(VS2PS Input)
 	// Tangent-space data
 	// mul(mat, vec) == mul(vec, transpose(mat))
 	float3 TanViewDir = normalize(mul(WorldTBN, WorldViewDir));
-	float2 ParallaxTex = RPixel_GetParallaxTex(SampleNormalMap, Input.BaseAndDetail.zw, TanViewDir, ParallaxScaleBias.xy * PARALLAX_BIAS, ParallaxScaleBias.wz);
+	float2 ParallaxTex = RPixel_GetParallaxTex(SampleNormalMap, Input.BaseAndDetail.zw, TanViewDir, ParallaxScaleBias.xy * PARALLAX_BIAS);
 
 	// Prepare texture data
 	float Gloss = 0.0;
@@ -289,18 +288,19 @@ RGraphics_PS2FB PS_StaticMesh(VS2PS Input)
 			Lightmap.g *= RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex);
 		#endif
 
-		// We divide N.L by 5 to prevent complete darkness for surfaces facing away from the sun
-		float IHalfNL = saturate((1.0 - (Light.Diffuse / 5.0)) * 0.65);
-
 		// We add ambient to get correct ambient for surfaces parallel to the sun
-		float3 Ambient = (StaticSkyColor * IHalfNL) * Lightmap.b;
+		// We divide N.L by 5 to prevent complete darkness for surfaces facing away from the sun
+		float IDotNL = saturate((1.0 - (Light.DotNL / 5.0)) * 0.65);
+		float3 Ambient = StaticSkyColor.rgb * (Lightmap.b * IDotNL);
 		float3 BumpedDiffuse = DiffuseRGB + Ambient;
-
 		DiffuseRGB = lerp(Ambient, BumpedDiffuse, Lightmap.g);
-		DiffuseRGB += (Lightmap.r * SinglePointColor);
+		DiffuseRGB += (SinglePointColor.rgb * Lightmap.r);
+		DiffuseRGB *= 2.0;
+
+		// Compute Specular
 		SpecularRGB *= Lightmap.g;
 
-		OutputColor.rgb = RDirectXTK_CompositeLights(ColorMap.rgb * 2.0, 0.0, DiffuseRGB, SpecularRGB);
+		OutputColor.rgb = RDirectXTK_CompositeLights(ColorMap.rgb, 0.0, DiffuseRGB, SpecularRGB);
 	#endif
 
 	Output.Color = float4(OutputColor.rgb, ColorMap.a);

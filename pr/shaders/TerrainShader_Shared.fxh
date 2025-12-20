@@ -242,7 +242,8 @@ RGraphics_PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 Normals = normalize(Input.Normal);
-	float3 BlendValue = saturate(abs(Normals) - _BlendMod);
+
+	float3 BlendValue = smoothstep(_BlendMod, 1.0, abs(Normals));
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
@@ -266,7 +267,7 @@ RGraphics_PS2FB PS_Shared_LowDetail(VS2PS_Shared_LowDetail Input)
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g);
+	float LowDetailMapBlend = smoothstep(0.0, 1.0, LowComponent.r + LowComponent.g);
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 	float4 OutputColor = ColorMap * LowDetailMap * TerrainLights;
@@ -508,7 +509,8 @@ RGraphics_PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 
 	float3 WorldPos = Input.Pos.xyz;
 	float3 WorldNormal = normalize(Input.Normal);
-	float3 BlendValue = saturate(abs(WorldNormal) - _BlendMod);
+
+	float3 BlendValue = smoothstep(_BlendMod, 1.0, abs(WorldNormal));
 	BlendValue = saturate(BlendValue / dot(1.0, BlendValue));
 
 	float4 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleTex0_Clamp, Input.Tex0.xy));
@@ -528,7 +530,7 @@ RGraphics_PS2FB PS_Shared_ST_Normal(VS2PS_Shared_ST_Normal Input)
 	Blue += (YPlaneLowDetailmap.x * BlendValue.y);
 	Blue += (ZPlaneLowDetailmap.y * BlendValue.z);
 
-	float LowDetailMapBlend = saturate(LowComponent.r + LowComponent.g);
+	float LowDetailMapBlend = smoothstep(0.0, 1.0, LowComponent.r + LowComponent.g);
 	float LowDetailMap = lerp(1.0, YPlaneLowDetailmap.b * 2.0, LowDetailMapBlend);
 	LowDetailMap *= lerp(1.0, Blue * 2.0, LowComponent.b);
 	float4 OutputColor = ColorMap * LowDetailMap;
