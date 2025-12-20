@@ -45,13 +45,13 @@
 		---
 		NOTE: Make sure Pos and matrices are in same space!
 	*/
-	float4 RDepth_GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat, out float Depth)
+	float4 RDepth_GetMeshShadowProjection(float4 Pos, float4x4 LightTrapezMat, float4x4 LightMat, out float2 Depth)
 	{
 		float4 LightCoords = mul(Pos, LightMat);
 		float4 ShadowCoords = mul(Pos, LightTrapezMat);
 
 		// Output depth for map rendering
-		Depth = LightCoords.z / LightCoords.w;
+		Depth = LightCoords.zw;
 
 		// (Lz / Lw) * Sw -> Lz / Lw;
 		ShadowCoords.z = Depth * ShadowCoords.w;

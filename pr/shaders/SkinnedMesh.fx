@@ -409,7 +409,7 @@ technique humanskin
 struct VS2PS_ShadowMap
 {
 	float4 HPos : POSITION;
-	float3 Tex0 : TEXCOORD0; // .xy = Tex0; .z = ShadowMapDepth;
+	float4 Tex0 : TEXCOORD0; // .xy = Tex0; .zw = ShadowMapDepth;
 };
 
 VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
@@ -427,7 +427,7 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 	float4 BonePos = float4(mul(Input.Pos, BoneMat), 1.0);
 
 	// Output shadow coordinates & depth
-	Output.HPos = RDepth_GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.z);
+	Output.HPos = RDepth_GetMeshShadowProjection(BonePos, _vpLightTrapezMat, _vpLightMat, Output.Tex0.zw);
 
 	// Texcoord data
 	Output.Tex0.xy = Input.TexCoord0;
@@ -437,14 +437,14 @@ VS2PS_ShadowMap VS_ShadowMap(APP2VS Input)
 
 float4 PS_ShadowMap(VS2PS_ShadowMap Input) : COLOR0
 {
-	return Input.Tex0.z;
+	return Input.Tex0.z / Input.Tex0.w;
 }
 
 float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
 {
 	float Alpha = tex2D(SampleTex0, Input.Tex0.xy).a - _ShadowAlphaThreshold;
 	clip(Alpha);
-	return Input.Tex0.z;
+	return Input.Tex0.z / Input.Tex0.w;
 }
 
 #define GET_RENDERSTATES_SHADOWMAP \

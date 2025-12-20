@@ -586,7 +586,7 @@ struct APP2VS_HI_OccluderShadow
 struct VS2PS_HI_OccluderShadow
 {
 	float4 HPos : POSITION;
-	float DepthPos : TEXCOORD0;
+	float2 DepthPos : TEXCOORD0;
 };
 
 VS2PS_HI_OccluderShadow VS_Hi_OccluderShadow(APP2VS_HI_OccluderShadow Input)
@@ -601,7 +601,7 @@ VS2PS_HI_OccluderShadow VS_Hi_OccluderShadow(APP2VS_HI_OccluderShadow Input)
 
 float4 PS_Hi_OccluderShadow(VS2PS_HI_OccluderShadow Input) : COLOR0
 {
-	return Input.DepthPos;
+	return Input.DepthPos.x / Input.DepthPos.y;
 }
 
 technique TerrainOccludershadow
