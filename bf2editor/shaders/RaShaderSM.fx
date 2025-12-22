@@ -102,9 +102,7 @@ float4x3 GetBlendedBoneMatrix(APP2VS Input)
 
 float GetBinormalFlipping(APP2VS Input)
 {
-	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-	return 1.0 + IndexArray[2] * -2.0;
+	return 1.0 + D3DCOLORtoUBYTE4(Input.BlendIndices)[2] * -2.0;
 }
 
 struct LightColors
@@ -125,8 +123,8 @@ LightColors GetLightColors()
 			Output.Diffuse = DiffuseColor.rgb;
 			Output.Specular = SpecularColor.rgb;
 		#else
-			Output.DiffuseColor = Lights[0].color.rgb;
-			Output.SpecularColor = Lights[0].specularColor;
+			Output.Diffuse = Lights[0].color.rgb;
+			Output.Specular = Lights[0].specularColor;
 		#endif
 	#endif
 
@@ -217,9 +215,8 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	// Lighting data
 	float4 WorldPos = Input.Pos;
-	float3 LightDir = normalize(-Lights[0].dir.xyz);
-	float3 WorldLightDir = normalize(mul(LightDir, (float3x3)World));
-	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
+	float3 WorldLightDir = normalize(mul(-Lights[0].dir.xyz, (float3x3)World));
+	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
 
 	#if _HASSHADOW_
 		float Shadow = RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex);

@@ -86,9 +86,7 @@ float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
 
 float GetBinormalFlipping(APP2VS Input)
 {
-	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-	return 1.0 + IndexArray[2] * -2.0;
+	return 1.0 + D3DCOLORtoUBYTE4(Input.BlendIndices)[2] * -2.0;
 }
 
 float4x3 GetBlendedBoneMatrix(APP2VS Input)
@@ -191,8 +189,7 @@ RGraphics_PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	// Lighting data
 	float3 WorldPos = Input.Pos.xyz;
-	float3 LightDir = normalize(-Lights[0].dir.xyz);
-	float3 WorldLightDir = normalize(mul(LightDir, (float3x3)World));
+	float3 WorldLightDir = normalize(mul(-Lights[0].dir.xyz, (float3x3)World));
 	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
 
 	#if _HASSHADOW_

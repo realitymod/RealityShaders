@@ -129,9 +129,7 @@ float3x3 GetSkinnedUVMatrix(APP2VS Input)
 
 float GetBinormalFlipping(APP2VS Input)
 {
-	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-	return 1.0 + IndexArray[2] * -2.0;
+	return 1.0 + D3DCOLORtoUBYTE4(Input.BlendIndices)[2] * -2.0;
 }
 
 float4 GetUVRotation(APP2VS Input)
