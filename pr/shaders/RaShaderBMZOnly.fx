@@ -71,14 +71,13 @@ struct VS2PS
 float4x3 GetSkinnedWorldMatrix(APP2VS Input)
 {
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-	return GeomBones[IndexArray[0]];
+	return GeomBones[IndexVector[0]];
 }
 
 float4 Ra_GetWorldPos(APP2VS Input)
 {
-	float4 unpackedPos = Input.Pos * PosUnpack;
-	return float4(mul(unpackedPos, GetSkinnedWorldMatrix(Input)), 1.0);
+	float4 UnpackedPos = Input.Pos * PosUnpack;
+	return float4(mul(UnpackedPos, GetSkinnedWorldMatrix(Input)), 1.0);
 }
 
 VS2PS VS_BM_ZOnly(APP2VS Input)

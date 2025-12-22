@@ -73,9 +73,7 @@ VS2PS VS_BM_Additive(APP2VS Input)
 	VS2PS Output = (VS2PS)0.0;
 
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-
-	Output.HPos = float4(mul(Input.Pos, GeomBones[IndexArray[0]]), 1.0);
+	Output.HPos = float4(mul(Input.Pos, GeomBones[IndexVector[0]]), 1.0);
 	Output.HPos = mul(Output.HPos, ViewProjection);
 	Output.Pos = Output.HPos;
 

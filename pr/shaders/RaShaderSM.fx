@@ -76,24 +76,24 @@ struct VS2PS
 	#endif
 };
 
-float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
+struct Vertex
 {
-	// Compensate for lack of UBYTE4 on Geforce3
+	float4x3 BlendedBoneMatrix;
+	float BinormalFlipping;
+};
+
+Vertex GetVertexData(APP2VS Input)
+{
+	Vertex Output;
+
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-	return MatBones[IndexArray[Bone]];
-}
+	float4x3 Mat0 = MatBones[IndexVector[0]];
+	float4x3 Mat1 = MatBones[IndexVector[1]];
 
-float GetBinormalFlipping(APP2VS Input)
-{
-	return 1.0 + D3DCOLORtoUBYTE4(Input.BlendIndices)[2] * -2.0;
-}
+	Output.BlendedBoneMatrix = lerp(Mat1, Mat0, Input.BlendWeights);
+	Output.BinormalFlipping = 1.0 + D3DCOLORtoUBYTE4(Input.BlendIndices)[2] * -2.0;
 
-float4x3 GetBlendedBoneMatrix(APP2VS Input)
-{
-	float4x3 Mat0 = GetBoneMatrix(Input, 0);
-	float4x3 Mat1 = GetBoneMatrix(Input, 1);
-	return lerp(Mat1, Mat0, Input.BlendWeights); 
+	return Output;
 }
 
 float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
@@ -109,17 +109,19 @@ VS2PS VS_SkinnedMesh(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
+	// Get vertex data
+	Vertex Vtx = GetVertexData(Input);
+
 	// Get skinned object-space data
-	float4x3 BoneMatrix = GetBlendedBoneMatrix(Input);
-	float4 ObjectPos = float4(mul(Input.Pos, BoneMatrix), 1.0);
-	float3x3 ObjectTBN = RVertex_GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
+	float4 ObjectPos = float4(mul(Input.Pos, Vtx.BlendedBoneMatrix), 1.0);
+	float3x3 ObjectTBN = RVertex_GetTangentBasis(Input.Tan, Input.Normal, Vtx.BinormalFlipping);
 
 	// Output HPos data
 	Output.HPos = mul(ObjectPos, WorldViewProjection);
 	// World-space data
 	float4 WorldPos = mul(float4(Input.Pos.xyz, 1.0), World);
 	float4 SkinWorldPos = mul(ObjectPos, World);
-	float3x3 WorldMat = mul((float3x3)BoneMatrix, (float3x3)World);
+	float3x3 WorldMat = mul((float3x3)Vtx.BlendedBoneMatrix, (float3x3)World);
 	float3x3 WorldTBN = mul(ObjectTBN, WorldMat);
 	#if _HASNORMALMAP_
 		#if _OBJSPACENORMALMAP_

@@ -71,11 +71,8 @@ VS2PS VS_DiffuseBone(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
-	// Compensate for lack of UBYTE4 on Geforce3
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-
-	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(Bones[IndexArray[0]], ViewProjection));
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), mul(Bones[IndexVector[0]], ViewProjection));
 	Output.Tex0.xy = Input.Tex0;
 
 	// Output Depth

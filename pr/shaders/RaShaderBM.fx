@@ -113,29 +113,29 @@ struct VS2PS
 	#endif
 };
 
-float4x3 GetSkinnedWorldMatrix(APP2VS Input)
+struct Vertex
 {
+	float4x3 SkinnedWorldMatrix;
+	float3x3 SkinnedUVMatrix;
+	float BinormalFlipping;
+};
+
+Vertex GetVertexData(APP2VS Input)
+{
+	Vertex Output;
+
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-	return GeomBones[IndexArray[0]];
+	Output.SkinnedWorldMatrix = GeomBones[IndexVector[0]];
+	Output.SkinnedUVMatrix = (float3x3)UserData.uvMatrix[IndexVector[3]];
+	Output.BinormalFlipping = 1.0 + IndexVector[2] * -2.0;
+
+	return Output;
 }
 
-float3x3 GetSkinnedUVMatrix(APP2VS Input)
-{
-	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-	return (float3x3)UserData.uvMatrix[IndexArray[3]];
-}
-
-float GetBinormalFlipping(APP2VS Input)
-{
-	return 1.0 + D3DCOLORtoUBYTE4(Input.BlendIndices)[2] * -2.0;
-}
-
-float4 GetUVRotation(APP2VS Input)
+float4 GetUVRotation(APP2VS Input, float3x3 SkinnedUVMatrix)
 {
 	// TODO: (ROD) Gotta rotate the tangent space as well as the uv
-	float2 UV = mul(float3(Input.TexUVRotCenter * TexUnpack, 1.0), GetSkinnedUVMatrix(Input)).xy;
+	float2 UV = mul(float3(Input.TexUVRotCenter * TexUnpack, 1.0), SkinnedUVMatrix).xy;
 	return float4(UV.xy + (Input.TexDiffuse * TexUnpack), 0.0, 1.0);
 }
 
@@ -152,18 +152,20 @@ VS2PS VS_BundledMesh(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
+	// Get Bone information
+	Vertex Vtx = GetVertexData(Input);
+
 	// Unpack object-space position
 	float4 ObjectPos = Input.Pos * PosUnpack;
 	// Unpack object-space tangent and normal
 	float3 ObjectTangent = Input.Tan * NormalUnpack.x + NormalUnpack.y;
 	float3 ObjectNormal = Input.Normal * NormalUnpack.x + NormalUnpack.y;
 	// Create object-space TBN
-	float3x3 ObjectTBN = RVertex_GetTangentBasis(ObjectTangent, ObjectNormal, GetBinormalFlipping(Input));
+	float3x3 ObjectTBN = RVertex_GetTangentBasis(ObjectTangent, ObjectNormal, Vtx.BinormalFlipping);
 
 	// Get world-space data
-	float4x3 SkinnedWorldMatrix = GetSkinnedWorldMatrix(Input);
-	float4 WorldPos = float4(mul(ObjectPos, SkinnedWorldMatrix), 1.0);
-	float3x3 WorldTBN = mul(ObjectTBN, (float3x3)SkinnedWorldMatrix);
+	float4 WorldPos = float4(mul(ObjectPos, Vtx.SkinnedWorldMatrix), 1.0);
+	float3x3 WorldTBN = mul(ObjectTBN, (float3x3)Vtx.SkinnedWorldMatrix);
 
 	// Output HPos
 	Output.HPos = mul(WorldPos, ViewProjection);
@@ -185,9 +187,11 @@ VS2PS VS_BundledMesh(APP2VS Input)
 
 	// Texture-space data
 	#if _HASUVANIMATION_
-		Output.Tex0 = GetUVRotation(Input); // pass-through rotate coords
+		// Pass-through rotate coords
+		Output.Tex0 = GetUVRotation(Input, Vtx.SkinnedUVMatrix);
 	#else
-		Output.Tex0 = Input.TexDiffuse * TexUnpack; // pass-through texcoord
+		// Pass-through texcoord
+		Output.Tex0 = Input.TexDiffuse * TexUnpack;
 	#endif
 	#if _HASSHADOW_
 		Output.ShadowTex = Ra_GetMeshShadowProjection(WorldPos);
@@ -198,7 +202,7 @@ VS2PS VS_BundledMesh(APP2VS Input)
 
 	// Special data
 	#if _HASCOCKPIT_
-		Output.SkinLightDir = mul(-Lights[0].dir.xyz, SkinnedWorldMatrix);
+		Output.SkinLightDir = mul(-Lights[0].dir.xyz, Vtx.SkinnedWorldMatrix);
 	#endif
 
 	return Output;

@@ -67,20 +67,19 @@ VS2PS VS_Diffuse(APP2VS Input)
 {
 	VS2PS Output = (VS2PS)0.0;
 
-	// Compensate for lack of UBYTE4 on Geforce3
+	// Get blend indecies.
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
 
-	float3 WorldPos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexArray[0]]);
+	float3 WorldPos = mul(Input.Pos * _GlobalScale, _MatOneBoneSkinning[IndexVector[0]]);
 	Output.HPos = mul(float4(WorldPos.xyz, 1.0), _WorldViewProj);
 	Output.ViewPos = Output.HPos;
 
 	// Compute Cubic polynomial factors.
-	float Age = _AgeAndAlphaArray[IndexArray[0]][0];
+	float Age = _AgeAndAlphaArray[IndexVector[0]][0];
 	float4 CubicPolynomial = float4(pow(Age, float3(3.0, 2.0, 1.0)), 1.0);
 	float ColorBlendFactor = min(dot(m_colorBlendGraph, CubicPolynomial), 1.0);
 	Output.Color.rgb = lerp(m_color1AndLightFactor.rgb, m_color2.rgb, ColorBlendFactor);
-	Output.Color.a = _AgeAndAlphaArray[IndexArray[0]][1];
+	Output.Color.a = _AgeAndAlphaArray[IndexVector[0]][1];
 	Output.Color = saturate(Output.Color);
 
 	// Get particle lighting
