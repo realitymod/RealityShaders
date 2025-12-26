@@ -321,8 +321,8 @@ float4 GetTerrainLights(sampler SampleLightMap, float2 Tex, float4 Color)
 
 float GetLerpValue(float3 WorldPos)
 {
-	float Boundary = 200.0;
-	float CameraDistance = length(WorldPos - CameraPos);
+	float Boundary = 100.0;
+	float CameraDistance = length(WorldPos - _CameraPos);
 	return smoothstep(Boundary, 0.0, CameraDistance);
 }
 
