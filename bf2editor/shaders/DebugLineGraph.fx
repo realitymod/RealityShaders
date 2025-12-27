@@ -1,7 +1,7 @@
 #line 2 "DebugLineGraph.fx"
 
 /*
-	Description: Renders debug linegraph
+	Description: This shader renders a line graph for debugging.
 */
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"

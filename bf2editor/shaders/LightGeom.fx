@@ -12,7 +12,7 @@
 #endif
 
 /*
-	Description: Renders pointlight and spotlights
+	Description: This shader renders point lights and spotlights.
 */
 
 /*

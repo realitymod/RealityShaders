@@ -1,5 +1,9 @@
 #line 2 "RaShader2DifDet.fx"
 
+/*
+	Description: This shader renders an object with two diffuse maps and a detail map.
+*/
+
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/RaCommon.fxh"
 #include "shaders/shared/RealityDepth.fxh"

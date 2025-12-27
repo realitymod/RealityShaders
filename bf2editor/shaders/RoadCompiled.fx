@@ -16,7 +16,7 @@
 #endif
 
 /*
-	Description: Renders lighting for road
+	Description: This shader renders lighting for compiled roads.
 */
 
 float4x4 _WorldViewProj : WorldViewProjection;

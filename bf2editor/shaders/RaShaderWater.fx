@@ -1,5 +1,7 @@
 #line 2 "RaShaderWater.fx"
 
+// This shader renders water with fresnel, specular, shadows, and 3D textures.
+
 #define USE_FRESNEL
 #define USE_SPECULAR
 #define USE_SHADOWS

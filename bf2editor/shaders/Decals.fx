@@ -16,7 +16,7 @@
 #endif
 
 /*
-	Description: Renders decals such as bullet holes
+	Description: This shader renders decals, such as bullet holes.
 */
 
 /*

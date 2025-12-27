@@ -20,7 +20,7 @@
 #endif
 
 /*
-	Description: Renders non-flat particles
+	Description: This shader renders non-flat particles.
 */
 
 // Constant array

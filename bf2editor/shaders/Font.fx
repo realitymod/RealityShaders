@@ -1,7 +1,7 @@
 #line 2 "Font.fx"
 
 /*
-	Description: Renders game font
+	Description: This shader renders the in-game font.
 */
 
 #include "shaders/RealityGraphics.fxh"

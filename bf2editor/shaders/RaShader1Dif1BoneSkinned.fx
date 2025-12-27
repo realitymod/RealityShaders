@@ -16,9 +16,7 @@
 #endif
 
 /*
-	Description: Renders object's diffuse map
-
-	Global variables we use to hold the view matrix, projection matrix, ambient material, diffuse material, and the light vector that describes the direction to the light source. These variables are initialized from the application.
+	Description: This shader renders an object's diffuse map. It uses global variables to hold the view matrix, projection matrix, ambient material, diffuse material, and the light vector that describes the direction to the light source. The application initializes these variables.
 */
 
 float4x4 Bones[26];

@@ -16,7 +16,7 @@
 #endif
 
 /*
-	Description: Renders water
+	Description: This shader renders water surfaces.
 */
 
 // Affects how transparency is claculated depending on camera height.

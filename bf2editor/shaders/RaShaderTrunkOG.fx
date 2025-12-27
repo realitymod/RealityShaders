@@ -16,7 +16,7 @@
 #endif
 
 /*
-	Description: Renders lighting for tree-trunk overgrowth
+	Description: This shader renders lighting for tree-trunk overgrowth.
 */
 
 float4 OverGrowthAmbient;

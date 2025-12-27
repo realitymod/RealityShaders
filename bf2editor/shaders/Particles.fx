@@ -20,7 +20,7 @@
 #endif
 
 /*
-	Description: Renders 2D particles
+	Description: This shader renders 2D particles.
 */
 
 // Constant array

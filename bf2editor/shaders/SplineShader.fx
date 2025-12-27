@@ -1,5 +1,9 @@
 #line 2 "SplineShader.fx"
 
+/*
+	Description: This shader renders splines and control points in the editor.
+*/
+
 #include "shaders/RealityGraphics.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"

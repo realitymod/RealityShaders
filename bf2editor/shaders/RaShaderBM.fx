@@ -24,9 +24,7 @@
 #endif
 
 /*
-	Description:
-	- Renders lighting for bundledmesh (objects that are dynamic, nonhuman)
-	- Calculates world-space lighting
+	Description: This shader renders lighting for bundled mesh (dynamic, non-human objects) and calculates world-space lighting.
 */
 
 // Dependencies and sanity checks

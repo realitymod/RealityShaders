@@ -16,7 +16,7 @@
 #endif
 
 /*
-	Description: Renders road for game
+	Description: This shader renders roads in the game.
 */
 
 #define LIGHT_MUL float3(0.8, 0.8, 0.4)

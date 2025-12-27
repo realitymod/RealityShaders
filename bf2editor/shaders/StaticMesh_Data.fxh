@@ -1,5 +1,9 @@
 #line 2 "StaticMesh_Data.fxh"
 
+/*
+	Description: This file contains common data, samplers, and functions for static mesh shaders.
+*/
+
 #if !defined(_HEADERS_)
 	#define _HEADERS_
 #endif

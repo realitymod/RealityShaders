@@ -10,7 +10,7 @@
 #endif
 
 /*
-	Data for RaShaderBM
+	Description: This file provides data for the RaShaderBM shader.
 */
 
 float4 ObjectSpaceCamPos;

@@ -1,3 +1,6 @@
+/*
+	Description: This is a meta-shader file that defines permutations for RaShaderSM.fx, used by the shader permutator to generate different versions of the shader with various features enabled.
+*/
 /// SkinnedMesh MetaFx
 
 // This array specifies what the shaderPermutator should build

@@ -18,7 +18,7 @@
 #endif
 
 /*
-	Description: ZOnly shader for bundledmesh (dynamic, nonhuman objects)
+	Description: This is a Z-only shader for bundled mesh (dynamic, non-human objects), which only writes to the depth buffer.
 */
 
 string reqVertexElement[] =

@@ -16,7 +16,7 @@
 #endif
 
 /*
-	Description: This shader handles screen-space post-processing and texture conversions
+	Description: This shader handles screen-space post-processing and texture conversions.
 
 	The shader includes the following effects:
 		- Blurs (glow, blur, downsample, upsample, etc.)

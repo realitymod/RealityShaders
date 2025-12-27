@@ -1,5 +1,9 @@
 #line 2 "RaShaderBMCommon.fx"
 
+/*
+	Description: This file contains common data and samplers for the RaShaderBM shader.
+*/
+
 // common BundledMesh samplers
 
 texture HemiMap;

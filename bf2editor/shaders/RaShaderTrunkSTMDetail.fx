@@ -18,7 +18,7 @@
 #endif
 
 /*
-	Description: Renders lighting for objects with characteristics of tree-trunks (poles)
+	Description: This shader renders lighting for objects with characteristics of tree-trunks (e.g., poles).
 */
 
 #if !defined(_HASSHADOW_)

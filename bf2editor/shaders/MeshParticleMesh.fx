@@ -20,10 +20,9 @@
 #endif
 
 /*
-	Description:
-	- Renders 3D particle debris in explosions
-	- Instanced to render up to to 26 particles in a drawcall
-	- TIP: Test the shader with PRBot4/Num6 weapon
+	Description: This shader renders 3D particle debris from explosions. It is instanced to render up to 26 particles in a single draw call.
+
+	TIP: Test the shader with the PRBot4/Num6 weapon.
 */
 
 /*

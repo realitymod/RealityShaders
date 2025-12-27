@@ -7,7 +7,7 @@
 #include "shaders/RealityGraphics.fxh"
 
 /*
-	Data for RaShaderSTM
+	Description: This file provides data for the RaShaderSTM shader.
 */
 
 #define nbase 0x1

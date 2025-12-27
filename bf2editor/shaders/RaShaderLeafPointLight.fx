@@ -1,5 +1,9 @@
 #line 2 "RaShaderLeafPointLight.fx"
 
+/*
+	Description: This shader renders leaf objects with point light illumination.
+*/
+
 #define LEAF_MOVEMENT 0.04
 
 #include "shaders/RealityGraphics.fxh"

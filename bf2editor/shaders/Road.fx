@@ -1,5 +1,9 @@
 #line 2 "Road.fx"
 
+/*
+	Description: This shader renders editable roads in the editor.
+*/
+
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
 #include "shaders/RaCommon.fxh"

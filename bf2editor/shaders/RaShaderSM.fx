@@ -22,10 +22,7 @@
 #endif
 
 /*
-	Description:
-	- Renders lighting for skinnedmesh (objects that are dynamic, human-like with bones)
-	- Skinning function currently for 2 bones
-	- Calculates direction lighting dependant on the space of the normalmap
+	Description: This shader renders lighting for skinned mesh (dynamic, human-like objects with bones). The skinning function currently supports 2 bones and calculates directional lighting based on the normal map's space.
 */
 
 // Dep.checks, etc

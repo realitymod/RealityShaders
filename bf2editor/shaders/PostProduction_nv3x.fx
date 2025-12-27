@@ -16,13 +16,9 @@
 #endif
 
 /*
-	Description: Controls the following post-production shaders
-		1. Tinnitus
-		2. Glow
-		3. Thermal vision
-		4. Wave distortion
-		5. Flashbang
-	Note: Some TV shaders write to the same render target as optic shaders
+	Description: This shader controls post-production effects, including Tinnitus, Glow, Thermal vision, Wave distortion, and Flashbang.
+
+	Note: Some thermal vision shaders write to the same render target as optic shaders.
 */
 
 #define VIGNETTE_RADIUS 1.5
