@@ -1,3 +1,6 @@
+// This is a meta-shader file that defines permutations for RaShaderBM.fx.
+// The shader permutator uses this file to generate different versions of the shader
+// with different features enabled.
 //
 /// BundledMesh MetaFx
 //

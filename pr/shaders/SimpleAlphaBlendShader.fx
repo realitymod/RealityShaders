@@ -12,7 +12,7 @@
 #endif
 
 /*
-	Description: Renders simple blendop shader
+	Description: Renders a simple alpha blend shader.
 */
 
 float4x4 _WorldViewProj : WorldViewProjection;

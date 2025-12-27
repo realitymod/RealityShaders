@@ -18,7 +18,7 @@
 #endif
 
 /*
-	Description: Renders additive lighting for bundledmesh (dynamic, nonhuman objects)
+	Description: Renders additive lighting for bundled mesh (dynamic, non-human objects).
 */
 
 string GenerateStructs[] =

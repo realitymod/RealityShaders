@@ -1,7 +1,7 @@
 #line 2 "RealityVertex.fxh"
 
 /*
-	Shared functions that process/generate data in the vertex shader
+	Description: Contains shared functions that process or generate data in the vertex shader.
 */
 
 #if !defined(_HEADERS_)

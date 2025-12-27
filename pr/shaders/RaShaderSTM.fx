@@ -22,9 +22,7 @@
 #endif
 
 /*
-	Description:
-	- Renders lighting for staticmesh (buildings, static props)
-	- Calculates tangent-space lighting
+	Description: Renders lighting for static mesh (buildings, static props) and calculates tangent-space lighting.
 */
 
 // tl: Alias packed data indices to regular indices:

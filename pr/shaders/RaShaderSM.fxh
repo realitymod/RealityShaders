@@ -10,7 +10,7 @@
 #endif
 
 /*
-	Data for RaShaderSM
+	Description: Provides data for the RaShaderSM shader.
 */
 
 // Fallback stuff

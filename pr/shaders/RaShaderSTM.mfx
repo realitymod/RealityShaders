@@ -1,4 +1,7 @@
 
+// This is a meta-shader file that defines permutations for RaShaderSTM.fx.
+// The shader permutator uses this file to generate different versions of the shader
+// with different features enabled.
 //
 /// StaticMesh MetaFx - for PerPixel
 //

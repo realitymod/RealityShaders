@@ -14,10 +14,8 @@
 #endif
 
 /*
-	Description:
-	- Builds shadow map for skinnedmesh (objects that are dynamic, human-like with bones)
-	- Does bone skinning for 2 bones
-	- Outputs used in RaShaderSM.fx
+	Description: Builds the shadow map for skinned mesh (dynamic, human-like objects with bones).
+	This shader performs bone skinning for up to 2 bones and its outputs are used in RaShaderSM.fx.
 	Author: Mats Dal
 */
 

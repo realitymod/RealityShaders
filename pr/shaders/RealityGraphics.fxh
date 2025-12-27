@@ -3,7 +3,7 @@
 #include "shaders/SettingsDefines.fxh"
 
 /*
-	Shared shader code that we use for Project Reality: BF2
+	Description: Contains shared shader code used across Project Reality: BF2 shaders.
 	Author: [R-DEV]papadanku @ 2025
 */
 

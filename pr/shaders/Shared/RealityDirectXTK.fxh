@@ -6,6 +6,10 @@
 #endif
 
 /*
+	Description: This file contains ported functions from the DirectX Tool Kit, including color space conversions, tonemapping, and lighting calculations.
+*/
+
+/*
 	https://github.com/microsoft/DirectXTK
 
 	The MIT License (MIT)

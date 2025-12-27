@@ -14,7 +14,7 @@
 #endif
 
 /*
-	Description: Renders debug lightsource spheres
+	Description: Renders spheres for debugging light sources.
 */
 
 float4x4 _WorldViewProj : WorldViewProjection;

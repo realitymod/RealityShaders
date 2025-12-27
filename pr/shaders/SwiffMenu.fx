@@ -1,8 +1,9 @@
 #line 2 "SwiffMenu.fx"
 
 /*
-	Description: Shaders for main menu
+	Description: Contains shaders for the main menu.
 */
+
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
 #if !defined(_HEADERS_)

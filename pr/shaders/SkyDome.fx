@@ -16,8 +16,8 @@
 #endif
 
 /*
-	Description: Renders sky and skybox
-	NOTE: We use normal depth calculation for this one because the geometry's far away from the scene
+	Description: Renders the sky and skybox.
+	NOTE: This shader uses normal depth calculation because the geometry is far from the scene.
 */
 
 float4x4 _ViewProjMatrix : WorldViewProjection;

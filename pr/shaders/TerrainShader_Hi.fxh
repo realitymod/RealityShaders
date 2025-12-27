@@ -6,10 +6,7 @@
 #endif
 
 /*
-	Description:
-	- High-settings terrain shader
-	- Renders the terrain's high-setting shading
-	- Renders the terrain's high-setting shadowing
+	Description: This is the high-settings terrain shader. It renders the terrain's shading and shadowing at high quality.
 */
 
 /*

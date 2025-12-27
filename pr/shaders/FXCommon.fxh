@@ -1,7 +1,7 @@
 #line 2 "FXCommon.fxh"
 
 /*
-	Description: Shared code in particle shaders
+	Description: Contains shared code for particle shaders.
 */
 
 #if !defined(_HEADERS_)

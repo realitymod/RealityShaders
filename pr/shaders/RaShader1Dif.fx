@@ -18,7 +18,7 @@
 #endif
 
 /*
-	Description: Renders object's diffuse map
+	Description: Renders an object's diffuse map.
 */
 
 float4 WorldSpaceCamPos;

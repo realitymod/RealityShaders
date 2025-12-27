@@ -18,7 +18,7 @@
 #endif
 
 /*
-	Description: Renders lighting for undergrowth such as grass
+	Description: Renders lighting for undergrowth, such as grass.
 */
 
 string Category = "Effects\\Lighting";

@@ -27,7 +27,7 @@
 	#define TERRAINSHADER_FXH
 
 	/*
-		Description: Renders lighting for ground terrain
+		Description: Renders lighting for ground terrain.
 	*/
 
 	/*

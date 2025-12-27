@@ -12,7 +12,7 @@
 #endif
 
 /*
-	Description: Basic shader that outputs a color
+	Description: A basic shader that outputs a solid color.
 */
 
 float4x4 World;

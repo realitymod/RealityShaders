@@ -6,7 +6,7 @@
 #endif
 
 /*
-	Depth-based functions
+	Description: Contains depth-based functions used in various shaders.
 */
 
 #if !defined(_HEADERS_)

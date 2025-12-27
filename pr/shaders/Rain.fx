@@ -14,7 +14,7 @@
 #endif
 
 /*
-	Description: Renders rain effect
+	Description: Renders the rain effect.
 */
 
 float4x4 _WorldViewProj : WORLDVIEWPROJ;

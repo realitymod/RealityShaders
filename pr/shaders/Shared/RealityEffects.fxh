@@ -8,6 +8,10 @@
 #endif
 
 /*
+	Description: This file contains ported effects from the FidelityFX SDK, such as film grain, vignette, and chromatic aberration.
+*/
+
+/*
 	https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
 
 	This file is part of the FidelityFX SDK.

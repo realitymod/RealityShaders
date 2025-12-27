@@ -20,7 +20,7 @@
 #endif
 
 /*
-	Description: Renders non-flat particles
+	Description: Renders non-flat particles.
 */
 
 // Constant array

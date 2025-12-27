@@ -1,7 +1,7 @@
 #line 2 "TerrainShader_Shared.fxh"
 
 /*
-	Description: Shared functions for terrain shader
+	Description: Contains shared functions for the terrain shader.
 */
 
 #include "shaders/TerrainShader.fxh"

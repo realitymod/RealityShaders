@@ -14,7 +14,7 @@
 #endif
 
 /*
-	Description: Renders circle for debug shaders
+	Description: This shader renders a circle for debugging purposes.
 */
 
 float4x4 _WorldViewProj : WorldViewProjection;

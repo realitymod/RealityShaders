@@ -16,9 +16,7 @@
 #endif
 
 /*
-	Description:
-	- Builds shadow and environment maps for bundledmesh (dynamic, nonhuman objects)
-	- Outputs used in RaShaderBM.fx
+    Description: This shader builds shadow and environment maps for bundled mesh, which are dynamic, non-human objects. The outputs are then used in RaShaderBM.fx.
 */
 
 /*

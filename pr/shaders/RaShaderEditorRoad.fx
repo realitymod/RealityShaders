@@ -16,7 +16,7 @@
 #endif
 
 /*
-	Description: Renders road for editor
+	Description: Renders roads in the editor.
 */
 
 #define LIGHT_MUL float3(0.8, 0.8, 0.4)

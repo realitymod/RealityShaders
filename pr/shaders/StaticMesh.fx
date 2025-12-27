@@ -12,9 +12,8 @@
 #endif
 
 /*
-	Description:
-	- Builds shadow map for staticmesh (buildings, static props)
-	- Outputs used in RaShaderSTM.fx
+	Description: Builds the shadow map for static mesh (buildings, static props).
+	The outputs are used in RaShaderSTM.fx.
 */
 
 /*

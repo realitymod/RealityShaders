@@ -8,7 +8,7 @@
 #endif
 
 /*
-	Shared functions that process/generate data in the pixel shader
+	Description: Contains shared functions that process or generate data in the pixel shader.
 */
 
 #if !defined(_HEADERS_)

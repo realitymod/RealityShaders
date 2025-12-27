@@ -18,8 +18,8 @@
 #endif
 
 /*
-	Description: Renders objects with leaf-like characteristics
-	Special Thanks: [FH2]Remdul for the overgrowth fix
+	Description: Renders objects with leaf-like characteristics.
+	Special Thanks: [FH2]Remdul for the overgrowth fix.
 */
 
 #undef _DEBUG_

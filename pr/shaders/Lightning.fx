@@ -14,7 +14,7 @@
 #endif
 
 /*
-	Description: Renders lightning
+	Description: Renders lightning effects.
 */
 
 /*

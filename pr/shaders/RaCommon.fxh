@@ -12,7 +12,7 @@
 #endif
 
 /*
-	Description: Shared functions for BF2's main 3D shaders
+	Description: Contains shared functions for Battlefield 2's main 3D shaders.
 */
 
 #if !defined(_HEADERS_)

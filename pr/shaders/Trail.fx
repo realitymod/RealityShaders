@@ -20,7 +20,7 @@
 #endif
 
 /*
-	Description: Renders lighting for particles emit smoke trails
+	Description: Renders lighting for particles that emit smoke trails.
 */
 
 // UNIFORM INPUTS

@@ -14,7 +14,7 @@
 #endif
 
 /*
-	Description: Renders shapes to debug collision mesh, culling, etc.
+	Description: Renders shapes to debug collision meshes, culling, and other features.
 */
 
 float4x4 _WorldViewProj : WorldViewProjection;
