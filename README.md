@@ -29,6 +29,15 @@
 - **Sharpened Filtering**: Support for 16x anisotropic filtering.
 - **Optional Bicubic Lightmapping**: A smoother interpolation method to eliminate blockiness and noticeable seams in baked lighting. Credit to [Felix Westin](https://github.com/Fewes).
 
+## Installation
+
+1. Click on the green **`<> Code`** drop-down button and select **`Download ZIP`**.
+2. Unpack the downloaded `RealityShaders-main.zip` file.
+3. Locate your `\mods\pr` directory in your Project Reality: Battlefield 2 installation.
+4. In the `\mods\pr` directory, create a backup of the `shaders_client.zip` file. Name the backup something like `shaders_client_backup.zip`
+5. Open the original `shaders_client.zip` file.
+6. Copy the files from the `\pr\shaders` folder of the unpacked zip file into `shaders_client.zip`.
+
 ## Coding Convention
 
 - **ALLCAPS**
