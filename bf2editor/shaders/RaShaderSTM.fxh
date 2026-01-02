@@ -1,14 +1,10 @@
 #line 2 "RaShaderSTM.fxh"
 
 /*
-	Include header files
+    This header file provides data structures and parameters for the RaShaderSTM shader. It includes material properties, texture sampling parameters, lighting constants, and sampler definitions for static mesh rendering with multiple texture layers.
 */
 
 #include "shaders/RealityGraphics.fxh"
-
-/*
-	Description: This file provides data for the RaShaderSTM shader.
-*/
 
 #define nbase 0x1
 #define ndetail 0x10

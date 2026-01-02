@@ -1,5 +1,9 @@
 #line 2 "RealityDirectXTK.fxh"
 
+/*
+    This file contains ported functions from the DirectX Tool Kit, including color space conversions, tonemapping, and lighting calculations.
+*/
+
 #include "shaders/RealityGraphics.fxh"
 #if !defined(_HEADERS_)
 	#include "../RealityGraphics.fxh"

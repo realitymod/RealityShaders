@@ -1,8 +1,9 @@
 #line 2 "SwiffMenu.fx"
 
 /*
-	Description: Shaders for main menu
+    This shader contains rendering functions for the main menu interface. It handles UI element rendering, texture mapping, and visual effects specifically designed for menu systems and user interface components.
 */
+
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
 #if !defined(_HEADERS_)

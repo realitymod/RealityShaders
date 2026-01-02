@@ -1,7 +1,9 @@
-/*
-	Description: This is a meta-shader file that defines permutations for RaShaderBM.fx, used by the shader permutator to generate different versions of the shader with various features enabled.
-*/
+
+// This is a meta-shader file that defines permutations for RaShaderBM.fx, used
+// by the shader permutator to generate different versions of the shader with various 
+// features enabled.
 /// BundledMesh MetaFx
+//
 
 // This array specifies what the shaderPermutator should build
 // in the case below it will first look for reqVertexElement + "Base"

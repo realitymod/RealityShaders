@@ -1,7 +1,7 @@
 #line 2 "MeshParticleMesh.fx"
 
 /*
-	Include header files
+    Handles mesh-based particle system rendering.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -18,12 +18,6 @@
 	#include "RaCommon.fxh"
 	#include "FXCommon.fxh"
 #endif
-
-/*
-	Description: This shader renders 3D particle debris from explosions. It is instanced to render up to 26 particles in a single draw call.
-
-	TIP: Test the shader with the PRBot4/Num6 weapon.
-*/
 
 /*
 	[Attributes from app]

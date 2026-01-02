@@ -1,7 +1,7 @@
 #line 2 "RaShaderTrunkSTMDetail.fx"
 
 /*
-	Include header files
+    This shader renders lighting for objects with characteristics of tree-trunks (e.g., poles). It handles specialized rendering for trunk-like objects with diffuse and detail texture support, dynamic lighting, shadow mapping, and fog effects. The shader is optimized for environmental props and structural elements.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -16,10 +16,6 @@
 	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 #endif
-
-/*
-	Description: This shader renders lighting for objects with characteristics of tree-trunks (e.g., poles).
-*/
 
 #if !defined(_HASSHADOW_)
 	#define _HASSHADOW_ 0

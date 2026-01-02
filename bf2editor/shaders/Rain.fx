@@ -1,7 +1,7 @@
 #line 2 "Rain.fx"
 
 /*
-	Include header files
+    This shader renders rain effects with dynamic particle systems and environmental interactions. It handles rain droplet rendering, splash effects, and integration with the scene's lighting and fog systems.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -12,10 +12,6 @@
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
 #endif
-
-/*
-	Description: This shader renders the rain effect.
-*/
 
 float4x4 _WorldViewProj : WORLDVIEWPROJ;
 float4 _CellPositions[32] : CELLPOSITIONS;

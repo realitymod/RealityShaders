@@ -1,7 +1,7 @@
 #line 2 "RaShader2DifDet.fx"
 
 /*
-	Description: This shader renders an object with two diffuse maps and a detail map.
+    This shader renders an object with two diffuse maps and a detail map. It implements multi-texture blending techniques for complex material representation, combining base textures with detail textures for enhanced surface realism.
 */
 
 #include "shaders/RealityGraphics.fxh"

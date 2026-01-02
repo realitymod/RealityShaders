@@ -1,7 +1,7 @@
 #line 2 "FSQuadDrawer.fx"
 
 /*
-	Include header files
+    Full-screen quad drawer shader for post-processing effects including blurs and texture conversions.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -14,14 +14,6 @@
 	#include "shared/RealityEffects.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
-
-/*
-	Description: This shader handles screen-space post-processing and texture conversions.
-
-	The shader includes the following effects:
-		- Blurs (glow, blur, downsample, upsample, etc.)
-		- Texture conversions to 8-bit
-*/
 
 /*
 	[Attributes from app]

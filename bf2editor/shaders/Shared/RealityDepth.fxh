@@ -1,13 +1,13 @@
 #line 2 "RealityDepth.fxh"
 
+/*
+    This file contains depth-based functions used in various shaders for depth calculations and comparisons.
+*/
+
 #include "shaders/RealityGraphics.fxh"
 #if !defined(_HEADERS_)
 	#include "../RealityGraphics.fxh"
 #endif
-
-/*
-	Depth-based functions
-*/
 
 #if !defined(_HEADERS_)
 	#define _HEADERS_

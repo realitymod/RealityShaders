@@ -1,7 +1,7 @@
 #line 2 "QuadGeom.fx"
 
 /*
-	Description: This shader renders a simple textured quad.
+    Renders a simple textured quad.
 */
 
 texture Tex0: TEXLAYER0;

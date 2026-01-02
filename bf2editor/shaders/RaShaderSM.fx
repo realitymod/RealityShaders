@@ -1,7 +1,7 @@
 #line 2 "RaShaderSM.fx"
 
 /*
-	Include header files
+    This shader renders lighting for skinned mesh (dynamic, human-like objects with bones). It supports bone-based animation with 2-bone skinning, normal mapping, environment mapping, and shadow mapping. The shader calculates world-space lighting and handles complex material properties for character rendering.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -20,10 +20,6 @@
 	#include "RaCommon.fxh"
 	#include "RaShaderSM.fxh"
 #endif
-
-/*
-	Description: This shader renders lighting for skinned mesh (dynamic, human-like objects with bones). The skinning function currently supports 2 bones and calculates directional lighting based on the normal map's space.
-*/
 
 // Dep.checks, etc
 

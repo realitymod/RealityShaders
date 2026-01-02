@@ -1,7 +1,7 @@
 #line 2 "Nametag.fx"
 
 /*
-	Description: This shader renders icons and in-game nametags above players.
+    Renders nametags and UI elements above objects.
 */
 
 #include "shaders/RealityGraphics.fxh"

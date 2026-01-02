@@ -1,5 +1,9 @@
 #line 2 "StaticMesh.fx"
 
+/*
+    This shader builds shadow maps for static mesh objects (buildings, static props). It generates shadow data that is used by RaShaderSTM.fx for final rendering of static objects in the scene.
+*/
+
 #include "Shaders/StaticMesh_Data.fxh"
 #include "Shaders/StaticMesh_DX9Z.fxh"
 #include "Shaders/StaticMesh_DX9Gbuff.fxh"

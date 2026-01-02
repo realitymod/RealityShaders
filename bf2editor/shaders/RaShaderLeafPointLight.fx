@@ -1,7 +1,7 @@
 #line 2 "RaShaderLeafPointLight.fx"
 
 /*
-	Description: This shader renders leaf objects with point light illumination.
+    This shader renders leaf objects with dynamic point light illumination support, building upon RaShaderLeaf.fx with enhanced lighting calculations.
 */
 
 #define LEAF_MOVEMENT 0.04

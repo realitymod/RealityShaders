@@ -1,17 +1,13 @@
 #line 2 "RaShaderBM.fxh"
 
 /*
-	Include header files
+    This header file provides data structures and parameters for the RaShaderBM shader. It includes bone matrices, lighting parameters, material properties, and sampler definitions for bundled mesh rendering.
 */
 
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RaCommon.fxh"
 #endif
-
-/*
-	Description: This file provides data for the RaShaderBM shader.
-*/
 
 float4 ObjectSpaceCamPos;
 float4 WorldSpaceCamPos;

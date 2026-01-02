@@ -1,7 +1,7 @@
 #line 2 "StaticMesh_Debug.fxh"
 
 /*
-	Description: This file contains debug shaders for visualizing the tangent basis of static meshes.
+    This file contains debug shaders for visualizing tangent basis and other diagnostic information for static meshes. It provides visualization tools for debugging mesh orientation, normals, and other geometric properties during development.
 */
 
 #include "Shaders/StaticMesh_Data.fxh"

@@ -1,7 +1,7 @@
 #line 2 "FXCommon.fxh"
 
 /*
-	Description: This file contains shared code for particle shaders.
+    This header file contains shared code and functions for particle shaders. It provides common utilities, parameters, and helper functions used across various particle and effect shaders in the system.
 */
 
 #if !defined(_HEADERS_)

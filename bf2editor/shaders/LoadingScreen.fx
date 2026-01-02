@@ -1,7 +1,7 @@
 #line 2 "LoadingScreen.fx"
 
 /*
-	Description: This shader renders the loading screen at startup.
+    Shader for rendering loading screen elements.
 */
 
 #include "shaders/RealityGraphics.fxh"

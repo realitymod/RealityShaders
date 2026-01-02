@@ -1,7 +1,7 @@
 #line 2 "BundledMesh.fx"
 
 /*
-	Include header files
+    This shader builds shadow and environment maps for bundled mesh, which are dynamic, non-human objects. The outputs are then used in RaShaderBM.fx.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -14,10 +14,6 @@
 	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityVertex.fxh"
 #endif
-
-/*
-	Description: This shader builds shadow and environment maps for bundled mesh, which are dynamic, non-human objects. The outputs are then used in RaShaderBM.fx.
-*/
 
 /*
 	[Attributes from app]

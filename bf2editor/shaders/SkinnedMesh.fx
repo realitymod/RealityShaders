@@ -1,7 +1,7 @@
 #line 2 "SkinnedMesh.fx"
 
 /*
-	Include header files
+    This shader builds shadow maps for skinned mesh objects (dynamic, human-like objects with bones). It performs bone skinning for up to 2 bones and generates shadow data used by RaShaderSM.fx for final rendering.
 */
 
 #include "shaders/shared/RealityDepth.fxh"
@@ -12,11 +12,6 @@
 	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
-
-/*
-	Description: This shader builds the shadow map for skinned mesh (dynamic, human-like objects with bones). It performs bone skinning for up to 2 bones and its outputs are used in RaShaderSM.fx.
-	Author: Mats Dal
-*/
 
 // Note: obj space light vectors
 float4 _SunLightDirection : SunLightDirection;

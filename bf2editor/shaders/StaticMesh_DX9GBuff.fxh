@@ -1,5 +1,9 @@
 #line 2 "StaticMesh_DX9GBuff.fxh"
 
+/*
+    This file contains DirectX 9 G-Buffer shaders for static mesh rendering. It implements deferred rendering techniques for static meshes, including geometry buffer generation with support for various material configurations like diffuse, detail, dirt, and crack mapping.
+*/
+
 #include "Shaders/StaticMesh_Data.fxh"
 #if !defined(_HEADERS_)
 	#include "StaticMesh_Data.fxh"

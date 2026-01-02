@@ -1,7 +1,7 @@
 #line 2 "RaCommon.fxh"
 
 /*
-	Include header files
+    This header file provides common functions and definitions used across Reality shaders. It includes shared utilities, mathematical operations, and fundamental shader components that form the foundation of the rendering system.
 */
 
 #include "shaders/RaDefines.fx"
@@ -10,10 +10,6 @@
 	#include "RaDefines.fx"
 	#include "RealityGraphics.fxh"
 #endif
-
-/*
-	Description: This file contains shared functions for Battlefield 2's main 3D shaders.
-*/
 
 #if !defined(_HEADERS_)
 	#define _HEADERS_
@@ -192,7 +188,7 @@
 	texture ShadowOccluderMap : SHADOWOCCLUDERMAP;
 	CREATE_SHADOW_SAMPLER(SampleShadowOccluderMap, ShadowOccluderMap)
 
-	// Description: Transforms the vertex position's depth from World/Object space to light space
+	// Transforms the vertex position's depth from World/Object space to light space
 	// tl: Make sure Pos and matrices are in same space!
 	float4 Ra_GetShadowProjection(float4 Pos, uniform bool IsOccluder = false)
 	{

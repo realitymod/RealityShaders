@@ -1,5 +1,9 @@
 #line 2 "StaticMeshEditor.fx"
 
+/*
+    This shader provides editor-specific functionality for static mesh rendering. It includes the same core functionality as StaticMesh.fx but is tailored for the BF2 editor environment with additional debug and visualization features.
+*/
+
 #include "Shaders/StaticMesh_Data.fxh"
 #include "Shaders/Staticmesh_dx9z.fxh"
 #include "Shaders/StaticMesh_dx9gbuff.fxh"

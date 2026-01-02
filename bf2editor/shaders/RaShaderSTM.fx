@@ -1,7 +1,7 @@
 #line 2 "RaShaderSTM.fx"
 
 /*
-	Include header files
+    This shader renders lighting for static mesh (buildings, static props) and calculates tangent-space lighting. It supports multiple texture layers including base, detail, dirt, and crack maps, with optional parallax mapping and lightmap support. The shader handles complex material properties and surface details for static objects.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -20,10 +20,6 @@
 	#include "RaCommon.fxh"
 	#include "RaShaderSTM.fxh"
 #endif
-
-/*
-	Description: This shader renders lighting for static mesh (buildings, static props) and calculates tangent-space lighting.
-*/
 
 // tl: Alias packed data indices to regular indices:
 #if defined(TexBasePackedInd)

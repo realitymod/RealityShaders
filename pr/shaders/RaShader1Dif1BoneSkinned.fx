@@ -1,7 +1,7 @@
 #line 2 "RaShader1Dif1BoneSkinned.fx"
 
 /*
-	Include header files
+    This shader renders an object's diffuse map with bone-skinned animation support. It uses global variables to hold the view matrix, projection matrix, ambient material, diffuse material, and the light vector that describes the direction to the light source. The application initializes these variables.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -14,12 +14,6 @@
 	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
-
-/*
-	Description: Renders an object's diffuse map.
-
-	This shader uses global variables to hold the view matrix, projection matrix, ambient material, diffuse material, and the light vector that describes the direction to the light source. The application initializes these variables.
-*/
 
 float4x4 Bones[26];
 bool AlphaBlendEnable = false;

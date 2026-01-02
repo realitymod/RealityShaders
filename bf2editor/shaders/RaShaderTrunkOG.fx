@@ -1,7 +1,7 @@
 #line 2 "RaShaderTrunkOG.fx"
 
 /*
-	Include header files
+    This shader renders lighting for tree-trunk overgrowth objects. It handles specialized rendering for overgrowth tree trunks with dynamic lighting, fog effects, and LOD scaling. The shader is optimized for foliage and environmental objects.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -14,10 +14,6 @@
 	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
-
-/*
-	Description: This shader renders lighting for tree-trunk overgrowth.
-*/
 
 float4 OverGrowthAmbient;
 float4 ObjectSpaceCamPos;

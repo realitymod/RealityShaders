@@ -1,7 +1,7 @@
 #line 2 "StaticMesh_Data.fxh"
 
 /*
-	Description: This file contains common data, samplers, and functions for static mesh shaders.
+    This file contains common data structures, samplers, and utility functions for static mesh shaders. It provides shared resources and helper functions used across various static mesh rendering techniques including texture sampling, tangent basis calculations, and parallax mapping.
 */
 
 #if !defined(_HEADERS_)

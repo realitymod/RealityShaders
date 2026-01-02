@@ -1,5 +1,9 @@
 #line 2 "RealityEffects.fxh"
 
+/*
+    This file contains various visual effects functions used across multiple shaders for special rendering effects.
+*/
+
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #if !defined(_HEADERS_)

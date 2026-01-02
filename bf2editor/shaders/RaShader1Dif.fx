@@ -1,7 +1,7 @@
 #line 2 "RaShader1Dif.fx"
 
 /*
-	Include header files
+    This shader renders an object's diffuse map with basic lighting and fog effects. It handles simple diffuse texturing for objects and applies SRGB color space conversions and tonemapping.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -16,10 +16,6 @@
 	#include "shared/RealityPixel.fxh"
 	#include "RaCommon.fxh"
 #endif
-
-/*
-	Description: This shader renders an object's diffuse map.
-*/
 
 float4 WorldSpaceCamPos;
 

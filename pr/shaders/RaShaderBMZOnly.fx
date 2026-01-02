@@ -1,7 +1,7 @@
 #line 2 "RaShaderBMZOnly.fx"
 
 /*
-	Include header files
+    This is a Z-only shader for bundled mesh (dynamic, non-human objects), which only writes to the depth buffer.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -16,10 +16,6 @@
 	#include "RaDefines.fx"
 	#include "RaShaderBM.fxh"
 #endif
-
-/*
-	Description: A Z-only shader for bundled mesh (dynamic, non-human objects), which only writes to the depth buffer.
-*/
 
 string reqVertexElement[] =
 {

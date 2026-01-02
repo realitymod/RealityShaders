@@ -15,10 +15,6 @@
 	#include "RaCommon.fxh"
 #endif
 
-/*
-	Description: Renders roads in the editor.
-*/
-
 #define LIGHT_MUL float3(0.8, 0.8, 0.4)
 #define LIGHT_ADD float3(0.4, 0.4, 0.4)
 

@@ -1,7 +1,7 @@
 #line 2 "RaShaderBMadditive.fx"
 
 /*
-	Include header files
+    This shader renders additive lighting for bundled mesh (dynamic, non-human objects).
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -16,10 +16,6 @@
 	#include "RaCommon.fxh"
 	#include "RaShaderBM.fxh"
 #endif
-
-/*
-	Description: Renders additive lighting for bundled mesh (dynamic, non-human objects).
-*/
 
 string GenerateStructs[] =
 {

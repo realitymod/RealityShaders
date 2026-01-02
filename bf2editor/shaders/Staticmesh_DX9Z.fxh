@@ -1,5 +1,9 @@
 #line 2 "Staticmesh_DX9Z.fxh"
 
+/*
+    This file contains DirectX 9 Z-pass shaders for static mesh rendering. It implements depth pre-pass and color rendering techniques for static meshes with support for various material configurations including diffuse, detail, dirt, and crack mapping with parallax effects.
+*/
+
 #include "Shaders/StaticMesh_Data.fxh"
 #include "Shaders/RealityGraphics.fxh"
 #if !defined(_HEADERS_)
