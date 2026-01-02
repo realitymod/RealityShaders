@@ -1,7 +1,7 @@
 #line 2 "RaCommon.fxh"
 
 /*
-	Include header files
+    This header file provides common functions and definitions used across Reality shaders. It includes shared utilities, mathematical operations, and fundamental shader components that form the foundation of the rendering system.
 */
 
 #include "shaders/RaDefines.fx"
@@ -10,10 +10,6 @@
 	#include "RaDefines.fx"
 	#include "RealityGraphics.fxh"
 #endif
-
-/*
-	Description: Contains shared functions for Battlefield 2's main 3D shaders.
-*/
 
 #if !defined(_HEADERS_)
 	#define _HEADERS_

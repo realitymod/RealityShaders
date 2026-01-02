@@ -1,7 +1,7 @@
 #line 2 "DebugCircleShader.fx"
 
 /*
-	Include header files
+    This shader renders a circle for debugging purposes.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -12,10 +12,6 @@
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
 #endif
-
-/*
-	Description: This shader renders a circle for debugging purposes.
-*/
 
 float4x4 _WorldViewProj : WorldViewProjection;
 bool _ZBuffer : ZBUFFER;

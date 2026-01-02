@@ -1,7 +1,7 @@
 #line 2 "CommonPixelLight.fxh"
 
 /*
-	Description: This shader file defines and outputs a common terrain light for static mesh and terrain shaders.
+    Contains common pixel lighting functions used across multiple shaders.
 */
 
 #if !defined(_HEADERS_)

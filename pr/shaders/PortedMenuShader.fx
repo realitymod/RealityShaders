@@ -1,7 +1,7 @@
 #line 2 "PortedMenuShader.fx"
 
 /*
-	Description: Handles UI elements from Battlefield 2.
+    Ported menu system shader.
 */
 
 #include "shaders/RealityGraphics.fxh"

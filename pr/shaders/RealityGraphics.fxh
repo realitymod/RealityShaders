@@ -1,11 +1,10 @@
 #line 2 "RealityGraphics.fxh"
 
-#include "shaders/SettingsDefines.fxh"
-
 /*
-	Description: Contains shared shader code used across Project Reality: BF2 shaders.
-	Author: [R-DEV]papadanku @ 2025
+    Core graphics functions and definitions for Reality engine.
 */
+
+#include "shaders/SettingsDefines.fxh"
 
 #if !defined(_HEADERS_)
 	#define _HEADERS_

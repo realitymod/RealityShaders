@@ -1,7 +1,7 @@
 #line 2 "NonScreenAlignedParticles.fx"
 
 /*
-	Include header files
+    Handles particle systems that are not screen-aligned.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -18,10 +18,6 @@
 	#include "RaCommon.fxh"
 	#include "FXCommon.fxh"
 #endif
-
-/*
-	Description: Renders non-flat particles.
-*/
 
 // Constant array
 struct TemplateParameters

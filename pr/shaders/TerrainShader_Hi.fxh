@@ -1,13 +1,13 @@
 #line 2 "TerrainShader_Hi.fxh"
 
+/*
+    This high-settings terrain shader renders terrain with advanced shading, shadowing, and detail features. It provides high-quality terrain rendering with multiple texture layers, normal mapping, and sophisticated lighting calculations.
+*/
+
 #include "shaders/TerrainShader.fxh"
 #if !defined(_HEADERS_)
 	#include "TerrainShader.fxh"
 #endif
-
-/*
-	Description: This is the high-settings terrain shader. It renders the terrain's shading and shadowing at high quality.
-*/
 
 /*
 	Terrainmapping shader

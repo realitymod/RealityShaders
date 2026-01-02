@@ -1,7 +1,7 @@
 #line 2 "RealityVertex.fxh"
 
 /*
-	Description: Contains shared functions that process or generate data in the vertex shader.
+    This file contains vertex shader utility functions used for various vertex processing operations.
 */
 
 #if !defined(_HEADERS_)

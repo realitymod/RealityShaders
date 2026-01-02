@@ -1,7 +1,7 @@
 #line 2 "RaShaderWaterBase.fx"
 
 /*
-	Include header files
+    This shader renders water surfaces with dynamic lighting, reflection, and transparency effects. It supports environment mapping, lightmap accumulation, shadow mapping, and specialized water rendering techniques including Fresnel effects and depth-based transparency. The shader forms the base for various water rendering variants.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -16,10 +16,6 @@
 	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
-
-/*
-	Description: Renders water surfaces.
-*/
 
 // Affects how transparency is claculated depending on camera height.
 // Try increasing/decreasing ADD_ALPHA slighty for different results

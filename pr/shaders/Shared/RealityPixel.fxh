@@ -1,15 +1,15 @@
 #line 2 "RealityPixel.fxh"
 
+/*
+    This file contains pixel shader utility functions used for various pixel processing operations.
+*/
+
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityDirectXTK.fxh"
 #if !defined(_HEADERS_)
 	#include "RealityGraphics.fxh"
 	#include "RealityDirectXTK.fxh"
 #endif
-
-/*
-	Description: Contains shared functions that process or generate data in the pixel shader.
-*/
 
 #if !defined(_HEADERS_)
 	#define _HEADERS_

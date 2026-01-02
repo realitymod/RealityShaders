@@ -1,7 +1,7 @@
 #line 2 "RaShaderEditorRoad.fx"
 
 /*
-	Include header files
+    This shader renders roads in the editor with basic diffuse and lightmap support. It handles road surface rendering with optional detail textures and applies fog effects based on camera distance. The shader includes special handling for road depth and Z-fading effects.
 */
 
 #include "shaders/RealityGraphics.fxh"

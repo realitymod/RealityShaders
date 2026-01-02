@@ -1,7 +1,7 @@
 #line 2 "Lightning.fx"
 
 /*
-	Include header files
+    Renders lightning effects and electrical discharges.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -12,10 +12,6 @@
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
 #endif
-
-/*
-	Description: Renders lightning effects.
-*/
 
 /*
 	[Attributes from app]

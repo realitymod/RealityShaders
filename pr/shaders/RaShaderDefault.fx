@@ -1,7 +1,7 @@
 #line 2 "RaShaderDefault.fx"
 
 /*
-	Include header files
+    This basic shader outputs a solid color and serves as a fallback or default rendering shader. It handles simple vertex transformation and applies a fixed color output with depth writing support.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -10,10 +10,6 @@
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 #endif
-
-/*
-	Description: A basic shader that outputs a solid color.
-*/
 
 float4x4 World;
 float4x4 ViewProjection;

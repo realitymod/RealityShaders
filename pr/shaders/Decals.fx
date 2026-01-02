@@ -1,7 +1,7 @@
 #line 2 "Decals.fx"
 
 /*
-	Include header files
+    Handles decal rendering for surface details and effects.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -14,10 +14,6 @@
 	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
-
-/*
-	Description: Renders decals, such as bullet holes.
-*/
 
 /*
 	[Attributes from app]

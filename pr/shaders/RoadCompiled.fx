@@ -1,7 +1,7 @@
 #line 2 "RoadCompiled.fx"
 
 /*
-	Include header files
+    This shader renders lighting for compiled roads with texture blending and fade-out effects. It handles road surface rendering with specialized shaders for pre-compiled road geometry and applies distance-based fading.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -16,10 +16,6 @@
 	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
-
-/*
-	Description: Renders lighting for compiled roads.
-*/
 
 float4x4 _WorldViewProj : WorldViewProjection;
 float _TexBlendFactor : TexBlendFactor;

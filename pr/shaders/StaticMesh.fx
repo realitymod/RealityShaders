@@ -1,7 +1,7 @@
 #line 2 "StaticMesh.fx"
 
 /*
-	Include header files
+    This shader builds shadow maps for static mesh objects (buildings, static props). It generates shadow data that is used by RaShaderSTM.fx for final rendering of static objects in the scene.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -10,11 +10,6 @@
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 #endif
-
-/*
-	Description: Builds the shadow map for static mesh (buildings, static props).
-	The outputs are used in RaShaderSTM.fx.
-*/
 
 /*
 	[Uniform data from app]

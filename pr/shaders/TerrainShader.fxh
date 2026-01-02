@@ -1,7 +1,7 @@
 #line 2 "TerrainShader.fxh"
 
 /*
-	Include header files
+    This terrain shader renders lighting for ground terrain with comprehensive feature support. It handles terrain texture blending, lighting accumulation, shadow mapping, and environmental interactions for realistic ground rendering.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -25,9 +25,6 @@
 
 #if !defined(TERRAINSHADER_FXH)
 	#define TERRAINSHADER_FXH
-
-	/*
-		Description: Renders lighting for ground terrain.
 	*/
 
 	/*

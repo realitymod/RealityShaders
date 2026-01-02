@@ -1,7 +1,7 @@
 #line 2 "RaShaderRoad.fx"
 
 /*
-	Include header files
+    This shader renders roads in the game with diffuse and detail texture support. It handles road surface rendering with lightmap accumulation, fog effects, and special Z-fading for road edges. The shader includes support for both basic roads and roads with detail textures.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -16,10 +16,6 @@
 	#include "shared/RealityDirectXTK.fxh"
 	#include "RaCommon.fxh"
 #endif
-
-/*
-	Description: Renders roads in the game.
-*/
 
 #define LIGHT_MUL float3(0.8, 0.8, 0.4)
 #define LIGHT_ADD float3(0.4, 0.4, 0.4)

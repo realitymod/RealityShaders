@@ -1,7 +1,7 @@
 #line 2 "LightGeom.fx"
 
 /*
-	Include header files
+    Handles geometry lighting calculations.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -10,10 +10,6 @@
 	#include "RealityGraphics.fxh"
 	#include "shared/RealityDepth.fxh"
 #endif
-
-/*
-	Description: Renders point lights and spotlights.
-*/
 
 /*
 	[Attributes from app]

@@ -1,7 +1,7 @@
 #line 2 "RaShaderBM.fx"
 
 /*
-	Include header files
+    This shader renders lighting for bundled mesh (dynamic, non-human objects) and calculates world-space lighting with support for various features like normal mapping, GI maps, environment maps, UV animation, and shadow mapping. It handles bone-based animation and complex material properties.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -22,10 +22,6 @@
 	#include "RaDefines.fx"
 	#include "RaShaderBM.fxh"
 #endif
-
-/*
-	Description: Renders lighting for bundled mesh (dynamic, non-human objects) and calculates world-space lighting.
-*/
 
 // Dependencies and sanity checks
 

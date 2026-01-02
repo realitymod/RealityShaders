@@ -1,9 +1,7 @@
 #line 2 "TerrainShader_Low.fxh"
 
 /*
-	Description: This is the low-settings terrain shader.
-
-	It renders the terrain's shading and shadowing at lower quality for performance.
+    This low-settings terrain shader renders terrain with optimized performance and reduced quality. It provides basic terrain rendering with simplified shading and shadowing for lower-end hardware or performance-critical scenarios.
 */
 
 technique Low_Terrain

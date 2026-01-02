@@ -1,7 +1,7 @@
 #line 2 "SkyDome.fx"
 
 /*
-	Include header files
+    This shader renders sky and skybox environments with specialized depth handling. It creates atmospheric effects, sky gradients, and celestial bodies while using normal depth calculation for distant geometry.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -14,10 +14,6 @@
 	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
-
-/*
-	Description: Renders the sky and skybox.
-	NOTE: This shader uses normal depth calculation because the geometry is far from the scene.
 */
 
 float4x4 _ViewProjMatrix : WorldViewProjection;

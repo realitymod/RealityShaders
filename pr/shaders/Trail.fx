@@ -1,7 +1,7 @@
 #line 2 "Trail.fx"
 
 /*
-	Include header files
+    This shader renders lighting for particles that emit smoke trails and other trail effects. It handles specialized particle rendering with Fresnel effects, transparency, and dynamic lighting for trail systems.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -18,10 +18,6 @@
 	#include "RaCommon.fxh"
 	#include "FXCommon.fxh"
 #endif
-
-/*
-	Description: Renders lighting for particles that emit smoke trails.
-*/
 
 // UNIFORM INPUTS
 

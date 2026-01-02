@@ -1,7 +1,7 @@
 #line 2 "PostProduction_nv3x.fx"
 
 /*
-	Include header files
+    This shader controls post-production effects including tinnitus and other screen-space effects. It handles various post-processing techniques to enhance visual quality and create special effects.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -14,10 +14,6 @@
 	#include "shared/RealityEffects.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
-
-/*
-	Description: Controls post-production shaders, including:
-		1. Tinnitus
 		2. Glow
 		3. Thermal vision
 		4. Wave distortion

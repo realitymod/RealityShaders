@@ -1,7 +1,7 @@
 #line 2 "DebugSphereShader.fx"
 
 /*
-	Include header files
+    Debug shader for rendering sphere shapes.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -12,10 +12,6 @@
 	#include "shared/RealityDepth.fxh"
 	#include "shared/RealityDirectXTK.fxh"
 #endif
-
-/*
-	Description: Renders spheres for debugging light sources.
-*/
 
 float4x4 _WorldViewProj : WorldViewProjection;
 float4x4 _World : World;

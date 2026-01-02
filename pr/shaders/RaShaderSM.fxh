@@ -1,17 +1,13 @@
 #line 2 "RaShaderSM.fxh"
 
 /*
-	Include header files
+    This header file provides data structures and parameters for the RaShaderSM shader. It includes bone matrices, lighting parameters, material properties, and sampler definitions for skinned mesh rendering.
 */
 
 #include "shaders/RaCommon.fxh"
 #if !defined(_HEADERS_)
 	#include "RaCommon.fxh"
 #endif
-
-/*
-	Description: Provides data for the RaShaderSM shader.
-*/
 
 // Fallback stuff
 string DeprecationList[] =

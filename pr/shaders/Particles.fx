@@ -1,7 +1,7 @@
 #line 2 "Particles.fx"
 
 /*
-	Include header files
+    Main particle system shader for various effects.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -18,10 +18,6 @@
 	#include "RaCommon.fxh"
 	#include "FXCommon.fxh"
 #endif
-
-/*
-	Description: Renders 2D particles.
-*/
 
 // Constant array
 struct TemplateParameters

@@ -1,15 +1,15 @@
 #line 2 "RealityEffects.fxh"
 
+/*
+    This file contains various visual effects functions used across multiple shaders for special rendering effects.
+*/
+
 #include "shaders/RealityGraphics.fxh"
 #include "shaders/shared/RealityPixel.fxh"
 #if !defined(_HEADERS_)
 	#include "../RealityGraphics.fxh"
 	#include "RealityPixel.fxh"
 #endif
-
-/*
-	Description: This file contains ported effects from the FidelityFX SDK, such as film grain, vignette, and chromatic aberration.
-*/
 
 /*
 	https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
