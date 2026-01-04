@@ -54,7 +54,7 @@
 		Depth = LightCoords.zw;
 
 		// (Lz / Lw) * Sw -> Lz / Lw;
-		ShadowCoords.z = Depth * ShadowCoords.w;
+		ShadowCoords.z = (Depth.z / Depth.w) * ShadowCoords.w;
 
 		return ShadowCoords;
 	}

@@ -14,7 +14,6 @@
 	#include "shared/RealityDirectXTK.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
-*/
 
 float4x4 _ViewProjMatrix : WorldViewProjection;
 float4 _TexOffset : TEXOFFSET;
