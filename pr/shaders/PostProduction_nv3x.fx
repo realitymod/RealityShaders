@@ -14,12 +14,6 @@
 	#include "shared/RealityEffects.fxh"
 	#include "shared/RealityPixel.fxh"
 #endif
-		2. Glow
-		3. Thermal vision
-		4. Wave distortion
-		5. Flashbang
-	Note: Some thermal vision shaders write to the same render target as optic shaders.
-*/
 
 #define VIGNETTE_RADIUS 1.0
 #define TINNITUS_BLUR_RADIUS 1.0
