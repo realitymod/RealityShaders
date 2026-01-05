@@ -25,7 +25,6 @@
 
 #if !defined(TERRAINSHADER_FXH)
 	#define TERRAINSHADER_FXH
-	*/
 
 	/*
 		[Uniform data from app]
