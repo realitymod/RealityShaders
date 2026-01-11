@@ -166,7 +166,6 @@ RGraphics_PS2FB PS_Decals(VS2PS Input)
 	AlphaTestEnable = TRUE; \
 	AlphaFunc = GREATER; \
 	AlphaRef = 0; \
-	AlphaTestEnable = FALSE; \
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCALPHA; \
 	DestBlend = INVSRCALPHA; \
