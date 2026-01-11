@@ -276,7 +276,9 @@ RGraphics_PS2FB_NoDepth PS_Particle_High_Additive(VS2PS Input)
 	StencilEnable = FALSE; \
 	StencilFunc = ALWAYS; \
 	StencilPass = ZERO; \
-	AlphaTestEnable = FALSE; \
+	AlphaTestEnable = TRUE; \
+	AlphaFunc = GREATER; \
+	AlphaRef = 0; \
 	AlphaBlendEnable = TRUE; \
 	SrcBlend = SRCBLEND; \
 	DestBlend = DESTBLEND; \

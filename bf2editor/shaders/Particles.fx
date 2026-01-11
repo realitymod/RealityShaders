@@ -278,6 +278,9 @@ PS2FB PS_Particle_High_Additive(VS2PS Input)
 	ZEnable = TRUE; \
 	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = FALSE; \
+	AlphaTestEnable = TRUE; \
+	AlphaFunc = GREATER; \
+	AlphaRef = 0; \
 	StencilEnable = FALSE; \
 	StencilFunc = ALWAYS; \
 	StencilPass = ZERO; \
