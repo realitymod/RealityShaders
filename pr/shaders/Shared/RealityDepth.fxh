@@ -53,8 +53,8 @@
 		// Output depth for map rendering
 		Depth = LightCoords.zw;
 
-		// (Lz / Lw) * Sw -> Lz / Lw;
-		ShadowCoords.z = (LightCoords.z / LightCoords.w) * ShadowCoords.w;
+		// (Lz * Sw) / Lw -> Lz / Lw
+		ShadowCoords.z = (LightCoords.z * ShadowCoords.w) / LightCoords.w;
 
 		return ShadowCoords;
 	}
