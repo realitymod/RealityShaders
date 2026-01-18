@@ -159,7 +159,7 @@ RGraphics_PS2FB PS_Decals(VS2PS Input)
 }
 
 #define GET_RENDERSTATES_DECAL \
-	CullMode = CCW; \
+	CullMode = CW; \
 	ZEnable = TRUE; \
 	ZFunc = PR_ZFUNC_WITHEQUAL; \
 	ZWriteEnable = FALSE; \
