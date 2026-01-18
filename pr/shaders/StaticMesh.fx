@@ -183,7 +183,7 @@ float4 PS_ShadowMap_Alpha(VS2PS_ShadowMap Input) : COLOR0
 }
 
 #define GET_RENDERSTATES_SHADOWMAP \
-	CullMode = CW; \
+	CullMode = CCW; \
 	ZEnable = TRUE; \
 	ZFunc = LESSEQUAL; \
 	ZWriteEnable = TRUE; \
