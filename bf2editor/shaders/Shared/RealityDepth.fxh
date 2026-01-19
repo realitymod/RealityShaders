@@ -26,7 +26,7 @@
 	*/
 	float RDepth_GetSlopedBasedBias(float Depth, uniform float SlopeScale = PR_SLOPESCALE_OBJECT, uniform float Bias = PR_DEPTHBIAS_OBJECT)
 	{
-		float M = fwidth(Depth);
+		float M = max(abs(ddx(Depth)), abs(ddy(Depth)));
 		return Bias + (M * SlopeScale);
 	}
 
