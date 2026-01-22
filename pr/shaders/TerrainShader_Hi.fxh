@@ -100,7 +100,7 @@ RGraphics_PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten
 	float3 WorldNormal = normalize(Input.Normal.xyz);
 	float Depth = Input.Normal.w;
 
-	float LerpValue = GetLerpValue(WorldPos.xwz, _CameraPos.xwz);
+	float LerpValue = GetLerpValue(WorldPos.xyz, _CameraPos.xyz);
 	float ScaledLerpValue = saturate(RGraphics_ConvertSNORMtoUNORM_FLT1(LerpValue));
 
 	float4 AccumLights = tex2Dproj(SampleTex1_Clamp, Input.LightTex);
@@ -162,7 +162,8 @@ RGraphics_PS2FB FullDetail_Hi(VS2PS_FullDetail_Hi Input, uniform bool UseMounten
 		{
 			float3 Reflection = reflect(normalize(WorldPos.xyz - _CameraPos.xyz), WorldNormal.xyz);
 			float3 EnvMapColor = RDirectXTK_SRGBToLinearEst(texCUBE(SamplerTex6_Cube, Reflection)).rgb;
-			OutputColor = lerp(EnvMapColor, OutputColor, EnvMapScale * LerpValue);
+			float InvertedLerpValue = 1.0 - LerpValue;
+			OutputColor = lerp(OutputColor, EnvMapColor, EnvMapScale * InvertedLerpValue);
 		}
 
 		OutputColor *= TerrainLights;
