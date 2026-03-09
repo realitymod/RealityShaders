@@ -1,7 +1,7 @@
 #line 2 "RaShaderSM.fx"
 
 /*
-    This shader renders lighting for skinned mesh (dynamic, human-like objects with bones). It supports bone-based animation with 2-bone skinning, normal mapping, environment mapping, and shadow mapping. The shader calculates world-space lighting and handles complex material properties for character rendering.
+	This shader renders lighting for skinned mesh (dynamic, human-like objects with bones). It supports bone-based animation with 2-bone skinning, normal mapping, environment mapping, and shadow mapping. The shader calculates world-space lighting and handles complex material properties for character rendering.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -54,19 +54,20 @@ struct APP2VS
 struct VS2PS
 {
 	float4 HPos : POSITION;
-	float4 Pos : TEXCOORD0;
-	float2 Tex0 : TEXCOORD1;
-
+	float4 WorldPos : TEXCOORD0;
+	float3 Tex0AndOccShadowTex : TEXCOORD1; // .xy = Tex0; .z = OccShadowTex
 	#if _HASNORMALMAP_
-		float3 WorldTangent : TEXCOORD2;
-		float3 WorldBinormal : TEXCOORD3;
+		float3 WorldToTexture0 : TEXCOORD2;
+		float3 WorldToTexture1 : TEXCOORD3;
+		float3 WorldToTexture2 : TEXCOORD4;
+	#else
+		float3 WorldNormal : TEXCOORD2;
 	#endif
-	float3 WorldNormal : TEXCOORD4;
-	#if _HASSHADOW_
-		float4 ShadowTex : TEXCOORD5;
+	#if _USEHEMIMAP_ && (!_USEPERPIXELHEMIMAP_ || !_HASNORMALMAP_)
+		float3 HemiTexAndLerp : TEXCOORD5;
 	#endif
-	#if _HASSHADOWOCCLUSION_
-		float4 ShadowOccTex : TEXCOORD6;
+	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
+		float4 ShadowTex: TEXCOORD6;
 	#endif
 };
 
@@ -78,24 +79,126 @@ struct PS2FB
 	#endif
 };
 
-float4x3 GetBoneMatrix(APP2VS Input, uniform int Bone)
+struct Vertex
 {
-	// Compensate for lack of UBYTE4 on Geforce3
+	int BoneCount;
+	float4x3 BoneMatrix[2];
+	float BoneWeight[2];
+	float4x3 BlendedBoneMatrix;
+	float BinormalFlipping;
+};
+
+Vertex GetVertexData(APP2VS Input)
+{
+	Vertex Output;
+
+	Output.BoneCount = 2;
+
+	// We are on Shader Model 3.0 - no more workarounds.
 	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-	return MatBones[IndexArray[Bone]];
+
+	// Compute Bone 1
+	Output.BoneMatrix[0] = MatBones[IndexVector[0]];
+	Output.BoneWeight[0] = Input.BlendWeights;
+
+	// Compute Bone 2
+	Output.BoneMatrix[1] = MatBones[IndexVector[1]];
+	Output.BoneWeight[1] = 1.0 - Input.BlendWeights;
+
+	Output.BlendedBoneMatrix = (Output.BoneMatrix[0] * Output.BoneWeight[0]);
+	Output.BlendedBoneMatrix += (Output.BoneMatrix[1] * Output.BoneWeight[1]);
+
+	// Compute Binormal flipping
+	Output.BinormalFlipping = 1.0 + IndexVector[2] * -2.0;
+
+	return Output;
 }
 
-float4x3 GetBlendedBoneMatrix(APP2VS Input)
+float4 GetSkinnedPos(Vertex Input, float4 Pos)
 {
-	float4x3 Mat0 = GetBoneMatrix(Input, 0);
-	float4x3 Mat1 = GetBoneMatrix(Input, 1);
-	return lerp(Mat1, Mat0, Input.BlendWeights); 
+	float3 SkinnedPos = mul(Pos, Input.BlendedBoneMatrix);
+	return float4(SkinnedPos, 1.0);
 }
 
-float GetBinormalFlipping(APP2VS Input)
+float3 GetSkinnedNormal(Vertex Input, float3 Normal)
 {
-	return 1.0 + D3DCOLORtoUBYTE4(Input.BlendIndices)[2] * -2.0;
+	return normalize(mul(Normal, (float3x3)Input.BlendedBoneMatrix));
+}
+
+float3 GetSkinnedWorldNormal(Vertex Input, float3 Normal)
+{
+	return mul(GetSkinnedNormal(Input, Normal), (float3x3)World);
+}
+
+float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
+{
+	// LocalHeight scale, 1 for top and 0 for bottom
+	float LocalHeight = (WorldPos.y - (World[3][1] - 0.5)) * 0.5;
+	float Offset = RGraphics_ConvertUNORMtoSNORM_FLT1(LocalHeight) + HeightOverTerrain;
+	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
+	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
+}
+
+VS2PS VS_SkinnedMesh(APP2VS Input)
+{
+	VS2PS Output = (VS2PS)0.0;
+
+	// Get vertex data
+	Vertex Vtx = GetVertexData(Input);
+
+	// Get skinned object-space position
+	float4 SkinnedObjectPos = GetSkinnedPos(Vtx, Input.Pos);
+
+	// Output HPos data
+	Output.HPos = mul(SkinnedObjectPos, WorldViewProjection);
+
+	// World-space data
+	float4 SkinnedWorldPos = mul(SkinnedObjectPos, World);
+	float3 SkinnedWorldNormal = GetSkinnedWorldNormal(Vtx, Input.Normal);
+	#if _HASNORMALMAP_
+		#if _OBJSPACENORMALMAP_
+			// [object-space] -> [skinned object space]
+			float3x3 ObjectToTexture = (float3x3)Vtx.BlendedBoneMatrix;
+		#else
+			// [tangent-space] -> [object-space] -> [skinned object space]
+			float3x3 ObjectTBN = RVertex_GetTangentBasis(Input.Tan, Input.Normal, Vtx.BinormalFlipping, true);
+			float3x3 ObjectToTexture = mul(ObjectTBN, (float3x3)Vtx.BlendedBoneMatrix);
+		#endif
+
+		// [skinned object space] -> [transposed skinned world-space]
+		float3x3 WorldToTexture = mul(ObjectToTexture, (float3x3)World);
+		Output.WorldToTexture0 = WorldToTexture[0];
+		Output.WorldToTexture1 = WorldToTexture[1];
+		Output.WorldToTexture2 = WorldToTexture[2];
+	#else
+		Output.WorldNormal = SkinnedWorldNormal;
+	#endif
+	Output.WorldPos = SkinnedWorldPos;
+
+	// Output Depth
+	#if PR_LOG_DEPTH
+		Output.WorldPos.w = Output.HPos.w + 1.0;
+	#endif
+
+	// Texture-space data
+	Output.Tex0AndOccShadowTex.xy = Input.TexCoord0;
+
+	// Packing shadows into other data
+	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
+		Output.ShadowTex = Ra_GetMeshShadowProjection(SkinnedWorldPos);
+		#if _HASSHADOWOCCLUSION_
+			float OccShadowTex = Ra_GetMeshShadowProjection(SkinnedWorldPos, true).z;
+			Output.Tex0AndOccShadowTex.z = OccShadowTex;
+		#endif
+	#endif
+
+	// Process per-vertex hemi data
+	#if _USEHEMIMAP_ && (!_USEPERPIXELHEMIMAP_ || !_HASNORMALMAP_)
+		Output.HemiTexAndLerp.xy = RPixel_GetHemiTex(SkinnedWorldPos, SkinnedWorldNormal, HemiMapConstants, true);
+		Output.HemiTexAndLerp.z = GetHemiLerp(SkinnedWorldPos, SkinnedWorldNormal);
+	#endif
+
+	return Output;
 }
 
 struct LightColors
@@ -112,72 +215,8 @@ LightColors GetLightColors()
 		Output.Diffuse = Lights[0].color.rgb;
 		Output.Specular = Lights[0].color.rgb;
 	#else
-		#if defined(_EDITOR_)
-			Output.Diffuse = DiffuseColor.rgb;
-			Output.Specular = SpecularColor.rgb;
-		#else
-			Output.Diffuse = Lights[0].color.rgb;
-			Output.Specular = Lights[0].specularColor;
-		#endif
-	#endif
-
-	return Output;
-}
-
-float GetHemiLerp(float3 WorldPos, float3 WorldNormal)
-{
-	// LocalHeight scale, 1 for top and 0 for bottom
-	float LocalHeight = (WorldPos.y - (World[3][1] - 0.5)) * 0.5;
-	float Offset = ((LocalHeight * 2.0) - 1.0) + HeightOverTerrain;
-	Offset = clamp(Offset, (1.0 - HeightOverTerrain) * -2.0, 0.8);
-	return clamp(((WorldNormal.y + Offset) * 0.5) + 0.5, 0.0, 0.9);
-}
-
-VS2PS VS_SkinnedMesh(APP2VS Input)
-{
-	VS2PS Output = (VS2PS)0.0;
-
-	// Get skinned object-space data
-	float4x3 BoneMatrix = GetBlendedBoneMatrix(Input);
-	float4 ObjectPos = float4(mul(Input.Pos, BoneMatrix), 1.0);
-	float3x3 ObjectTBN = RVertex_GetTangentBasis(Input.Tan, Input.Normal, GetBinormalFlipping(Input));
-
-	// Output HPos data
-	Output.HPos = mul(ObjectPos, WorldViewProjection);
-	// World-space data
-	float4 WorldPos = mul(float4(Input.Pos.xyz, 1.0), World);
-	float4 SkinWorldPos = mul(ObjectPos, World);
-	float3x3 WorldMat = mul((float3x3)BoneMatrix, (float3x3)World);
-	float3x3 WorldTBN = mul(ObjectTBN, WorldMat);
-	#if _HASNORMALMAP_
-		#if _OBJSPACENORMALMAP_
-			// [object-space] -> [skinned object-space] -> [skinned world-space]
-			Output.WorldTangent = WorldMat[0];
-			Output.WorldBinormal = WorldMat[1];
-			Output.WorldNormal = WorldMat[2];
-		#else
-			// [tangent-space] -> [object-space] -> [skinned object-space] -> [skinned world-space]
-			Output.WorldTangent = WorldTBN[0];
-			Output.WorldBinormal = WorldTBN[1];
-			Output.WorldNormal = WorldTBN[2];
-		#endif
-	#else
-		Output.WorldNormal = WorldTBN[2];
-	#endif
-	Output.Pos = float4(SkinWorldPos.xyz, Output.HPos.w);
-
-	// Output Depth
-	#if PR_LOG_DEPTH
-		Output.Pos.w = Output.HPos.w + 1.0;
-	#endif
-
-	// Texture-space data
-	Output.Tex0 = Input.TexCoord0;
-	#if _HASSHADOW_
-		Output.ShadowTex = Ra_GetShadowProjection(SkinWorldPos);
-	#endif
-	#if _HASSHADOWOCCLUSION_
-		Output.ShadowOccTex = Ra_GetShadowProjection(SkinWorldPos, true);
+		Output.Diffuse = DiffuseColor.rgb;
+		Output.Specular = SpecularColor.rgb;
 	#endif
 
 	return Output;
@@ -187,77 +226,86 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 {
 	PS2FB Output = (PS2FB)0.0;
 
+	// Lighting data
+	LightColors LC = GetLightColors();
+	float3 WorldPos = Input.WorldPos.xyz;
+	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
+
+	#if _POINTLIGHT_
+		float3 WorldLightPos = Ra_GetWorldLightPos(Lights[0].pos);
+		float3 WorldLightDir = normalize(WorldLightPos - WorldPos);
+		float Attenuation = RPixel_GetLightAttenuation(WorldLightPos - WorldPos, Lights[0].attenuation);
+	#else
+		float3 WorldLightDir = normalize(Ra_GetWorldLightDir(-Lights[0].dir));
+		float Attenuation = 1.0;
+	#endif
+
 	// Texture-space data
-	float4 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0));
+	float4 ColorMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleDiffuseMap, Input.Tex0AndOccShadowTex.xy));
 	#if _HASNORMALMAP_
-		float3x3 WorldTBN =
+		float3x3 WorldToTexture =
 		{
-			normalize(Input.WorldTangent),
-			normalize(Input.WorldBinormal),
-			normalize(Input.WorldNormal)
+			normalize(Input.WorldToTexture0),
+			normalize(Input.WorldToTexture1),
+			normalize(Input.WorldToTexture2)
 		};
 
 		// NormalMap.a stores the glossmap
-		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0);
-		NormalMap.xyz = normalize((NormalMap.xyz * 2.0) - 1.0);
-		float3 WorldNormal = mul(NormalMap.xyz, WorldTBN);
+		float4 NormalMap = tex2D(SampleNormalMap, Input.Tex0AndOccShadowTex.xy);
+		NormalMap.xyz = RGraphics_ConvertUNORMtoSNORM_FLT3(NormalMap.xyz);
+		float3 WorldNormal = normalize(mul(NormalMap.xyz, WorldToTexture));
 	#else
 		float4 NormalMap = float4(0.0, 0.0, 1.0, 0.0);
 		float3 WorldNormal = normalize(Input.WorldNormal);
 	#endif
+	float3 HemiNormal = WorldNormal;
 
-	// Lighting data
-	float4 WorldPos = Input.Pos;
-	float3 WorldLightDir = normalize(mul(-Lights[0].dir.xyz, (float3x3)World));
-	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
+	// Calculate shadow factors
+	float Shadow = 1.0;
+	float ShadowOcc = 1.0;
 
-	#if _HASSHADOW_
-		float Shadow = RDepth_GetShadowFactor(SampleShadowMap, Input.ShadowTex);
-	#else
-		float Shadow = 1.0;
-	#endif
-	#if _HASSHADOWOCCLUSION_
-		float ShadowOcc = RDepth_GetShadowFactor(SampleShadowOccluderMap, Input.ShadowOccTex);
-	#else
-		float ShadowOcc = 1.0;
-	#endif
+	#if _HASSHADOW_ || _HASSHADOWOCCLUSION_
+		float4 ShadowTex = Input.ShadowTex;
 
-	float HemiLight = 1.0;
-	#if _POINTLIGHT_
-		float Ambient = 0.0;
-	#else
-		#if _USEHEMIMAP_
-			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 HemiTex = RPixel_GetHemiTex(WorldPos, 0.0, HemiMapConstants, true);
-			float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleHemiMap, HemiTex));
-			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
-			float3 Ambient = lerp(HemiMap, HemiMapSkyColor, HemiLerp);
-			// HemiLight = HemiMap.a;
-		#else
-			#if defined(_EDITOR_)
-				float Ambient = 1.0;
-			#else
-				float Ambient = Lights[0].color.a;
-			#endif
+		#if _HASSHADOW_
+			Shadow = RDepth_GetShadowFactor(SampleShadowMap, ShadowTex);
+		#endif
+
+		#if _HASSHADOWOCCLUSION_
+			ShadowTex.z = Input.Tex0AndOccShadowTex.z;
+			ShadowOcc = RDepth_GetShadowFactor(SampleShadowOccluderMap, ShadowTex);
 		#endif
 	#endif
 
-	#if _POINTLIGHT_
-		float3 WorldLightVec = Ra_GetWorldLightPos(Lights[0].pos.xyz) - WorldPos;
-		float Attenuation = RPixel_GetLightAttenuation(WorldLightVec, Lights[0].attenuation);
-	#else
-		float Attenuation = 1.0;
+	// Calculate Hemi
+	float HemiLight = 1.0;
+	float3 AmbientRGB = 0.0;
+
+	#if !_POINTLIGHT_
+		#if _USEHEMIMAP_ && (!_USEPERPIXELHEMIMAP_ || !_HASNORMALMAP_)
+			float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleHemiMap, Input.HemiTexAndLerp.xy));
+			AmbientRGB = lerp(HemiMap.rgb, HemiMapSkyColor.rgb, Input.HemiTexAndLerp.z);
+		#elif _USEPERPIXELHEMIMAP_ && !_NOTHING_
+			// GoundColor.a has an occlusion factor that we can use for static shadowing
+			float2 HemiTex = RPixel_GetHemiTex(WorldPos, HemiNormal, HemiMapConstants, true);
+			float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleHemiMap, HemiTex));
+			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
+			AmbientRGB = lerp(HemiMap.rgb, HemiMapSkyColor.rgb, HemiLerp);
+			// HemiLight = HemiMap.a;
+		#else
+			AmbientRGB = 1.0;
+		#endif
 	#endif
 
+	// Initialize output color
 	float4 OutputColor = 1.0;
 
 	// Calculate lighting
-	LightColors LC = GetLightColors();
-	RDirectXTK_ColorPair Lighting = RDirectXTK_ComputeLights(WorldNormal.xyz, WorldLightDir, WorldViewDir, SpecularPower);
+	RDirectXTK_ColorPair Light = RDirectXTK_ComputeLights(WorldNormal.xyz, WorldLightDir, WorldViewDir, SpecularPower);
 	float TotalLights = Attenuation * (HemiLight * Shadow * ShadowOcc);
-	float3 DiffuseRGB = (Lighting.Diffuse * LC.Diffuse) * TotalLights;
-	float3 SpecularRGB = ((Lighting.Specular * NormalMap.a) * LC.Specular) * TotalLights;
-	OutputColor.rgb = RDirectXTK_CompositeLights(ColorMap.rgb, Ambient, DiffuseRGB, SpecularRGB);
+	float3 DiffuseRGB = (Light.Diffuse * LC.Diffuse.rgb) * TotalLights;
+	float3 SpecularRGB = ((Light.Specular * NormalMap.a) * LC.Specular.rgb) * TotalLights;
+	OutputColor.rgb = RDirectXTK_CompositeLights(ColorMap.rgb, AmbientRGB, DiffuseRGB, SpecularRGB);
 	OutputColor.a = ColorMap.a * Transparency.a;
 
 	// Thermals
@@ -272,12 +320,12 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	Output.Color = OutputColor;
 	#if !_POINTLIGHT_
-		Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos));
+		Ra_ApplyFog(Output.Color.rgb, Ra_GetFogValue(WorldPos, WorldSpaceCamPos.xyz));
 	#endif
 	RDirectXTK_TonemapAndLinearToSRGBEst(Output.Color);
 
 	#if PR_LOG_DEPTH
-		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.Pos.w);
+		Output.Depth = RDepth_ApplyLogarithmicDepth(Input.WorldPos.w);
 	#endif
 
 	return Output;

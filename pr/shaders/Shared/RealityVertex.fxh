@@ -19,13 +19,16 @@
 		---
 		License: CC BY-NC 4.0
 	*/
-	float3x3 RVertex_GetTangentBasis(float3 Tangent, float3 Normal, float Flip)
+	float3x3 RVertex_GetTangentBasis(float3 Tangent, float3 Normal, float Flip, uniform bool ReOrthogonalize = true)
 	{
 		Tangent = normalize(Tangent);
 		Normal = normalize(Normal);
 
 		// Re-orthogonalize Tangent with respect to Normal
-		Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
+		if (ReOrthogonalize)
+		{
+			Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
+		}
 
 		// Get Tangent and Normal
 		// Cross product and flip to create Binormal
