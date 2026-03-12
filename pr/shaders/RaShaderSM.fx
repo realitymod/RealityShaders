@@ -284,7 +284,7 @@ RGraphics_PS2FB PS_SkinnedMesh(VS2PS Input)
 			AmbientRGB = lerp(HemiMap.rgb, HemiMapSkyColor.rgb, HemiLerp);
 			// HemiLight = HemiMap.a;
 		#else
-			AmbientRGB = LC.Diffuse.a;
+			AmbientRGB = HemiMapSkyColor.rgb;
 		#endif
 	#endif
 

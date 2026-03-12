@@ -293,7 +293,7 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 			AmbientRGB = lerp(HemiMap.rgb, HemiMapSkyColor.rgb, HemiLerp);
 			// HemiLight = HemiMap.a;
 		#else
-			AmbientRGB = 1.0;
+			AmbientRGB = HemiMapSkyColor.rgb;
 		#endif
 	#endif
 
