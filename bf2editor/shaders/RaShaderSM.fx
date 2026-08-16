@@ -228,13 +228,13 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 
 	// Lighting data
 	LightColors LC = GetLightColors();
-	float3 WorldPos = Input.WorldPos.xyz;
-	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos);
+	float4 WorldPos = Input.WorldPos;
+	float3 WorldViewDir = normalize(WorldSpaceCamPos.xyz - WorldPos.xyz);
 
 	#if _POINTLIGHT_
 		float3 WorldLightPos = Ra_GetWorldLightPos(Lights[0].pos);
-		float3 WorldLightDir = normalize(WorldLightPos - WorldPos);
-		float Attenuation = RPixel_GetLightAttenuation(WorldLightPos - WorldPos, Lights[0].attenuation);
+		float3 WorldLightDir = normalize(WorldLightPos - WorldPos.xyz);
+		float Attenuation = RPixel_GetLightAttenuation(WorldLightPos - WorldPos.xyz, Lights[0].attenuation);
 	#else
 		float3 WorldLightDir = normalize(Ra_GetWorldLightDir(-Lights[0].dir));
 		float Attenuation = 1.0;
@@ -287,9 +287,9 @@ PS2FB PS_SkinnedMesh(VS2PS Input)
 			AmbientRGB = lerp(HemiMap.rgb, HemiMapSkyColor.rgb, Input.HemiTexAndLerp.z);
 		#elif _USEPERPIXELHEMIMAP_ && !_NOTHING_
 			// GoundColor.a has an occlusion factor that we can use for static shadowing
-			float2 HemiTex = RPixel_GetHemiTex(WorldPos, HemiNormal, HemiMapConstants, true);
+			float2 HemiTex = RPixel_GetHemiTex(WorldPos.xyz, HemiNormal, HemiMapConstants, true);
 			float4 HemiMap = RDirectXTK_SRGBToLinearEst(tex2D(SampleHemiMap, HemiTex));
-			float HemiLerp = GetHemiLerp(WorldPos, WorldNormal);
+			float HemiLerp = GetHemiLerp(WorldPos.xyz, WorldNormal);
 			AmbientRGB = lerp(HemiMap.rgb, HemiMapSkyColor.rgb, HemiLerp);
 			// HemiLight = HemiMap.a;
 		#else
