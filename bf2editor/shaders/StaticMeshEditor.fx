@@ -1,7 +1,7 @@
 #line 2 "StaticMeshEditor.fx"
 
 /*
-    This shader provides editor-specific functionality for static mesh rendering. It includes the same core functionality as StaticMesh.fx but is tailored for the BF2 editor environment with additional debug and visualization features.
+	This shader provides editor-specific functionality for static mesh rendering. It includes the same core functionality as StaticMesh.fx but is tailored for the BF2 editor environment with additional debug and visualization features.
 */
 
 #include "Shaders/StaticMesh_Data.fxh"
@@ -19,17 +19,17 @@
 
 struct APP2VS
 {
-    float4 Pos : POSITION;
-    float3 Normal : NORMAL;
-    float2 TexCoord : TEXCOORD0;
-    float3 Tan : TANGENT;
-    float3 Binorm : BINORMAL;
+	float4 Pos : POSITION;
+	float3 Normal : NORMAL;
+	float2 TexCoord : TEXCOORD0;
+	float3 Tan : TANGENT;
+	float3 Binorm : BINORMAL;
 };
 
 struct VS2PS_SimpleShader
 {
-    float4 HPos : POSITION;
-    float2 Tex0 : TEXCOORD0;
+	float4 HPos : POSITION;
+	float2 Tex0 : TEXCOORD0;
 };
 
 VS2PS_SimpleShader VS_SimpleShader(APP2VS Input)
@@ -72,7 +72,7 @@ technique alpha_one
 
 struct APPDATA_ShadowMap
 {
-    float4 Pos : POSITION;
+	float4 Pos : POSITION;
 };
 
 struct VS2PS_ShadowMap
@@ -103,7 +103,7 @@ VS2PS_ShadowMap VS_ShadowMapPoint(APPDATA_ShadowMap Input)
 {
 	VS2PS_ShadowMap Output;
 
-  	float4 oPos = Input.Pos;
+	float4 oPos = Input.Pos;
  	Output.Pos = mul(oPos, _ViewProjMatrix);
 	Output.Pos.z *= _ParaboloidValues.x;
 	Output.PosZW = Output.Pos.zwww / 10.0 + 0.5;

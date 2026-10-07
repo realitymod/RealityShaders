@@ -1,7 +1,7 @@
 #line 2 "RealityEffects.fxh"
 
 /*
-    This file contains various visual effects functions used across multiple shaders for special rendering effects.
+	This file contains various visual effects functions used across multiple shaders for special rendering effects.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -156,7 +156,7 @@
 	}
 
 	// Lens pass entry point.
-	void FFX_Lens(
+	void REffects_FFX_Lens(
 		inout float3 Color,
 		in sampler2D Image,
 		in float2 HPos,
@@ -229,7 +229,7 @@
 		float4 Weight = 0.0;
 
 		// Get constants
-		const float Pi2 = acos(-1.0) * 2.0;
+		float Pi2 = acos(-1.0) * 2.0;
 
 		// Get texcoord data
 		float2 ScreenSize = RPixel_GetScreenSize(Tex);

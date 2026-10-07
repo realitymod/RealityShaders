@@ -1,7 +1,7 @@
 #line 2 "StaticMesh_LightMapGen.fxh"
 
 /*
-    This file contains lightmap generation shaders for static meshes. It provides specialized shaders used during the lightmap baking process to generate proper UV coordinates and handle alpha testing for static geometry.
+	This file contains lightmap generation shaders for static meshes. It provides specialized shaders used during the lightmap baking process to generate proper UV coordinates and handle alpha testing for static geometry.
 */
 
 #include "Shaders/StaticMesh_Data.fxh"

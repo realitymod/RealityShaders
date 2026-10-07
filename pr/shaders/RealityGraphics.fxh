@@ -1,7 +1,7 @@
 #line 2 "RealityGraphics.fxh"
 
 /*
-    Core graphics functions and definitions for Reality engine.
+	Core graphics functions and definitions for Reality engine.
 */
 
 #include "shaders/SettingsDefines.fxh"
@@ -41,6 +41,8 @@
 		D3DCMP_GREATEREQUAL = 7,
 		D3DCMP_ALWAYS = 8,
 	*/
+
+	#define PR_ROAD_Y_BIAS 0.0001
 
 	// Project Reality's default Z-testing
 	// We expose it here so it is easy to port over to reversed depth buffering
@@ -102,45 +104,22 @@
 		return acos(-1.0);
 	}
 
-	float RGraphics_ConvertSNORMtoUNORM_FLT1(float X)
-	{
-		return (X * 0.5) + 0.5;
-	}
+	#define TEMPLATE_RGRAPHICS_DATA_CONV(DATA_TYPE, LENGTH) \
+		DATA_TYPE RGraphics_ConvertUNORMtoSNORM_FLT##LENGTH(DATA_TYPE X) \
+		{ \
+			return (X * (DATA_TYPE)2.0) - (DATA_TYPE)1.0; \
+		} \
+		\
+		DATA_TYPE RGraphics_ConvertSNORMtoUNORM_FLT##LENGTH(DATA_TYPE X) \
+		{ \
+			return (X * (DATA_TYPE)0.5) + (DATA_TYPE)0.5; \
+		} \
 
-	float2 RGraphics_ConvertSNORMtoUNORM_FLT2(float2 X)
-	{
-		return (X * 0.5) + 0.5;
-	}
-
-	float3 RGraphics_ConvertSNORMtoUNORM_FLT3(float3 X)
-	{
-		return (X * 0.5) + 0.5;
-	}
-
-	float4 RGraphics_ConvertSNORMtoUNORM_FLT4(float4 X)
-	{
-		return (X * 0.5) + 0.5;
-	}
-
-	float RGraphics_ConvertUNORMtoSNORM_FLT1(float X)
-	{
-		return (X * 2.0) - 1.0;
-	}
-
-	float2 RGraphics_ConvertUNORMtoSNORM_FLT2(float2 X)
-	{
-		return (X * 2.0) - 1.0;
-	}
-
-	float3 RGraphics_ConvertUNORMtoSNORM_FLT3(float3 X)
-	{
-		return (X * 2.0) - 1.0;
-	}
-
-	float4 RGraphics_ConvertUNORMtoSNORM_FLT4(float4 X)
-	{
-		return (X * 2.0) - 1.0;
-	}
+	// Instantiate template over vector dimensions
+	TEMPLATE_RGRAPHICS_DATA_CONV(float, 1)
+	TEMPLATE_RGRAPHICS_DATA_CONV(float2, 2)
+	TEMPLATE_RGRAPHICS_DATA_CONV(float3, 3)
+	TEMPLATE_RGRAPHICS_DATA_CONV(float4, 4)
 
 	/*
 		http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/

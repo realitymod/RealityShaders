@@ -1,7 +1,7 @@
 #line 2 "DebugCircleShader.fx"
 
 /*
-    This shader renders a circle for debugging purposes.
+	This shader renders a circle for debugging purposes.
 */
 
 #include "shaders/RealityGraphics.fxh"

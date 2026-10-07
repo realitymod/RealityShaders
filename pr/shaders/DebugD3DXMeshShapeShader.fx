@@ -1,7 +1,7 @@
 #line 2 "DebugD3DXMeshShapeShader.fx"
 
 /*
-    Debug shader for rendering D3DX mesh shapes.
+	Debug shader for rendering D3DX mesh shapes.
 */
 
 #include "shaders/RealityGraphics.fxh"

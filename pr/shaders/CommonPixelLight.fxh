@@ -1,7 +1,7 @@
 #line 2 "CommonPixelLight.fxh"
 
 /*
-    Contains common pixel lighting functions used across multiple shaders.
+	Contains common pixel lighting functions used across multiple shaders.
 */
 
 #if !defined(_HEADERS_)

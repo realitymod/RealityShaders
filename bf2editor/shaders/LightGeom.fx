@@ -1,7 +1,7 @@
 #line 2 "LightGeom.fx"
 
 /*
-    Handles geometry lighting calculations.
+	Handles geometry lighting calculations.
 */
 
 #include "shaders/RealityGraphics.fxh"

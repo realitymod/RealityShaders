@@ -1,7 +1,7 @@
 #line 2 "RoadCompiled.fx"
 
 /*
-    This shader renders lighting for compiled roads with texture blending and fade-out effects. It handles road surface rendering with specialized shaders for pre-compiled road geometry and applies distance-based fading.
+	This shader renders lighting for compiled roads with texture blending and fade-out effects. It handles road surface rendering with specialized shaders for pre-compiled road geometry and applies distance-based fading.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -85,7 +85,7 @@ VS2PS VS_RoadCompiled(APP2VS Input)
 	VS2PS Output = (VS2PS)0.0;
 
 	float4 WorldPos = Input.Pos;
-	WorldPos.y += 0.01;
+	WorldPos.y += PR_ROAD_Y_BIAS;
 
 	Output.HPos = mul(WorldPos, _WorldViewProj);
 	Output.Pos.xyz = Input.Pos.xyz;

@@ -1,7 +1,7 @@
 #line 2 "Road.fx"
 
 /*
-    This shader renders editable roads in the editor. It handles road geometry rendering with texture blending and alpha transparency for editor-specific road visualization and manipulation.
+	This shader renders editable roads in the editor. It handles road geometry rendering with texture blending and alpha transparency for editor-specific road visualization and manipulation.
 */
 
 #include "shaders/RealityGraphics.fxh"

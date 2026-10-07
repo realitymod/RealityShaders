@@ -1,7 +1,7 @@
 #line 2 "RealityDirectXTK.fxh"
 
 /*
-    This file contains ported functions from the DirectX Tool Kit, including color space conversions, tonemapping, and lighting calculations.
+	This file contains ported functions from the DirectX Tool Kit, including color space conversions, tonemapping, and lighting calculations.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -122,7 +122,7 @@
 
 	float RDirectXTK_ToHalfNL(float DotNL)
 	{
-		DotNL = saturate((DotNL * 0.5) + 0.5);
+		DotNL = saturate(RGraphics_ConvertSNORMtoUNORM_FLT1(DotNL));
 		return DotNL * DotNL;
 	}
 

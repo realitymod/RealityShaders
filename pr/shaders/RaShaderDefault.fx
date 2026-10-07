@@ -1,7 +1,7 @@
 #line 2 "RaShaderDefault.fx"
 
 /*
-    This basic shader outputs a solid color and serves as a fallback or default rendering shader. It handles simple vertex transformation and applies a fixed color output with depth writing support.
+	This basic shader outputs a solid color and serves as a fallback or default rendering shader. It handles simple vertex transformation and applies a fixed color output with depth writing support.
 */
 
 #include "shaders/RealityGraphics.fxh"

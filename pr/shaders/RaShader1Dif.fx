@@ -1,7 +1,7 @@
 #line 2 "RaShader1Dif.fx"
 
 /*
-    This shader renders an object's diffuse map with basic lighting and fog effects. It handles simple diffuse texturing for objects and applies SRGB color space conversions and tonemapping.
+	This shader renders an object's diffuse map with basic lighting and fog effects. It handles simple diffuse texturing for objects and applies SRGB color space conversions and tonemapping.
 */
 
 #include "shaders/RealityGraphics.fxh"

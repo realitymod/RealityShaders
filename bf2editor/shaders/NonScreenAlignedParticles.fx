@@ -1,7 +1,7 @@
 #line 2 "NonScreenAlignedParticles.fx"
 
 /*
-    Handles particle systems that are not screen-aligned.
+	Handles particle systems that are not screen-aligned.
 */
 
 #include "shaders/RealityGraphics.fxh"

@@ -1,7 +1,7 @@
 #line 2 "Nametag.fx"
 
 /*
-    Renders nametags and UI elements above objects.
+	Renders nametags and UI elements above objects.
 */
 
 #include "shaders/RealityGraphics.fxh"

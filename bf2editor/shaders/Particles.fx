@@ -1,7 +1,7 @@
 #line 2 "Particles.fx"
 
 /*
-    Main particle system shader for various effects.
+	Main particle system shader for various effects.
 */
 
 #include "shaders/RealityGraphics.fxh"

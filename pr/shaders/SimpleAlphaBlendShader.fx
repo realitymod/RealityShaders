@@ -1,7 +1,7 @@
 #line 2 "SimpleAlphaBlendShader.fx"
 
 /*
-    This shader provides simple alpha blending functionality for transparent objects. It handles basic texture-based transparency with alpha blending and supports fundamental transparent rendering techniques.
+	This shader provides simple alpha blending functionality for transparent objects. It handles basic texture-based transparency with alpha blending and supports fundamental transparent rendering techniques.
 */
 
 #include "shaders/RealityGraphics.fxh"

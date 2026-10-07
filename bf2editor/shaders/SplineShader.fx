@@ -1,7 +1,7 @@
 #line 2 "SplineShader.fx"
 
 /*
-    This shader renders splines and control points in the editor. It handles curve visualization, control point rendering, and editor-specific spline manipulation with depth bias for proper layering.
+	This shader renders splines and control points in the editor. It handles curve visualization, control point rendering, and editor-specific spline manipulation with depth bias for proper layering.
 */
 
 #include "shaders/RealityGraphics.fxh"

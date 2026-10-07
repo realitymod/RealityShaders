@@ -1,7 +1,7 @@
 #line 2 "RaShaderLeafOG.fx"
 
 /*
-    This shader renders overgrowth leaf objects.
+	This shader renders overgrowth leaf objects.
 */
 
 #define OVERGROWTH

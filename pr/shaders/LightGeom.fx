@@ -1,7 +1,7 @@
 #line 2 "LightGeom.fx"
 
 /*
-    Handles geometry lighting calculations.
+	Handles geometry lighting calculations.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -83,7 +83,7 @@ technique Pointlight
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
 
- 		VertexShader = compile vs_3_0 VS_PointLight();
+		VertexShader = compile vs_3_0 VS_PointLight();
 		PixelShader = compile ps_3_0 PS_PointLight();
 	}
 }
@@ -99,7 +99,7 @@ VS2PS_Spot VS_SpotLight(APP2VS Input)
 {
 	VS2PS_Spot Output = (VS2PS_Spot)0.0;
 
- 	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), _WorldViewProj);
 	// Transform vertex
 	float3 VertPos = mul(float4(Input.Pos.xyz, 1.0), _WorldView);
 	Output.Pos.xyz = -normalize(VertPos);
@@ -154,7 +154,7 @@ technique Spotlight
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
 
- 		VertexShader = compile vs_3_0 VS_SpotLight();
+		VertexShader = compile vs_3_0 VS_SpotLight();
 		PixelShader = compile ps_3_0 PS_SpotLight();
 	}
 }

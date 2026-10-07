@@ -1,7 +1,7 @@
 #line 2 "RaShaderBMZOnly.fx"
 
 /*
-    This is a Z-only shader for bundled mesh (dynamic, non-human objects), which only writes to the depth buffer.
+	This is a Z-only shader for bundled mesh (dynamic, non-human objects), which only writes to the depth buffer.
 */
 
 #include "shaders/RealityGraphics.fxh"

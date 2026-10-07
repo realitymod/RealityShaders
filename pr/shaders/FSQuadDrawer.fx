@@ -1,7 +1,7 @@
 #line 2 "FSQuadDrawer.fx"
 
 /*
-    Full-screen quad drawer shader for post-processing effects including blurs and texture conversions.
+	Full-screen quad drawer shader for post-processing effects including blurs and texture conversions.
 */
 
 #include "shaders/RealityGraphics.fxh"

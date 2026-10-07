@@ -1,7 +1,7 @@
 #line 2 "DebugSphereShader.fx"
 
 /*
-    Debug shader for rendering sphere shapes.
+	Debug shader for rendering sphere shapes.
 */
 
 #include "shaders/RealityGraphics.fxh"

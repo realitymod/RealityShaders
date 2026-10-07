@@ -1,7 +1,7 @@
 #line 2 "TerrainEditorShader.fx"
 
 /*
-    This shader provides comprehensive terrain rendering for the editor environment. It handles various terrain visualization modes including detail texturing, grid display, lightmap generation, and specialized editor-specific features like height visualization and material mapping.
+	This shader provides comprehensive terrain rendering for the editor environment. It handles various terrain visualization modes including detail texturing, grid display, lightmap generation, and specialized editor-specific features like height visualization and material mapping.
 */
 
 #include "shaders/RealityGraphics.fxh"

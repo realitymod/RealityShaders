@@ -1,7 +1,7 @@
 #line 2 "Font.fx"
 
 /*
-    Shader for rendering text and font elements.
+	Shader for rendering text and font elements.
 */
 
 #include "shaders/RealityGraphics.fxh"

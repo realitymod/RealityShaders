@@ -1,7 +1,7 @@
 #line 2 "StaticMesh_DX9GBuff.fxh"
 
 /*
-    This file contains DirectX 9 G-Buffer shaders for static mesh rendering. It implements deferred rendering techniques for static meshes, including geometry buffer generation with support for various material configurations like diffuse, detail, dirt, and crack mapping.
+	This file contains DirectX 9 G-Buffer shaders for static mesh rendering. It implements deferred rendering techniques for static meshes, including geometry buffer generation with support for various material configurations like diffuse, detail, dirt, and crack mapping.
 */
 
 #include "Shaders/StaticMesh_Data.fxh"
@@ -404,7 +404,7 @@ VS2PS_GBuffBaseLMAT1 VS_GBuffBaseLMAT1(APP2VS_GBuffBaseLM Input)
 {
 	VS2PS_GBuffBaseLMAT1 Output;
 
-  	Output.Pos = mul(Input.Pos, _ViewProjMatrix);
+	Output.Pos = mul(Input.Pos, _ViewProjMatrix);
 
 	Output.TexCoord0.xy = Output.Pos.xy/Output.Pos.w;
 	Output.TexCoord0.xy = (Output.TexCoord0.xy * 0.5) + 0.5;
@@ -454,7 +454,7 @@ VS2PS_GBuffBaseDetailLM VS_GBuffBaseDetailLM(APP2VS_GBuffBaseDetailLM Input)
 {
 	VS2PS_GBuffBaseDetailLM Output;
 
-  	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
+	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
 	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);
@@ -470,7 +470,7 @@ VS2PS_GBuffBaseDetailLMParallax VS_GBuffBaseDetailLMParallax(APP2VS_GBuffBaseDet
 {
 	VS2PS_GBuffBaseDetailLMParallax Output;
 
-  	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
+	Output.HPos = mul(Input.Pos, _ViewProjMatrix);
 	Output.WorldPos = mul(Input.Pos, _WorldViewMatrix);
 
 	float3x3 TangentBasis = RVertex_GetTangentBasis(Input.Tan, Input.Normal, 1.0);

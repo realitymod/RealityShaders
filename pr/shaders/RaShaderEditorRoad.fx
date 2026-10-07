@@ -1,7 +1,7 @@
 #line 2 "RaShaderEditorRoad.fx"
 
 /*
-    This shader renders roads in the editor with basic diffuse and lightmap support. It handles road surface rendering with optional detail textures and applies fog effects based on camera distance. The shader includes special handling for road depth and Z-fading effects.
+	This shader renders roads in the editor with basic diffuse and lightmap support. It handles road surface rendering with optional detail textures and applies fog effects based on camera distance. The shader includes special handling for road depth and Z-fading effects.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -112,7 +112,7 @@ VS2PS VS_Editor_Road(APP2VS Input)
 	VS2PS Output = (VS2PS)0.0;
 
 	float4 WorldPos = mul(Input.Pos * PosUnpack, World);
-	WorldPos.y += 0.01;
+	WorldPos.y += PR_ROAD_Y_BIAS;
 
 	Output.HPos = mul(WorldPos, ViewProjection);
 	Output.P_Tex0_Tex1.xy = Input.Tex0 * TexUnpack;

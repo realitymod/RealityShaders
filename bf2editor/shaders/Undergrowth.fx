@@ -1,7 +1,7 @@
 #line 2 "Undergrowth.fx"
 
 /*
-    This shader renders lighting for undergrowth elements such as grass, bushes, and low vegetation. It handles specialized rendering for ground cover with wind animation, lighting, and optimized performance for dense vegetation.
+	This shader renders lighting for undergrowth elements such as grass, bushes, and low vegetation. It handles specialized rendering for ground cover with wind animation, lighting, and optimized performance for dense vegetation.
 */
 
 #include "shaders/RealityGraphics.fxh"

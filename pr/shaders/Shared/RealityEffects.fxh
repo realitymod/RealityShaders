@@ -1,7 +1,7 @@
 #line 2 "RealityEffects.fxh"
 
 /*
-    This file contains various visual effects functions used across multiple shaders for special rendering effects.
+	This file contains various visual effects functions used across multiple shaders for special rendering effects.
 */
 
 #include "shaders/RealityGraphics.fxh"

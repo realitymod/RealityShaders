@@ -1,7 +1,7 @@
 #line 2 "Lightning.fx"
 
 /*
-    Renders lightning effects and electrical discharges.
+	Renders lightning effects and electrical discharges.
 */
 
 #include "shaders/RealityGraphics.fxh"

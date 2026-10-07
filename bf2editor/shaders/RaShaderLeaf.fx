@@ -1,7 +1,7 @@
 #line 2 "RaShaderLeaf.fx"
 
 /*
-    This shader renders objects with leaf-like characteristics, including foliage and overgrowth. It handles wind animation for leaves, dynamic lighting with shadow support, and specialized alpha testing for foliage rendering. The shader includes features for both regular leaf objects and overgrowth patches.
+	This shader renders objects with leaf-like characteristics, including foliage and overgrowth. It handles wind animation for leaves, dynamic lighting with shadow support, and specialized alpha testing for foliage rendering. The shader includes features for both regular leaf objects and overgrowth patches.
 */
 
 #include "shaders/RealityGraphics.fxh"

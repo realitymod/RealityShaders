@@ -1,7 +1,7 @@
 #line 2 "RaCommon.fxh"
 
 /*
-    This header file provides common functions and definitions used across Reality shaders. It includes shared utilities, mathematical operations, and fundamental shader components that form the foundation of the rendering system.
+	This header file provides common functions and definitions used across Reality shaders. It includes shared utilities, mathematical operations, and fundamental shader components that form the foundation of the rendering system.
 */
 
 #include "shaders/RaDefines.fx"

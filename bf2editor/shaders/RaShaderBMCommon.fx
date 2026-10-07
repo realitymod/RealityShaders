@@ -1,7 +1,7 @@
 #line 2 "RaShaderBMCommon.fx"
 
 /*
-    This file contains common data and samplers for the RaShaderBM shader. It provides shared resources including texture samplers, uniform variables, and utility functions used by bundled mesh rendering shaders.
+	This file contains common data and samplers for the RaShaderBM shader. It provides shared resources including texture samplers, uniform variables, and utility functions used by bundled mesh rendering shaders.
 */
 
 // common BundledMesh samplers

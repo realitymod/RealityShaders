@@ -1,7 +1,7 @@
 #line 2 "PortedMenuShader.fx"
 
 /*
-    Ported menu system shader.
+	Ported menu system shader.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -73,8 +73,8 @@ VS2PS VS_Basic(APP2VS Input)
 	float4x4 WorldViewProj = _WorldMatrix * _ViewMatrix * _ProjMatrix;
 	Output.HPos = mul(Input.Pos, WorldViewProj);
 	Output.Color = saturate(Input.Color);
- 	Output.TexCoord0 = Input.TexCoord0;
- 	Output.TexCoord1 = Input.TexCoord1;
+	Output.TexCoord0 = Input.TexCoord0;
+	Output.TexCoord1 = Input.TexCoord1;
 	return Output;
 }
 

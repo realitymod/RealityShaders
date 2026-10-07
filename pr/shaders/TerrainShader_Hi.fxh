@@ -1,7 +1,7 @@
 #line 2 "TerrainShader_Hi.fxh"
 
 /*
-    This high-settings terrain shader renders terrain with advanced shading, shadowing, and detail features. It provides high-quality terrain rendering with multiple texture layers, normal mapping, and sophisticated lighting calculations.
+	This high-settings terrain shader renders terrain with advanced shading, shadowing, and detail features. It provides high-quality terrain rendering with multiple texture layers, normal mapping, and sophisticated lighting calculations.
 */
 
 #include "shaders/TerrainShader.fxh"
@@ -328,7 +328,7 @@ technique Hi_Terrain
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = TRUE;
 
- 		AlphaBlendEnable = FALSE;
+		AlphaBlendEnable = FALSE;
 
 		#if IS_NV4X
 			GET_RENDERSTATES_NV4X

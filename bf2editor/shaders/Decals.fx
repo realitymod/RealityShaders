@@ -1,7 +1,7 @@
 #line 2 "Decals.fx"
 
 /*
-    Handles decal rendering for surface details and effects.
+	Handles decal rendering for surface details and effects.
 */
 
 #include "shaders/RealityGraphics.fxh"

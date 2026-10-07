@@ -1,7 +1,7 @@
 #line 2 "LoadingScreen.fx"
 
 /*
-    Shader for rendering loading screen elements.
+	Shader for rendering loading screen elements.
 */
 
 #include "shaders/RealityGraphics.fxh"

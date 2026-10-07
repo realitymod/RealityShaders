@@ -1,7 +1,7 @@
 #line 2 "DebugLineGraph.fx"
 
 /*
-    Renders line graphs for debugging visualization.
+	Renders line graphs for debugging visualization.
 */
 
 #include "shaders/RealityGraphics.fxh"

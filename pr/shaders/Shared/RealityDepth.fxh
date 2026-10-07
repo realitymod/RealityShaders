@@ -1,7 +1,7 @@
 #line 2 "RealityDepth.fxh"
 
 /*
-    This file contains depth-based functions used in various shaders for depth calculations and comparisons.
+	This file contains depth-based functions used in various shaders for depth calculations and comparisons.
 */
 
 #include "shaders/RealityGraphics.fxh"

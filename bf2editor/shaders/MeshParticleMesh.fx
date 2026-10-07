@@ -1,7 +1,7 @@
 #line 2 "MeshParticleMesh.fx"
 
 /*
-    Handles mesh-based particle system rendering.
+	Handles mesh-based particle system rendering.
 */
 
 #include "shaders/RealityGraphics.fxh"

@@ -1,7 +1,7 @@
 #line 2 "PortedFontShader.fx"
 
 /*
-    Ported font rendering shader.
+	Ported font rendering shader.
 */
 
 #include "shaders/RealityGraphics.fxh"

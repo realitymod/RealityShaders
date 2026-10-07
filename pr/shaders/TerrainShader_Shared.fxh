@@ -1,7 +1,7 @@
 #line 2 "TerrainShader_Shared.fxh"
 
 /*
-    This header file contains shared functions and utilities for terrain shaders. It provides common terrain rendering components, lightmap generation, and helper functions used by both high and low detail terrain shaders.
+	This header file contains shared functions and utilities for terrain shaders. It provides common terrain rendering components, lightmap generation, and helper functions used by both high and low detail terrain shaders.
 */
 
 #include "shaders/TerrainShader.fxh"

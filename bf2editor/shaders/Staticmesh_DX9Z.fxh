@@ -1,7 +1,7 @@
 #line 2 "Staticmesh_DX9Z.fxh"
 
 /*
-    This file contains DirectX 9 Z-pass shaders for static mesh rendering. It implements depth pre-pass and color rendering techniques for static meshes with support for various material configurations including diffuse, detail, dirt, and crack mapping with parallax effects.
+	This file contains DirectX 9 Z-pass shaders for static mesh rendering. It implements depth pre-pass and color rendering techniques for static meshes with support for various material configurations including diffuse, detail, dirt, and crack mapping with parallax effects.
 */
 
 #include "Shaders/StaticMesh_Data.fxh"
@@ -115,7 +115,7 @@ struct VS2PS_ZAndDiffusebasedetailparallax
 	float4 HPos : POSITION;
 	float2 DiffuseTex : TEXCOORD0;
 	float2 DetailTex : TEXCOORD1;
-   	float3 TanEyeVec : TEXCOORD2;
+	float3 TanEyeVec : TEXCOORD2;
 };
 
 struct VS2PS_ZAndDiffusebasedetaildirt
@@ -132,7 +132,7 @@ struct VS2PS_ZAndDiffusebasedetaildirtparallax
 	float2 DiffuseTex : TEXCOORD0;
 	float2 DetailTex : TEXCOORD1;
 	float2 DirtTex : TEXCOORD2;
-   	float3 TanEyeVec : TEXCOORD3;
+	float3 TanEyeVec : TEXCOORD3;
 };
 
 struct VS2PS_ZAndDiffusebasedetailcrack
@@ -168,7 +168,7 @@ struct VS2PS_ZAndDiffusebasedetaildirtcrackparallax
 	float2 DetailTex : TEXCOORD1;
 	float2 DirtTex : TEXCOORD2;
 	float2 CrackTex : TEXCOORD3;
-   	float3 TanEyeVec : TEXCOORD4;
+	float3 TanEyeVec : TEXCOORD4;
 };
 
 /*

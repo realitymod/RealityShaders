@@ -1,7 +1,7 @@
 #line 2 "RaShaderRoad.fx"
 
 /*
-    This shader renders roads in the game with diffuse and detail texture support. It handles road surface rendering with lightmap accumulation, fog effects, and special Z-fading for road edges. The shader includes support for both basic roads and roads with detail textures.
+	This shader renders roads in the game with diffuse and detail texture support. It handles road surface rendering with lightmap accumulation, fog effects, and special Z-fading for road edges. The shader includes support for both basic roads and roads with detail textures.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -115,7 +115,7 @@ VS2PS VS_Road(APP2VS Input)
 	VS2PS Output = (VS2PS)0.0;
 
 	float4 WorldPos = mul(Input.Pos * PosUnpack, World);
-	WorldPos.y += 0.01;
+	WorldPos.y += PR_ROAD_Y_BIAS;
 
 	Output.HPos = mul(WorldPos, ViewProjection);
 	Output.Pos.xyz = WorldPos.xyz;
@@ -196,8 +196,8 @@ technique defaultTechnique
 		ZEnable = TRUE;
 		ZFunc = PR_ZFUNC_WITHEQUAL;
 		ZWriteEnable = FALSE;
-		DepthBias = PR_DEPTHBIAS_ROAD;
-		SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
+		// DepthBias = PR_DEPTHBIAS_ROAD;
+		// SlopeScaleDepthBias = PR_SLOPESCALE_ROAD;
 
 		AlphaTestEnable = FALSE;
 		AlphaBlendEnable = TRUE;

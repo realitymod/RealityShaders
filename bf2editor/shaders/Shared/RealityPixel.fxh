@@ -1,7 +1,7 @@
 #line 2 "RealityPixel.fxh"
 
 /*
-    This file contains pixel shader utility functions used for various pixel processing operations.
+	This file contains pixel shader utility functions used for various pixel processing operations.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -18,24 +18,24 @@
 #if !defined(REALITY_PIXEL)
 	#define REALITY_PIXEL
 
-	float RPixel_GetMax3(float3 Input)
+	float RPixel_GetMax_FLT3(float3 Input)
 	{
 		return max(Input.x, max(Input.y, Input.z));
 	}
 
-	float RPixel_GetMin3(float3 Input)
+	float RPixel_GetMin_FLT3(float3 Input)
 	{
 		return max(Input.x, max(Input.y, Input.z));
 	}
 
-	float RPixel_GetMean3(float3 Input)
+	float RPixel_GetMean_FLT3(float3 Input)
 	{
 		return dot(Input, 1.0 / 3.0);
 	}
 
 	float RPixel_Desaturate(float3 Input)
 	{
-		return lerp(RPixel_GetMin3(Input), RPixel_GetMax3(Input), 1.0 / 2.0);
+		return lerp(RPixel_GetMin_FLT3(Input), RPixel_GetMax_FLT3(Input), 1.0 / 2.0);
 	}
 
 	float3 RPixel_QuantizeRGB(float3 Color, float Depth)
@@ -158,58 +158,65 @@
 	float RPixel_GetGradient_FLT1(float2 I, float2 F, float2 O, float Bias)
 	{
 		// Get constants
-		float TwoPi = acos(-1.0) * 2.0;
+		const float TwoPi = RGraphics_GetPi() * 2.0;
 
 		// Calculate random hash rotation
 		float Hash = RPixel_GetHash_FLT1(I + O, Bias) * TwoPi;
 		float2 HashSinCos = float2(sin(Hash), cos(Hash));
-		float2 Gradient = F - O;
 
 		// Calculate final dot-product
-		return dot(HashSinCos, Gradient);
+		return dot(HashSinCos, F - O);
 	}
 
 	float2 RPixel_GetGradient_FLT2(float2 I, float2 F, float2 O, float Bias)
 	{
 		// Get constants
-		float TwoPi = acos(-1.0) * 2.0;
+		const float TwoPi = RGraphics_GetPi() * 2.0;
 
 		// Calculate random hash rotation
 		float2 Hash = RPixel_GetHash_FLT2(I + O, Bias) * TwoPi;
-		float4 HashSinCos = float4(sin(Hash), cos(Hash));
+		float2 HashSinCos1 = float2(sin(Hash.x), cos(Hash.x));
+		float2 HashSinCos2 = float2(sin(Hash.y), cos(Hash.y));
 		float2 Gradient = F - O;
 
 		// Calculate final dot-product
-		return float2(dot(HashSinCos.xz, Gradient), dot(HashSinCos.yw, Gradient));
+		return float2(dot(HashSinCos1, Gradient), dot(HashSinCos2, Gradient));
 	}
 
-	float RPixel_GetGradientNoise_FLT1(float2 Input, float Bias, bool NormalizeOutput)
+	float3 RPixel_GetGradient_FLT3(float2 I, float2 F, float2 O, float Bias)
 	{
-		float2 I = floor(Input);
-		float2 F = frac(Input);
-		float A = RPixel_GetGradient_FLT1(I, F, float2(0.0, 0.0), Bias);
-		float B = RPixel_GetGradient_FLT1(I, F, float2(1.0, 0.0), Bias);
-		float C = RPixel_GetGradient_FLT1(I, F, float2(0.0, 1.0), Bias);
-		float D = RPixel_GetGradient_FLT1(I, F, float2(1.0, 1.0), Bias);
-		float2 UV = RPixel_GetQuintic(F);
-		float Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-		Noise = (NormalizeOutput) ? saturate((Noise * 0.5) + 0.5) : Noise;
-		return Noise;
+		// Get constants
+		const float TwoPi = RGraphics_GetPi() * 2.0;
+
+		// Calculate random hash rotation
+		float3 Hash = RPixel_GetHash_FLT3(I + O, Bias) * TwoPi;
+		float2 HashSinCos1 = float2(sin(Hash.x), cos(Hash.x));
+		float2 HashSinCos2 = float2(sin(Hash.y), cos(Hash.y));
+		float2 HashSinCos3 = float2(sin(Hash.z), cos(Hash.z));
+		float2 Gradient = F - O;
+
+		// Calculate final dot-product
+		return float3(dot(HashSinCos1, Gradient), dot(HashSinCos2, Gradient), dot(HashSinCos3, Gradient));
 	}
 
-	float2 RPixel_GetGradientNoise_FLT2(float2 Input, float Bias, bool NormalizeOutput)
-	{
-		float2 I = floor(Input);
-		float2 F = frac(Input);
-		float2 A = RPixel_GetGradient_FLT2(I, F, float2(0.0, 0.0), Bias);
-		float2 B = RPixel_GetGradient_FLT2(I, F, float2(1.0, 0.0), Bias);
-		float2 C = RPixel_GetGradient_FLT2(I, F, float2(0.0, 1.0), Bias);
-		float2 D = RPixel_GetGradient_FLT2(I, F, float2(1.0, 1.0), Bias);
-		float2 UV = RPixel_GetQuintic(F);
-		float2 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-		Noise = (NormalizeOutput) ? saturate((Noise * 0.5) + 0.5) : Noise;
-		return Noise;
-	}
+	#define TEMPLATE_RPIXEL_GET_GRADIENT_NOISE(DATA_TYPE, LENGTH) \
+		DATA_TYPE RPixel_GetGradientNoise_FLT##LENGTH(float2 Tex, float Bias, bool OutputSigned) \
+		{ \
+			float2 I = floor(Tex); \
+			float2 F = frac(Tex); \
+			DATA_TYPE A = RPixel_GetGradient_FLT##LENGTH(I, F, float2(0.0, 0.0), Bias); \
+			DATA_TYPE B = RPixel_GetGradient_FLT##LENGTH(I, F, float2(1.0, 0.0), Bias); \
+			DATA_TYPE C = RPixel_GetGradient_FLT##LENGTH(I, F, float2(0.0, 1.0), Bias); \
+			DATA_TYPE D = RPixel_GetGradient_FLT##LENGTH(I, F, float2(1.0, 1.0), Bias); \
+			float2 UV = RPixel_GetQuintic(F); \
+			DATA_TYPE Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y); \
+			Noise = OutputSigned ? Noise : saturate(RGraphics_ConvertSNORMtoUNORM_FLT##LENGTH(Noise)); \
+			return Noise; \
+		} \
+
+	TEMPLATE_RPIXEL_GET_GRADIENT_NOISE(float, 1) // float RPixel_GetGradientNoise_FLT1(float2 Tex, float Bias, bool OutputSigned)
+	TEMPLATE_RPIXEL_GET_GRADIENT_NOISE(float2, 2) // float2 RPixel_GetGradientNoise_FLT2(float2 Tex, float Bias, bool OutputSigned)
+	TEMPLATE_RPIXEL_GET_GRADIENT_NOISE(float3, 3) // float3 RPixel_GetGradientNoise_FLT3(float2 Tex, float Bias, bool OutputSigned)
 
 	float4 RPixel_GetProceduralTiles(sampler2D Source, float2 Tex)
 	{
@@ -452,7 +459,7 @@
 		// 1. Calculate the projected UV coordinates
 		Output.UV = Tex.xy / Tex.w;
 
-		// 2. Compute explicit derivatives using the Quotient Rule: 
+		// 2. Compute explicit derivatives using the Quotient Rule:
 		// d(u/w) = (w * du - u * dw) / w^2
 		float3 Ix = ddx(Tex.xyw);
 		float3 Iy = ddy(Tex.xyw);

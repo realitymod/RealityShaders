@@ -1,7 +1,7 @@
 #line 2 "Decals.fx"
 
 /*
-    Handles decal rendering for surface details and effects.
+	Handles decal rendering for surface details and effects.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -158,6 +158,9 @@ RGraphics_PS2FB PS_Decals(VS2PS Input)
 	return Output;
 }
 
+	// CullMode is set to CW by default so that the straps on the crates can render over it.
+	// Setting to NONE fixes the glass decal effect not showing on both sides
+	
 #define GET_RENDERSTATES_DECAL \
 	CullMode = CW; \
 	ZEnable = TRUE; \

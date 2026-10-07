@@ -1,7 +1,7 @@
 #line 2 "Nametag.fx"
 
 /*
-    Renders nametags and UI elements above objects.
+	Renders nametags and UI elements above objects.
 */
 
 #include "shaders/RealityGraphics.fxh"
@@ -19,10 +19,10 @@ float4x4 _WorldViewProj : WorldViewProjection;
 float _TexBlendFactor : TexBlendFactor;
 float2 _FadeoutValues : FadeOut;
 float4 _LocalEyePos : LocalEye;
-float4 _Transformations[64] : TransformationArray;
+float4 _Transformations[100] : TransformationArray;
 
 // dep: this is a suboptimal Camp EA hack; rewrite this
-float _Alphas[64] : AlphaArray;
+float _Alphas[100] : AlphaArray;
 float4 _Colors[9] : ColorArray;
 float4 _AspectMul : AspectMul;
 
@@ -43,6 +43,9 @@ float _HealthValue : HealthValue;
 
 float _CrossFadeValue : CrossFadeValue;
 float _AspectComp = 4.0 / 3.0;
+// texture cooridnates will be fucked
+// define this to compensate for increased texture height in nametag vertex shader
+float _Tex0Comp = 1024.0/1600.0;
 
 /*
 	[Textures and samplers]
@@ -108,6 +111,7 @@ VS2PS VS_Nametag(APP2VS Input)
 	Output.HPos = float4(Input.Pos.xyz + IndexedTrans.xyz, 1.0);
 
 	Output.TexCoord0 = Input.TexCoord0;
+	Output.TexCoord0.y *= _Tex0Comp; // <- add this
 
 	Output.Color0 = lerp(_Colors[Input.Indices.y], _Colors[Input.Indices.z], _CrossFadeValue);
 	Output.Color0.a = _Alphas[Input.Indices.x];

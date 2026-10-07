@@ -1,7 +1,7 @@
 #line 2 "PortedMenuShader.fx"
 
 /*
-    Ported menu system shader.
+	Ported menu system shader.
 */
 
 #include "shaders/RealityGraphics.fxh"
