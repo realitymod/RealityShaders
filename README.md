@@ -9,25 +9,16 @@
 
 ## Features
 
-- **Shader Model 3.0**: Shader Model 3.0 allows modders to add more grapical updates into the game.
-
-    - 3D water and terrain
-    - High precision shading
-    - Linear lighting
-    - Procedural effects
-    - Soft shadows
-    - Sharper texture filtering
-    - Steep parallax mapping
-
-- **Updated BF2Editor Shaders**: The Shader Model 3.0 update allows BF2Editor to support updated dependencies and Large Address Aware.
 - **Distance-Based Fog**: This fogging method eliminates "corner-peeking".
 - **Half-Lambert Lighting**: [Valve Software's](https://advances.realtimerendering.com/s2006/Mitchell-ShadingInValvsSourceEngine.pdf) smoother version of the Lambertian Term used in lighting.
 - **Logarithmic Depth Buffer**: Logarithmic depth buffering eliminates flickering within distant objects.
-- **Per-Pixel Lighting**: Per-pixel lighting allows sharper lighting and smoother fogging.
 - **Modernized Post-Processing**: This shader package includes updated thermal and suppression effects.
-- **Procedural Sampling**: No more visible texture repetition off-map terrain.
-- **Sharpened Filtering**: Support for 16x anisotropic filtering.
 - **Optional Bicubic Lightmapping**: A smoother interpolation method to eliminate blockiness and noticeable seams in baked lighting. Credit to [Felix Westin](https://github.com/Fewes).
+- **Per-Pixel Lighting**: Per-pixel lighting allows sharper lighting and smoother fogging.
+- **Procedural Sampling**: No more visible texture repetition off-map terrain.
+- **Shader Model 3.0**: Shader Model 3.0 allows modders to add more grapical updates into the game.
+- **Sharpened Filtering**: Support for 16x anisotropic filtering.
+- **Updated BF2Editor Shaders**: The Shader Model 3.0 update allows BF2Editor to support updated dependencies and Large Address Aware.
 
 ## Installation
 
@@ -40,39 +31,82 @@
 
 ## Coding Convention
 
-- **ALLCAPS**
-    - State parameters
-    - System semantics
-- **ALL_CAPS**
-    - Preprocessor macros
-    - Preprocessor macro arguments
-- **_SnakeCase**
-    - Uniform variables
-- **SnakeCase**
-    - Function arguments
-    - Global variables
-    - Local variables
-    - Textures and samples
-- **Snake_Case**
-    - Data subcategory
-- **PREFIX_Data**
-    - `struct` datatype
+### Shared Method From Header File
 
-        `APP2VS_`
+1. **File path**: `shared/common/RealityLib.fxh`
+1. **Function name**: `Common_RealityLib_FunctionName()`
+1. **Example**:  `shared/common/RealityLib.fxh` -> `Common_RealityLib_FunctionName()`
 
-        `VS2PS_`
+### ALLCAPS
 
-        `PS2FB_`
+**State parameters**:
 
-        `PS2MRT_`
+    BlendOp = ADD;
 
-    - `VertexShader` methods
+**System semantics**:
 
-        `VS_`
+    float4 SV_POSITION;
 
-    - `PixelShader` methods
+### ALL_CAPS
 
-        `PS_`
+**Preprocessor definitions**:
+
+    #define SHADER_VERSION
+
+**Preprocessor macros**:
+
+    #define EXAMPLE_MACRO()
+
+**Preprocessor macro arguments**
+
+    #define EXAMPLE_MACRO(EXAMPLE_ARG)
+
+### _SnakeCase
+
+**Uniform variables**:
+
+    uniform float _Example
+
+### SnakeCase
+
+**Function arguments**:
+
+    void Function(int ArgumentOne)
+
+**Global variables**:
+
+    static const float4 GlobalVariable = 1.0;
+    void Function()
+    {
+        return GlobalVariable;
+    }
+
+**Local variables**:
+
+    void Function()
+    {
+        float4 LocalVariable = 1.0;
+        return LocalVariable;
+    }
+
+**Textures and samplers**:
+
+    texture2D ExampleTex(...)
+    sampler2D SampleExampleTex(...)
+
+### SNAKE_Case
+
+**`struct` datatypes**:
+
+    struct APP2VS_Foobar { ... };
+    struct VS2PS_Foobar { ... };
+    struct PS2FB_Foobar { ... };
+    struct PS2MRT_Foobar { ... };
+
+**`VertexShader` and `PixelShader`**
+
+    VertexShader = VS_Example(...);
+    PixelShader = PS_Example(...);
 
 ## Acknowledgment
 
