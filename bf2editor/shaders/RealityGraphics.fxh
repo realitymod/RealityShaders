@@ -43,6 +43,8 @@
 		D3DCMP_ALWAYS = 8,
 	*/
 
+	#define PR_ROAD_Y_BIAS 0.01
+
 	// Project Reality's default Z-testing
 	// We expose it here so it is easy to port over to reversed depth buffering
 	#define PR_IS_REVERSED_Z 0
